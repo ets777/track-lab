@@ -1,0 +1,7 @@
+{
+  "name": "day-tracker",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
