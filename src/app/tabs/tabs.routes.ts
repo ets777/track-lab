@@ -7,30 +7,30 @@ export const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'activity-add',
         loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
+          import('../pages/activity-add/activity-add.page').then((m) => m.ActivityAddPage),
       },
       {
-        path: 'tab2',
+        path: 'activity-list',
         loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+          import('../pages/activity-list/activity-list.page').then((m) => m.ActivityListPage),
       },
       {
-        path: 'tab3',
+        path: 'activity-calendar',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../pages/activity-calendar/activity-calendar.page').then((m) => m.ActivityCalendarPage),
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/activity-calendar',
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/activity-calendar',
     pathMatch: 'full',
   },
 ];

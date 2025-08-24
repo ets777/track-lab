@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Activity Stats</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Start Date</ion-label>
+    <ion-input
+      placeholder="yyyy-mm-dd"
+      [(ngModel)]="startDate"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">End Date</ion-label>
+    <ion-input
+      placeholder="yyyy-mm-dd"
+      [(ngModel)]="endDate"
+    ></ion-input>
+  </ion-item>
+
+  <ion-button
+    expand="block"
+    (click)="loadStats()"
+  >Show Stats</ion-button>
+
+  <ion-list>
+    @if (activities.length) {
+      <ion-item>
+        <ion-label>
+          <h2>Total for period</h2>
+          <p>Avg. mood: {{ getAverageValue(activities, 'mood') | number:'1.1-1' }}</p>
+          <p>Avg. energy: {{ getAverageValue(activities, 'energy') | number:'1.1-1' }}</p>
+          <p>Avg. satiety: {{ getAverageValue(activities, 'satiety') | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
+    }
+    @for (day of activitiesGroupedByDate; track day.date) {
+      <ion-item>
+        <ion-label>
+          <h2>{{ day.date }}</h2>
+          <p>Avg. mood: {{ getAverageValue(day.activities, 'mood') | number:'1.1-1' }}</p>
+          <p>Avg. energy: {{ getAverageValue(day.activities, 'energy') | number:'1.1-1' }}</p>
+          <p>Avg. satiety: {{ getAverageValue(day.activities, 'satiety') | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
+    } @empty {
+      <ion-text>There are no activities in selected period.</ion-text>
+    }
+  </ion-list>
+</ion-content>

@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Activity History</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button (click)="test()">test</ion-button>
+  <ion-buttons>
+    <ion-button (click)="goToPreviousDay()">prev</ion-button>
+    <ion-text>{{ currentDate }}</ion-text>
+    <ion-button (click)="goToNextDay()">next</ion-button>
+  </ion-buttons>
+  <ion-list>
+    @for (activity of activities; track activity.id) {
+      <ion-item>
+        <ion-label>
+          <h2>{{ activity.actions }}</h2>
+          <p>
+            {{ activity.startTime }} - {{ activity.endTime }}
+          </p>
+          <p>
+            Mood: {{ activity.mood }},
+            Energy: {{ activity.energy }},
+            Satiety: {{ activity.satiety }}
+          </p>
+        </ion-label>
+      </ion-item>
+    } @empty {
+      <ion-text>There are no activities.</ion-text>
+    }
+  </ion-list>
+</ion-content>
