@@ -16,6 +16,7 @@ import { MarkdownParserService } from 'src/app/services/markdown-parser.service'
 export class ActivityListPage {
   activities: IActivity[] = [];
   currentDate: string = '';
+  isTestButtonShown: boolean = false;
 
   constructor(
     private activityService: ActivityService,
