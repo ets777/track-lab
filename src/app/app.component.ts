@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { StatusBar } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 @Component({
@@ -7,5 +8,23 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent {
-  constructor() {}
+  constructor() {
+    this.setAdaptiveStatusBarColor();
+  }
+
+  setAdaptiveStatusBarColor() {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = () => {
+      if (mediaQuery.matches) {
+        StatusBar.setBackgroundColor({ color: '#000000' });
+      } else {
+        StatusBar.setBackgroundColor({ color: '#ffffff' });
+      }
+    };
+
+    applyTheme();
+
+    mediaQuery.addEventListener('change', applyTheme);
+  }
 }
