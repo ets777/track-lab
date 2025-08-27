@@ -2,17 +2,17 @@
   <ion-toolbar>
     <ion-title>Log Activity</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="addActivity()">Add</ion-button>
+      <ion-button (click)="addActivity()" [disabled]="!addActivityForm.valid">Add</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form>
+  <form [formGroup]="addActivityForm">
     <ion-item>
       <ion-label position="stacked">Actions (separated by comma)</ion-label>
       <ion-input
-        [(ngModel)]="activity.actions"
+        formControlName="actions"
         name="actions"
       ></ion-input>
     </ion-item>
@@ -21,7 +21,7 @@
       <ion-label position="stacked">Date</ion-label>
       <ion-input
         placeholder="yyyy-mm-dd"
-        [(ngModel)]="activity.date"
+        formControlName="date"
         name="date"
       ></ion-input>
     </ion-item>
@@ -30,7 +30,7 @@
       <ion-label position="stacked">Start Time</ion-label>
       <ion-input
         placeholder="hh:mm"
-        [(ngModel)]="activity.startTime"
+        formControlName="startTime"
         name="startTime"
       ></ion-input>
     </ion-item>
@@ -39,7 +39,7 @@
       <ion-label position="stacked">End Time</ion-label>
       <ion-input
         placeholder="hh:mm"
-        [(ngModel)]="activity.endTime"
+        formControlName="endTime"
         name="endTime"
       ></ion-input>
     </ion-item>
@@ -50,10 +50,10 @@
         min="1"
         max="10"
         [snaps]="true"
-        [(ngModel)]="activity.mood"
+        formControlName="mood"
         name="mood"
       ></ion-range>
-      <ion-text>{{ activity.mood }}</ion-text>
+      <ion-text>{{ addActivityForm.get('mood')?.value }}</ion-text>
     </ion-item>
 
     <ion-item>
@@ -62,10 +62,10 @@
         min="1"
         max="10"
         [snaps]="true"
-        [(ngModel)]="activity.energy"
+        formControlName="energy"
         name="energy"
       ></ion-range>
-      <ion-text>{{ activity.energy }}</ion-text>
+      <ion-text>{{ addActivityForm.get('energy')?.value }}</ion-text>
     </ion-item>
 
     <ion-item>
@@ -74,10 +74,10 @@
         min="1"
         max="10"
         [snaps]="true"
-        [(ngModel)]="activity.satiety"
+        formControlName="satiety"
         name="satiety"
       ></ion-range>
-      <ion-text>{{ activity.satiety }}</ion-text>
+      <ion-text>{{ addActivityForm.get('satiety')?.value }}</ion-text>
     </ion-item>
 
     <ion-item>
@@ -85,7 +85,7 @@
         label="Emotions (separated by comma)"
         labelPlacement="floating"
         placeholder="What did you feel after?"
-        [(ngModel)]="activity.emotions"
+        formControlName="emotions"
         name="emotions"
       ></ion-input>
     </ion-item>
@@ -95,7 +95,7 @@
         label="Comment"
         labelPlacement="floating"
         placeholder="Tell more about this activity"
-        [(ngModel)]="activity.comment"
+        formControlName="comment"
         name="comment"
       ></ion-textarea>
     </ion-item>

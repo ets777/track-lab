@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonInput, IonContent, IonItem, IonLabel, IonDatetime, IonRange, IonButton, IonText, IonTextarea, IonButtons } from "@ionic/angular/standalone";
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IActivity } from 'src/app/db';
 import { format } from 'date-fns';
 import { Time } from 'src/app/Time';
@@ -10,24 +10,27 @@ import { Time } from 'src/app/Time';
   selector: 'app-activity-add',
   templateUrl: './activity-add.page.html',
   styleUrl: './activity-add.page.scss',
-  imports: [IonButtons, IonTextarea, IonText, IonButton, IonRange, IonLabel, IonItem, IonContent, IonInput, IonHeader, IonToolbar, IonTitle, FormsModule],
+  imports: [IonButtons, IonTextarea, IonText, IonButton, IonRange, IonLabel, IonItem, IonContent, IonInput, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule],
 })
 export class ActivityAddPage implements OnInit {
-  protected activity: IActivity;
   private defaultValue: number = 5;
+  protected addActivityForm: FormGroup;
 
-  constructor(private activityService: ActivityService) {
-    this.activity = {
-      actions: '',
-      startTime: '',
-      endTime: '',
-      comment: '',
-      date: '',
-      mood: this.defaultValue,
-      energy: this.defaultValue,
-      satiety: this.defaultValue,
-      emotions: '',
-    };
+  constructor(
+    private activityService: ActivityService,
+    private formBuilder: FormBuilder,
+  ) {
+    this.addActivityForm = this.formBuilder.group({
+      actions: ['', Validators.required],
+      startTime: ['', Validators.required],
+      endTime: [''],
+      comment: [''],
+      date: ['', Validators.required],
+      mood: [this.defaultValue],
+      energy: [this.defaultValue],
+      satiety: [this.defaultValue],
+      emotions: [''],
+    });
   }
 
   async ngOnInit(): Promise<void> {
@@ -35,8 +38,10 @@ export class ActivityAddPage implements OnInit {
   }
 
   async addActivity(): Promise<void> {
+    const activity = this.addActivityForm.value;
+
     this.activityService.add({
-      ...this.activity
+      ...activity
     });
     
     await this.setDefaultData();
@@ -46,7 +51,7 @@ export class ActivityAddPage implements OnInit {
     const lastActivity = await this.activityService.getLast();
     const currentTime = new Time().toString().slice(0, 5);
 
-    this.activity = {
+    this.addActivityForm.patchValue({
       actions: '',
       startTime: lastActivity?.endTime ?? currentTime,
       endTime: currentTime,
@@ -56,6 +61,6 @@ export class ActivityAddPage implements OnInit {
       energy: lastActivity?.energy || this.defaultValue,
       satiety: lastActivity?.satiety || this.defaultValue,
       emotions: '',
-    };
+    });
   }
 }
