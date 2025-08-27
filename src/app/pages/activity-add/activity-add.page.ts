@@ -14,6 +14,7 @@ import { Time } from 'src/app/Time';
 })
 export class ActivityAddPage implements OnInit {
   protected activity: IActivity;
+  private defaultValue: number = 5;
 
   constructor(private activityService: ActivityService) {
     this.activity = {
@@ -22,9 +23,9 @@ export class ActivityAddPage implements OnInit {
       endTime: '',
       comment: '',
       date: '',
-      mood: 5,
-      energy: 5,
-      satiety: 5,
+      mood: this.defaultValue,
+      energy: this.defaultValue,
+      satiety: this.defaultValue,
       emotions: '',
     };
   }
@@ -43,18 +44,17 @@ export class ActivityAddPage implements OnInit {
 
   async setDefaultData(): Promise<void> {
     const lastActivity = await this.activityService.getLast();
-
-    console.log(lastActivity);
+    const currentTime = new Time().toString().slice(0, 5);
 
     this.activity = {
       actions: '',
-      startTime: lastActivity?.endTime ?? '',
-      endTime: new Time().toString().slice(0, 5),
+      startTime: lastActivity?.endTime ?? currentTime,
+      endTime: currentTime,
       comment: '',
       date: format(new Date(), 'yyyy-MM-dd'),
-      mood: lastActivity?.mood ?? 5,
-      energy: lastActivity?.energy ?? 5,
-      satiety: lastActivity?.satiety ?? 5,
+      mood: lastActivity?.mood || this.defaultValue,
+      energy: lastActivity?.energy || this.defaultValue,
+      satiety: lastActivity?.satiety || this.defaultValue,
       emotions: '',
     };
   }
