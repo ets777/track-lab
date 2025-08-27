@@ -19,12 +19,12 @@
         <ion-label>
           <h2>{{ activity.actions }}</h2>
           <p>
-            {{ activity.startTime }} - {{ activity.endTime }}
+            {{ activity.startTime }}  @if (activity.endTime)  { - {{ activity.endTime }} }
           </p>
           <p>
-            Mood: {{ activity.mood }},
-            Energy: {{ activity.energy }},
-            Satiety: {{ activity.satiety }}
+            Mood: {{ activity.mood || '-' }},
+            Energy: {{ activity.energy || '-' }},
+            Satiety: {{ activity.satiety || '-' }}
           </p>
         </ion-label>
       </ion-item>
