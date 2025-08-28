@@ -26,6 +26,17 @@
             Energy: {{ activity.energy || '-' }},
             Satiety: {{ activity.satiety || '-' }}
           </p>
+          <ion-buttons class="activity-item-buttons">
+            <ion-button id="open-action-sheet-{{activity.id}}">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-action-sheet
+            trigger="open-action-sheet-{{activity.id}}"
+            header="Actions"
+            [buttons]="actionSheetButtons"
+            (didDismiss)="doAction($event, activity.id)"
+          ></ion-action-sheet>
         </ion-label>
       </ion-item>
     } @empty {

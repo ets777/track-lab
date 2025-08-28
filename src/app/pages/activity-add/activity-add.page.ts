@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonInput, IonContent, IonItem, IonLabel, IonDatetime, IonRange, IonButton, IonText, IonTextarea, IonButtons } from "@ionic/angular/standalone";
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IActivity } from 'src/app/db';
+import { IActivity, IActivityCreateDTO } from 'src/app/db';
 import { format } from 'date-fns';
 import { Time } from 'src/app/Time';
 
@@ -46,11 +46,9 @@ export class ActivityAddPage implements OnInit {
   }
 
   async addActivity(): Promise<void> {
-    const activity = this.addActivityForm.value;
+    const activity: IActivityCreateDTO = this.addActivityForm.value;
 
-    await this.activityService.add({
-      ...activity,
-    });
+    await this.activityService.add(activity);
     
     await this.setDefaultData();
   }

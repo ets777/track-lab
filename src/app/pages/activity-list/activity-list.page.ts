@@ -1,27 +1,44 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, IonText, IonButtons, IonButton } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, ActionSheetController } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { IActivity } from 'src/app/db';
 import { ActivatedRoute } from '@angular/router';
 import { addDays, format } from 'date-fns';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
+import type { OverlayEventDetail } from '@ionic/core';
 
 @Component({
   selector: 'app-activity-list',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonButton, IonText, IonLabel, IonList, IonItem, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons],
+  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonLabel, IonList, IonItem, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons],
 })
 export class ActivityListPage {
   activities: IActivity[] = [];
   currentDate: string = '';
   isTestButtonShown: boolean = false;
+  public actionSheetButtons = [
+    {
+      text: 'Edit',
+      data: {
+        action: 'edit',
+      },
+    },
+    {
+      text: 'Delete',
+      role: 'destructive',
+      data: {
+        action: 'delete',
+      },
+    },
+  ];
 
   constructor(
     private activityService: ActivityService,
     private route: ActivatedRoute,
     private markdownParserService: MarkdownParserService,
+    private actionSheetCtrl: ActionSheetController,
   ) { }
 
   async ionViewWillEnter() {
@@ -51,6 +68,52 @@ export class ActivityListPage {
 
   async setActivities() {
     this.activities = await this.activityService.getByDate(this.currentDate);
+  }
+
+  async doAction(event: CustomEvent<OverlayEventDetail>, activityId: number) {
+    const action = event.detail.data?.action;
+
+    switch (action) {
+      case 'delete':
+        this.deleteActivity(activityId);
+        break;
+      case 'edit':
+        console.log('edit');
+        break;
+      default:
+        break;
+    }
+  }
+
+  async deleteActivity(activityId: number) {
+    const answer = await this.confirm();
+
+    if (answer) {
+      this.activityService.delete(activityId);
+      await this.setActivities();
+    }
+  }
+
+  async confirm() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Are you sure?',
+      buttons: [
+        {
+          text: 'Yes',
+          role: 'confirm',
+        },
+        {
+          text: 'No',
+          role: 'cancel',
+        },
+      ],
+    });
+
+    actionSheet.present();
+
+    const { role } = await actionSheet.onWillDismiss();
+
+    return role === 'confirm';
   }
 
   test() {

@@ -1,7 +1,19 @@
 import Dexie, { Table } from 'dexie';
 
 export interface IActivity {
-    id?: number;
+    id: number;
+    actions: string;
+    date: string;
+    startTime: string;
+    endTime?: string;
+    mood: number;
+    energy: number;
+    satiety: number;
+    emotions: string;
+    comment: string;
+}
+
+export interface IActivityCreateDTO {
     actions: string;
     date: string;
     startTime: string;
@@ -14,7 +26,7 @@ export interface IActivity {
 }
 
 export class MyAppDatabase extends Dexie {
-    activities!: Table<IActivity, number>;
+    activities!: Table<IActivity, number, IActivityCreateDTO>;
 
     constructor() {
         super('myAppDB');

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { db } from '../db';
+import { db, IActivityCreateDTO } from '../db';
 import { IActivity } from '../db';
 import { addDays, format } from 'date-fns';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
-    async add(activity: IActivity) {
+    async add(activity: IActivityCreateDTO) {
         const lastActivity = await this.getLast();
 
         if (lastActivity && !lastActivity.endTime && lastActivity.id) {
