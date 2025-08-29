@@ -1,8 +1,8 @@
 {
-  "name": "day-tracker",
-  "version": "0.1.1",
+  "name": "track-lab",
+  "version": "0.1.2",
   "author": "Dmitry Klishev",
-  "homepage": "https://etsbox.ru/",
+  "homepage": "https://etsbox.ru/track-lab",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

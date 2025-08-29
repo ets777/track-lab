@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2] - 2025-08-29
+
+### Fixed
+
+- Name changed to TrackLab
+- Default launcher icon was replaced
+
 ## [0.1.1] - 2025-08-27
 
 ### Fixed
