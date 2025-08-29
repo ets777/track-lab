@@ -19,7 +19,6 @@ export class MarkdownParserService {
         let day = startDay;
 
         while (day !== endDay) {
-            console.log(day);
             days.push(day);
             day = format(addDays(new Date(day), 1), 'yyyy-MM-dd');
         }        

@@ -13,7 +13,7 @@ export interface IActivity {
     comment: string;
 }
 
-export interface IActivityCreateDTO {
+export interface IActivityDTO {
     actions: string;
     date: string;
     startTime: string;
@@ -26,7 +26,7 @@ export interface IActivityCreateDTO {
 }
 
 export class MyAppDatabase extends Dexie {
-    activities!: Table<IActivity, number, IActivityCreateDTO>;
+    activities!: Table<IActivity, number, IActivityDTO>;
 
     constructor() {
         super('myAppDB');

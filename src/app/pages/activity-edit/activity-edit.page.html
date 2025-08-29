@@ -3,13 +3,18 @@
     <ion-title>Log Activity</ion-title>
     <ion-buttons slot="end">
       <ion-button
-        (click)="addActivity()"
+        (click)="updateActivity()"
         [disabled]="!isFormValid()"
-      >Add</ion-button>
+      >Save</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <app-activity-form #addFormRef></app-activity-form>
+  @if (activity) {
+    <app-activity-form 
+      #updateFormRef
+      [activity]="activity"
+    ></app-activity-form>
+  }
 </ion-content>

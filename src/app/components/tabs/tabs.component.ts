@@ -5,11 +5,11 @@ import { triangle, ellipse, square } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
-  templateUrl: 'tabs.page.html',
-  styleUrls: ['tabs.page.scss'],
+  templateUrl: 'tabs.component.html',
+  styleUrls: ['tabs.component.scss'],
   imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
 })
-export class TabsPage {
+export class TabsComponent {
   public environmentInjector = inject(EnvironmentInjector);
 
   constructor() {

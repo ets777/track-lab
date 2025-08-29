@@ -1,0 +1,89 @@
+<form [formGroup]="activityForm">
+  <ion-item>
+    <ion-label position="stacked">Actions (separated by comma)</ion-label>
+    <ion-input
+      formControlName="actions"
+      name="actions"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Date</ion-label>
+    <ion-input
+      placeholder="yyyy-mm-dd"
+      formControlName="date"
+      name="date"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Start Time</ion-label>
+    <ion-input
+      placeholder="hh:mm"
+      formControlName="startTime"
+      name="startTime"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">End Time</ion-label>
+    <ion-input
+      placeholder="hh:mm"
+      formControlName="endTime"
+      name="endTime"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Mood</ion-label>
+    <ion-range
+      min="1"
+      max="10"
+      formControlName="mood"
+      name="mood"
+    ></ion-range>
+    <ion-text>{{ activityForm.get('mood')?.value }}</ion-text>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Energy</ion-label>
+    <ion-range
+      min="1"
+      max="10"
+      formControlName="energy"
+      name="energy"
+    ></ion-range>
+    <ion-text>{{ activityForm.get('energy')?.value }}</ion-text>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Satiety</ion-label>
+    <ion-range
+      min="1"
+      max="10"
+      formControlName="satiety"
+      name="satiety"
+    ></ion-range>
+    <ion-text>{{ activityForm.get('satiety')?.value }}</ion-text>
+  </ion-item>
+
+  <ion-item>
+    <ion-input
+      label="Emotions (separated by comma)"
+      labelPlacement="floating"
+      placeholder="What did you feel after?"
+      formControlName="emotions"
+      name="emotions"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-textarea
+      label="Comment"
+      labelPlacement="floating"
+      placeholder="Tell more about this activity"
+      formControlName="comment"
+      name="comment"
+    ></ion-textarea>
+  </ion-item>
+</form>

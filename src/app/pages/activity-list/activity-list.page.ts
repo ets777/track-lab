@@ -3,7 +3,7 @@ import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, ActionSheetController } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { IActivity } from 'src/app/db';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { addDays, format } from 'date-fns';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import type { OverlayEventDetail } from '@ionic/core';
@@ -39,10 +39,11 @@ export class ActivityListPage {
     private route: ActivatedRoute,
     private markdownParserService: MarkdownParserService,
     private actionSheetCtrl: ActionSheetController,
+    private router: Router,
   ) { }
 
-  async ionViewWillEnter() {
-    let date = this.route.snapshot.paramMap.get('date');
+  async ionViewDidEnter() {
+    let date = this.route.snapshot.queryParamMap.get('date');
 
     if (!date) {
       const lastActivity = await this.activityService.getLast();
@@ -57,13 +58,22 @@ export class ActivityListPage {
   async goToPreviousDay() {
     const previousDate = addDays(new Date(this.currentDate), -1); 
     this.currentDate = format(previousDate, 'yyyy-MM-dd');
+    this.setQueryParams(this.currentDate);
     await this.setActivities();
   }
 
   async goToNextDay() {
     const nextDate = addDays(new Date(this.currentDate), 1);
     this.currentDate = format(nextDate, 'yyyy-MM-dd');
+    this.setQueryParams(this.currentDate);
     await this.setActivities();
+  }
+
+  setQueryParams(date: string) {
+    this.router.navigate(
+      [],
+      { queryParams: { date } },
+    );
   }
 
   async setActivities() {
@@ -78,7 +88,7 @@ export class ActivityListPage {
         this.deleteActivity(activityId);
         break;
       case 'edit':
-        console.log('edit');
+        this.goToEditPage(activityId);
         break;
       default:
         break;
@@ -92,6 +102,10 @@ export class ActivityListPage {
       this.activityService.delete(activityId);
       await this.setActivities();
     }
+  }
+
+  async goToEditPage(activityId: number) {
+    await this.router.navigate(['/activity-edit', activityId]);
   }
 
   async confirm() {

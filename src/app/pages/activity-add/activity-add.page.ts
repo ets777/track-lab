@@ -1,72 +1,45 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
-import { IonHeader, IonToolbar, IonTitle, IonInput, IonContent, IonItem, IonLabel, IonDatetime, IonRange, IonButton, IonText, IonTextarea, IonButtons } from "@ionic/angular/standalone";
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IActivity, IActivityCreateDTO } from 'src/app/db';
-import { format } from 'date-fns';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons } from "@ionic/angular/standalone";
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
+import { IActivityDTO } from 'src/app/db';
 
 @Component({
   selector: 'app-activity-add',
   templateUrl: './activity-add.page.html',
   styleUrl: './activity-add.page.scss',
-  imports: [IonButtons, IonTextarea, IonText, IonButton, IonRange, IonLabel, IonItem, IonContent, IonInput, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent],
 })
-export class ActivityAddPage implements OnInit {
-  private defaultValue: number = 5;
-  protected addActivityForm: FormGroup;
+export class ActivityAddPage {
+  @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
 
   constructor(
     private activityService: ActivityService,
-    private formBuilder: FormBuilder,
-  ) {
-    this.addActivityForm = this.formBuilder.group({
-      actions: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endTime: [''],
-      comment: [''],
-      date: ['', Validators.required],
-      mood: [this.defaultValue],
-      energy: [this.defaultValue],
-      satiety: [this.defaultValue],
-      emotions: [''],
-    });
-  }
-
-  async ngOnInit(): Promise<void> {
-    await this.setDefaultData();
-  }
+  ) { }
 
   async ionViewDidEnter() {
     const currentTime = new Time().toString().slice(0, 5);
     
-    this.addActivityForm.patchValue({
+    this.addFormRef?.activityForm?.patchValue({
       endTime: currentTime,
     });
   }
 
   async addActivity(): Promise<void> {
-    const activity: IActivityCreateDTO = this.addActivityForm.value;
-
-    await this.activityService.add(activity);
-    
-    await this.setDefaultData();
+    if (this.isFormValid()) {
+      const activity: IActivityDTO = this.addFormRef.activityForm.value;
+      await this.activityService.add(activity);
+      await this.resetForm();
+    }
   }
 
-  async setDefaultData(): Promise<void> {
-    const lastActivity = await this.activityService.getLast();
-    const currentTime = new Time().toString().slice(0, 5);
+  isFormValid() {
+    return this.addFormRef?.activityForm?.valid;
+  }
 
-    this.addActivityForm.patchValue({
-      actions: '',
-      startTime: lastActivity?.endTime ?? currentTime,
-      endTime: currentTime,
-      comment: '',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      mood: lastActivity?.mood || this.defaultValue,
-      energy: lastActivity?.energy || this.defaultValue,
-      satiety: lastActivity?.satiety || this.defaultValue,
-      emotions: '',
-    });
+  async resetForm() {
+    await this.addFormRef?.setDefaultData();
   }
 }
