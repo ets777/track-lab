@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3] - 2025-08-30
+
+### Fixed
+
+- Refreshering data while changing tabs
+- Pre-filling from last activity
+- Version of APK matchs with actual version of the app
+
 ## [0.1.2] - 2025-08-29
 
 ### Fixed
