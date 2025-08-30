@@ -29,7 +29,9 @@ export class ActivityCalendarPage implements OnInit {
   async ngOnInit() {
     this.startDate = format(addDays(new Date(), -6), 'yyyy-MM-dd');
     this.endDate = format(new Date(), 'yyyy-MM-dd');
+  }
 
+  async ionViewDidEnter() {
     await this.loadStats();
   }
 
