@@ -40,8 +40,8 @@ export class ActivityAddPage implements OnInit {
   async addActivity(): Promise<void> {
     const activity = this.addActivityForm.value;
 
-    this.activityService.add({
-      ...activity
+    await this.activityService.add({
+      ...activity,
     });
     
     await this.setDefaultData();
