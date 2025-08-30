@@ -37,6 +37,14 @@ export class ActivityAddPage implements OnInit {
     await this.setDefaultData();
   }
 
+  async ionViewDidEnter() {
+    const currentTime = new Time().toString().slice(0, 5);
+    
+    this.addActivityForm.patchValue({
+      endTime: currentTime,
+    });
+  }
+
   async addActivity(): Promise<void> {
     const activity = this.addActivityForm.value;
 
