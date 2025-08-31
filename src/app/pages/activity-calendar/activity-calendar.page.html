@@ -21,6 +21,19 @@
     ></ion-input>
   </ion-item>
 
+  <div class="controls">
+    <ion-button fill="clear" (click)="shiftDates(-1)">previous</ion-button>
+    <ion-chip 
+      [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
+      (click)="selectPeriod('week')"
+    >week</ion-chip>
+    <ion-chip 
+      [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
+      (click)="selectPeriod('month')"
+    >month</ion-chip>
+    <ion-button fill="clear" (click)="shiftDates(1)">next</ion-button>
+  </div>
+
   <ion-button
     expand="block"
     (click)="loadStats()"
