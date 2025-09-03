@@ -18,7 +18,7 @@ export class ActivityListPage {
   activities: IActivity[] = [];
   currentDate: string = '';
 
-  public actionSheetButtons = [
+  public activityActionSheetButtons = [
     {
       text: 'Edit',
       data: {
@@ -33,12 +33,21 @@ export class ActivityListPage {
       },
     },
   ];
+  public listActionSheetButtons = [
+    {
+      text: 'Export',
+      data: {
+        action: 'export',
+      },
+    },
+  ];
 
   constructor(
     private activityService: ActivityService,
     private route: ActivatedRoute,
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
+    private markdownParserService: MarkdownParserService,
   ) { }
 
   async ionViewDidEnter() {
@@ -79,15 +88,27 @@ export class ActivityListPage {
     this.activities = await this.activityService.getByDate(this.currentDate);
   }
 
-  async doAction(event: CustomEvent<OverlayEventDetail>, activityId: number) {
+  async doActivityAction(event: CustomEvent<OverlayEventDetail>, activityId: number) {
     const action = event.detail.data?.action;
 
     switch (action) {
       case 'delete':
-        this.deleteActivity(activityId);
+        await this.deleteActivity(activityId);
         break;
       case 'edit':
-        this.goToEditPage(activityId);
+        await this.goToEditPage(activityId);
+        break;
+      default:
+        break;
+    }
+  }
+
+  async doListAction(event: CustomEvent<OverlayEventDetail>) {
+    const action = event.detail.data?.action;
+
+    switch (action) {
+      case 'export':
+        await this.export();
         break;
       default:
         break;
@@ -127,5 +148,9 @@ export class ActivityListPage {
     const { role } = await actionSheet.onWillDismiss();
 
     return role === 'confirm';
+  }
+
+  async export() {
+    this.markdownParserService.exportMarkDownFile(this.currentDate);
   }
 }

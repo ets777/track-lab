@@ -3,6 +3,8 @@ import { ToastController } from '@ionic/angular';
 import { format } from 'date-fns';
 import { IActivityDTO } from '../db';
 import { ActivityService } from './activity.service';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
@@ -98,7 +100,7 @@ export class MarkdownParserService {
     async showMessage(message: string) {
         const toast = await this.toastCtrl.create({
             message,
-            duration: 8000,
+            duration: 7000,
             position: 'bottom',
             cssClass: 'tall-toast',
         });
@@ -109,5 +111,50 @@ export class MarkdownParserService {
         for (const activity of activities) {
             await this.activityService.add(activity);
         };
+    }
+
+    async exportMarkDownFile(date: string) {
+        const activities = await this.activityService.getByDate(date);
+        const content = '| Time  | Action                                              | Mood | Energy | Satiety | Emotion | Comment   |\n'
+            + '| ----- | --------------------------------------------------- | ---- | ------ | ------- | ------- | --------- |\n'
+            + activities.map(
+                (activity) => `| ${activity.startTime} | ${activity.actions} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions} | ${activity.comment} |`
+            ).join('\n');
+
+        if (Capacitor.isNativePlatform()) {
+            const [year, month] = date.split('-');
+            const dirPath = `TrackLab/${year}/${month}`;
+
+            await Filesystem.mkdir({
+                path: dirPath,
+                directory: Directory.Documents,
+                recursive: true,
+            }).catch(() => {
+                // ignore if already exists
+            });
+
+            const fullPath = `${dirPath}/${date}.md`;
+
+            const a = await Filesystem.writeFile({
+                path: fullPath,
+                data: content,
+                directory: Directory.Documents,
+                encoding: Encoding.UTF8,
+            });
+
+            this.showMessage(`File saved in Documents/${fullPath}`);
+
+            console.log(a);
+        } else {
+            const blob = new Blob([content], { type: 'text/markdown' });
+    
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = date + '.md';
+            a.click();
+    
+            URL.revokeObjectURL(url);
+        }
     }
 }
