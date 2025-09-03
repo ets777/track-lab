@@ -25,4 +25,8 @@ export const routes: Routes = [
     redirectTo: '/activity-list',
     pathMatch: 'full',
   },
+  {
+    path: 'settings',
+    loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)
+  },
 ];

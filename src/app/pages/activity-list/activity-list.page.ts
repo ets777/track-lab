@@ -17,7 +17,7 @@ import type { OverlayEventDetail } from '@ionic/core';
 export class ActivityListPage {
   activities: IActivity[] = [];
   currentDate: string = '';
-  isTestButtonShown: boolean = false;
+
   public actionSheetButtons = [
     {
       text: 'Edit',
@@ -37,7 +37,6 @@ export class ActivityListPage {
   constructor(
     private activityService: ActivityService,
     private route: ActivatedRoute,
-    private markdownParserService: MarkdownParserService,
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
   ) { }
@@ -128,19 +127,5 @@ export class ActivityListPage {
     const { role } = await actionSheet.onWillDismiss();
 
     return role === 'confirm';
-  }
-
-  test() {
-    this.markdownParserService
-      .readMarkdownFiles()
-      .subscribe(async (result) => {
-        for (const day of result) {
-          for (const activity of day) {
-            if (activity) {
-              await this.activityService.add(activity);
-            }
-          }
-        }
-      });
   }
 }

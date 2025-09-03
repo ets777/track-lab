@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <h2>Language</h2>
+  <ion-list></ion-list>
+
+  <h2>Export & Import</h2>
+  <ion-list>
+    <ion-item (click)="mdFileInput.click()">Import MD</ion-item>
+  </ion-list>
+
+  <input
+    #mdFileInput
+    type="file"
+    accept=".md"
+    hidden
+    (change)="onFileSelected($event)"
+  >
+
+</ion-content>

@@ -1,79 +1,113 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { concatMap, from, map, Observable, toArray } from 'rxjs';
-import { IActivity } from '../db';
+import { ToastController } from '@ionic/angular';
+import { format } from 'date-fns';
+import { IActivityDTO } from '../db';
 import { ActivityService } from './activity.service';
-import { addDays, format } from 'date-fns';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
     constructor(
-        private http: HttpClient,
+        private toastCtrl: ToastController,
         private activityService: ActivityService,
     ) { }
 
-    readMarkdownFiles() {
-        const startDay = '2025-08-06';
-        const endDay = '2025-08-24';
-        const days = [];
-        let day = startDay;
+    async parseMarkdownFile(fileName: string, content: string) {
+        const date = this.extractDateFromFileName(fileName);
 
-        while (day !== endDay) {
-            days.push(day);
-            day = format(addDays(new Date(day), 1), 'yyyy-MM-dd');
-        }        
+        if (!date) {
+            await this.showMessage('File name must contain a date in format yyyy-mm-dd');
+            return;
+        }
 
-        return from(days).pipe(
-            concatMap((day) => this.readMarkdownFile(day)),
-            toArray(),
-        );
+        const formattedDate = format(date, 'yyyy-MM-dd');
+
+        const activitiesByDate = await this.activityService.getByDate(formattedDate);
+
+        if (activitiesByDate?.length) {
+            await this.showMessage(`Date ${formattedDate} already has some activities. It must be empty before importing.`);
+            return;
+        }
+
+        const lines = content.split('\n');
+        let capturing = false;
+        let result: string[] = [];
+
+        for (const line of lines) {
+            if (!capturing && line.includes('---- |')) {
+                capturing = true;
+                continue; // Skip the marker line itself
+            }
+            if (capturing) {
+                if (!line.includes('|')) break;
+                result.push(line);
+            }
+        }
+
+        if (!result.length) {
+            await this.showMessage('File name must contain a date in format yyyy-mm-dd');
+            return;
+        }
+
+        const activities: IActivityDTO[] = result
+            .map((line) => {
+                const columns = line.split(' | ');
+
+                if (columns.length < 7) {
+                    return;
+                }
+
+                return {
+                    date: formattedDate,
+                    startTime: columns[0].replace('| ', '').trim(),
+                    actions: columns[1].replaceAll(' \\|', ',').trim(),
+                    mood: Number(columns[2].trim()),
+                    energy: Number(columns[3].trim()),
+                    satiety: Number(columns[4].trim()),
+                    emotions: columns[5].trim(),
+                    comment: columns[6].replace(' |', '').trim(),
+                } as IActivityDTO;
+            })
+            .filter((activity) => typeof activity !== 'undefined');
+
+        if (activities) {
+            try {
+                await this.addActivities(activities);
+            } catch (e) {
+                await this.showMessage('An error occurred while importing the file.');
+            }
+            await this.showMessage('File imported successfully.');
+        } else {
+            await this.showMessage('There\'s nothing to import.');
+        }
+
+        return activities;
     }
 
-    readMarkdownFile(day: string) {
-        const fileName = day + ' (J).md';
-        const filePath = `assets/markdown/${fileName}`;
-        return this.http.get(filePath, { responseType: 'text' })
-            .pipe(
-                map((content) => {
-                    const lines = content.split('\n');
-                    let capturing = false;
-                    let result: string[] = [];
+    extractDateFromFileName(fileName: string): Date | null {
+        const regex = /(\d{4})-(\d{2})-(\d{2})/;
+        const match = fileName.match(regex);
 
-                    for (const line of lines) {
-                        if (!capturing && line.includes('---- |')) {
-                            capturing = true;
-                            continue; // Skip the marker line itself
-                        }
-                        if (capturing) {
-                            if (line.includes('#')) break;
-                            result.push(line);
-                        }
-                    }
+        if (match) {
+            const [_, year, month, day] = match;
+            return new Date(Number(year), Number(month) - 1, Number(day));
+        }
 
-                    const activities = result
-                        .map((line) => {
-                            const columns = line.split(' | ');
-
-                            if (columns.length < 7) {
-                                return;
-                            }
-
-                            return {
-                                date: day,
-                                startTime: columns[0].replace('| ', '').trim(),
-                                actions: columns[1].replaceAll(' \\|', ',').trim(),
-                                mood: Number(columns[2].trim()),
-                                energy: Number(columns[3].trim()),
-                                satiety: Number(columns[4].trim()),
-                                emotions: columns[5].trim(),
-                                comment: columns[6].replace(' |', '').trim(),
-                            };
-                        })
-                        .filter((activity) => activity);
-
-                    return activities;
-                })
-            );
+        return null;
     }
 
+    async showMessage(message: string) {
+        const toast = await this.toastCtrl.create({
+            message,
+            duration: 8000,
+            position: 'bottom',
+            cssClass: 'tall-toast',
+        });
+        await toast.present();
+    }
+
+    async addActivities(activities: IActivityDTO[]) {
+        for (const activity of activities) {
+            await this.activityService.add(activity);
+        };
+    }
 }

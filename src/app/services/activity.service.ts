@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { db, IActivityDTO } from '../db';
 import { IActivity } from '../db';
 import { addDays, format } from 'date-fns';
+import Dexie from 'dexie';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
     async add(activity: IActivityDTO) {
-        const lastActivity = await this.getLast();
+        const lastActivity = await this.getLast(activity.date);
 
         if (lastActivity && !lastActivity.endTime && lastActivity.id) {
             await this.update(lastActivity.id, { endTime: activity.startTime });
@@ -23,10 +24,19 @@ export class ActivityService {
         return db.activities.toArray();
     }
 
-    async getLast() {
-        const lastActivity = await db.activities
-            .orderBy('[date+startTime]')
-            .last();
+    async getLast(date?: string) {
+        let lastActivity;
+
+        if (date) {
+            lastActivity = await db.activities
+                .where('[date+startTime]')
+                .belowOrEqual([date, Dexie.maxKey])
+                .last();
+        } else {
+            lastActivity = await db.activities
+                .orderBy('[date+startTime]')
+                .last();
+        }
 
         return lastActivity;
     }

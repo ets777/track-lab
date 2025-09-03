@@ -45,15 +45,17 @@ export class ActivityFormComponent {
   }
 
   async setDefaultData(): Promise<void> {
-    const lastActivity = await this.activityService.getLast();
+    const currentDate = format(new Date(), 'yyyy-MM-dd');
     const currentTime = new Time().toString().slice(0, 5);
+    const lastActivity = await this.activityService.getLast(currentDate);
+    const startFromCurrentTime = !lastActivity?.endTime || lastActivity.date !== currentDate;
 
     this.activityForm.patchValue({
       actions: '',
-      startTime: lastActivity?.endTime ?? currentTime,
+      startTime: startFromCurrentTime ? currentTime : lastActivity?.endTime,
       endTime: currentTime,
       comment: '',
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: currentDate,
       mood: lastActivity?.mood || this.defaultValue,
       energy: lastActivity?.energy || this.defaultValue,
       satiety: lastActivity?.satiety || this.defaultValue,
