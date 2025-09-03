@@ -5,24 +5,61 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-item>
-    <ion-label position="stacked">Start Date</ion-label>
-    <ion-input
-      placeholder="yyyy-mm-dd"
-      [(ngModel)]="startDate"
-    ></ion-input>
-  </ion-item>
+  <form class="filter-form" [formGroup]="filterForm">
+    <ion-item [class.invalid]="filterForm.get('startDate')?.invalid">
+      <ion-label position="stacked">Start Date</ion-label>
+      <ion-input
+        placeholder="yyyy-mm-dd"
+        formControlName="startDate"
+        [maskito]="dateMask"
+        [maskitoElement]="maskPredicate"
+      >
+        @if (filterForm.get('startDate')?.errors) {
+          <ion-icon 
+            class="warning-sign"
+            slot="end" 
+            src="assets/icon/warning-sign.svg"
+            slot="end"
+            (click)="openTooltip($event, 'startDate')"
+          ></ion-icon>
+        }
+      </ion-input>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="stacked">End Date</ion-label>
-    <ion-input
-      placeholder="yyyy-mm-dd"
-      [(ngModel)]="endDate"
-    ></ion-input>
-  </ion-item>
+    <ion-popover
+      [isOpen]="isTooltipOpen"
+      [event]="tooltipEvent"
+      size="auto"
+      (willDismiss)="closeTooltip()"
+    >
+      <ng-template>
+        <div class="validation-tooltip" [innerHTML]="tooltipMessage"></div>
+      </ng-template>
+    </ion-popover>
+  
+    <ion-item [class.invalid]="filterForm.get('endDate')?.invalid">
+      <ion-label position="stacked">End Date</ion-label>
+      <ion-input
+        placeholder="yyyy-mm-dd"
+        formControlName="endDate"
+        [maskito]="dateMask"
+        [maskitoElement]="maskPredicate"
+      >
+        @if (filterForm.get('endDate')?.errors) {
+          <ion-icon
+            class="warning-sign"
+            slot="end"
+            src="assets/icon/warning-sign.svg"
+            slot="end"
+            (click)="openTooltip($event, 'endDate')"
+          ></ion-icon>
+        }
+      </ion-input>
+    </ion-item>
+  </form>
 
   <div class="controls">
-    <ion-button fill="clear" (click)="shiftDates(-1)">previous</ion-button>
+    <ion-button fill="clear" (click)="shiftDates(-1)">prev</ion-button>
     <ion-chip 
       [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
       (click)="selectPeriod('week')"
@@ -37,6 +74,7 @@
   <ion-button
     expand="block"
     (click)="loadStats()"
+    [disabled]="!filterForm.valid"
   >Show Stats</ion-button>
 
   <ion-list>
