@@ -1,37 +1,97 @@
 <form [formGroup]="activityForm">
-  <ion-item>
+  <ion-popover
+    [isOpen]="isTooltipOpen"
+    [event]="tooltipEvent"
+    size="auto"
+    (willDismiss)="closeTooltip()"
+  >
+    <ng-template>
+      <div
+        class="validation-tooltip"
+        [innerHTML]="tooltipMessage"
+      ></div>
+    </ng-template>
+  </ion-popover>
+
+  <ion-item [class.invalid]="activityForm.get('actions')?.invalid">
     <ion-label position="stacked">{{ 'TK_ACTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})</ion-label>
     <ion-input
       formControlName="actions"
       name="actions"
-    ></ion-input>
+    >
+      @if (activityForm.get('actions')?.errors) {
+        <ion-icon
+          class="warning-sign"
+          slot="end"
+          src="assets/icon/warning-sign.svg"
+          slot="end"
+          (click)="openTooltip($event, 'actions')"
+        ></ion-icon>
+      }
+    </ion-input>
   </ion-item>
 
-  <ion-item>
+  <ion-item [class.invalid]="activityForm.get('date')?.invalid">
     <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
     <ion-input
       placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="date"
       name="date"
-    ></ion-input>
+      [maskito]="dateMask"
+      [maskitoElement]="maskPredicate"
+    >
+      @if (activityForm.get('date')?.errors) {
+        <ion-icon
+          class="warning-sign"
+          slot="end"
+          src="assets/icon/warning-sign.svg"
+          slot="end"
+          (click)="openTooltip($event, 'date')"
+        ></ion-icon>
+      }
+    </ion-input>
   </ion-item>
 
-  <ion-item>
+  <ion-item [class.invalid]="activityForm.get('startTime')?.invalid">
     <ion-label position="stacked">{{ 'TK_START_TIME' | translate }}</ion-label>
     <ion-input
       placeholder="{{ 'TK_HH_MM' | translate }}"
       formControlName="startTime"
       name="startTime"
-    ></ion-input>
+      [maskito]="timeMask"
+      [maskitoElement]="maskPredicate"
+    >
+      @if (activityForm.get('startTime')?.errors) {
+        <ion-icon
+          class="warning-sign"
+          slot="end"
+          src="assets/icon/warning-sign.svg"
+          slot="end"
+          (click)="openTooltip($event, 'startTime')"
+        ></ion-icon>
+      }
+    </ion-input>
   </ion-item>
 
-  <ion-item>
+  <ion-item [class.invalid]="activityForm.get('endTime')?.invalid">
     <ion-label position="stacked">{{ 'TK_END_TIME' | translate }}</ion-label>
     <ion-input
       placeholder="{{ 'TK_HH_MM' | translate }}"
       formControlName="endTime"
       name="endTime"
-    ></ion-input>
+      [maskito]="timeMask"
+      [maskitoElement]="maskPredicate"
+    >
+      @if (activityForm.get('endTime')?.errors) {
+        <ion-icon
+          class="warning-sign"
+          slot="end"
+          src="assets/icon/warning-sign.svg"
+          slot="end"
+          (click)="openTooltip($event, 'endTime')"
+        ></ion-icon>
+      }
+    </ion-input>
   </ion-item>
 
   <ion-item>

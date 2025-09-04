@@ -96,4 +96,14 @@ export class Time {
             throw 'Wrong format of time';
         }
     }
+
+    static isValid(time: string) {
+        const [hour, minute, second] = time.split(':').map(Number);
+
+        return (hour || hour === 0)
+            && (minute || minute === 0)
+            && (second >= 0 && second <= 59 || !second)
+            && minute >= 0 && minute <= 59
+            && hour >= 0 && hour <= 23;
+    }
 }

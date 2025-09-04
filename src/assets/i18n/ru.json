@@ -9,6 +9,7 @@
   "TK_DATE_FROM_MUST_NOT_BE_LATER_THAN_DATE_TO": "Дата от не должна быть позже даты до.",
   "TK_DATE_FROM": "От",
   "TK_DATE_MUST_BE_IN_FORMAT_YYYY_MM_DD": "Дата должна быть в формате ГГГГ-ММ-ДД",
+  "TK_TIME_MUST_BE_IN_FORMAT_HH_MM": "Время должно быть в формате ЧЧ:ММ.",
   "TK_DATE_RANGE_MUST_NOT_BE_BIGGER_THAN": "Разница дат не должна быть больше {{maxDaysRange}} дн. ({{daysDiff}} сейчас)",
   "TK_DATE_TO_MUST_NOT_BE_EARLIER_THAN_DATE_FROM": "Дата до не должна быть раньше даты от.",
   "TK_DATE_TO": "До",
@@ -52,5 +53,6 @@
   "TK_WEEK": "Неделя",
   "TK_WHAT_DID_YOU_FEEL": "Что вы чувствовали?",
   "TK_YES": "Да",
-  "TK_YYYY_MM_DD": "гггг-мм-дд"
+  "TK_YYYY_MM_DD": "гггг-мм-дд",
+  "TK_INVALID_TIME": "Неверное время."
 }
