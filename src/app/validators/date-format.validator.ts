@@ -10,25 +10,27 @@ export function dateFormatValidator(control: AbstractControl): ValidationErrors 
     if (!regex.test(control.value)) {
         return {
             dateFormat: {
-                message: 'Date must be in format yyyy-mm-dd.',
+                message: 'TK_DATE_MUST_BE_IN_FORMAT_YYYY_MM_DD',
             },
         };
     }
 
-    const date = new Date(control.value);
-    const [y, m, d] = control.value.split('-').map(Number);
-
-    if (
-        date.getFullYear() !== y
-        || date.getMonth() + 1 !== m
-        || date.getDate() !== d
-    ) {
+    if (!isDateValid(control.value)) {
         return {
             dateFormat: {
-                message: 'Invalid date.',
+                message: 'TK_INVALID_DATE',
             },
         };
     }
 
     return null;
+}
+
+function isDateValid(date: string) {
+    const dateObject = new Date(date);
+    const [y, m, d] = date.split('-').map(Number);
+
+    return dateObject.getFullYear() === y
+        && dateObject.getMonth() + 1 === m
+        && dateObject.getDate() === d
 }

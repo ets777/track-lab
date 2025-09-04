@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
 import { IActivity } from 'src/app/db';
 import { addDays, addMonths, format } from 'date-fns';
@@ -9,8 +9,8 @@ import { dateRangeValidator } from 'src/app/validators/date-range.validator';
 import { maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
-import { maskitoDateOptionsGenerator } from '@maskito/kit';
 import { MaskitoDirective } from '@maskito/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 type NumberKeys<T> = {
   [K in keyof T]: T[K] extends number ? K : never
@@ -23,7 +23,7 @@ type Period = 'week' | 'month';
 @Component({
   selector: 'app-activity-calendar',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective],
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule],
   templateUrl: './activity-calendar.page.html',
   styleUrl: './activity-calendar.page.scss',
 })
@@ -47,11 +47,20 @@ export class ActivityCalendarPage implements OnInit {
     private activityService: ActivityService,
     private formBuilder: FormBuilder,
     private toastCtrl: ToastController,
+    private translate: TranslateService,
   ) {
-    this.filterForm = this.formBuilder.group({
-      startDate: ['', [Validators.required, dateFormatValidator]],
-      endDate: ['', [Validators.required, dateFormatValidator]],
-    }, { validators: [dateRangeValidator, maxDateRangeValidator] });
+    this.filterForm = this.formBuilder.group(
+      {
+        startDate: ['', [Validators.required, dateFormatValidator]],
+        endDate: ['', [Validators.required, dateFormatValidator]],
+      }, 
+      { 
+        validators: [
+          dateRangeValidator, 
+          maxDateRangeValidator(31),
+        ] 
+      },
+    );
   }
 
   ngOnInit() {
@@ -155,19 +164,24 @@ export class ActivityCalendarPage implements OnInit {
     }
 
     if (errors['required']) {
-      errorMessages.push(`${fieldName} is required`);
+      errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
     }
 
     if (errors['maxDateRange']) {
-      errorMessages.push(errors['maxDateRange'].message);
+      errorMessages.push(
+        this.translate.instant(
+          errors['maxDateRange'].message,
+          errors['maxDateRange'].params,
+        ),
+      );
     }
 
     if (errors['dateRange']) {
-      errorMessages.push(errors['dateRange'].message);
+      errorMessages.push(this.translate.instant(errors['dateRange'].message));
     }
 
     if (errors['dateFormat']) {
-      errorMessages.push(errors['dateFormat'].message);
+      errorMessages.push(this.translate.instant(errors['dateFormat'].message));
     }
 
     this.tooltipMessage = errorMessages.map((message) => `- ${message}`).join('<br>');

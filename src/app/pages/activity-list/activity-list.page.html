@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Activity History</ion-title>
+    <ion-title>{{ 'TK_HISTORY' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button id="open-action-sheet">
         <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
@@ -8,7 +8,7 @@
     </ion-buttons>
     <ion-action-sheet
       trigger="open-action-sheet"
-      header="Actions"
+      header="{{ 'TK_ACTIONS' | translate }}"
       [buttons]="listActionSheetButtons"
       (didDismiss)="doListAction($event)"
     ></ion-action-sheet>
@@ -17,9 +17,9 @@
 
 <ion-content class="ion-padding">
   <ion-buttons>
-    <ion-button (click)="goToPreviousDay()">prev</ion-button>
+    <ion-button (click)="goToPreviousDay()">{{ 'TK_PREV' | translate }}</ion-button>
     <ion-text>{{ currentDate }}</ion-text>
-    <ion-button (click)="goToNextDay()">next</ion-button>
+    <ion-button (click)="goToNextDay()">{{ 'TK_NEXT' | translate }}</ion-button>
   </ion-buttons>
   <ion-list>
     @for (activity of activities; track activity.id) {
@@ -30,9 +30,9 @@
             {{ activity.startTime }}  @if (activity.endTime)  { - {{ activity.endTime }} }
           </p>
           <p>
-            Mood: {{ activity.mood || '-' }},
-            Energy: {{ activity.energy || '-' }},
-            Satiety: {{ activity.satiety || '-' }}
+            {{ 'TK_MOOD' | translate }}: {{ activity.mood || '-' }},
+            {{ 'TK_ENERGY' | translate }}: {{ activity.energy || '-' }},
+            {{ 'TK_SATIETY' | translate }}: {{ activity.satiety || '-' }}
           </p>
           <ion-buttons class="activity-item-buttons">
             <ion-button id="open-action-sheet-{{activity.id}}">
@@ -41,14 +41,14 @@
           </ion-buttons>
           <ion-action-sheet
             trigger="open-action-sheet-{{activity.id}}"
-            header="Actions"
+            header="{{ 'TK_ACTIONS' | translate }}"
             [buttons]="activityActionSheetButtons"
             (didDismiss)="doActivityAction($event, activity.id)"
           ></ion-action-sheet>
         </ion-label>
       </ion-item>
     } @empty {
-      <ion-text>There are no activities.</ion-text>
+      <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES' | translate }}</ion-text>
     }
   </ion-list>
 </ion-content>

@@ -5,12 +5,13 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
 import { IActivityDTO } from 'src/app/db';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-activity-add',
   templateUrl: './activity-add.page.html',
   styleUrl: './activity-add.page.scss',
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule],
 })
 export class ActivityAddPage {
   @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;

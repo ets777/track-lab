@@ -1,17 +1,30 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Settings</ion-title>
+    <ion-title>{{ 'TK_SETTINGS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
 
-  <h2>Language</h2>
-  <ion-list></ion-list>
-
-  <h2>Export & Import</h2>
+  <h2>{{ 'TK_LANGUAGE' | translate }}</h2>
   <ion-list>
-    <ion-item (click)="mdFileInput.click()">Import MD</ion-item>
+    <ion-item (click)="changeLanguage('en')">
+      {{ 'TK_ENGLISH' | translate }}
+      @if (getLanguage() == 'en') {
+        <ion-icon class="check" src="assets/icon/check.svg"></ion-icon>
+      }
+    </ion-item>
+    <ion-item (click)="changeLanguage('ru')">
+      {{ 'TK_RUSSIAN' | translate }}
+      @if (getLanguage() == 'ru') {
+        <ion-icon class="check" src="assets/icon/check.svg"></ion-icon>
+      }
+    </ion-item>
+  </ion-list>
+
+  <h2>{{ 'TK_IMPORT' | translate }}</h2>
+  <ion-list>
+    <ion-item (click)="mdFileInput.click()">{{ 'TK_IMPORT_MD' | translate }}</ion-item>
   </ion-list>
 
   <input

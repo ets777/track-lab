@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, ActionSheetController } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
@@ -7,12 +7,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { addDays, format } from 'date-fns';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import type { OverlayEventDetail } from '@ionic/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-activity-list',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonLabel, IonList, IonItem, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons],
+  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonLabel, IonList, IonItem, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule],
 })
 export class ActivityListPage {
   activities: IActivity[] = [];
@@ -20,13 +21,13 @@ export class ActivityListPage {
 
   public activityActionSheetButtons = [
     {
-      text: 'Edit',
+      text: this.translate.instant('TK_EDIT'),
       data: {
         action: 'edit',
       },
     },
     {
-      text: 'Delete',
+      text: this.translate.instant('TK_DELETE'),
       role: 'destructive',
       data: {
         action: 'delete',
@@ -35,7 +36,7 @@ export class ActivityListPage {
   ];
   public listActionSheetButtons = [
     {
-      text: 'Export',
+      text: this.translate.instant('TK_EXPORT_MD'),
       data: {
         action: 'export',
       },
@@ -48,6 +49,7 @@ export class ActivityListPage {
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
     private markdownParserService: MarkdownParserService,
+    private translate: TranslateService,
   ) { }
 
   async ionViewDidEnter() {
@@ -130,14 +132,14 @@ export class ActivityListPage {
 
   async confirm() {
     const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Are you sure?',
+      header: this.translate.instant('TK_ARE_YOU_SURE'),
       buttons: [
         {
-          text: 'Yes',
+          text: this.translate.instant('TK_YES'),
           role: 'confirm',
         },
         {
-          text: 'No',
+          text: this.translate.instant('TK_NO'),
           role: 'cancel',
         },
       ],

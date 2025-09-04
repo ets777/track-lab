@@ -1,23 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon } from '@ionic/angular/standalone';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
-import { IActivityDTO } from 'src/app/db';
-import { ActivityService } from 'src/app/services/activity.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
-  imports: [IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
 })
 export class SettingsPage implements OnInit {
 
   constructor(
     private markdownParserService: MarkdownParserService,
-    private activityService: ActivityService,
+    private translate: TranslateService,
   ) { }
 
   ngOnInit() {
@@ -37,5 +37,14 @@ export class SettingsPage implements OnInit {
     };
 
     reader.readAsText(file);
+  }
+
+  async changeLanguage(lang: string) {
+    await Preferences.set({ key: 'language', value: lang });
+    this.translate.use(lang);
+  }
+
+  getLanguage() {
+    return this.translate.getCurrentLang();
   }
 }

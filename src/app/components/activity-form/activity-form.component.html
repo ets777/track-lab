@@ -1,6 +1,6 @@
 <form [formGroup]="activityForm">
   <ion-item>
-    <ion-label position="stacked">Actions (separated by comma)</ion-label>
+    <ion-label position="stacked">{{ 'TK_ACTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})</ion-label>
     <ion-input
       formControlName="actions"
       name="actions"
@@ -8,34 +8,34 @@
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">Date</ion-label>
+    <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
     <ion-input
-      placeholder="yyyy-mm-dd"
+      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="date"
       name="date"
     ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">Start Time</ion-label>
+    <ion-label position="stacked">{{ 'TK_START_TIME' | translate }}</ion-label>
     <ion-input
-      placeholder="hh:mm"
+      placeholder="{{ 'TK_HH_MM' | translate }}"
       formControlName="startTime"
       name="startTime"
     ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">End Time</ion-label>
+    <ion-label position="stacked">{{ 'TK_END_TIME' | translate }}</ion-label>
     <ion-input
-      placeholder="hh:mm"
+      placeholder="{{ 'TK_HH_MM' | translate }}"
       formControlName="endTime"
       name="endTime"
     ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label>Mood</ion-label>
+    <ion-label>{{ 'TK_MOOD' | translate }}</ion-label>
     <ion-range
       min="1"
       max="10"
@@ -46,7 +46,7 @@
   </ion-item>
 
   <ion-item>
-    <ion-label>Energy</ion-label>
+    <ion-label>{{ 'TK_ENERGY' | translate }}</ion-label>
     <ion-range
       min="1"
       max="10"
@@ -57,7 +57,7 @@
   </ion-item>
 
   <ion-item>
-    <ion-label>Satiety</ion-label>
+    <ion-label>{{ 'TK_SATIETY' | translate }}</ion-label>
     <ion-range
       min="1"
       max="10"
@@ -69,9 +69,9 @@
 
   <ion-item>
     <ion-input
-      label="Emotions (separated by comma)"
+      label="{{ 'TK_EMOTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
       labelPlacement="floating"
-      placeholder="What did you feel after?"
+      placeholder="{{ 'TK_WHAT_DID_YOU_FEEL' | translate }}"
       formControlName="emotions"
       name="emotions"
     ></ion-input>
@@ -79,9 +79,9 @@
 
   <ion-item>
     <ion-textarea
-      label="Comment"
+      label="{{ 'TK_COMMENT' | translate }}"
       labelPlacement="floating"
-      placeholder="Tell more about this activity"
+      placeholder="{{ 'TK_TELL_MORE_ABOUT_THIS_ACTIVITY' | translate }}"
       formControlName="comment"
       name="comment"
     ></ion-textarea>

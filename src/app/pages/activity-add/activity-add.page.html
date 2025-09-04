@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Log Activity</ion-title>
+    <ion-title>{{ 'TK_NEW_ACTIVITY' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="addActivity()"
         [disabled]="!isFormValid()"
-      >Add</ion-button>
+      >{{ 'TK_ADD' | translate }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

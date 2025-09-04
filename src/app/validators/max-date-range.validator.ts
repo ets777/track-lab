@@ -1,38 +1,48 @@
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { differenceInDays } from 'date-fns';
 
-export function maxDateRangeValidator(formGroup: AbstractControl): ValidationErrors | null {
-    const maxDaysRange = 31;
-    const start = formGroup.get('startDate')?.value;
-    const end = formGroup.get('endDate')?.value;
+export function maxDateRangeValidator(maxDaysRange: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+        const start = control.get('startDate')?.value;
+        const end = control.get('endDate')?.value;
 
-    if (!start || !end) {
+        const resetErrors = () => {
+            if (control.get('startDate')?.hasError('maxDateRange')) {
+                removeControlError(control.get('startDate')!, 'maxDateRange');
+            }
+            if (control.get('endDate')?.hasError('maxDateRange')) {
+                removeControlError(control.get('endDate')!, 'maxDateRange');
+            }
+        };
+
+        if (!isDateValid(start) || !isDateValid(end)) {
+            resetErrors();
+            return null;
+        }
+
+        const daysDiff = Math.abs(differenceInDays(new Date(start), new Date(end)));
+
+        if (daysDiff > maxDaysRange) {
+            const error = {
+                message: 'TK_DATE_RANGE_MUST_NOT_BE_BIGGER_THAN',
+                params: {
+                    maxDaysRange,
+                    daysDiff,
+                },
+            };
+
+            addControlError(control.get('startDate')!, 'maxDateRange', error);
+            addControlError(control.get('endDate')!, 'maxDateRange', error);
+
+            return {
+                maxDateRange: error,
+            };
+        }
+
+        resetErrors();
+
         return null;
-    }
-
-    const daysDiff = Math.abs(differenceInDays(new Date(start), new Date(end)));
-
-    if (daysDiff > maxDaysRange) {
-        const error = {
-            message: `Date range must not be bigger than ${maxDaysRange} days (${daysDiff} now).`,
-        };
-
-        addControlError(formGroup.get('startDate')!, 'maxDateRange', error);
-        addControlError(formGroup.get('endDate')!, 'maxDateRange', error);
-
-        return {
-            maxDateRange: error,
-        };
-    }
-
-    if (formGroup.get('startDate')?.hasError('maxDateRange')) {
-        removeControlError(formGroup.get('startDate')!, 'maxDateRange');
-    }
-    if (formGroup.get('endDate')?.hasError('maxDateRange')) {
-        removeControlError(formGroup.get('endDate')!, 'maxDateRange');
-    }
-
-    return null;
+    };
 }
 
 function addControlError(control: AbstractControl, errorKey: string, errorValue: any = true) {
@@ -45,4 +55,13 @@ function removeControlError(control: AbstractControl, errorKey: string) {
 
     const { [errorKey]: removed, ...rest } = control.errors;
     control.setErrors(Object.keys(rest).length ? rest : null);
+}
+
+function isDateValid(date: string) {
+    const dateObject = new Date(date);
+    const [y, m, d] = date.split('-').map(Number);
+
+    return dateObject.getFullYear() === y
+        && dateObject.getMonth() + 1 === m
+        && dateObject.getDate() === d
 }

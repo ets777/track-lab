@@ -6,12 +6,13 @@ import { IActivity } from 'src/app/db';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
 import { format } from 'date-fns';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;

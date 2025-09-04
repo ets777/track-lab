@@ -1,5 +1,6 @@
 import { Component, EnvironmentInjector, inject } from '@angular/core';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { triangle, ellipse, square } from 'ionicons/icons';
 
@@ -7,7 +8,7 @@ import { triangle, ellipse, square } from 'ionicons/icons';
   selector: 'app-tabs',
   templateUrl: 'tabs.component.html',
   styleUrls: ['tabs.component.scss'],
-  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
+  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, TranslateModule],
 })
 export class TabsComponent {
   public environmentInjector = inject(EnvironmentInjector);

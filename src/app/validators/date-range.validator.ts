@@ -1,34 +1,39 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
-export function dateRangeValidator(formGroup: AbstractControl): ValidationErrors | null {
-    const start = formGroup.get('startDate')?.value;
-    const end = formGroup.get('endDate')?.value;
+export function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
+    const start = control.get('startDate')?.value;
+    const end = control.get('endDate')?.value;
 
-    if (!start || !end) {
+    const resetErrors = () => {
+        if (control.get('startDate')?.hasError('maxDateRange')) {
+            removeControlError(control.get('startDate')!, 'maxDateRange');
+        }
+        if (control.get('endDate')?.hasError('maxDateRange')) {
+            removeControlError(control.get('endDate')!, 'maxDateRange');
+        }
+    };
+
+    if (!isDateValid(start) || !isDateValid(end)) {
+        resetErrors();
         return null;
     }
 
     if (start > end) {
         addControlError(
-            formGroup.get('startDate')!, 
-            'dateRange', 
-            { message: 'Start Date must not be later than End Date.' },
+            control.get('startDate')!,
+            'dateRange',
+            { message: 'TK_DATE_FROM_MUST_NOT_BE_LATER_THAN_DATE_TO' },
         );
         addControlError(
-            formGroup.get('endDate')!, 
-            'dateRange', 
-            { message: 'End Date must not be earlier than Start Date.' },
+            control.get('endDate')!,
+            'dateRange',
+            { message: 'TK_DATE_TO_MUST_NOT_BE_EARLIER_THAN_DATE_FROM' },
         );
 
         return { dateRange: true };
     }
 
-    if (formGroup.get('startDate')?.hasError('dateRange')) {
-        removeControlError(formGroup.get('startDate')!, 'dateRange');
-    }
-    if (formGroup.get('endDate')?.hasError('dateRange')) {
-        removeControlError(formGroup.get('endDate')!, 'dateRange');
-    }
+    resetErrors();
 
     return null;
 }
@@ -43,4 +48,13 @@ function removeControlError(control: AbstractControl, errorKey: string) {
 
     const { [errorKey]: removed, ...rest } = control.errors;
     control.setErrors(Object.keys(rest).length ? rest : null);
+}
+
+function isDateValid(date: string) {
+    const dateObject = new Date(date);
+    const [y, m, d] = date.split('-').map(Number);
+
+    return dateObject.getFullYear() === y
+        && dateObject.getMonth() + 1 === m
+        && dateObject.getDate() === d
 }
