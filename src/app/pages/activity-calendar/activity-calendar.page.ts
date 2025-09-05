@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
+import { IonIcon, IonInput, IonChip, IonHeader, IonPopover, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
@@ -23,7 +24,7 @@ type Period = 'week' | 'month';
 @Component({
   selector: 'app-activity-calendar',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule],
+  imports: [IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule],
   templateUrl: './activity-calendar.page.html',
   styleUrl: './activity-calendar.page.scss',
 })

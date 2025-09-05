@@ -9,7 +9,6 @@
   "TK_DATE_FROM_MUST_NOT_BE_LATER_THAN_DATE_TO": "Date from must not be later than date to.",
   "TK_DATE_FROM": "Date from",
   "TK_DATE_MUST_BE_IN_FORMAT_YYYY_MM_DD": "Date must be in format YYYY-MM-DD.",
-  "TK_TIME_MUST_BE_IN_FORMAT_HH_MM": "Time must be in format HH:MM.",
   "TK_DATE_RANGE_MUST_NOT_BE_BIGGER_THAN": "Date range must not be bigger than {{maxDaysRange}} days ({{daysDiff}} now)",
   "TK_DATE_TO_MUST_NOT_BE_EARLIER_THAN_DATE_FROM": "Date to must not be earlier than date from",
   "TK_DATE_TO": "Date to",
@@ -27,6 +26,7 @@
   "TK_IMPORT_MD": "Import MD",
   "TK_IMPORT": "Import",
   "TK_INVALID_DATE": "Invalid date.",
+  "TK_INVALID_TIME": "Invalid time.",
   "TK_IS_REQUIRED": "Is required",
   "TK_JOURNAL": "Journal",
   "TK_LANGUAGE": "Language",
@@ -47,12 +47,13 @@
   "TK_START_TIME": "Start time",
   "TK_STATS": "Stats",
   "TK_TELL_MORE_ABOUT_THIS_ACTIVITY": "Tell more about this activity",
+  "TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD": "There are no activities in selected period.",
   "TK_THERE_ARE_NO_ACTIVITIES": "There are no activities.",
+  "TK_TIME_MUST_BE_IN_FORMAT_HH_MM": "Time must be in format HH:MM.",
   "TK_TOTAL_FOR_PERIOD": "Total for period",
   "TK_VALUE_IS_REQUIRED": "Value is required",
   "TK_WEEK": "Week",
   "TK_WHAT_DID_YOU_FEEL": "What did you feel?",
   "TK_YES": "Yes",
-  "TK_YYYY_MM_DD": "yyyy-mm-dd",
-  "TK_INVALID_TIME": "Invalid time."
+  "TK_YYYY_MM_DD": "yyyy-mm-dd"
 }

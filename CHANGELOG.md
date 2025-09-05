@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0] - 2025-09-05
+
+### Added
+
+- Editing and deleting activities
+- Validation messages and masks for time and date inputs
+- Changing weeks and months on the statistics page
+- Language switching (English and Russian)
+- Importing and exporting activities in Markdown format
+- Minor design changes
+
 ## [0.1.3] - 2025-08-30
 
 ### Fixed

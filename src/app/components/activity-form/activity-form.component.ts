@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover } from '@ionic/angular/standalone';
 import { IActivity } from 'src/app/db';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
@@ -17,7 +17,7 @@ import { timeFormatValidator } from 'src/app/validators/time-format.validator';
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
+  imports: [IonPopover, IonRange, IonTextarea, IonText, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
