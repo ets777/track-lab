@@ -5,19 +5,21 @@ import { IActivityDTO } from '../db';
 import { ActivityService } from './activity.service';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
+import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
     constructor(
         private toastCtrl: ToastController,
         private activityService: ActivityService,
+        private translate: TranslateService,
     ) { }
 
     async parseMarkdownFile(fileName: string, content: string) {
         const date = this.extractDateFromFileName(fileName);
 
         if (!date) {
-            await this.showMessage('File name must contain a date in format yyyy-mm-dd');
+            await this.showMessage('TK_FILE_NAME_MUST_CONTAIN_A_DATE_IN_FORMAT_YYYY_MM_DD');
             return;
         }
 
@@ -26,7 +28,10 @@ export class MarkdownParserService {
         const activitiesByDate = await this.activityService.getByDate(formattedDate);
 
         if (activitiesByDate?.length) {
-            await this.showMessage(`Date ${formattedDate} already has some activities. It must be empty before importing.`);
+            await this.showMessage(
+                'TK_DATE_DATE_ALREADY_HAS_SOME_ACTIVITIES_IT_MUST_BE_EMPTY_BEFORE_IMPORTING',
+                { date: formattedDate },
+            );
             return;
         }
 
@@ -46,7 +51,7 @@ export class MarkdownParserService {
         }
 
         if (!result.length) {
-            await this.showMessage('File name must contain a date in format yyyy-mm-dd');
+            await this.showMessage('TK_A_TABLE_WITH_DATA_WAS_NOT_FOUND');
             return;
         }
 
@@ -75,11 +80,11 @@ export class MarkdownParserService {
             try {
                 await this.addActivities(activities);
             } catch (e) {
-                await this.showMessage('An error occurred while importing the file.');
+                await this.showMessage('TK_AN_ERROR_OCCURRED_WHILE_IMPORTING_THE_FILE');
             }
-            await this.showMessage('File imported successfully.');
+            await this.showMessage('TK_FILE_IMPORTED_SUCCESSFULLY');
         } else {
-            await this.showMessage('There\'s nothing to import.');
+            await this.showMessage('TK_THERE_S_NOTHING_TO_IMPORT');
         }
 
         return activities;
@@ -97,9 +102,9 @@ export class MarkdownParserService {
         return null;
     }
 
-    async showMessage(message: string) {
+    async showMessage(message: string, params?: InterpolationParameters) {
         const toast = await this.toastCtrl.create({
-            message,
+            message: this.translate.instant(message, params),
             duration: 7000,
             position: 'bottom',
             cssClass: 'tall-toast',
@@ -115,8 +120,24 @@ export class MarkdownParserService {
 
     async exportMarkDownFile(date: string) {
         const activities = await this.activityService.getByDate(date);
-        const content = '| Time  | Action                                              | Mood | Energy | Satiety | Emotion | Comment   |\n'
-            + '| ----- | --------------------------------------------------- | ---- | ------ | ------- | ------- | --------- |\n'
+        const translationKeys = [
+            'TK_TIME',
+            'TK_ACTIONS',
+            'TK_MOOD',
+            'TK_ENERGY',
+            'TK_SATIETY',
+            'TK_EMOTIONS',
+            'TK_COMMENT',
+        ];
+
+        const titles = translationKeys.map((key) => this.translate.instant(key));
+        const contentTitle = titles.join(' | ');
+        const titleSeparator = titles
+            .map((title) => title.replace(/(.)/g, '-'))
+            .join(' | ');
+
+        const content = `| ${contentTitle} |\n`
+            + `| ${titleSeparator} |\n`
             + activities.map(
                 (activity) => `| ${activity.startTime} | ${activity.actions} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions} | ${activity.comment} |`
             ).join('\n');
