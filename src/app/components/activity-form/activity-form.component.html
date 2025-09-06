@@ -95,36 +95,33 @@
   </ion-item>
 
   <ion-item>
-    <ion-label>{{ 'TK_MOOD' | translate }}</ion-label>
+    <ion-label position="stacked">{{ 'TK_MOOD' | translate }} ({{ activityForm.get('mood')?.value }})</ion-label>
     <ion-range
       min="1"
       max="10"
       formControlName="mood"
       name="mood"
     ></ion-range>
-    <ion-text>{{ activityForm.get('mood')?.value }}</ion-text>
   </ion-item>
 
   <ion-item>
-    <ion-label>{{ 'TK_ENERGY' | translate }}</ion-label>
+    <ion-label position="stacked">{{ 'TK_ENERGY' | translate }} ({{ activityForm.get('energy')?.value }})</ion-label>
     <ion-range
       min="1"
       max="10"
       formControlName="energy"
       name="energy"
     ></ion-range>
-    <ion-text>{{ activityForm.get('energy')?.value }}</ion-text>
   </ion-item>
 
   <ion-item>
-    <ion-label>{{ 'TK_SATIETY' | translate }}</ion-label>
+    <ion-label position="stacked">{{ 'TK_SATIETY' | translate }} ({{ activityForm.get('satiety')?.value }})</ion-label>
     <ion-range
       min="1"
       max="10"
       formControlName="satiety"
       name="satiety"
     ></ion-range>
-    <ion-text>{{ activityForm.get('satiety')?.value }}</ion-text>
   </ion-item>
 
   <ion-item>

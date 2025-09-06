@@ -17,7 +17,7 @@ import { timeFormatValidator } from 'src/app/validators/time-format.validator';
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonPopover, IonRange, IonTextarea, IonText, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
+  imports: [IonPopover, IonRange, IonTextarea, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
