@@ -5,6 +5,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon 
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
+import { appVersion } from '../../../environments/version';
 
 @Component({
   selector: 'app-settings',
@@ -14,6 +15,7 @@ import { Preferences } from '@capacitor/preferences';
   imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
 })
 export class SettingsPage implements OnInit {
+  appVersion = appVersion;
 
   constructor(
     private markdownParserService: MarkdownParserService,
