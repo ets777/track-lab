@@ -156,25 +156,23 @@ export class MarkdownParserService {
 
             const fullPath = `${dirPath}/${date}.md`;
 
-            const a = await Filesystem.writeFile({
+            await Filesystem.writeFile({
                 path: fullPath,
                 data: content,
                 directory: Directory.Documents,
                 encoding: Encoding.UTF8,
             });
 
-            this.showMessage(`File saved in Documents/${fullPath}`);
-
-            console.log(a);
+            await this.showMessage(`File saved in Documents/${fullPath}`);
         } else {
             const blob = new Blob([content], { type: 'text/markdown' });
-    
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = date + '.md';
             a.click();
-    
+
             URL.revokeObjectURL(url);
         }
     }

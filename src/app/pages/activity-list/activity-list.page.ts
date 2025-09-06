@@ -153,6 +153,6 @@ export class ActivityListPage {
   }
 
   async export() {
-    this.markdownParserService.exportMarkDownFile(this.currentDate);
+    await this.markdownParserService.exportMarkDownFile(this.currentDate);
   }
 }
