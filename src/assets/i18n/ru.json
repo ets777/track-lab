@@ -26,6 +26,7 @@
   "TK_ENGLISH": "Английский",
   "TK_EXPORT_MD": "Экспортировать MD",
   "TK_FILE_IMPORTED_SUCCESSFULLY": "Файл импортирован успешно.",
+  "TK_FILE_MUST_CONTAIN_META_DATA_WITH_A_DATE_IN_FORMAT_YYYY_MM_DD": "Файл должен содержать мета данные с датой в формате гггг-мм-дд",
   "TK_FILE_NAME_MUST_CONTAIN_A_DATE_IN_FORMAT_YYYY_MM_DD": "Имя файла должно содержать дату в формате гггг-мм-дд",
   "TK_HH_MM": "чч:мм",
   "TK_HISTORY": "История",

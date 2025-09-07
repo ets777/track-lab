@@ -1,4 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { isDateValid } from '../functions/date';
 
 export function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
     const start = control.get('startDate')?.value;
@@ -48,13 +49,4 @@ function removeControlError(control: AbstractControl, errorKey: string) {
 
     const { [errorKey]: removed, ...rest } = control.errors;
     control.setErrors(Object.keys(rest).length ? rest : null);
-}
-
-function isDateValid(date: string) {
-    const dateObject = new Date(date);
-    const [y, m, d] = date.split('-').map(Number);
-
-    return dateObject.getFullYear() === y
-        && dateObject.getMonth() + 1 === m
-        && dateObject.getDate() === d
 }

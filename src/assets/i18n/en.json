@@ -26,6 +26,7 @@
   "TK_ENGLISH": "English",
   "TK_EXPORT_MD": "Export MD",
   "TK_FILE_IMPORTED_SUCCESSFULLY": "File imported successfully.",
+  "TK_FILE_MUST_CONTAIN_META_DATA_WITH_A_DATE_IN_FORMAT_YYYY_MM_DD": "File must contain meta data with a date in format yyyy-mm-dd",
   "TK_FILE_NAME_MUST_CONTAIN_A_DATE_IN_FORMAT_YYYY_MM_DD": "File name must contain a date in format yyyy-mm-dd",
   "TK_HH_MM": "hh:mm",
   "TK_HISTORY": "History",

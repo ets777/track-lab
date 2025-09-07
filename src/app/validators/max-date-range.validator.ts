@@ -1,5 +1,6 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { differenceInDays } from 'date-fns';
+import { isDateValid } from '../functions/date';
 
 export function maxDateRangeValidator(maxDaysRange: number): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -57,11 +58,3 @@ function removeControlError(control: AbstractControl, errorKey: string) {
     control.setErrors(Object.keys(rest).length ? rest : null);
 }
 
-function isDateValid(date: string) {
-    const dateObject = new Date(date);
-    const [y, m, d] = date.split('-').map(Number);
-
-    return dateObject.getFullYear() === y
-        && dateObject.getMonth() + 1 === m
-        && dateObject.getDate() === d
-}

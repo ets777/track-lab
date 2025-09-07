@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { format } from 'date-fns';
 import { IActivityDTO } from '../db';
 import { ActivityService } from './activity.service';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
+import { appVersion } from '../../environments/version';
+import { isDateValid } from '../functions/date';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
@@ -16,46 +17,77 @@ export class MarkdownParserService {
     ) { }
 
     async parseMarkdownFile(fileName: string, content: string) {
-        const date = this.extractDateFromFileName(fileName);
+        const lines = content.split('\n');
+        let date = this.extractDateFromFileName(fileName);
+        let capturingMetaData = false;
+        let version = '';
 
-        if (!date) {
-            await this.showMessage('TK_FILE_NAME_MUST_CONTAIN_A_DATE_IN_FORMAT_YYYY_MM_DD');
+        // looking for meta data
+        for (const line of lines) {
+            // start of meta data
+            if (!capturingMetaData && line.includes('---') && !line.includes('|')) {
+                capturingMetaData = true;
+                continue;
+            }
+            // content of meta data
+            if (capturingMetaData && line.includes(':')) {
+                const lineParts = line.split(':');
+
+                if (['Date', 'Дата'].includes(lineParts[0])) {
+                    date = lineParts[1].trim();
+                }
+                if (['Version', 'Версия'].includes(lineParts[0])) {
+                    version = lineParts[1].trim();
+                }
+            }
+            // end of meta data
+            if (capturingMetaData && line.includes('---') && !line.includes('|')) {
+                break;
+            }
+        }
+
+        console.log(date);
+
+        if (!date || !isDateValid(date)) {
+            await this.showMessage('TK_FILE_MUST_CONTAIN_META_DATA_WITH_A_DATE_IN_FORMAT_YYYY_MM_DD');
             return;
         }
 
-        const formattedDate = format(date, 'yyyy-MM-dd');
-
-        const activitiesByDate = await this.activityService.getByDate(formattedDate);
+        const activitiesByDate = await this.activityService.getByDate(date);
 
         if (activitiesByDate?.length) {
             await this.showMessage(
                 'TK_DATE_DATE_ALREADY_HAS_SOME_ACTIVITIES_IT_MUST_BE_EMPTY_BEFORE_IMPORTING',
-                { date: formattedDate },
+                { date },
             );
             return;
         }
 
-        const lines = content.split('\n');
-        let capturing = false;
-        let result: string[] = [];
+        let capturingTable = false;
+        let tableLines: string[] = [];
 
         for (const line of lines) {
-            if (!capturing && line.includes('---- |')) {
-                capturing = true;
-                continue; // Skip the marker line itself
+            // start of table
+            if (!capturingTable && line.includes('--- |')) {
+                capturingTable = true;
+                continue;
             }
-            if (capturing) {
-                if (!line.includes('|')) break;
-                result.push(line);
+            // content of table
+            if (capturingTable && line.includes('|')) {
+                tableLines.push(line);
+            }
+            // end of table
+            if (capturingTable && !line.includes('|')) {
+                break;
             }
         }
 
-        if (!result.length) {
+        if (!tableLines.length) {
             await this.showMessage('TK_A_TABLE_WITH_DATA_WAS_NOT_FOUND');
             return;
         }
 
-        const activities: IActivityDTO[] = result
+        const activities: IActivityDTO[] = tableLines
             .map((line) => {
                 const columns = line.split(' | ');
 
@@ -64,7 +96,7 @@ export class MarkdownParserService {
                 }
 
                 return {
-                    date: formattedDate,
+                    date,
                     startTime: columns[0].replace('| ', '').trim(),
                     actions: columns[1].replaceAll(' \\|', ',').trim(),
                     mood: Number(columns[2].trim()),
@@ -90,16 +122,16 @@ export class MarkdownParserService {
         return activities;
     }
 
-    extractDateFromFileName(fileName: string): Date | null {
+    extractDateFromFileName(fileName: string): string {
         const regex = /(\d{4})-(\d{2})-(\d{2})/;
         const match = fileName.match(regex);
 
         if (match) {
             const [_, year, month, day] = match;
-            return new Date(Number(year), Number(month) - 1, Number(day));
+            return `${year}-${month}-${day}`;
         }
 
-        return null;
+        return '';
     }
 
     async showMessage(message: string, params?: InterpolationParameters) {
@@ -119,8 +151,12 @@ export class MarkdownParserService {
     }
 
     async exportMarkDownFile(date: string) {
+        const metaData = `---\n`
+            + `${this.translate.instant('TK_DATE')}: ${date}\n`
+            + `${this.translate.instant('TK_VERSION')}: ${appVersion}\n`
+            + `---\n\n`;
         const activities = await this.activityService.getByDate(date);
-        const translationKeys = [
+        const tableTitleTranslationKeys = [
             'TK_TIME',
             'TK_ACTIONS',
             'TK_MOOD',
@@ -130,17 +166,19 @@ export class MarkdownParserService {
             'TK_COMMENT',
         ];
 
-        const titles = translationKeys.map((key) => this.translate.instant(key));
-        const contentTitle = titles.join(' | ');
-        const titleSeparator = titles
+        const tableTitles = tableTitleTranslationKeys.map((key) => this.translate.instant(key));
+        const tableContentTitle = tableTitles.join(' | ');
+        const tableTitleSeparator = tableTitles
             .map((title) => title.replace(/(.)/g, '-'))
             .join(' | ');
 
-        const content = `| ${contentTitle} |\n`
-            + `| ${titleSeparator} |\n`
+        const table = `| ${tableContentTitle} |\n`
+            + `| ${tableTitleSeparator} |\n`
             + activities.map(
                 (activity) => `| ${activity.startTime} | ${activity.actions} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions} | ${activity.comment} |`
             ).join('\n');
+
+        const content = metaData + table;
 
         if (Capacitor.isNativePlatform()) {
             const [year, month] = date.split('-');
