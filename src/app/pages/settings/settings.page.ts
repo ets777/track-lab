@@ -39,6 +39,7 @@ export class SettingsPage implements OnInit {
     };
 
     reader.readAsText(file);
+    input.value = '';
   }
 
   async changeLanguage(lang: string) {

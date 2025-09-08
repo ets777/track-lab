@@ -46,8 +46,6 @@ export class MarkdownParserService {
             }
         }
 
-        console.log(date);
-
         if (!date || !isDateValid(date)) {
             await this.showMessage('TK_FILE_MUST_CONTAIN_META_DATA_WITH_A_DATE_IN_FORMAT_YYYY_MM_DD');
             return;
