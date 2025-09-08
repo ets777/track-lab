@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AppComponent } from './app.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('AppComponent', () => {
   it('should create the app', async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [TranslateModule.forRoot(), AppComponent],
       providers: [provideRouter([])]
     }).compileComponents();
     
