@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.1] - 2025-09-08
+
+### Fixed
+
+- Missed translations
+- Ranges have the same length for any language
+- Information messages while export and import
+
+### Added
+
+- App info and link to home page in settings
+- Meta data in exported files (app version and date)
+
 ## [0.2.0] - 2025-09-05
 
 ### Added
@@ -34,7 +47,10 @@
 - Black status bar in light theme
 - Test button has been hidden
 - Pre-filling from last activity
-- Some validations were added
+
+### Added
+
+- Some validations
 
 ## [0.1.0] - 2025-08-25
 
