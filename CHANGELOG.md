@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2] - 2025-09-09
+
+### Fixed
+
+- Paths to assets
+- Default title and favicon replaced for web version
+
 ## [0.2.1] - 2025-09-08
 
 ### Fixed
