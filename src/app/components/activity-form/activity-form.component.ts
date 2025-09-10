@@ -13,6 +13,7 @@ import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { lowerCaseFirstLetter } from 'src/app/functions/string';
+import { actionSuggestions } from './action-suggestions';
 
 @Component({
   selector: 'app-activity-form',
@@ -40,7 +41,7 @@ export class ActivityFormComponent {
   tooltipEvent: any;
 
   filteredSuggestions: string[] = [];
-  private allSuggestions = ['TK_WORKED', 'TK_EXERCISED', 'TK_READ', 'TK_COOKED', 'TK_SLEPT'];
+  private allSuggestions = actionSuggestions;
   showSuggestions = false;
 
   constructor(
