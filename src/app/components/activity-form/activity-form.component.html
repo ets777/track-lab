@@ -18,6 +18,8 @@
     <ion-input
       formControlName="actions"
       name="actions"
+      (ionInput)="onActionsInput($event)"
+      (ionBlur)="hideSuggestions()"
     >
       @if (activityForm.get('actions')?.errors) {
         <ion-icon
@@ -31,6 +33,19 @@
     </ion-input>
   </ion-item>
 
+  @if (showSuggestions) {
+    <ion-list class="suggestions" lines="none">
+      @for (suggestion of filteredSuggestions; track suggestion) {
+        <ion-item
+          button
+          (click)="selectSuggestion(suggestion)"
+        >
+          {{ suggestion | translate }}
+        </ion-item>
+      }
+    </ion-list>
+  }
+  
   <ion-item [class.invalid]="activityForm.get('date')?.invalid">
     <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
     <ion-input

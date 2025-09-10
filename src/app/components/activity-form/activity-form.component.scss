@@ -15,3 +15,13 @@ ion-item.invalid {
 .validation-tooltip {
     padding: 5px 10px;
 }
+
+.suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 1000;
+    width: 90%;
+    max-height: 200px;
+    overflow-y: auto;
+}

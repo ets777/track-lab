@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover, IonList } from '@ionic/angular/standalone';
 import { IActivity } from 'src/app/db';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
@@ -12,12 +12,13 @@ import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
+import { lowerCaseFirstLetter } from 'src/app/functions/string';
 
 @Component({
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonPopover, IonRange, IonTextarea, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
+  imports: [IonList, IonPopover, IonRange, IonTextarea, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
@@ -37,6 +38,10 @@ export class ActivityFormComponent {
   isTooltipOpen = false;
   tooltipMessage = '';
   tooltipEvent: any;
+
+  filteredSuggestions: string[] = [];
+  private allSuggestions = ['TK_WORKED', 'TK_EXERCISED', 'TK_READ', 'TK_COOKED', 'TK_SLEPT'];
+  showSuggestions = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -134,5 +139,37 @@ export class ActivityFormComponent {
   closeTooltip() {
     this.isTooltipOpen = false;
     this.tooltipMessage = '';
+  }
+
+  onActionsInput(event: any) {
+    const actionsText = event.target.value;
+    const parts = actionsText.split(',');
+    const current = parts.at(-1).trim();
+
+    if (current.length > 0) {
+      this.filteredSuggestions = this.allSuggestions
+        .map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
+        .filter((suggestion) =>
+          suggestion.toLowerCase().startsWith(current.toLowerCase())
+        )
+        .slice(0, 5);
+      this.showSuggestions = this.filteredSuggestions.length > 0;
+    } else {
+      this.showSuggestions = false;
+    }
+  }
+
+  selectSuggestion(suggestion: string) {
+    let parts = this.activityForm.get('actions')?.value.split(',');
+    parts[parts.length - 1] = ' ' + suggestion;
+    this.activityForm.patchValue({
+      actions: parts.join(',').trim(),
+    });
+
+    this.showSuggestions = false;
+  }
+
+  hideSuggestions() {
+    setTimeout(() => (this.showSuggestions = false), 200); // delay to allow click
   }
 }
