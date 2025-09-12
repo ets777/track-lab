@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ 'TK_DATABASE' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (activities.length) {
+    <table>
+      <caption>
+        Activities
+      </caption>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (activity of activities; track activity.id) {
+          <tr>
+            <td>{{ activity.id }}</td>
+            <td>{{ actionsToString(activity.actions) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (actions.length) {
+    <table>
+      <caption>
+        Actions
+      </caption>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>name</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (action of actions; track action.id) {
+          <tr>
+            <td>{{ action.id }}</td>
+            <td>{{ action.name }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+  @if (activityActions.length) {
+    <table>
+      <caption>
+        ActivityActions
+      </caption>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>activityId</th>
+          <th>actionId</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (activityAction of activityActions; track activityAction.id) {
+          <tr>
+            <td>{{ activityAction.id }}</td>
+            <td>{{ activityAction.activityId }}</td>
+            <td>{{ activityAction.actionId }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</ion-content>

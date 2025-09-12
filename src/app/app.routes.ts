@@ -21,6 +21,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/activity-edit/activity-edit.page').then( m => m.ActivityEditPage)
   },
   {
+    path: 'database',
+    loadComponent: () => import('./pages/database/database.page').then( m => m.DatabasePage)
+  },
+  {
     path: '',
     redirectTo: '/activity-list',
     pathMatch: 'full',
