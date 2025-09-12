@@ -44,12 +44,12 @@ export class ActionService {
     return null;
   }
 
-  async addFromString(actions: string, activityId?: number) {
+  async addFromString(actionsString: string, activityId?: number) {
     const result = [];
-    const actionsArray = actions.split(',');
+    const actions = getActionsFromString(actionsString);
 
-    for (const action of actionsArray) {
-      const actionId = await this.add({ name: action }, activityId);
+    for (const action of actions) {
+      const actionId = await this.add(action, activityId);
       result.push(actionId);
     }
 
