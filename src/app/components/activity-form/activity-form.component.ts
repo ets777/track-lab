@@ -16,6 +16,7 @@ import { actionSuggestions } from './action-suggestions';
 import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { actionsToString } from 'src/app/functions/action';
+import { ActionService } from 'src/app/services/action.service';
 
 export type ActivityForm = {
   actions: string,
@@ -62,6 +63,7 @@ export class ActivityFormComponent {
     private formBuilder: FormBuilder,
     private activityService: ActivityService,
     private translate: TranslateService,
+    private actionService: ActionService,
   ) {
     this.activityForm = this.formBuilder.group({
       actions: ['', Validators.required],
@@ -77,6 +79,9 @@ export class ActivityFormComponent {
   }
 
   async ngOnInit() {
+    const actions = await this.actionService.getAll();
+    this.allSuggestions.unshift(...actions.map((action) => action.name));
+
     if (this.activity) {
       this.setActivityData(this.activity);
     } else {
