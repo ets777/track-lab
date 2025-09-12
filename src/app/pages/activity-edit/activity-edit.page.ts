@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActivityFormComponent } from 'src/app/components/activity-form/activity-form.component';
-import { IActivity } from 'src/app/db';
+import { ActivityForm, ActivityFormComponent } from 'src/app/components/activity-form/activity-form.component';
 import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { IActivity } from 'src/app/db/models/activity';
+import { ActionService } from 'src/app/services/action.service';
 
 @Component({
   selector: 'app-activity-edit',
@@ -36,14 +37,16 @@ export class ActivityEditPage {
   }
 
   async updateActivity(): Promise<void> {
-    if (this.isFormValid()) {
-      const activity = this.updateFormRef.activityForm.value;
-      await this.activityService.update(this.activityId, activity);
-      await this.router.navigate(
-        ['/activity-list'], 
-        { queryParams: { date: activity.date }},
-      );
+    if (!this.isFormValid()) {
+      return;
     }
+
+    const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
+    await this.activityService.update(this.activityId, activityFormValue);
+    await this.router.navigate(
+      ['/activity-list'], 
+      { queryParams: { date: activityFormValue.date }},
+    );
   }
 
   isFormValid() {

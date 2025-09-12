@@ -2,9 +2,8 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons } from "@ionic/angular/standalone";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
+import { ActivityForm, ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
-import { IActivityDTO } from 'src/app/db';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -29,11 +28,13 @@ export class ActivityAddPage {
   }
 
   async addActivity(): Promise<void> {
-    if (this.isFormValid()) {
-      const activity: IActivityDTO = this.addFormRef.activityForm.value;
-      await this.activityService.add(activity);
-      await this.resetForm();
+    if (!this.isFormValid()) {
+      return;
     }
+
+    const activityFormValue = this.addFormRef.activityForm.value as ActivityForm;
+    await this.activityService.add(activityFormValue);
+    await this.resetForm();
   }
 
   isFormValid() {

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IActivityDTO } from '../db';
 import { ActivityService } from './activity.service';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import { appVersion } from '../../environments/version';
 import { isDateValid } from '../functions/date';
+import { ActivityForm } from '../components/activity-form/activity-form.component';
+import { actionsToString } from '../functions/action';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
@@ -85,7 +86,7 @@ export class MarkdownParserService {
             return;
         }
 
-        const activities: IActivityDTO[] = tableLines
+        const activities: ActivityForm[] = tableLines
             .map((line) => {
                 const columns = line.split(' | ');
 
@@ -102,7 +103,7 @@ export class MarkdownParserService {
                     satiety: Number(columns[4].trim()),
                     emotions: columns[5].trim(),
                     comment: columns[6].replace(' |', '').trim(),
-                } as IActivityDTO;
+                } as ActivityForm;
             })
             .filter((activity) => typeof activity !== 'undefined');
 
@@ -142,7 +143,7 @@ export class MarkdownParserService {
         await toast.present();
     }
 
-    async addActivities(activities: IActivityDTO[]) {
+    async addActivities(activities: ActivityForm[]) {
         for (const activity of activities) {
             await this.activityService.add(activity);
         };
@@ -173,7 +174,7 @@ export class MarkdownParserService {
         const table = `| ${tableContentTitle} |\n`
             + `| ${tableTitleSeparator} |\n`
             + activities.map(
-                (activity) => `| ${activity.startTime} | ${activity.actions} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions} | ${activity.comment} |`
+                (activity) => `| ${activity.startTime} | ${actionsToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${activity.comment ?? ''} |`
             ).join('\n');
 
         const content = metaData + table;

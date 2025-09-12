@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover, IonList } from '@ionic/angular/standalone';
-import { IActivity } from 'src/app/db';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
 import { format } from 'date-fns';
@@ -14,6 +13,21 @@ import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { lowerCaseFirstLetter } from 'src/app/functions/string';
 import { actionSuggestions } from './action-suggestions';
+import { IActivity } from 'src/app/db/models/activity';
+import { ModelFormGroup } from 'src/app/types/model-form-group';
+import { actionsToString } from 'src/app/functions/action';
+
+export type ActivityForm = {
+  actions: string,
+  startTime: string,
+  endTime: string,
+  comment: string,
+  date: string,
+  mood: number,
+  energy: number,
+  satiety: number,
+  emotions: string,
+};
 
 @Component({
   selector: 'app-activity-form',
@@ -33,7 +47,7 @@ export class ActivityFormComponent {
     mode: 'HH:MM',
   });
 
-  public activityForm: FormGroup;
+  public activityForm: ModelFormGroup<ActivityForm>;
   private defaultValue: number = 5;
 
   isTooltipOpen = false;
@@ -91,7 +105,7 @@ export class ActivityFormComponent {
 
   setActivityData(activity: IActivity) {
     this.activityForm.patchValue({
-      actions: activity.actions,
+      actions: actionsToString(activity.actions),
       startTime: activity.startTime,
       endTime: activity.endTime,
       comment: activity.comment,
@@ -161,7 +175,12 @@ export class ActivityFormComponent {
   }
 
   selectSuggestion(suggestion: string) {
-    let parts = this.activityForm.get('actions')?.value.split(',');
+    let parts = this.activityForm.get('actions')?.value?.split(',') ?? [];
+
+    if (!parts.length) {
+      return;
+    }
+
     parts[parts.length - 1] = ' ' + suggestion;
     this.activityForm.patchValue({
       actions: parts.join(',').trim(),
@@ -171,6 +190,6 @@ export class ActivityFormComponent {
   }
 
   hideSuggestions() {
-    setTimeout(() => (this.showSuggestions = false), 200); // delay to allow click
+    setTimeout(() => (this.showSuggestions = false), 200);
   }
 }

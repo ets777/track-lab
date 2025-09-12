@@ -4,7 +4,6 @@ import { IonIcon, IonInput, IonChip, IonHeader, IonPopover, IonContent, IonItem,
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
-import { IActivity } from 'src/app/db';
 import { addDays, addMonths, format } from 'date-fns';
 import { dateRangeValidator } from 'src/app/validators/date-range.validator';
 import { maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
@@ -12,12 +11,10 @@ import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { IActivity } from 'src/app/db/models/activity';
 
-type NumberKeys<T> = {
-  [K in keyof T]: T[K] extends number ? K : never
-}[keyof T];
 
-type ActivityNumberKeys = Exclude<NumberKeys<IActivity>, undefined>;
+type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
 type Period = 'week' | 'month';
 
@@ -112,6 +109,7 @@ export class ActivityCalendarPage implements OnInit {
 
     const filteredValues = activities
       .map((activity) => activity[propertyName])
+      .filter((value) => typeof value !== 'undefined')
       .filter((value) => value > 0);
 
     const sum = filteredValues

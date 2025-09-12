@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, ActionSheetController } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
-import { IActivity } from 'src/app/db';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addDays, format } from 'date-fns';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import type { OverlayEventDetail } from '@ionic/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { IActivity } from 'src/app/db/models/activity';
+import { actionsToString } from 'src/app/functions/action';
 
 @Component({
   selector: 'app-activity-list',
@@ -16,6 +17,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   imports: [IonActionSheet, IonIcon, IonButton, IonText, IonLabel, IonList, IonItem, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule],
 })
 export class ActivityListPage {
+  actionsToString = actionsToString;
   activities: IActivity[] = [];
   currentDate: string = '';
 
@@ -121,7 +123,7 @@ export class ActivityListPage {
     const answer = await this.confirm();
 
     if (answer) {
-      this.activityService.delete(activityId);
+      await this.activityService.delete(activityId);
       await this.setActivities();
     }
   }
