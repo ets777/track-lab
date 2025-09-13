@@ -33,7 +33,7 @@ export class ActivityAddPage {
     }
 
     const activityFormValue = this.addFormRef.activityForm.value as ActivityForm;
-    await this.activityService.add(activityFormValue);
+    await this.activityService.addFromForm(activityFormValue);
     await this.resetForm();
   }
 

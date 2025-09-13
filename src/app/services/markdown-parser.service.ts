@@ -145,7 +145,7 @@ export class MarkdownParserService {
 
     async addActivities(activities: ActivityForm[]) {
         for (const activity of activities) {
-            await this.activityService.add(activity);
+            await this.activityService.addFromForm(activity);
         };
     }
 
@@ -200,7 +200,10 @@ export class MarkdownParserService {
                 encoding: Encoding.UTF8,
             });
 
-            await this.showMessage(`File saved in Documents/${fullPath}`);
+            await this.showMessage(
+                'TK_FILE_SAVED_IN_PATH', 
+                { path: 'Documents/' + fullPath },
+            );
         } else {
             const blob = new Blob([content], { type: 'text/markdown' });
 

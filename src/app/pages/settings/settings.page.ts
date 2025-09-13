@@ -6,6 +6,7 @@ import { MarkdownParserService } from 'src/app/services/markdown-parser.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
+import { DatabaseBackupService } from 'src/app/services/database-backup.service';
 
 @Component({
   selector: 'app-settings',
@@ -20,12 +21,13 @@ export class SettingsPage implements OnInit {
   constructor(
     private markdownParserService: MarkdownParserService,
     private translate: TranslateService,
+    private databaseBackupService: DatabaseBackupService,
   ) { }
 
   ngOnInit() {
   }
 
-  async onFileSelected(event: Event) {
+  async onMdFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
@@ -42,6 +44,23 @@ export class SettingsPage implements OnInit {
     input.value = '';
   }
 
+  async onTxtFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      const content = reader.result as string;
+
+      await this.databaseBackupService.restore(content);
+    };
+
+    reader.readAsText(file);
+    input.value = '';
+  }
+
   async changeLanguage(lang: string) {
     await Preferences.set({ key: 'language', value: lang });
     this.translate.use(lang);
@@ -49,5 +68,9 @@ export class SettingsPage implements OnInit {
 
   getLanguage() {
     return this.translate.getCurrentLang();
+  }
+
+  backupDatabase() {
+    this.databaseBackupService.backup();
   }
 }

@@ -13,9 +13,23 @@ export class ActivityService {
     constructor(
         private actionService: ActionService,
         private activityActionService: ActivityActionService,
-    ) {}
+    ) { }
 
-    async add(activityFormValue: ActivityForm) {
+    async add(activity: IActivityCreateDto | IActivityDb) {
+        return db.activities.add(activity);
+    }
+
+    async bulkAdd(activities: IActivityCreateDto[] | IActivityDb[]) {
+        const result = [];
+
+        for (const activity of activities) {
+            result.push(await this.add(activity));
+        }
+
+        return result;
+    }
+
+    async addFromForm(activityFormValue: ActivityForm) {
         const activity = this.prepareActivityFormValue(activityFormValue);
 
         if (!activity) {
@@ -47,6 +61,11 @@ export class ActivityService {
 
     async getAll() {
         const activities = await db.activities.toArray();
+        return activities;
+    }
+
+    async getAllEnriched() {
+        const activities = await this.getAll();
         return this.enrichAll(activities);
     }
 
@@ -159,5 +178,9 @@ export class ActivityService {
         }
 
         return result;
+    }
+
+    async clear() {
+        await db.activities.clear();
     }
 }

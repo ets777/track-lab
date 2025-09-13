@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IActionCreateDto } from '../db/models/action';
+import { IActionCreateDto, IActionDb } from '../db/models/action';
 import { db } from '../db/db';
 import { ActivityActionService } from './activity-action.service';
 import { getActionsFromString } from '../functions/action';
@@ -10,13 +10,27 @@ import { getActionsFromString } from '../functions/action';
 export class ActionService {
   constructor(private activityActionService: ActivityActionService) { }
 
-  async add(actionDto: IActionCreateDto, activityId?: number) {
+  async add(action: IActionCreateDto | IActionDb) {
+    return db.actions.add(action);
+  }
+
+  async bulkAdd(actions: IActionCreateDto[] | IActionDb[]) {
+    const result = [];
+
+    for (const action of actions) {
+      result.push(await this.add(action));
+    }
+
+    return result;
+  }
+
+  async addWithRelation(actionDto: IActionCreateDto, activityId: number) {
     const actionDuplication = await db.actions
       .where('name')
       .equalsIgnoreCase(actionDto.name)
       .first();
 
-    if (activityId && actionDuplication) {
+    if (actionDuplication) {
       await this.activityActionService.add({
         activityId,
         actionId: actionDuplication.id,
@@ -25,8 +39,8 @@ export class ActionService {
       return actionDuplication.id;
     }
 
-    if (activityId && !actionDuplication) {
-      const actionId = await db.actions.add(actionDto);
+    if (!actionDuplication) {
+      const actionId = await this.add(actionDto);
       this.activityActionService.add({
         activityId,
         actionId,
@@ -35,21 +49,15 @@ export class ActionService {
       return actionId;
     }
 
-    if (!activityId && !actionDuplication) {
-      const actionId = await db.actions.add(actionDto);
-
-      return actionId;
-    }
-
     return null;
   }
 
-  async addFromString(actionsString: string, activityId?: number) {
+  async addFromString(actionsString: string, activityId: number) {
     const result = [];
     const actions = getActionsFromString(actionsString);
 
     for (const action of actions) {
-      const actionId = await this.add(action, activityId);
+      const actionId = await this.addWithRelation(action, activityId);
       result.push(actionId);
     }
 
@@ -87,7 +95,7 @@ export class ActionService {
     }
 
     for (const action of actionsToAdd) {
-      await this.add(action, activityId);
+      await this.addWithRelation(action, activityId);
     }
   }
 
@@ -110,5 +118,9 @@ export class ActionService {
 
   async delete(id: number) {
     return db.actions.delete(id);
+  }
+
+  async clear() {
+    await db.actions.clear();
   }
 }

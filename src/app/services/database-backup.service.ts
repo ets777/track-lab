@@ -1,0 +1,214 @@
+import { Injectable } from '@angular/core';
+import { ActivityService } from './activity.service';
+import { ActionService } from './action.service';
+import { ActivityActionService } from './activity-action.service';
+import { decode, encode } from '../functions/crypto';
+import { format } from 'date-fns';
+import { appVersion } from '../../environments/version';
+import { AlertController } from '@ionic/angular';
+import { IActivityDb } from '../db/models/activity';
+import { IActionDb } from '../db/models/action';
+import { IActivityActionDb } from '../db/models/activity-action';
+import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
+import { Capacitor } from '@capacitor/core';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+
+type Backup = {
+    activities: IActivityDb[],
+    actions: IActionDb[],
+    activityActions: IActivityActionDb[],
+    version: string,
+};
+
+@Injectable({ providedIn: 'root' })
+export class DatabaseBackupService {
+    defaultPassword = '123';
+
+    constructor(
+        private activityService: ActivityService,
+        private actionService: ActionService,
+        private activityActionService: ActivityActionService,
+        private alertController: AlertController,
+        private translate: TranslateService,
+    ) { }
+
+    async backup() {
+        const all: Backup = {
+            activities: await this.activityService.getAll(),
+            actions: await this.actionService.getAll(),
+            activityActions: await this.activityActionService.getAll(),
+            version: appVersion,
+        };
+
+        const password = await this.askPasswordToSet();
+
+        if (password) {
+            const content = encode(all, password);
+            const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+            if (Capacitor.isNativePlatform()) {
+                const dirPath = 'TrackLab/backups';
+
+                await Filesystem.mkdir({
+                    path: dirPath,
+                    directory: Directory.Documents,
+                    recursive: true,
+                }).catch(() => {
+                    // ignore if already exists
+                });
+
+                const fullPath = `${dirPath}/${currentDate}.txt`;
+
+                await Filesystem.writeFile({
+                    path: fullPath,
+                    data: content,
+                    directory: Directory.Documents,
+                    encoding: Encoding.UTF8,
+                });
+
+                await this.showMessage(
+                    'TK_FILE_SAVED_IN_PATH', 
+                    { path: 'Documents/' + fullPath },
+                );
+            } else {
+                const blob = new Blob([content], { type: 'text/plain' });
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'backup_' + currentDate + '.txt';
+                a.click();
+
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+    }
+
+    async restore(content: string) {
+        // first try with default password
+        try {
+            const decodedWithDefaultPassword = decode(content, this.defaultPassword);
+    
+            if (decodedWithDefaultPassword) {
+                await this.fillDatabase(decodedWithDefaultPassword);
+                return;
+            }
+        } catch(e) {
+            // do nothing
+        }
+
+        const password = await this.askPasswordToRestore();
+
+        if (password) {
+            try {
+                await this.fillDatabase(decode(content, password));
+            } catch(e) {
+                await this.showMessage('TK_WRONG_PASSWORD');
+            }
+        }
+    }
+
+    async fillDatabase(backup: Backup) {
+        const confirmation = await this.askDatabaseToReset();
+
+        if (!confirmation) {
+            return;
+        }
+
+        await this.activityActionService.clear();
+        await this.actionService.clear();
+        await this.activityService.clear();
+
+        await this.activityActionService.bulkAdd(backup.activityActions);
+        await this.actionService.bulkAdd(backup.actions);
+        await this.activityService.bulkAdd(backup.activities);
+
+        await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
+    }
+
+    async askPasswordToRestore(): Promise<string | null> {
+        const alert = await this.alertController.create({
+            header: this.translate.instant('TK_ENTER_PASSWORD'),
+            inputs: [
+                {
+                    name: 'password',
+                    type: 'password',
+                    placeholder: this.translate.instant('TK_PASSWORD'),
+                },
+            ],
+            buttons: [
+                { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
+                { text: this.translate.instant('TK_OK'), role: 'ok' },
+            ],
+        });
+
+        await alert.present();
+
+        const { data, role } = await alert.onDidDismiss();
+
+        if (data?.values.password && role === 'ok') {
+            return data.values.password;
+        } else {
+            return null;
+        }
+    }
+
+    async askPasswordToSet(): Promise<string | null> {
+        const alert = await this.alertController.create({
+            header: this.translate.instant('TK_SET_PASSWORD'),
+            inputs: [
+                {
+                    name: 'password',
+                    type: 'password',
+                    placeholder: this.translate.instant('TK_PASSWORD'),
+                },
+            ],
+            buttons: [
+                { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
+                { text: this.translate.instant('TK_DON_T_SET'), role: 'no-password' },
+                { text: this.translate.instant('TK_OK'), role: 'ok' },
+            ],
+        });
+
+        await alert.present();
+
+        const { data, role } = await alert.onDidDismiss();
+
+        if (data?.values.password && role === 'ok') {
+            return data.values.password;
+        } else if (role === 'no-password' || !data?.values.password && role === 'ok') {
+            return this.defaultPassword;
+        } else {
+            return null;
+        }
+    }
+
+    async showMessage(message: string, params?: InterpolationParameters) {
+        const alert = await this.alertController.create({
+            header: this.translate.instant(message, params),
+            buttons: [
+                { text: this.translate.instant('TK_CLOSE'), role: 'close' },
+            ],
+        });
+
+        await alert.present();
+    }
+
+    async askDatabaseToReset(): Promise<boolean> {
+        const alert = await this.alertController.create({
+            header: this.translate.instant('TK_CONFIRMATION'),
+            subHeader: this.translate.instant('TK_BEFORE_RESTORING_ALL_YOUR_CURRENT_DATA_WILL_BE_ERASED_DO_YOU_WANT_TO_CONTINUE'),
+            buttons: [
+                { text: this.translate.instant('TK_YES'), role: 'yes' },
+                { text: this.translate.instant('TK_NO'), role: 'no' },
+            ],
+        });
+
+        await alert.present();
+
+        const { role } = await alert.onDidDismiss();
+
+        return role === 'yes';
+    }
+}

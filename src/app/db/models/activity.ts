@@ -1,3 +1,4 @@
+import { WithOptionalId } from "src/app/types/with-optional-id";
 import { IAction } from "./action";
 
 export interface IActivityDb {
@@ -12,7 +13,7 @@ export interface IActivityDb {
     comment?: string;
 }
 
-export type IActivityCreateDto = Omit<IActivityDb, 'id'>;
+export type IActivityCreateDto = WithOptionalId<IActivityDb>;
 
 export interface IActivity extends IActivityDb {
     actions: IAction[];

@@ -1,13 +1,23 @@
 import { Injectable } from '@angular/core';
-import { IActivityActionCreateDto } from '../db/models/activity-action';
+import { IActivityActionCreateDto, IActivityActionDb } from '../db/models/activity-action';
 import { db } from '../db/db';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ActivityActionService {
-  async add(activityAction: IActivityActionCreateDto) {
+  async add(activityAction: IActivityActionCreateDto | IActivityActionDb) {
     return db.activityActions.add(activityAction);
+  }
+
+  async bulkAdd(activityActions: IActivityActionCreateDto[] | IActivityActionDb[]) {
+    const result = [];
+
+    for (const activityAction of activityActions) {
+      result.push(await this.add(activityAction));
+    }
+
+    return result;
   }
 
   async get(id: number) {
@@ -41,5 +51,9 @@ export class ActivityActionService {
       .where('activityId')
       .equals(activityId)
       .delete();
+  }
+
+  async clear() {
+    await db.activityActions.clear();
   }
 }

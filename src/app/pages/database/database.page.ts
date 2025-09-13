@@ -31,7 +31,7 @@ export class DatabasePage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.activities = await this.activityService.getAll();
+    this.activities = await this.activityService.getAllEnriched();
     this.actions = await this.actionService.getAll();
     this.activityActions = await this.activityActionService.getAll();
   }

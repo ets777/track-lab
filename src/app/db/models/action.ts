@@ -1,10 +1,10 @@
+import { WithOptionalId } from "src/app/types/with-optional-id";
+
 export interface IActionDb {
     id: number;
     name: string;
 }
 
-export interface IAction extends IActionDb {}
+export type IActionCreateDto = WithOptionalId<IActionDb>;
 
-export interface IActionCreateDto {
-    name: string;
-}
+export interface IAction extends IActionDb {}

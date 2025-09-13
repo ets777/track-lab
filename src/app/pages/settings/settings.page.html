@@ -22,9 +22,17 @@
     </ion-item>
   </ion-list>
 
-  <h2>{{ 'TK_IMPORT' | translate }}</h2>
+  <h2>{{ 'TK_IMPORT_EXPORT' | translate }}</h2>
   <ion-list>
     <ion-item (click)="mdFileInput.click()">{{ 'TK_IMPORT_ACTIVITIES_FROM_MD' | translate }}</ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-item (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-item (click)="txtFileInput.click()">{{ 'TK_RESTORE_DATABASE' | translate }}</ion-item>
   </ion-list>
 
   <input
@@ -32,7 +40,14 @@
     type="file"
     accept=".md"
     hidden
-    (change)="onFileSelected($event)"
+    (change)="onMdFileSelected($event)"
+  >
+  <input
+    #txtFileInput
+    type="file"
+    accept=".txt"
+    hidden
+    (change)="onTxtFileSelected($event)"
   >
 
   <h2>{{ 'TK_APP_INFO' | translate}}</h2>
