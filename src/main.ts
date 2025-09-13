@@ -8,6 +8,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { importProvidersFrom } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -23,5 +24,6 @@ bootstrapApplication(AppComponent, {
       }),
       fallbackLang: 'en'
     }),
+    provideCharts(withDefaultRegisterables())
   ],
 });

@@ -39,10 +39,12 @@
     "@maskito/kit": "^3.10.3",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
+    "chart.js": "^4.5.0",
     "crypto-js": "^4.2.0",
     "date-fns": "2.3.0",
     "dexie": "^4.2.0",
     "ionicons": "^7.0.0",
+    "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

@@ -12,7 +12,8 @@ import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
-
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration } from 'chart.js';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
@@ -21,7 +22,7 @@ type Period = 'week' | 'month';
 @Component({
   selector: 'app-activity-calendar',
   standalone: true,
-  imports: [IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule],
+  imports: [IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective],
   templateUrl: './activity-calendar.page.html',
   styleUrl: './activity-calendar.page.scss',
 })
@@ -33,13 +34,22 @@ export class ActivityCalendarPage implements OnInit {
     async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
 
   activities: IActivity[] = [];
-  activitiesGroupedByDate: { date: string, activities: IActivity[] }[] = [];
+  activitiesGroupedByDate: {
+    date: string,
+    activities: IActivity[],
+    avgMood: number,
+    avgSatiety: number,
+    avgEnergy: number,
+  }[] = [];
   selectedPeriod: Period = 'week';
   filterForm: FormGroup;
 
   isTooltipOpen = false;
   tooltipMessage = '';
   tooltipEvent: any;
+
+  dates: string[] = [];
+  chartData!: ChartConfiguration<'line'>['data'];
 
   constructor(
     private activityService: ActivityService,
@@ -51,12 +61,12 @@ export class ActivityCalendarPage implements OnInit {
       {
         startDate: ['', [Validators.required, dateFormatValidator]],
         endDate: ['', [Validators.required, dateFormatValidator]],
-      }, 
-      { 
+      },
+      {
         validators: [
-          dateRangeValidator, 
+          dateRangeValidator,
           maxDateRangeValidator(31),
-        ] 
+        ]
       },
     );
   }
@@ -95,11 +105,27 @@ export class ActivityCalendarPage implements OnInit {
     const activities = await this.activityService.getByDate(startDate, endDate);
 
     this.activities = activities;
-    this.activitiesGroupedByDate = [...new Set(activities.map((activity) => activity.date))]
-      .map((date) => ({
-        date: date,
-        activities: activities.filter((activity) => activity.date == date),
-      }));
+    this.dates = [...new Set(activities.map((activity) => activity.date))];
+    this.activitiesGroupedByDate = this.dates
+      .map((date) => {
+        const activitiesAtDate = activities.filter((activity) => activity.date == date);
+        return {
+          date: date,
+          activities: activitiesAtDate,
+          avgEnergy: this.getAverageValue(activitiesAtDate, 'energy'),
+          avgMood: this.getAverageValue(activitiesAtDate, 'mood'),
+          avgSatiety: this.getAverageValue(activitiesAtDate, 'satiety'),
+        };
+      });
+
+    this.chartData = {
+      labels: this.dates,
+      datasets: [
+        { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: 'Avg. Mood' },
+        { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: 'Avg. Energy' },
+        { data: this.activitiesGroupedByDate.map((activity) => activity.avgSatiety), label: 'Avg. Satiety' },
+      ]
+    }
   }
 
   getAverageValue(activities: IActivity[], propertyName: ActivityNumberKeys) {

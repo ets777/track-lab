@@ -88,6 +88,13 @@
     [disabled]="!filterForm.valid"
   >{{ 'TK_SHOW' | translate }}</ion-button>
 
+  <canvas
+    baseChart
+    [data]="chartData"
+    type="line"
+  >
+  </canvas>
+
   <ion-list>
     @if (activities.length) {
       <ion-item>
