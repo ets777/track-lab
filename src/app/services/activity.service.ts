@@ -7,12 +7,14 @@ import { ActivityForm } from '../components/activity-form/activity-form.componen
 import { ActionService } from './action.service';
 import { IAction } from '../db/models/action';
 import { ActivityActionService } from './activity-action.service';
+import { HookService } from './hook.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
     constructor(
         private actionService: ActionService,
         private activityActionService: ActivityActionService,
+        private hookService: HookService,
     ) { }
 
     async add(activity: IActivityCreateDto | IActivityDb) {
@@ -46,6 +48,8 @@ export class ActivityService {
 
         await this.actionService.addFromString(activityFormValue.actions, activityId);
 
+        this.hookService.emit({ type: 'activity.added', payload: { activityId } });
+
         return activityId;
     }
 
@@ -61,6 +65,14 @@ export class ActivityService {
 
     async getAll() {
         const activities = await db.activities.toArray();
+        return activities;
+    }
+
+    async getAllMaxMood() {
+        const activities = await db.activities
+            .where('mood')
+            .equals(10)
+            .toArray();
         return activities;
     }
 
@@ -110,7 +122,11 @@ export class ActivityService {
             id,
         );
 
-        return db.activities.update(id, changes);
+        const rowsAffected = await db.activities.update(id, changes);
+
+        this.hookService.emit({ type: 'activity.updated', payload: { activityId: id } });
+
+        return rowsAffected;
     }
 
     async delete(id: number) {
@@ -182,5 +198,9 @@ export class ActivityService {
 
     async clear() {
         await db.activities.clear();
+    }
+
+    async count() {
+        return db.activities.count();
     }
 }

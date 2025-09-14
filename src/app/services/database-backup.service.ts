@@ -12,24 +12,30 @@ import { IActivityActionDb } from '../db/models/activity-action';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import { Capacitor } from '@capacitor/core';
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { IAchievementDb } from '../db/models/achievement';
+import { AchievementService } from './achievement.service';
+import { HookService } from './hook.service';
 
 type Backup = {
     activities: IActivityDb[],
     actions: IActionDb[],
     activityActions: IActivityActionDb[],
+    achievements: IAchievementDb[],
     version: string,
 };
 
 @Injectable({ providedIn: 'root' })
 export class DatabaseBackupService {
-    defaultPassword = '123';
+    defaultPassword = 'etsbox.com';
 
     constructor(
         private activityService: ActivityService,
         private actionService: ActionService,
         private activityActionService: ActivityActionService,
+        private achievementService: AchievementService,
         private alertController: AlertController,
         private translate: TranslateService,
+        private hookService: HookService,
     ) { }
 
     async backup() {
@@ -37,6 +43,7 @@ export class DatabaseBackupService {
             activities: await this.activityService.getAll(),
             actions: await this.actionService.getAll(),
             activityActions: await this.activityActionService.getAll(),
+            achievements: await this.achievementService.getAll(),
             version: appVersion,
         };
 
@@ -81,6 +88,11 @@ export class DatabaseBackupService {
 
                 URL.revokeObjectURL(url);
             }
+
+            this.hookService.emit({ 
+                type: 'backup.made', 
+                payload: { isPasswordSet: password !== this.defaultPassword },
+            });
         }
         
     }
@@ -119,10 +131,12 @@ export class DatabaseBackupService {
         await this.activityActionService.clear();
         await this.actionService.clear();
         await this.activityService.clear();
+        await this.achievementService.clear();
 
         await this.activityActionService.bulkAdd(backup.activityActions);
         await this.actionService.bulkAdd(backup.actions);
         await this.activityService.bulkAdd(backup.activities);
+        await this.achievementService.bulkAdd(backup.achievements);
 
         await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
     }

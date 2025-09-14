@@ -10,6 +10,8 @@ import { ActionService } from 'src/app/services/action.service';
 import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { actionsToString } from 'src/app/functions/action';
+import { IAchievement } from 'src/app/db/models/achievement';
+import { AchievementService } from 'src/app/services/achievement.service';
 
 @Component({
   selector: 'app-database',
@@ -23,17 +25,20 @@ export class DatabasePage implements OnInit {
   activities: IActivity[] = [];
   actions: IAction[] = [];
   activityActions: IActivityAction[] = [];
+  achievements: IAchievement[] = [];
 
   constructor(
     private activityService: ActivityService,
     private actionService: ActionService,
     private activityActionService: ActivityActionService,
+    private achievementService: AchievementService,
   ) { }
 
   async ngOnInit() {
     this.activities = await this.activityService.getAllEnriched();
     this.actions = await this.actionService.getAll();
     this.activityActions = await this.activityActionService.getAll();
+    this.achievements = await this.achievementService.getAll();
   }
 
 }

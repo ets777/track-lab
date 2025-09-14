@@ -3,11 +3,13 @@ import { IActivityCreateDto, IActivityDb } from './models/activity';
 import { IActionCreateDto, IActionDb } from './models/action';
 import { IActivityActionCreateDto, IActivityActionDb } from './models/activity-action';
 import { getActionsFromString } from '../functions/action';
+import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
 
 export class MyAppDatabase extends Dexie {
     activities!: Table<IActivityDb, number, IActivityCreateDto>;
     actions!: Table<IActionDb, number, IActionCreateDto>;
     activityActions!: Table<IActivityActionDb, number, IActivityActionCreateDto>;
+    achievements!: Table<IAchievementDb, number, IAchievementCreateDto>;
 
     constructor(databaseName: string) {
         super(databaseName);
@@ -19,9 +21,10 @@ export class MyAppDatabase extends Dexie {
         });
 
         this.version(2).stores({
-            activities: '++id, date, [date+startTime]',
+            activities: '++id, date, [date+startTime], mood',
             actions: '++id, name',
             activityActions: '++id, activityId, actionId, [activityId+actionId]',
+            achievements: '++id, code, unlocked',
         }).upgrade(async (tx) => {
             const allActivities = await tx.table('activities').toArray();
 

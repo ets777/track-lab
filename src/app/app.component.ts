@@ -6,6 +6,8 @@ import { TabsComponent } from './components/tabs/tabs.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
+import { AchievementService } from './services/achievement.service';
+import { HookService } from './services/hook.service';
 
 @Component({
   selector: 'app-root',
@@ -13,12 +15,16 @@ import { Device } from '@capacitor/device';
   imports: [IonApp, IonRouterOutlet, TabsComponent],
 })
 export class AppComponent implements OnInit {
-  constructor(private translate: TranslateService) {
+  constructor(
+    private translate: TranslateService,
+    private achievementService: AchievementService,
+  ) {
     this.setAdaptiveStatusBarColor();
   }
   
   async ngOnInit() {
     this.setLanguages();
+    await this.achievementService.init();
   }
 
   setAdaptiveStatusBarColor() {
