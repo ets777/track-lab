@@ -1,0 +1,59 @@
+.achievement-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    right: -10%;
+    transform: translateX(-50%);
+    background: #666;
+    padding: 10px 20px;
+    border-radius: 10px;
+    animation: fadeInOut 6s ease;
+
+    .title {
+        font-size: .75rem;
+        color: #eee;
+        margin-bottom: 5px;
+    }
+
+    .body {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 10px;
+
+        .icon {
+            font-size: 2.5rem;
+            text-shadow:
+                -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
+        }
+
+        .text {
+            color: #fff;
+        }
+    }
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 50px);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50px);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translate(-50%, -50px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, 50px);
+    }
+}

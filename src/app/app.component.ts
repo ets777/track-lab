@@ -8,11 +8,12 @@ import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
 import { AchievementService } from './services/achievement.service';
 import { HookService } from './services/hook.service';
+import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent],
 })
 export class AppComponent implements OnInit {
   constructor(

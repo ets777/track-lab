@@ -2,12 +2,16 @@
 import { Injectable } from '@angular/core';
 import { HookService } from './hook.service';
 import { db } from '../db/db';
-import { IAchievementCreateDto, IAchievementDb } from '../db/models/achievement';
+import { IAchievement, IAchievementCreateDto, IAchievementDb } from '../db/models/achievement';
 import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
+import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService {
+    private achievementEvent$ = new Subject<IAchievement>();
+    private queue: IAchievement[] = [];
+    private showing = false;
 
     constructor(
         private hookService: HookService,
@@ -24,6 +28,35 @@ export class AchievementService {
         );
     }
 
+    emit(achievement: IAchievement) {
+        this.achievementEvent$.next(achievement);
+    }
+
+    onEvent() {
+        return this.achievementEvent$.asObservable();
+    }
+
+    enqueue(achievement: IAchievement) {
+        this.queue.push(achievement);
+        this.processQueue();
+    }
+
+    private processQueue() {
+        if (this.showing || this.queue.length === 0) {
+            return;
+        }
+
+        const next = this.queue.shift()!;
+        this.showing = true;
+
+        this.achievementEvent$.next(next);
+
+        setTimeout(() => {
+            this.showing = false;
+            this.processQueue();
+        }, 5000);
+    }
+
     async init() {
         // await this.clear();
         const achievements = await this.getAll();
@@ -31,29 +64,29 @@ export class AchievementService {
         // first launch
         if (achievements.length === 0) {
             await this.bulkAdd(defaultAchievements);
-            this.hookService.emit({ 
+            this.hookService.emit({
                 type: 'achievement.init',
                 payload: {
                     newAchievementCodes: defaultAchievements.map((achievement) => achievement.code),
                 },
             });
         } else
-        // new achievements added
-        if (achievements.length < defaultAchievements.length) {
-            const achievementsToAdd = defaultAchievements.filter(
-                (defaultAchievement) => !achievements.find(
-                    (achievement) => achievement.code == defaultAchievement.code,
-                ),
-            );
+            // new achievements added
+            if (achievements.length < defaultAchievements.length) {
+                const achievementsToAdd = defaultAchievements.filter(
+                    (defaultAchievement) => !achievements.find(
+                        (achievement) => achievement.code == defaultAchievement.code,
+                    ),
+                );
 
-            await this.bulkAdd(achievementsToAdd);
-            this.hookService.emit({
-                type: 'achievement.init',
-                payload: {
-                    newAchievementCodes: achievementsToAdd.map((achievement) => achievement.code),
-                },
-            });
-        }
+                await this.bulkAdd(achievementsToAdd);
+                this.hookService.emit({
+                    type: 'achievement.init',
+                    payload: {
+                        newAchievementCodes: achievementsToAdd.map((achievement) => achievement.code),
+                    },
+                });
+            }
     }
 
     private async checkAllInit(event: any) {
@@ -107,6 +140,12 @@ export class AchievementService {
             .where('code')
             .equals(code)
             .first();
+    }
+
+    async getUnlocked() {
+        return db.achievements
+            .filter((achievement) => achievement.unlocked === true)
+            .toArray();
     }
 
     async getAll() {
@@ -185,7 +224,7 @@ export class AchievementService {
 
         if (activityCount >= achievement.target) {
             this.update(achievement.id, { unlocked: true, current: achievement.target });
-            console.log('Achievement unlocked! ' + achievement.title);
+            this.enqueue(achievement);
         } else {
             this.update(achievement.id, { current: activityCount });
         }
@@ -200,16 +239,16 @@ export class AchievementService {
 
         if (achievement.current >= achievement.target - 1) {
             this.update(achievement.id, { unlocked: true, current: achievement.target });
-            console.log('Achievement unlocked! ' + achievement.title);
+            this.enqueue(achievement);
         } else {
             this.update(achievement.id, { current: achievement.current + 1 });
         }
     }
 
     async checkOneTimeAchievement<T>(
-        code: string, 
+        code: string,
         callback?: (payload?: T) => Promise<boolean>,
-        payload?: T, 
+        payload?: T,
     ) {
         const achievement = await this.getByCode(code);
 
@@ -219,7 +258,7 @@ export class AchievementService {
 
         if (!callback || await callback(payload)) {
             this.update(achievement.id, { unlocked: true, current: achievement.target });
-            console.log('Achievement unlocked! ' + achievement.title);
+            this.enqueue(achievement);
         }
     }
 

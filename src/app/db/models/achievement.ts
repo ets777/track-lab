@@ -2,6 +2,7 @@ import { WithOptionalId } from "src/app/types/with-optional-id";
 
 export interface IAchievementDb {
     id: number;
+    icon?: string;
     code: string;
     title: string;
     target: number;

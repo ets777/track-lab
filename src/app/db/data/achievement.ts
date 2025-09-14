@@ -2,6 +2,7 @@ import { IAchievementCreateDto } from "../models/achievement";
 
 export const defaultAchievements: IAchievementCreateDto[] = [
     {
+        icon: '🦶',
         code: 'first_activity',
         title: 'TK_FIRST_STEP',
         description: 'TK_ADD_YOUR_FIRST_ACTIVITY',
@@ -10,6 +11,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🚴',
         code: '10_activities',
         title: 'TK_FEEL_THE_TRACK',
         description: 'TK_ADD_10_ACTIVITIES',
@@ -18,6 +20,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🔥',
         code: '100_activities',
         title: 'TK_GETTING_SERIOUS',
         description: 'TK_ADD_100_ACTIVITIES',
@@ -26,6 +29,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '💪',
         code: '1000_activities',
         title: 'TK_THE_UNSTOPPABLE',
         description: 'TK_ADD_1000_ACTIVITIES',
@@ -34,6 +38,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🧘',
         code: '10000_activities',
         title: 'TK_MASTER_OF_HABITS',
         description: 'TK_ADD_10000_ACTIVITIES',
@@ -42,6 +47,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🪬',
         code: '100000_activities',
         title: 'TK_LEGENDARY_TRACKER',
         description: 'TK_ADD_100000_ACTIVITIES',
@@ -50,6 +56,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🌞',
         code: 'max_mood',
         title: 'TK_THE_BEST_DAY_OF_YOUR_LIFE',
         description: 'TK_SET_MOOD_TO_THE_MAXIMUM',
@@ -58,14 +65,16 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '🔒',
         code: 'first_backup_with_password',
-        title: 'TK_PRUDENT_PERSON',
+        title: 'TK_PRUDENT',
         description: 'TK_BACKUP_WITH_A_PASSWORD',
         target: 1,
         current: 0,
         unlocked: false,
     },
     {
+        icon: '🦁',
         code: 'first_backup_without_password',
         title: 'TK_FEARLESS',
         description: 'TK_BACKUP_WITHOUT_A_PASSWORD',
@@ -74,14 +83,16 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '💾',
         code: '10_backups',
-        title: 'TK_CAUTIOUS_PERSON',
+        title: 'TK_CAUTIOUS',
         description: 'TK_MAKE_10_BACKUPS',
         target: 10,
         current: 0,
         unlocked: false,
     },
     {
+        icon: '🛡️',
         code: '100_backups',
         title: 'TK_HEAD_OF_SECURITY_DEPARTMENT',
         description: 'TK_MAKE_100_BACKUPS',
@@ -90,6 +101,7 @@ export const defaultAchievements: IAchievementCreateDto[] = [
         unlocked: false,
     },
     {
+        icon: '✍️',
         code: 'first_activity_editing',
         title: 'TK_REWRITING_HISTORY',
         description: 'TK_EDIT_AN_ACTIVITY',
