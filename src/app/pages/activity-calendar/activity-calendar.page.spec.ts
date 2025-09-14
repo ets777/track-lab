@@ -10,6 +10,7 @@ describe('ActivityCalendarPage', () => {
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), ActivityCalendarPage],
     }).compileComponents();
+    
     fixture = TestBed.createComponent(ActivityCalendarPage);
     component = fixture.componentInstance;
     fixture.detectChanges();

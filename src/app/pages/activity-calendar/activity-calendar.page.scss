@@ -24,3 +24,23 @@ ion-item.invalid {
     display: flex;
     justify-content: center;
 }
+
+.achievement {
+    padding-top: 10px;
+
+    .icon {
+        font-size: 2.5rem;
+        margin-right: 10px;
+    }
+
+    .body {
+        .title {
+            font-size: 1.25rem;
+        }
+
+        .description {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+    }
+}

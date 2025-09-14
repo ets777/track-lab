@@ -5,118 +5,161 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form class="filter-form" [formGroup]="filterForm">
-    <ion-popover
-      [isOpen]="isTooltipOpen"
-      [event]="tooltipEvent"
-      size="auto"
-      (willDismiss)="closeTooltip()"
+  <ion-segment value="calculations">
+    <ion-segment-button
+      value="calculations"
+      content-id="calculations"
     >
-      <ng-template>
-        <div
-          class="validation-tooltip"
-          [innerHTML]="tooltipMessage"
-        ></div>
-      </ng-template>
-    </ion-popover>
-    
-    <ion-item [class.invalid]="filterForm.get('startDate')?.invalid">
-      <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
-      <ion-input
-        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-        formControlName="startDate"
-        [maskito]="dateMask"
-        [maskitoElement]="maskPredicate"
+      <ion-label>{{ 'TK_CALCULATIONS' | translate }}</ion-label>
+    </ion-segment-button>
+    <ion-segment-button
+      value="achievements"
+      content-id="achievements"
+    >
+      <ion-label>{{ 'TK_ACHIEVEMENTS' | translate }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <ion-segment-view>
+    <ion-segment-content id="calculations">
+      <form
+        class="filter-form"
+        [formGroup]="filterForm"
       >
-        @if (filterForm.get('startDate')?.errors) {
-          <ion-icon 
-            class="warning-sign"
-            slot="end" 
-            src="assets/icon/warning-sign.svg"
-            slot="end"
-            (click)="openTooltip($event, 'startDate')"
-          ></ion-icon>
+        <ion-popover
+          [isOpen]="isTooltipOpen"
+          [event]="tooltipEvent"
+          size="auto"
+          (willDismiss)="closeTooltip()"
+        >
+          <ng-template>
+            <div
+              class="validation-tooltip"
+              [innerHTML]="tooltipMessage"
+            ></div>
+          </ng-template>
+        </ion-popover>
+      
+        <ion-item [class.invalid]="filterForm.get('startDate')?.invalid">
+          <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
+          <ion-input
+            placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
+            formControlName="startDate"
+            [maskito]="dateMask"
+            [maskitoElement]="maskPredicate"
+          >
+            @if (filterForm.get('startDate')?.errors) {
+            <ion-icon
+              class="warning-sign"
+              slot="end"
+              src="assets/icon/warning-sign.svg"
+              slot="end"
+              (click)="openTooltip($event, 'startDate')"
+            ></ion-icon>
+            }
+          </ion-input>
+        </ion-item>
+      
+        <ion-item [class.invalid]="filterForm.get('endDate')?.invalid">
+          <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
+          <ion-input
+            placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
+            formControlName="endDate"
+            [maskito]="dateMask"
+            [maskitoElement]="maskPredicate"
+          >
+            @if (filterForm.get('endDate')?.errors) {
+            <ion-icon
+              class="warning-sign"
+              slot="end"
+              src="assets/icon/warning-sign.svg"
+              slot="end"
+              (click)="openTooltip($event, 'endDate')"
+            ></ion-icon>
+            }
+          </ion-input>
+        </ion-item>
+      </form>
+      
+      <div class="controls">
+        <ion-button
+          fill="clear"
+          (click)="shiftDates(-1)"
+          [disabled]="!filterForm.valid"
+        >{{ 'TK_PREV' | translate }}</ion-button>
+        <ion-chip
+          [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
+          (click)="selectPeriod('week')"
+        >{{ 'TK_WEEK' | translate }}</ion-chip>
+        <ion-chip
+          [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
+          (click)="selectPeriod('month')"
+        >{{ 'TK_MONTH' | translate }}</ion-chip>
+        <ion-button
+          fill="clear"
+          (click)="shiftDates(1)"
+          [disabled]="!filterForm.valid"
+        >{{ 'TK_NEXT' | translate }}</ion-button>
+      </div>
+      
+      <ion-button
+        expand="block"
+        (click)="loadStats()"
+        [disabled]="!filterForm.valid"
+      >{{ 'TK_SHOW' | translate }}</ion-button>
+      
+      <canvas
+        baseChart
+        [data]="chartData"
+        type="line"
+      >
+      </canvas>
+      
+      <ion-list>
+        @if (activities.length) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{
+              getAverageValue(activities, 'mood') | number:'1.1-1' }}</p>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}:
+              {{ getAverageValue(activities, 'energy') | number:'1.1-1' }}</p>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}:
+              {{ getAverageValue(activities, 'satiety') | number:'1.1-1' }}</p>
+          </ion-label>
+        </ion-item>
         }
-      </ion-input>
-    </ion-item>
+        @for (day of activitiesGroupedByDate; track day.date) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ day.date }}</h2>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{
+              getAverageValue(day.activities, 'mood') | number:'1.1-1' }}</p>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}:
+              {{ getAverageValue(day.activities, 'energy') | number:'1.1-1' }}</p>
+            <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}:
+              {{ getAverageValue(day.activities, 'satiety') | number:'1.1-1' }}</p>
+          </ion-label>
+        </ion-item>
+        } @empty {
+        <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate
+          }}</ion-text>
+        }
+      </ion-list>
+    </ion-segment-content>
+    <ion-segment-content id="achievements">
+      <ion-list>
+        @for (achievement of achievements; track achievement.id) {
+          <ion-item class="achievement">
+            <div class="icon">{{ achievement.icon }}</div>
+            <div class="body">
+              <div class="title">{{ achievement.title | translate }}</div>
+              <div class="description">{{ achievement.description | translate}}</div>
+            </div>
+          </ion-item>
+        } 
+      </ion-list>
+    </ion-segment-content>
+  </ion-segment-view>
+
   
-    <ion-item [class.invalid]="filterForm.get('endDate')?.invalid">
-      <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
-      <ion-input
-        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-        formControlName="endDate"
-        [maskito]="dateMask"
-        [maskitoElement]="maskPredicate"
-      >
-        @if (filterForm.get('endDate')?.errors) {
-          <ion-icon
-            class="warning-sign"
-            slot="end"
-            src="assets/icon/warning-sign.svg"
-            slot="end"
-            (click)="openTooltip($event, 'endDate')"
-          ></ion-icon>
-        }
-      </ion-input>
-    </ion-item>
-  </form>
-
-  <div class="controls">
-    <ion-button 
-      fill="clear" 
-      (click)="shiftDates(-1)"
-      [disabled]="!filterForm.valid"
-    >{{ 'TK_PREV' | translate }}</ion-button>
-    <ion-chip 
-      [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
-      (click)="selectPeriod('week')"
-    >{{ 'TK_WEEK' | translate }}</ion-chip>
-    <ion-chip 
-      [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
-      (click)="selectPeriod('month')"
-    >{{ 'TK_MONTH' | translate }}</ion-chip>
-    <ion-button 
-      fill="clear" 
-      (click)="shiftDates(1)"
-      [disabled]="!filterForm.valid"
-    >{{ 'TK_NEXT' | translate }}</ion-button>
-  </div>
-
-  <ion-button
-    expand="block"
-    (click)="loadStats()"
-    [disabled]="!filterForm.valid"
-  >{{ 'TK_SHOW' | translate }}</ion-button>
-
-  <canvas
-    baseChart
-    [data]="chartData"
-    type="line"
-  >
-  </canvas>
-
-  <ion-list>
-    @if (activities.length) {
-      <ion-item>
-        <ion-label>
-          <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{ getAverageValue(activities, 'mood') | number:'1.1-1' }}</p>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}: {{ getAverageValue(activities, 'energy') | number:'1.1-1' }}</p>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}: {{ getAverageValue(activities, 'satiety') | number:'1.1-1' }}</p>
-        </ion-label>
-      </ion-item>
-    }
-    @for (day of activitiesGroupedByDate; track day.date) {
-      <ion-item>
-        <ion-label>
-          <h2>{{ day.date }}</h2>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{ getAverageValue(day.activities, 'mood') | number:'1.1-1' }}</p>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}: {{ getAverageValue(day.activities, 'energy') | number:'1.1-1' }}</p>
-          <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}: {{ getAverageValue(day.activities, 'satiety') | number:'1.1-1' }}</p>
-        </ion-label>
-      </ion-item>
-    } @empty {
-      <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}</ion-text>
-    }
-  </ion-list>
 </ion-content>

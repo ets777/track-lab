@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonIcon, IonInput, IonChip, IonHeader, IonPopover, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle } from '@ionic/angular/standalone';
+import { IonIcon, IonInput, IonChip, IonHeader, IonPopover, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle, IonSegmentButton, IonSegment, IonSegmentView, IonSegmentContent } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
@@ -14,6 +14,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
+import { AchievementService } from 'src/app/services/achievement.service';
+import { IAchievement } from 'src/app/db/models/achievement';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
@@ -22,7 +24,7 @@ type Period = 'week' | 'month';
 @Component({
   selector: 'app-activity-calendar',
   standalone: true,
-  imports: [IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective],
+  imports: [IonSegment, IonSegmentButton, IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective, IonSegmentView, IonSegmentContent],
   templateUrl: './activity-calendar.page.html',
   styleUrl: './activity-calendar.page.scss',
 })
@@ -51,11 +53,14 @@ export class ActivityCalendarPage implements OnInit {
   dates: string[] = [];
   chartData!: ChartConfiguration<'line'>['data'];
 
+  achievements: IAchievement[] = [];
+
   constructor(
     private activityService: ActivityService,
     private formBuilder: FormBuilder,
     private toastCtrl: ToastController,
     private translate: TranslateService,
+    private achievementService: AchievementService,
   ) {
     this.filterForm = this.formBuilder.group(
       {
@@ -71,8 +76,14 @@ export class ActivityCalendarPage implements OnInit {
     );
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.setDefaultDates();
+    
+  }
+
+  async ionViewDidEnter() {
+    await this.loadStats();
+    this.achievements = await this.achievementService.getUnlocked();
   }
 
   setDefaultDates() {
@@ -89,10 +100,6 @@ export class ActivityCalendarPage implements OnInit {
       startDate,
       endDate,
     });
-  }
-
-  async ionViewDidEnter() {
-    await this.loadStats();
   }
 
   async loadStats() {
