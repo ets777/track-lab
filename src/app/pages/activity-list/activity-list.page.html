@@ -30,9 +30,20 @@
             {{ activity.startTime }}  @if (activity.endTime)  { - {{ activity.endTime }} }
           </p>
           <p>
-            {{ 'TK_MOOD' | translate }}: {{ activity.mood || '-' }},
-            {{ 'TK_ENERGY' | translate }}: {{ activity.energy || '-' }},
-            {{ 'TK_SATIETY' | translate }}: {{ activity.satiety || '-' }}
+            @if (activity.mood) {
+              {{ 'TK_MOOD' | translate }}: {{ activity.mood }} |
+            }
+            @if (activity.energy) {
+              {{ 'TK_ENERGY' | translate }}: {{ activity.energy }} |
+            }
+            @if (activity.satiety) {
+              {{ 'TK_SATIETY' | translate }}: {{ activity.satiety }}
+            }
+          </p>
+          <p>
+            @if (activity.emotions) {
+              {{ 'TK_EMOTIONS' | translate }}: {{ activity.emotions }}
+            }
           </p>
           <ion-buttons class="activity-item-buttons">
             <ion-button id="open-action-sheet-{{activity.id}}">

@@ -95,7 +95,11 @@ export class ActivityService {
                 .last();
         }
 
-        return lastActivity;
+        if (!lastActivity) {
+            return;
+        }
+
+        return this.enrichOne(lastActivity);
     }
 
     async getByDate(startDate: string, endDate?: string) {
