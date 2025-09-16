@@ -70,11 +70,16 @@ export class Time {
         return this.totalSeconds;
     }
 
-    toString(): string {
+    toString(full: boolean = true): string {
         const hours = Math.floor(this.totalSeconds / 3600).toString().padStart(2, '0');
         const minutes = Math.floor((this.totalSeconds % 3600) / 60).toString().padStart(2, '0');
         const seconds = (this.totalSeconds % 60).toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+
+        if (full) {
+            return `${hours}:${minutes}:${seconds}`;
+        } else {
+            return `${hours}:${minutes}`;
+        }
     }
 
     addMinutes(minutes: number): Time {
@@ -95,6 +100,18 @@ export class Time {
         ) {
             throw 'Wrong format of time';
         }
+    }
+
+    getHour() {
+        return ~~(this.totalSeconds / 60 / 60);
+    }
+
+    getMinute() {
+        return ~~(this.totalSeconds / 60);
+    }
+
+    getSecond() {
+        return this.totalSeconds;
     }
 
     static isValid(time: string) {

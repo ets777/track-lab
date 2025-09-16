@@ -16,10 +16,18 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { AchievementService } from 'src/app/services/achievement.service';
 import { IAchievement } from 'src/app/db/models/achievement';
+import { Time } from 'src/app/Time';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
 type Period = 'week' | 'month';
+
+interface NormalizedPoint {
+  time: string;
+  mood: number | undefined;
+  satiety: number | undefined;
+  energy: number | undefined;
+}
 
 @Component({
   selector: 'app-activity-calendar',
@@ -78,7 +86,6 @@ export class ActivityCalendarPage implements OnInit {
 
   async ngOnInit() {
     this.setDefaultDates();
-    
   }
 
   async ionViewDidEnter() {
@@ -125,14 +132,91 @@ export class ActivityCalendarPage implements OnInit {
         };
       });
 
-    this.chartData = {
-      labels: this.dates,
-      datasets: [
-        { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: 'Avg. Mood' },
-        { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: 'Avg. Energy' },
-        { data: this.activitiesGroupedByDate.map((activity) => activity.avgSatiety), label: 'Avg. Satiety' },
-      ]
+    if (this.dates.length === 1) {
+      const normalizedData = this.normalizeWithInterpolation(this.activities);
+
+      this.chartData = {
+        labels: normalizedData.map((data) => data.time),
+        datasets: [
+          { data: normalizedData.map((data) => data.mood || 0), label: 'Avg. Mood' },
+          { data: normalizedData.map((data) => data.energy || 0), label: 'Avg. Energy' },
+          { data: normalizedData.map((data) => data.satiety || 0), label: 'Avg. Satiety' },
+        ]
+      };
+    } else {
+      this.chartData = {
+        labels: this.dates,
+        datasets: [
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: 'Avg. Mood' },
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: 'Avg. Energy' },
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgSatiety), label: 'Avg. Satiety' },
+        ]
+      };
     }
+  }
+
+  normalizeWithInterpolation(activities: IActivity[]): NormalizedPoint[] {
+    const result: NormalizedPoint[] = [];
+    
+    const sorted = [...activities].sort(
+      (a, b) => new Time(a.endTime).valueOf() - new Time(b.endTime).valueOf(),
+    );
+
+    const first = [...activities].find((activity) =>
+      activity.mood && activity.energy && activity.satiety
+    );
+    const last = [...activities].reverse().find((activity) =>
+      activity.mood && activity.energy && activity.satiety
+    );
+
+    const startHour = new Time(first?.startTime).getHour();
+    const lastHour = new Time(last?.endTime).getHour();
+
+    for (let hour = startHour; hour <= lastHour + 1; hour++) {
+      const currentTime = new Time(hour, 0, 0);
+      const label = currentTime.toString(false);
+      const mood = this.getInterpolatedValue(sorted, hour, 'mood');
+      const energy = this.getInterpolatedValue(sorted, hour, 'energy');
+      const satiety = this.getInterpolatedValue(sorted, hour, 'satiety');
+
+      result.push({ time: label, mood, energy, satiety });
+    }
+
+    return result;
+  }
+
+  getInterpolatedValue(activities: IActivity[], hour: number, propertyName: ('mood'|'satiety'|'energy')) {
+    const currentTime = new Time(hour, 0, 0);
+    const currentSeconds = currentTime.getSecond();
+
+    const before = [...activities].reverse().find((activity) =>
+      new Time(activity.endTime).getSecond() <= currentSeconds
+      && activity[propertyName]
+    );
+    const after = activities.find((activity) =>
+      new Time(activity.endTime).getSecond() >= currentSeconds
+      && activity[propertyName]
+    );
+
+    let value: number = 0;
+    if (
+      before?.[propertyName] && after?.[propertyName] && before[propertyName] !== after[propertyName]
+    ) {
+      const beforeTime = new Time(before.endTime).getSecond();
+      const afterTime = new Time(after.endTime).getSecond();
+      const ratio = (currentSeconds - beforeTime) / (afterTime - beforeTime);
+      if (before[propertyName] && after[propertyName]) {
+        value = before[propertyName] + (after[propertyName] - before[propertyName]) * ratio;
+      }
+    } else if (before?.[propertyName]) {
+      value = before[propertyName];
+    } else if (after?.[propertyName]) {
+      value = after[propertyName];
+    } else {
+      value = 0;
+    }
+
+    return value;
   }
 
   getAverageValue(activities: IActivity[], propertyName: ActivityNumberKeys) {
