@@ -129,7 +129,7 @@ export class ActivityListPage {
   }
 
   async goToEditPage(activityId: number) {
-    await this.router.navigate(['/activity-edit', activityId]);
+    await this.router.navigate(['/activity/edit', activityId]);
   }
 
   async confirm() {

@@ -44,7 +44,7 @@ export class ActivityEditPage {
     const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
     await this.activityService.update(this.activityId, activityFormValue);
     await this.router.navigate(
-      ['/activity-list'], 
+      ['/activity'], 
       { queryParams: { date: activityFormValue.date }},
     );
   }

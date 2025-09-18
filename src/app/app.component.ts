@@ -7,8 +7,10 @@ import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
 import { AchievementService } from './services/achievement.service';
-import { HookService } from './services/hook.service';
+import { Platform } from '@ionic/angular';
 import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
+import { NavigationService } from './services/navigation.service';
+
 
 @Component({
   selector: 'app-root',
@@ -19,13 +21,24 @@ export class AppComponent implements OnInit {
   constructor(
     private translate: TranslateService,
     private achievementService: AchievementService,
+    private platform: Platform,
+    private navigationService: NavigationService,
   ) {
     this.setAdaptiveStatusBarColor();
   }
-  
+
   async ngOnInit() {
     this.setLanguages();
     await this.achievementService.init();
+    this.initializeApp();
+  }
+
+  initializeApp() {
+    this.platform.ready().then(() => {
+      this.platform.backButton.subscribeWithPriority(5, () => {
+        this.navigationService.goToBackUrl();
+      });
+    });
   }
 
   setAdaptiveStatusBarColor() {
@@ -69,9 +82,9 @@ export class AppComponent implements OnInit {
     const savedLanguage = (await Preferences.get({ key: 'language' }))?.value;
 
     this.translate.use(
-      savedLanguage 
-      || systemLanguage 
-      || browserLanguage 
+      savedLanguage
+      || systemLanguage
+      || browserLanguage
       || defaultLanguage
     );
   }
