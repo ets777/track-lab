@@ -1,20 +1,19 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonBackButton } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityForm, ActivityFormComponent } from 'src/app/components/activity-form/activity-form.component';
 import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
-import { ActionService } from 'src/app/services/action.service';
 
 @Component({
   selector: 'app-activity-edit',
   templateUrl: './activity-edit.page.html',
   styleUrls: ['./activity-edit.page.scss'],
   standalone: true,
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule]
+  imports: [IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule]
 })
 export class ActivityEditPage {
   @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
