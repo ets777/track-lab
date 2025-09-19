@@ -7,12 +7,15 @@
     "ng": "ng",
     "start": "ng serve",
     "prebuild": "node tools/version-updater/index.js",
-    "build": "ionic build --prod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "test-watch": "ng test",
     "lint": "ng lint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:prod": "APP_ENV=prod ng build --configuration=production",
+    "build:dev": "APP_ENV=dev ng build --configuration=development",
+    "android:prod": "APP_ENV=prod ionic capacitor run android --configuration=production",
+    "android:dev": "APP_ENV=dev ionic capacitor run android --configuration=development -l --external"
   },
   "private": true,
   "dependencies": {

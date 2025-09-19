@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
 import { DatabaseBackupService } from 'src/app/services/database-backup.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -17,6 +18,7 @@ import { DatabaseBackupService } from 'src/app/services/database-backup.service'
 })
 export class SettingsPage implements OnInit {
   appVersion = appVersion;
+  env = !environment.production ? '(dev)' : '';
 
   constructor(
     private markdownParserService: MarkdownParserService,
