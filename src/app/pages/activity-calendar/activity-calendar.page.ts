@@ -17,6 +17,7 @@ import { ChartConfiguration } from 'chart.js';
 import { AchievementService } from 'src/app/services/achievement.service';
 import { IAchievement } from 'src/app/db/models/achievement';
 import { Time } from 'src/app/Time';
+import { Router } from '@angular/router';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
@@ -69,6 +70,7 @@ export class ActivityCalendarPage implements OnInit {
     private toastCtrl: ToastController,
     private translate: TranslateService,
     private achievementService: AchievementService,
+    private router: Router,
   ) {
     this.filterForm = this.formBuilder.group(
       {
@@ -308,5 +310,12 @@ export class ActivityCalendarPage implements OnInit {
   closeTooltip() {
     this.isTooltipOpen = false;
     this.tooltipMessage = '';
+  }
+
+  async goToDay(date: string) {
+    await this.router.navigate(
+      ['/activity'],
+      { queryParams: { date } },
+    );
   }
 }

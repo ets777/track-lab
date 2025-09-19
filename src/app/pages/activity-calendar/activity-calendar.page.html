@@ -129,7 +129,7 @@
         </ion-item>
         }
         @for (day of activitiesGroupedByDate; track day.date) {
-        <ion-item>
+        <ion-item (click)="goToDay(day.date)">
           <ion-label>
             <h2>{{ day.date }}</h2>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{
