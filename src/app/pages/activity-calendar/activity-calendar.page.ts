@@ -125,12 +125,13 @@ export class ActivityCalendarPage implements OnInit {
     this.activitiesGroupedByDate = this.dates
       .map((date) => {
         const activitiesAtDate = activities.filter((activity) => activity.date == date);
+        const normalizedData = this.normalizeWithInterpolation(activitiesAtDate);
         return {
           date: date,
           activities: activitiesAtDate,
-          avgEnergy: this.getAverageValue(activitiesAtDate, 'energy'),
-          avgMood: this.getAverageValue(activitiesAtDate, 'mood'),
-          avgSatiety: this.getAverageValue(activitiesAtDate, 'satiety'),
+          avgEnergy: this.getAverageValue(normalizedData, 'energy'),
+          avgMood: this.getAverageValue(normalizedData, 'mood'),
+          avgSatiety: this.getAverageValue(normalizedData, 'satiety'),
         };
       });
 
@@ -221,20 +222,26 @@ export class ActivityCalendarPage implements OnInit {
     return value;
   }
 
-  getAverageValue(activities: IActivity[], propertyName: ActivityNumberKeys) {
-    if (!activities.length) {
+  getTotalAverageValue(propertyName: ('avgSatiety' | 'avgEnergy' | 'avgMood')) {
+    if (!this.activitiesGroupedByDate.length) {
       return 0;
     }
 
-    const filteredValues = activities
-      .map((activity) => activity[propertyName])
-      .filter((value) => typeof value !== 'undefined')
-      .filter((value) => value > 0);
+    const sum = this.activitiesGroupedByDate
+      .reduce((previousValue, currentValue) => (currentValue[propertyName] ?? 0) + previousValue, 0);
 
-    const sum = filteredValues
-      .reduce((previousValue, currentValue) => currentValue + previousValue, 0);
+    return sum / this.activitiesGroupedByDate.length;
+  }
 
-    return sum / filteredValues.length;
+  getAverageValue(normalizedData: NormalizedPoint[], propertyName: ActivityNumberKeys) {
+    if (!normalizedData.length) {
+      return 0;
+    }
+
+    const sum = normalizedData
+      .reduce((previousValue, currentValue) => (currentValue[propertyName] ?? 0) + previousValue, 0);
+
+    return sum / normalizedData.length;
   }
 
   async selectPeriod(period: Period) {

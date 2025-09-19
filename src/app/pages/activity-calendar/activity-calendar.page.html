@@ -115,16 +115,16 @@
       </canvas>
       
       <ion-list>
-        @if (activities.length) {
+        @if (activitiesGroupedByDate.length) {
         <ion-item>
           <ion-label>
             <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{
-              getAverageValue(activities, 'mood') | number:'1.1-1' }}</p>
+              getTotalAverageValue('avgMood') | number:'1.1-1' }}</p>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}:
-              {{ getAverageValue(activities, 'energy') | number:'1.1-1' }}</p>
+              {{ getTotalAverageValue('avgEnergy') | number:'1.1-1' }}</p>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}:
-              {{ getAverageValue(activities, 'satiety') | number:'1.1-1' }}</p>
+              {{ getTotalAverageValue('avgSatiety') | number:'1.1-1' }}</p>
           </ion-label>
         </ion-item>
         }
@@ -133,11 +133,11 @@
           <ion-label>
             <h2>{{ day.date }}</h2>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{
-              getAverageValue(day.activities, 'mood') | number:'1.1-1' }}</p>
+              day.avgMood | number:'1.1-1' }}</p>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}:
-              {{ getAverageValue(day.activities, 'energy') | number:'1.1-1' }}</p>
+              {{ day.avgEnergy | number:'1.1-1' }}</p>
             <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}:
-              {{ getAverageValue(day.activities, 'satiety') | number:'1.1-1' }}</p>
+              {{ day.avgSatiety | number:'1.1-1' }}</p>
           </ion-label>
         </ion-item>
         } @empty {
