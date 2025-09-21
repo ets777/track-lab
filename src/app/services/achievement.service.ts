@@ -6,6 +6,7 @@ import { IAchievement, IAchievementCreateDto, IAchievementDb } from '../db/model
 import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
 import { Subject } from 'rxjs';
+import { format } from 'date-fns';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService {
@@ -58,7 +59,6 @@ export class AchievementService {
     }
 
     async init() {
-        // await this.clear();
         const achievements = await this.getAll();
 
         // first launch
@@ -103,17 +103,29 @@ export class AchievementService {
             await this.checkAchievement('1000_activities');
             await this.checkAchievement('10000_activities');
             await this.checkAchievement('100000_activities');
-            await this.checkAchievement('max_mood', event.payload);
+            await this.checkAchievement('new_year', event.payload);
         }
+
         if (event.type === 'activity.updated') {
-            await this.checkAchievement('max_mood', event.payload);
             await this.checkAchievement('first_activity_editing');
         }
+
+        if (['activity.added', 'activity.updated'].includes(event.type)) {
+            await this.checkAchievement('max_mood', event.payload);
+            await this.checkAchievement('min_mood', event.payload);
+            await this.checkAchievement('max_energy', event.payload);
+            await this.checkAchievement('min_energy', event.payload);
+        }
+
         if (event.type === 'backup.made') {
             await this.checkAchievement('first_backup_with_password', event.payload);
             await this.checkAchievement('first_backup_without_password', event.payload);
             await this.checkAchievement('10_backups');
             await this.checkAchievement('100_backups');
+        }
+
+        if (event.type === 'homepage.visited') {
+            await this.checkAchievement('homepage_visited');
         }
     }
 
@@ -180,17 +192,41 @@ export class AchievementService {
             await this.checkCountAchievement(achievementCode);
         }
 
+        const conditionlessAchievements = [
+            'first_activity_editing',
+            'homepage_visited',
+        ];
+
+        if (conditionlessAchievements.includes(achievementCode)) {
+            await this.checkOneTimeAchievement(achievementCode)
+        }
+
         if (achievementCode == 'max_mood') {
             await this.checkMaxMoodAchievement(payload.activityId);
         }
-        if (achievementCode == 'first_activity_editing') {
-            await this.checkFirstActivityEditingAchievement();
+
+        if (achievementCode == 'min_mood') {
+            await this.checkMinMoodAchievement(payload.activityId);
         }
+
+        if (achievementCode == 'max_energy') {
+            await this.checkMaxEnergyAchievement(payload.activityId);
+        }
+
+        if (achievementCode == 'min_energy') {
+            await this.checkMinEnergyAchievement(payload.activityId);
+        }
+
         if (achievementCode == 'first_backup_with_password') {
             await this.checkFirstBackupWithPasswordAchievement(payload.isPasswordSet);
         }
+
         if (achievementCode == 'first_backup_without_password') {
             await this.checkFirstBackupWithoutPasswordAchievement(payload.isPasswordSet);
+        }
+
+        if (achievementCode == 'new_year') {
+            await this.checkNewYearAchievement(payload.activityId);
         }
     }
 
@@ -210,6 +246,18 @@ export class AchievementService {
 
         if (achievementCode == 'max_mood') {
             await this.checkMaxMoodAchievementInit();
+        }
+
+        if (achievementCode == 'min_mood') {
+            await this.checkMinMoodAchievementInit();
+        }
+
+        if (achievementCode == 'max_energy') {
+            await this.checkMaxEnergyAchievementInit();
+        }
+
+        if (achievementCode == 'min_energy') {
+            await this.checkMinEnergyAchievementInit();
         }
     }
 
@@ -266,10 +314,59 @@ export class AchievementService {
         await this.checkOneTimeAchievement(
             'max_mood',
             async () => {
-                const activities = await this.activityService.getAllMaxMood();
+                const activities = await this.activityService
+                    .getAllByRange('mood', [9, 10]);
                 return activities?.length > 0;
             },
             null,
+        );
+    }
+
+    async checkMinMoodAchievementInit() {
+        await this.checkOneTimeAchievement(
+            'min_mood',
+            async () => {
+                const activities = await this.activityService
+                    .getAllByRange('mood', [1, 2]);
+                return activities?.length > 0;
+            },
+            null,
+        );
+    }
+
+    async checkMaxEnergyAchievementInit() {
+        await this.checkOneTimeAchievement(
+            'max_energy',
+            async () => {
+                const activities = await this.activityService
+                    .getAllByRange('energy', [9, 10]);
+                return activities?.length > 0;
+            },
+            null,
+        );
+    }
+
+    async checkMinEnergyAchievementInit() {
+        await this.checkOneTimeAchievement(
+            'min_energy',
+            async () => {
+                const activities = await this.activityService
+                    .getAllByRange('energy', [1, 2]);
+                return activities?.length > 0;
+            },
+            null,
+        );
+    }
+
+    async checkNewYearAchievement(activityId: number) {
+        await this.checkOneTimeAchievement(
+            'new_year',
+            async (activityId) => {
+                const activity = await this.activityService.get(activityId!);
+                return activity?.date.slice(5) === '01-01'
+                    && format(new Date(), 'MM-dd') === '01-01';
+            },
+            activityId,
         );
     }
 
@@ -278,14 +375,43 @@ export class AchievementService {
             'max_mood',
             async (activityId) => {
                 const activity = await this.activityService.get(activityId!);
-                return activity?.mood === 10;
+                return !!(activity?.mood && activity.mood >= 9);
             },
             activityId,
         );
     }
 
-    async checkFirstActivityEditingAchievement() {
-        await this.checkOneTimeAchievement('first_activity_editing');
+    async checkMinMoodAchievement(activityId: number) {
+        await this.checkOneTimeAchievement<number>(
+            'min_mood',
+            async (activityId) => {
+                const activity = await this.activityService.get(activityId!);
+                return !!(activity?.mood && activity.mood <= 2);
+            },
+            activityId,
+        );
+    }
+
+    async checkMinEnergyAchievement(activityId: number) {
+        await this.checkOneTimeAchievement<number>(
+            'min_energy',
+            async (activityId) => {
+                const activity = await this.activityService.get(activityId!);
+                return !!(activity?.energy && activity.energy <= 2);
+            },
+            activityId,
+        );
+    }
+
+    async checkMaxEnergyAchievement(activityId: number) {
+        await this.checkOneTimeAchievement<number>(
+            'max_energy',
+            async (activityId) => {
+                const activity = await this.activityService.get(activityId!);
+                return !!(activity?.energy && activity.energy >= 9);
+            },
+            activityId,
+        );
     }
 
     async checkFirstBackupWithPasswordAchievement(isPasswordSet: boolean) {

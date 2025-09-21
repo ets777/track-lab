@@ -53,7 +53,7 @@
   <h2>{{ 'TK_APP_INFO' | translate}}</h2>
   <ion-list>
     <ion-item>{{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}</ion-item>
-    <ion-item><a href="https://etsbox.com/track-lab">{{ 'TK_HOME_PAGE' | translate }}</a></ion-item>
+    <ion-item><a href="https://etsbox.com/track-lab" (click)="visitHomePage($event)">{{ 'TK_HOME_PAGE' | translate }}</a></ion-item>
   </ion-list>
 
 </ion-content>

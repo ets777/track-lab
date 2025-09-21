@@ -68,10 +68,13 @@ export class ActivityService {
         return activities;
     }
 
-    async getAllMaxMood() {
+    async getAllByRange(columnName: ('mood' | 'energy' | 'satiety'), range: {
+        0: any;
+        1: any;
+    }) {
         const activities = await db.activities
-            .where('mood')
-            .equals(10)
+            .where(columnName)
+            .inAnyRange([range])
             .toArray();
         return activities;
     }
@@ -111,6 +114,16 @@ export class ActivityService {
         const activities = await db.activities
             .where('date')
             .between(startDate, endDate)
+            .toArray();
+
+        return this.enrichAll(activities);
+    }
+
+    async getByNewYear() {
+        const activities = await db.activities
+            .filter(activity =>
+                activity.date.slice(5) == '01-01'
+            )
             .toArray();
 
         return this.enrichAll(activities);

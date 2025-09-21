@@ -8,6 +8,7 @@ import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
 import { DatabaseBackupService } from 'src/app/services/database-backup.service';
 import { environment } from '../../../environments/environment';
+import { HookService } from 'src/app/services/hook.service';
 
 @Component({
   selector: 'app-settings',
@@ -24,6 +25,7 @@ export class SettingsPage implements OnInit {
     private markdownParserService: MarkdownParserService,
     private translate: TranslateService,
     private databaseBackupService: DatabaseBackupService,
+    private hookService: HookService,
   ) { }
 
   ngOnInit() {
@@ -74,5 +76,16 @@ export class SettingsPage implements OnInit {
 
   backupDatabase() {
     this.databaseBackupService.backup();
+  }
+
+  visitHomePage(event: Event) {
+    event.preventDefault(); 
+
+    this.hookService.emit({
+      type: 'homepage.visited',
+      payload: {},
+    });
+
+    window.location.href = 'https://etsbox.com/track-lab';
   }
 }
