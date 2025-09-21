@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0] - 2025-09-21
+
+### Added
+
+- Backups
+- Achievements
+- Suggestions for actions
+- Checkbox "don't measure"
+- Simple graph on stats page
+- Some navigation changes
+
+### Improved
+
+- Average values calculation
+
 ## [0.2.2] - 2025-09-09
 
 ### Fixed
@@ -26,7 +41,7 @@
 
 - Editing and deleting activities
 - Validation messages and masks for time and date inputs
-- Changing weeks and months on the statistics page
+- Changing weeks and months on the stats page
 - Language switching (English and Russian)
 - Importing and exporting activities in Markdown format
 - Minor design changes
