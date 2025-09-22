@@ -82,7 +82,9 @@ export class ActivityFormComponent {
 
   async ngOnInit() {
     const actions = await this.actionService.getAll();
+    this.allSuggestions = this.allSuggestions.map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
     this.allSuggestions.unshift(...actions.map((action) => action.name));
+    this.allSuggestions = [...new Set(this.allSuggestions)];
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -196,7 +198,6 @@ export class ActivityFormComponent {
 
     if (current.length > 0) {
       this.filteredSuggestions = this.allSuggestions
-        .map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
         .filter((suggestion) =>
           suggestion.toLowerCase().startsWith(current.toLowerCase())
         )
