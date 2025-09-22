@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1] - 2025-09-22
+
+### Fixed
+
+- Duplicated suggestions
+- Date validation issue on stats page
+- Suggestion design
+
 ## [0.3.0] - 2025-09-21
 
 ### Added
