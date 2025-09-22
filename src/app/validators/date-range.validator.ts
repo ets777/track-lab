@@ -6,11 +6,11 @@ export function dateRangeValidator(control: AbstractControl): ValidationErrors |
     const end = control.get('endDate')?.value;
 
     const resetErrors = () => {
-        if (control.get('startDate')?.hasError('maxDateRange')) {
-            removeControlError(control.get('startDate')!, 'maxDateRange');
+        if (control.get('startDate')?.hasError('dateRange')) {
+            removeControlError(control.get('startDate')!, 'dateRange');
         }
-        if (control.get('endDate')?.hasError('maxDateRange')) {
-            removeControlError(control.get('endDate')!, 'maxDateRange');
+        if (control.get('endDate')?.hasError('dateRange')) {
+            removeControlError(control.get('endDate')!, 'dateRange');
         }
     };
 
