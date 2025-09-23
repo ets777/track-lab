@@ -176,7 +176,7 @@ export class ActivityCalendarPage implements OnInit {
     const lastHour = new Time(last?.endTime).getHour();
 
     for (let hour = startHour; hour <= lastHour + 1; hour++) {
-      const currentTime = new Time(hour, 0, 0);
+      const currentTime = new Time(hour % 24, 0, 0);
       const label = currentTime.toString(false);
       const mood = this.getInterpolatedValue(sorted, hour, 'mood');
       const energy = this.getInterpolatedValue(sorted, hour, 'energy');
@@ -189,7 +189,7 @@ export class ActivityCalendarPage implements OnInit {
   }
 
   getInterpolatedValue(activities: IActivity[], hour: number, propertyName: ('mood'|'satiety'|'energy')) {
-    const currentTime = new Time(hour, 0, 0);
+    const currentTime = new Time(hour % 24, 0, 0);
     const currentSeconds = currentTime.getSecond();
 
     const before = [...activities].reverse().find((activity) =>
