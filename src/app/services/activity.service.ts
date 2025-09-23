@@ -130,14 +130,12 @@ export class ActivityService {
     }
 
     async update(id: number, changes: Partial<ActivityForm>) {
-        if (!changes.actions) {
-            return;
+        if (changes.actions) {
+            await this.actionService.updateFromString(
+                changes.actions,
+                id,
+            );
         }
-
-        await this.actionService.updateFromString(
-            changes.actions,
-            id,
-        );
 
         const rowsAffected = await db.activities.update(id, changes);
 
