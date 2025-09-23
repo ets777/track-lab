@@ -41,7 +41,7 @@ export class ActivityService {
         const lastActivity = await this.getLast(activity.date);
 
         if (lastActivity && !lastActivity.endTime && lastActivity.id) {
-            await this.update(lastActivity.id, { endTime: activity.startTime });
+            await this.update(lastActivity.id, { endTime: activity.startTime }, false);
         }
 
         const activityId = await db.activities.add(activity);
@@ -129,7 +129,7 @@ export class ActivityService {
         return this.enrichAll(activities);
     }
 
-    async update(id: number, changes: Partial<ActivityForm>) {
+    async update(id: number, changes: Partial<ActivityForm>, sendEvent: boolean = true) {
         if (changes.actions) {
             await this.actionService.updateFromString(
                 changes.actions,
@@ -139,7 +139,9 @@ export class ActivityService {
 
         const rowsAffected = await db.activities.update(id, changes);
 
-        this.hookService.emit({ type: 'activity.updated', payload: { activityId: id } });
+        if (sendEvent) {
+            this.hookService.emit({ type: 'activity.updated', payload: { activityId: id } });
+        }
 
         return rowsAffected;
     }
