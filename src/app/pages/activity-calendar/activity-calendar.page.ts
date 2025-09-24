@@ -162,7 +162,7 @@ export class ActivityCalendarPage implements OnInit {
     const result: NormalizedPoint[] = [];
     
     const sorted = [...activities].sort(
-      (a, b) => new Time(a.endTime).valueOf() - new Time(b.endTime).valueOf(),
+      (a, b) => new Time(a.startTime).valueOf() - new Time(b.startTime).valueOf(),
     );
 
     const first = [...activities].find((activity) =>
@@ -173,7 +173,11 @@ export class ActivityCalendarPage implements OnInit {
     );
 
     const startHour = new Time(first?.startTime).getHour();
-    const lastHour = new Time(last?.endTime).getHour();
+    let lastHour = new Time(last?.startTime).getHour();
+
+    if (startHour > lastHour) {
+      lastHour += 24;
+    }
 
     for (let hour = startHour; hour <= lastHour + 1; hour++) {
       const currentTime = new Time(hour % 24, 0, 0);
