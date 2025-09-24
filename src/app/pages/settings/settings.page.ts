@@ -6,7 +6,7 @@ import { MarkdownParserService } from 'src/app/services/markdown-parser.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
-import { DatabaseBackupService } from 'src/app/services/database-backup.service';
+import { DatabaseService } from 'src/app/services/database.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 
@@ -24,7 +24,7 @@ export class SettingsPage implements OnInit {
   constructor(
     private markdownParserService: MarkdownParserService,
     private translate: TranslateService,
-    private databaseBackupService: DatabaseBackupService,
+    private databaseService: DatabaseService,
     private hookService: HookService,
   ) { }
 
@@ -58,7 +58,7 @@ export class SettingsPage implements OnInit {
     reader.onload = async () => {
       const content = reader.result as string;
 
-      await this.databaseBackupService.restore(content);
+      await this.databaseService.restore(content);
     };
 
     reader.readAsText(file);
@@ -75,7 +75,7 @@ export class SettingsPage implements OnInit {
   }
 
   backupDatabase() {
-    this.databaseBackupService.backup();
+    this.databaseService.backup();
   }
 
   visitHomePage(event: Event) {

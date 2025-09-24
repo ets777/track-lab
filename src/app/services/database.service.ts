@@ -25,7 +25,7 @@ type Backup = {
 };
 
 @Injectable({ providedIn: 'root' })
-export class DatabaseBackupService {
+export class DatabaseService {
     defaultPassword = 'etsbox.com';
 
     constructor(
@@ -128,10 +128,7 @@ export class DatabaseBackupService {
             return;
         }
 
-        await this.activityActionService.clear();
-        await this.actionService.clear();
-        await this.activityService.clear();
-        await this.achievementService.clear();
+        await this.clearDatabase();
 
         await this.activityActionService.bulkAdd(backup.activityActions);
         await this.actionService.bulkAdd(backup.actions);
@@ -139,6 +136,13 @@ export class DatabaseBackupService {
         await this.achievementService.bulkAdd(backup.achievements);
 
         await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
+    }
+
+    async clearDatabase() {
+        await this.activityActionService.clear();
+        await this.actionService.clear();
+        await this.activityService.clear();
+        await this.achievementService.clear();
     }
 
     async askPasswordToRestore(): Promise<string | null> {
