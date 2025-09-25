@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2] - 2025-09-25
+
+### Fixed
+
+- Updating end time of previous activity
+- Achievement "Rewriting history"
+- Error on stats page when activities after midnight were added
+
 ## [0.3.1] - 2025-09-22
 
 ### Fixed
