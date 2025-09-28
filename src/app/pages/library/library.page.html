@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-segment value="actions">
+    <ion-segment-button
+      value="actions"
+      content-id="actions"
+    >
+      <ion-label>{{ 'TK_ACTIONS' | translate }}</ion-label>
+    </ion-segment-button>
+    <ion-segment-button
+      value="tags"
+      content-id="tags"
+    >
+      <ion-label>{{ 'TK_TAGS' | translate }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <ion-segment-view>
+    <ion-segment-content id="actions">
+      <ion-list>
+        @for (action of actions; track action.id) {
+        <ion-item class="action">
+          <div class="title">{{ action.name | translate }}</div>
+          <ion-buttons class="item-buttons">
+            <ion-button id="open-action-sheet-{{action.id}}">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-action-sheet
+            trigger="open-action-sheet-{{action.id}}"
+            header="{{ 'TK_ACTIONS' | translate }}"
+            [buttons]="activityActionSheetButtons"
+            (didDismiss)="doActionAction($event, action.id)"
+          ></ion-action-sheet>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-segment-content>
+    <ion-segment-content id="tags">
+      <ion-list>
+        @for (tag of tags; track tag.id) {
+        <ion-item class="tag">
+          <div class="body">
+            <div class="title">{{ tag.name | translate }}</div>
+          </div>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-segment-content>
+  </ion-segment-view>
+
+
+</ion-content>

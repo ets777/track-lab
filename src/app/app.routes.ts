@@ -20,6 +20,15 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'action',
+    children: [
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/action-view/action-view.page').then(m => m.ActionViewPage),
+      },
+    ]
+  },
+  {
     path: 'activity-calendar',
     loadComponent: () =>
       import('./pages/activity-calendar/activity-calendar.page').then((m) => m.ActivityCalendarPage),
@@ -31,6 +40,10 @@ export const routes: Routes = [
   {
     path: 'settings',
     loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)
+  },
+  {
+    path: 'library',
+    loadComponent: () => import('./pages/library/library.page').then( m => m.LibraryPage)
   },
   {
     path: '',

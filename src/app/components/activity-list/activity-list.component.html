@@ -1,0 +1,42 @@
+<ion-list>
+  @for (activity of activities; track activity.id) {
+    <ion-item>
+      <ion-label>
+        <h2>{{ actionsToString(activity.actions) }}</h2>
+        <p>
+          {{ activity.startTime }} @if (activity.endTime) { - {{ activity.endTime
+          }} }
+        </p>
+        <p>
+          @if (activity.mood) {
+          {{ 'TK_MOOD' | translate }}: {{ activity.mood }} |
+          }
+          @if (activity.energy) {
+          {{ 'TK_ENERGY' | translate }}: {{ activity.energy }} |
+          }
+          @if (activity.satiety) {
+          {{ 'TK_SATIETY' | translate }}: {{ activity.satiety }}
+          }
+        </p>
+        <p>
+          @if (activity.emotions) {
+          {{ 'TK_EMOTIONS' | translate }}: {{ activity.emotions }}
+          }
+        </p>
+        <ion-buttons class="activity-item-buttons">
+          <ion-button id="open-action-sheet-{{activity.id}}">
+            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-action-sheet
+          trigger="open-action-sheet-{{activity.id}}"
+          header="{{ 'TK_ACTIONS' | translate }}"
+          [buttons]="activityActionSheetButtons"
+          (didDismiss)="doActivityAction($event, activity.id)"
+        ></ion-action-sheet>
+      </ion-label>
+    </ion-item>
+  } @empty {
+    <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES' | translate }}</ion-text>
+  }
+</ion-list>

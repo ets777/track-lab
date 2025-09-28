@@ -241,5 +241,15 @@
   "TK_WRONG_PASSWORD": "Wrong password",
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",
-  "TK_YYYY_MM_DD": "yyyy-mm-dd"
+  "TK_YYYY_MM_DD": "yyyy-mm-dd",
+  "TK_LIBRARY": "Library",
+  "TK_TAGS": "Tags",
+  "TK_VIEW": "View",
+  "TK_ACTION": "Action",
+  "TK_THE_ACTION_HAS_NOT_BEEN_PERFORMED_FOR_THE_LAST_7_DAYS": "The action has not been performed for the last 7 days",
+  "TK_ACTIVITIES_FOR_LAST_7_DAYS": "Activities for last 7 days",
+  "TK_TOTAL_TIME": "Total time",
+  "TK_AVERAGE_PER_DAY": "Average per day",
+  "TK_M": "m",
+  "TK_H": "h"
 }

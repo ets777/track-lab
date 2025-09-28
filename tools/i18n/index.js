@@ -26,7 +26,7 @@ const ruJson = JSON.parse(fs.readFileSync(ruFile, 'utf8'));
 
 // Add or overwrite values
 enJson[key] = enText.charAt(0).toUpperCase() + enText.slice(1);
-ruJson[key] = ruText;
+ruJson[key] = ruText.charAt(0).toUpperCase() + ruText.slice(1);
 
 // Save back with pretty formatting
 fs.writeFileSync(enFile, JSON.stringify(enJson, null, 2), 'utf8');

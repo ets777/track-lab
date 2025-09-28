@@ -1,19 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActionViewPage } from './action-view.page';
+import { TranslateModule } from '@ngx-translate/core';
 import { provideRouter } from '@angular/router';
 
-import { TabsComponent } from './tabs.component';
-import { TranslateModule } from '@ngx-translate/core';
-
-describe('TabsComponent', () => {
-  let component: TabsComponent;
-  let fixture: ComponentFixture<TabsComponent>;
+describe('ActionViewPage', () => {
+  let component: ActionViewPage;
+  let fixture: ComponentFixture<ActionViewPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TabsComponent, TranslateModule.forRoot()],
+      imports: [ActionViewPage, TranslateModule.forRoot()],
       providers: [provideRouter([])],
     }).compileComponents();
-    fixture = TestBed.createComponent(TabsComponent);
+    fixture = TestBed.createComponent(ActionViewPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

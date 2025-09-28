@@ -241,5 +241,15 @@
   "TK_WRONG_PASSWORD": "Неверный пароль",
   "TK_WROTE": "Писал",
   "TK_YES": "Да",
-  "TK_YYYY_MM_DD": "гггг-мм-дд"
+  "TK_YYYY_MM_DD": "гггг-мм-дд",
+  "TK_LIBRARY": "Библиотека",
+  "TK_TAGS": "Теги",
+  "TK_VIEW": "Открыть",
+  "TK_ACTION": "Действие",
+  "TK_THE_ACTION_HAS_NOT_BEEN_PERFORMED_FOR_THE_LAST_7_DAYS": "Действие не выполнялось в последние 7 дней",
+  "TK_ACTIVITIES_FOR_LAST_7_DAYS": "Активности за последние 7 дней",
+  "TK_TOTAL_TIME": "Затраченное время",
+  "TK_AVERAGE_PER_DAY": "В среднем за день",
+  "TK_M": "м",
+  "TK_H": "ч"
 }
