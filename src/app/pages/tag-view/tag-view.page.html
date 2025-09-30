@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button
+      slot="start"
+      defaultHref="/library"
+    ></ion-back-button>
+    <ion-title>{{ 'TK_TAG' | translate }} "{{ tag?.name }}"</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (activitiesGroupedByDate.length) {
+    <h2>{{ 'TK_ACTIVITIES_FOR_LAST_7_DAYS' | translate }}</h2>
+    <div>{{ 'TK_TOTAL_TIME' | translate }}: {{ getTimeString(totalTimeMinutes) }}</div>
+    <div>{{ 'TK_AVERAGE_PER_DAY' | translate }}: {{ getTimeString(totalTimeMinutes / activitiesGroupedByDate.length) }}</div>
+    @for (day of activitiesGroupedByDate; track day.date) {
+      <h3>{{ day.date }}</h3>
+      <app-activity-list
+        [activities]="day.activities"
+      ></app-activity-list>
+    }
+  } @else {
+    <div>{{ 'TK_THERE_IS_NO_ACTIVITIES_WITH_THE_TAG_FOR_THE_LAST_7_DAYS' | translate }}</div>
+  }
+</ion-content>

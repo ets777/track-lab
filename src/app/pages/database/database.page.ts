@@ -9,7 +9,7 @@ import { ActivityActionService } from 'src/app/services/activity-action.service'
 import { ActionService } from 'src/app/services/action.service';
 import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { actionsToString } from 'src/app/functions/action';
+import { entitiesToString } from 'src/app/functions/string';
 import { IAchievement } from 'src/app/db/models/achievement';
 import { AchievementService } from 'src/app/services/achievement.service';
 import { DatabaseService } from 'src/app/services/database.service';
@@ -22,7 +22,7 @@ import { DatabaseService } from 'src/app/services/database.service';
   imports: [IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
 })
 export class DatabasePage implements OnInit {
-  actionsToString = actionsToString;
+  entitiesToString = entitiesToString;
   activities: IActivity[] = [];
   actions: IAction[] = [];
   activityActions: IActivityAction[] = [];
@@ -38,7 +38,7 @@ export class DatabasePage implements OnInit {
 
   async ngOnInit() {
     this.activities = await this.activityService.getAllEnriched();
-    this.actions = await this.actionService.getAll();
+    this.actions = await this.actionService.getAllEnriched();
     this.activityActions = await this.activityActionService.getAll();
     this.achievements = await this.achievementService.getAll();
   }

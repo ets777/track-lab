@@ -15,7 +15,7 @@ import { lowerCaseFirstLetter } from 'src/app/functions/string';
 import { actionSuggestions } from './action-suggestions';
 import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { actionsToString } from 'src/app/functions/action';
+import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 
@@ -30,6 +30,7 @@ export type ActivityForm = {
   energy: number,
   satiety: number,
   emotions: string,
+  tags: string,
 };
 
 @Component({
@@ -57,9 +58,10 @@ export class ActivityFormComponent {
   tooltipMessage = '';
   tooltipEvent: any;
 
-  filteredSuggestions: string[] = [];
-  private allSuggestions = actionSuggestions;
-  showSuggestions = false;
+  filteredActionSuggestions: string[] = [];
+  private allActionSuggestions = actionSuggestions;
+  showActionSuggestions = false;
+  
   private currentTime: string = '00:00';
 
   constructor(
@@ -79,6 +81,7 @@ export class ActivityFormComponent {
       energy: [this.defaultValue],
       satiety: [this.defaultValue],
       emotions: ['', duplicatedItemsValidator],
+      tags: [''],
     });
     this.setCurrentTime();
 
@@ -89,9 +92,9 @@ export class ActivityFormComponent {
 
   async ngOnInit() {
     const actions = await this.actionService.getAll();
-    this.allSuggestions = this.allSuggestions.map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
-    this.allSuggestions.unshift(...actions.map((action) => action.name));
-    this.allSuggestions = [...new Set(this.allSuggestions)];
+    this.allActionSuggestions = this.allActionSuggestions.map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
+    this.allActionSuggestions.unshift(...actions.map((action) => action.name));
+    this.allActionSuggestions = [...new Set(this.allActionSuggestions)];
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -159,12 +162,13 @@ export class ActivityFormComponent {
       energy: !doNotMeasure ? lastActivity?.energy || this.defaultValue : null,
       satiety: !doNotMeasure ? lastActivity?.satiety || this.defaultValue : null,
       emotions: '',
+      tags: '',
     });
   }
 
   setActivityData(activity: IActivity) {
     this.activityForm.patchValue({
-      actions: actionsToString(activity.actions),
+      actions: entitiesToString(activity.actions),
       startTime: activity.startTime,
       endTime: activity.endTime,
       comment: activity.comment,
@@ -174,6 +178,7 @@ export class ActivityFormComponent {
       energy: activity.energy,
       satiety: activity.satiety,
       emotions: activity.emotions,
+      tags: entitiesToString(activity.tags),
     });
   }
 
@@ -229,15 +234,15 @@ export class ActivityFormComponent {
     const entered = parts.slice(0, parts.length - 1);
 
     if (current.length > 0) {
-      this.filteredSuggestions = this.allSuggestions
+      this.filteredActionSuggestions = this.allActionSuggestions
         .filter((suggestion) =>
           suggestion.toLowerCase().startsWith(current)
           && !entered.includes(suggestion.toLowerCase())
         )
         .slice(0, 5);
-      this.showSuggestions = this.filteredSuggestions.length > 0;
+      this.showActionSuggestions = this.filteredActionSuggestions.length > 0;
     } else {
-      this.showSuggestions = false;
+      this.showActionSuggestions = false;
     }
   }
 
@@ -253,11 +258,11 @@ export class ActivityFormComponent {
       actions: parts.join(',').trim(),
     });
 
-    this.showSuggestions = false;
+    this.showActionSuggestions = false;
   }
 
-  hideSuggestions() {
-    setTimeout(() => (this.showSuggestions = false), 200);
+  hideActionSuggestions() {
+    setTimeout(() => (this.showActionSuggestions = false), 200);
   }
 
   isCurrentTime(time: string) {

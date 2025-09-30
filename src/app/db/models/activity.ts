@@ -1,5 +1,6 @@
 import { WithOptionalId } from "src/app/types/with-optional-id";
 import { IAction } from "./action";
+import { ITag } from "./tag";
 
 export interface IActivityDb {
     id: number;
@@ -17,4 +18,5 @@ export type IActivityCreateDto = WithOptionalId<IActivityDb>;
 
 export interface IActivity extends IActivityDb {
     actions: IAction[];
+    tags: ITag[];
 }

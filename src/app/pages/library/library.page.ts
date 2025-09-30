@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
 import { OverlayEventDetail } from '@ionic/core';
 import { Router } from '@angular/router';
+import { TagService } from 'src/app/services/tag.service';
 
 @Component({
   selector: 'app-library',
@@ -18,7 +19,7 @@ export class LibraryPage implements OnInit {
   tags: { id: number; name: string }[] = [{ id: 1, name: 'lalala' }];
   actions: { id: number; name: string }[] = [{ id: 1, name: 'ololo' }];
 
-  public activityActionSheetButtons = [
+  public actionSheetButtons = [
     {
       text: this.translate.instant('TK_VIEW'),
       data: {
@@ -42,6 +43,7 @@ export class LibraryPage implements OnInit {
 
   constructor(
     private actionService: ActionService,
+    private tagService: TagService,
     private translate: TranslateService,
     private router: Router,
   ) { }
@@ -51,6 +53,8 @@ export class LibraryPage implements OnInit {
 
   async ionViewDidEnter() {
     this.actions = (await this.actionService.getAll())
+      .sort((a, b) => a.name.localeCompare(b.name));
+    this.tags = (await this.tagService.getAll())
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -72,7 +76,29 @@ export class LibraryPage implements OnInit {
     }
   }
 
+  async doTagAction(event: CustomEvent<OverlayEventDetail>, tagId: number) {
+    const action = event.detail.data?.action;
+
+    switch (action) {
+      case 'view':
+        await this.goToViewTagPage(tagId);
+        break;
+      case 'delete':
+        // await this.deleteActivity(actionId);
+        break;
+      case 'edit':
+        // await this.goToEditPage(actionId);
+        break;
+      default:
+        break;
+    }
+  }
+
   async goToViewActionPage(actionId: number) {
     await this.router.navigate(['/action', actionId]);
+  }
+
+  async goToViewTagPage(tagId: number) {
+    await this.router.navigate(['/tag', tagId]);
   }
 }

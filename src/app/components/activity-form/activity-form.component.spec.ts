@@ -32,6 +32,7 @@ describe('ActivityFormComponent', () => {
     expect(component.activityForm.contains('energy')).toBeTrue();
     expect(component.activityForm.contains('satiety')).toBeTrue();
     expect(component.activityForm.contains('emotions')).toBeTrue();
+    expect(component.activityForm.contains('tags')).toBeTrue();
   });
 
   it('should be invalid when required fields are empty', () => {
@@ -45,7 +46,8 @@ describe('ActivityFormComponent', () => {
       mood: 5,
       energy: 5,
       satiety: 5,
-      emotions: ''
+      emotions: '',
+      tags: '',
     });
     expect(component.activityForm.invalid).toBeTrue();
   });
@@ -61,7 +63,8 @@ describe('ActivityFormComponent', () => {
       mood: 7,
       energy: 8,
       satiety: 6,
-      emotions: 'happy'
+      emotions: 'happy',
+      tags: 'tag1, tag2',
     });
     expect(component.activityForm.valid).toBeTrue();
   });

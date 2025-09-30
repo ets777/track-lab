@@ -29,6 +29,15 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'tag',
+    children: [
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/tag-view/tag-view.page').then(m => m.TagViewPage)
+      },
+    ]
+  },
+  {
     path: 'activity-calendar',
     loadComponent: () =>
       import('./pages/activity-calendar/activity-calendar.page').then((m) => m.ActivityCalendarPage),

@@ -8,6 +8,8 @@ import { ActionService } from './action.service';
 import { IAction } from '../db/models/action';
 import { ActivityActionService } from './activity-action.service';
 import { HookService } from './hook.service';
+import { TagService } from './tag.service';
+import { ITag } from '../db/models/tag';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
@@ -15,6 +17,7 @@ export class ActivityService {
         private actionService: ActionService,
         private activityActionService: ActivityActionService,
         private hookService: HookService,
+        private tagService: TagService,
     ) { }
 
     async add(activity: IActivityCreateDto | IActivityDb) {
@@ -47,6 +50,7 @@ export class ActivityService {
         const activityId = await db.activities.add(activity);
 
         await this.actionService.addFromString(activityFormValue.actions, activityId);
+        await this.tagService.addFromStringWithActivityRelation(activityFormValue.tags, activityId);
 
         this.hookService.emit({ type: 'activity.added', payload: { activityId } });
 
@@ -196,10 +200,12 @@ export class ActivityService {
 
     async enrichOne(activityDb: IActivityDb) {
         const actions: IAction[] = await this.actionService.getByActivityId(activityDb.id);
+        const tags: ITag[] = await this.tagService.getByActivityId(activityDb.id);
 
         return {
             ...activityDb,
             actions,
+            tags,
         } as IActivity;
     }
 

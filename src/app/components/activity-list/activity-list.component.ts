@@ -4,7 +4,7 @@ import { IonItem, IonList, IonLabel, IonButtons, IonButton, IonIcon, IonActionSh
 import { OverlayEventDetail } from '@ionic/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
-import { actionsToString } from 'src/app/functions/action';
+import { entitiesToString } from 'src/app/functions/string';
 import { ActivityService } from 'src/app/services/activity.service';
 
 @Component({
@@ -16,7 +16,7 @@ import { ActivityService } from 'src/app/services/activity.service';
 export class ActivityListComponent implements OnInit {
   @Input('activities') activities: IActivity[] = [];
 
-  actionsToString = actionsToString;
+  entitiesToString = entitiesToString;
 
   public activityActionSheetButtons = [
     {

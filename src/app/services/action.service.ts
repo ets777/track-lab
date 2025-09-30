@@ -1,14 +1,19 @@
 import { Injectable } from '@angular/core';
-import { IActionCreateDto, IActionDb } from '../db/models/action';
+import { IAction, IActionCreateDto, IActionDb } from '../db/models/action';
 import { db } from '../db/db';
 import { ActivityActionService } from './activity-action.service';
-import { getActionsFromString } from '../functions/action';
+import { getEntitiesFromString } from '../functions/string';
+import { ITag } from '../db/models/tag';
+import { TagService } from './tag.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ActionService {
-  constructor(private activityActionService: ActivityActionService) { }
+  constructor(
+    private activityActionService: ActivityActionService,
+    private tagService: TagService,
+  ) { }
 
   async add(action: IActionCreateDto | IActionDb) {
     return db.actions.add(action);
@@ -54,7 +59,7 @@ export class ActionService {
 
   async addFromString(actionsString: string, activityId: number) {
     const result = [];
-    const actions = getActionsFromString(actionsString);
+    const actions = getEntitiesFromString(actionsString);
 
     for (const action of actions) {
       const actionId = await this.addWithRelation(action, activityId);
@@ -68,6 +73,16 @@ export class ActionService {
     return db.actions.get(id);
   }
 
+  async getEnriched(id: number) {
+    const action = await db.actions.get(id);
+
+    if (!action) {
+      return;
+    }
+
+    return this.enrichOne(action);
+  }
+
   async getList(ids: number[]) {
     return db.actions
       .where('id')
@@ -77,7 +92,7 @@ export class ActionService {
 
   async updateFromString(actionsString: string, activityId: number) {
     const currentActions = await this.getByActivityId(activityId);
-    const formActions = getActionsFromString(actionsString);
+    const formActions: IActionCreateDto[] = getEntitiesFromString(actionsString);
 
     const actionsToRemove = currentActions.filter(
       (currentAction) => !formActions.find(
@@ -102,10 +117,36 @@ export class ActionService {
   async getByActivityId(id: number) {
     const activityActions = await this.activityActionService.getByActivityId(id);
     const actionIds = activityActions.map((activityAction) => activityAction.actionId);
-    return db.actions
+    const actions = await db.actions
       .where('id')
       .anyOf(actionIds)
       .toArray();
+    
+    return this.enrichAll(actions);
+  }
+
+  async getAllEnriched() {
+    const actions = await this.getAll();
+    return this.enrichAll(actions);
+  }
+
+  async enrichAll(actionsDb: IActionDb[]) {
+    const result = [];
+
+    for (const activityDb of actionsDb) {
+      result.push(await this.enrichOne(activityDb));
+    }
+
+    return result;
+  }
+
+  async enrichOne(actionDb: IActionDb) {
+    const tags: ITag[] = await this.tagService.getByActivityId(actionDb.id);
+
+    return {
+      ...actionDb,
+      tags,
+    } as IAction;
   }
 
   async getAll() {

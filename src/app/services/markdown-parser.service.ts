@@ -7,7 +7,7 @@ import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import { appVersion } from '../../environments/version';
 import { isDateValid } from '../functions/date';
 import { ActivityForm } from '../components/activity-form/activity-form.component';
-import { actionsToString } from '../functions/action';
+import { entitiesToString } from '../functions/string';
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
@@ -174,7 +174,7 @@ export class MarkdownParserService {
         const table = `| ${tableContentTitle} |\n`
             + `| ${tableTitleSeparator} |\n`
             + activities.map(
-                (activity) => `| ${activity.startTime} | ${actionsToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${activity.comment ?? ''} |`
+                (activity) => `| ${activity.startTime} | ${entitiesToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${activity.comment ?? ''} |`
             ).join('\n');
 
         const content = metaData + table;

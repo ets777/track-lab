@@ -1,27 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons, IonButton } from '@ionic/angular/standalone';
-import { ActivatedRoute, Router } from '@angular/router';
-import { IAction } from 'src/app/db/models/action';
-import { IActivity } from 'src/app/db/models/activity';
-import { ActionService } from 'src/app/services/action.service';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TagService } from 'src/app/services/tag.service';
+import { ITag } from 'src/app/db/models/tag';
+import { ActivatedRoute } from '@angular/router';
+import { IActivity } from 'src/app/db/models/activity';
 import { ActivityService } from 'src/app/services/activity.service';
-import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
-import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
+import { Time } from 'src/app/Time';
+import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 
 @Component({
-  selector: 'app-action-view',
-  templateUrl: './action-view.page.html',
-  styleUrls: ['./action-view.page.scss'],
+  selector: 'app-tag-view',
+  templateUrl: './tag-view.page.html',
+  styleUrls: ['./tag-view.page.scss'],
   standalone: true,
-  imports: [IonBackButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent],
+  imports: [IonBackButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent]
 })
-export class ActionViewPage implements OnInit {
-  actionId: number;
-  action?: IAction;
+export class TagViewPage implements OnInit {
+  tagId: number;
+  tag?: ITag;
   totalTimeMinutes: number = 0;
   activities: IActivity[] = [];
   activitiesGroupedByDate: {
@@ -31,28 +31,32 @@ export class ActionViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private actionService: ActionService,
+    private tagService: TagService,
     private activityService: ActivityService,
     private translate: TranslateService,
   ) {
-    this.actionId = Number(this.route.snapshot.paramMap.get('id'));
+    this.tagId = Number(this.route.snapshot.paramMap.get('id'));
+    console.log('1');
   }
 
   ngOnInit() {
   }
 
   async ionViewDidEnter() {
-    const action = await this.actionService.getEnriched(this.actionId);
+    console.log('1');
+    const tag = await this.tagService.get(this.tagId);
 
-    if (action) {
-      this.action = action;
+    if (tag) {
+      this.tag = tag;
     } else {
       // show an error
     }
+    console.log('1');
     await this.setActivitiesData();
   }
 
   async setActivitiesData() {
+    console.log(2);
     const activities = await this.activityService.getByDate(
       format(addDays(new Date(), -6), 'yyyy-MM-dd'),
       format(new Date(), 'yyyy-MM-dd'),
@@ -61,8 +65,10 @@ export class ActionViewPage implements OnInit {
       .sort((a, b) => new Date(a).getMilliseconds() - new Date(b).getMilliseconds())
       .reverse();
 
+    console.log(activities);
+
     this.activities = activities.filter(
-      (activity) => activity.actions.find((action) => action.id == this.actionId),
+      (activity) => activity.tags.find((tag) => tag.id == this.tagId),
     );
 
     this.activitiesGroupedByDate = dates

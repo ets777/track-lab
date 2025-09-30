@@ -2,14 +2,20 @@ import Dexie, { Table } from 'dexie';
 import { IActivityCreateDto, IActivityDb } from './models/activity';
 import { IActionCreateDto, IActionDb } from './models/action';
 import { IActivityActionCreateDto, IActivityActionDb } from './models/activity-action';
-import { getActionsFromString } from '../functions/action';
+import { getEntitiesFromString } from '../functions/string';
 import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
+import { IActivityTagCreateDto, IActivityTagDb } from './models/activity-tag';
+import { IActionTagCreateDto, IActionTagDb } from './models/action-tag';
+import { ITagCreateDto, ITagDb } from './models/tag';
 
 export class MyAppDatabase extends Dexie {
     activities!: Table<IActivityDb, number, IActivityCreateDto>;
     actions!: Table<IActionDb, number, IActionCreateDto>;
     activityActions!: Table<IActivityActionDb, number, IActivityActionCreateDto>;
     achievements!: Table<IAchievementDb, number, IAchievementCreateDto>;
+    tags!: Table<ITagDb, number, ITagCreateDto>;
+    actionTags!: Table<IActionTagDb, number, IActionTagCreateDto>;
+    activityTags!: Table<IActivityTagDb, number, IActivityTagCreateDto>;
 
     constructor(databaseName: string) {
         super(databaseName);
@@ -21,7 +27,7 @@ export class MyAppDatabase extends Dexie {
         });
 
         this.version(2).stores({
-            activities: '++id, date, [date+startTime], mood',
+            activities: '++id, date, [date+startTime], mood, energy, satiety',
             actions: '++id, name',
             activityActions: '++id, activityId, actionId, [activityId+actionId]',
             achievements: '++id, code, unlocked',
@@ -30,7 +36,7 @@ export class MyAppDatabase extends Dexie {
 
             for (const activity of allActivities) {
                 if (activity.actions) {
-                    const actionsDto = getActionsFromString(activity.actions);
+                    const actionsDto = getEntitiesFromString(activity.actions);
 
                     for (const actionDto of actionsDto) {
                         let action = await tx.table('actions').where('name').equalsIgnoreCase(actionDto.name).first();
@@ -71,6 +77,16 @@ export class MyAppDatabase extends Dexie {
                 delete activity.actions;
                 await tx.table('activities').put(activity);
             }
+        });
+
+        this.version(3).stores({
+            activities: '++id, date, [date+startTime], mood, energy, satiety',
+            actions: '++id, name',
+            activityActions: '++id, activityId, actionId, [activityId+actionId]',
+            achievements: '++id, code, unlocked',
+            tags: '++id, name',
+            actionTags: '++id, actionId, tagId, [actionId+tagId]',
+            activityTags: '++id, activityId, tagId, [activityId+tagId]',
         });
     }
 }

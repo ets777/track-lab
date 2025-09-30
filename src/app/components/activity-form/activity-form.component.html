@@ -19,7 +19,7 @@
       formControlName="actions"
       name="actions"
       (ionInput)="onActionsInput($event)"
-      (ionBlur)="hideSuggestions()"
+      (ionBlur)="hideActionSuggestions()"
     >
       @if (activityForm.get('actions')?.errors) {
         <ion-icon
@@ -33,9 +33,9 @@
     </ion-input>
   </ion-item>
 
-  @if (showSuggestions) {
+  @if (showActionSuggestions) {
     <ion-list class="suggestions" lines="none">
-      @for (suggestion of filteredSuggestions; track suggestion) {
+      @for (suggestion of filteredActionSuggestions; track suggestion) {
         <ion-item
           button
           (click)="selectSuggestion(suggestion)"
@@ -180,6 +180,15 @@
         ></ion-icon>
       }
     </ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input
+      label="{{ 'TK_TAGS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
+      labelPlacement="floating"
+      formControlName="tags"
+      name="tags"
+    ></ion-input>
   </ion-item>
 
   <ion-item>
