@@ -23,7 +23,7 @@
     >
       @if (activityForm.get('actions')?.errors) {
         <ion-icon
-          class="warning-sign"
+          class="input-icon"
           slot="end"
           src="assets/icon/warning-sign.svg"
           slot="end"
@@ -57,7 +57,7 @@
     >
       @if (activityForm.get('date')?.errors) {
         <ion-icon
-          class="warning-sign"
+          class="input-icon"
           slot="end"
           src="assets/icon/warning-sign.svg"
           slot="end"
@@ -78,7 +78,7 @@
     >
       @if (activityForm.get('startTime')?.errors) {
         <ion-icon
-          class="warning-sign"
+          class="input-icon"
           slot="end"
           src="assets/icon/warning-sign.svg"
           slot="end"
@@ -99,11 +99,19 @@
     >
       @if (activityForm.get('endTime')?.errors) {
         <ion-icon
-          class="warning-sign"
+          class="input-icon"
           slot="end"
           src="assets/icon/warning-sign.svg"
           slot="end"
           (click)="openTooltip($event, 'endTime')"
+        ></ion-icon>
+      }
+      @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
+        <ion-icon
+          class="input-icon"
+          slot="end"
+          src="assets/icon/refresh.svg"
+          (click)="updateEndTime()"
         ></ion-icon>
       }
     </ion-input>

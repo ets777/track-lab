@@ -59,6 +59,7 @@ export class ActivityFormComponent {
   filteredSuggestions: string[] = [];
   private allSuggestions = actionSuggestions;
   showSuggestions = false;
+  private currentTime: string = '00:00';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -78,6 +79,11 @@ export class ActivityFormComponent {
       satiety: [this.defaultValue],
       emotions: [''],
     });
+    this.setCurrentTime();
+
+    setInterval(() => {
+      this.setCurrentTime();
+    }, 5000);
   }
 
   async ngOnInit() {
@@ -111,9 +117,12 @@ export class ActivityFormComponent {
       });
   }
 
+  setCurrentTime() {
+    this.currentTime = new Time().toString().slice(0, 5);
+  }
+
   async setDefaultData(): Promise<void> {
     const currentDate = format(new Date(), 'yyyy-MM-dd');
-    const currentTime = new Time().toString().slice(0, 5);
     const lastActivity = await this.activityService.getLast(currentDate);
     const startFromCurrentTime = !lastActivity?.endTime || lastActivity.date !== currentDate;
 
@@ -121,8 +130,8 @@ export class ActivityFormComponent {
 
     this.activityForm.patchValue({
       actions: '',
-      startTime: startFromCurrentTime ? currentTime : lastActivity?.endTime,
-      endTime: currentTime,
+      startTime: startFromCurrentTime ? this.currentTime : lastActivity?.endTime,
+      endTime: this.currentTime,
       comment: '',
       date: currentDate,
       doNotMeasure,
@@ -225,5 +234,15 @@ export class ActivityFormComponent {
 
   hideSuggestions() {
     setTimeout(() => (this.showSuggestions = false), 200);
+  }
+
+  isCurrentTime(time: string) {
+    return this.currentTime == time;
+  }
+
+  updateEndTime() {
+    this.activityForm.patchValue({
+      endTime: this.currentTime,
+    });
   }
 }
