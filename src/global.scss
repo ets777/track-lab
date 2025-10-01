@@ -39,3 +39,18 @@
 .tall-toast {
     height: 92%;
 }
+
+.input-icon {
+    width: 24px;
+    height: 24px;
+    padding: 10px;
+}
+
+ion-item.invalid {
+    --highlight-color-focused: var(--ion-color-danger);
+    --border-color: var(--ion-color-danger);
+
+    ion-input {
+        --color: var(--ion-color-danger);
+    }
+}

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonIcon, IonInput, IonChip, IonHeader, IonPopover, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle, IonSegmentButton, IonSegment, IonSegmentView, IonSegmentContent } from '@ionic/angular/standalone';
+import { IonInput, IonChip, IonHeader, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle, IonSegmentButton, IonSegment, IonSegmentView, IonSegmentContent } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
@@ -18,6 +18,7 @@ import { AchievementService } from 'src/app/services/achievement.service';
 import { IAchievement } from 'src/app/db/models/achievement';
 import { Time } from 'src/app/Time';
 import { Router } from '@angular/router';
+import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
@@ -33,7 +34,7 @@ interface NormalizedPoint {
 @Component({
   selector: 'app-activity-calendar',
   standalone: true,
-  imports: [IonSegment, IonSegmentButton, IonTitle, IonToolbar, IonText, IonList, IonButton, IonIcon, IonInput, IonLabel, IonItem, IonContent, IonPopover, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective, IonSegmentView, IonSegmentContent],
+  imports: [IonSegment, IonSegmentButton, IonTitle, IonToolbar, IonText, IonList, IonButton, IonInput, IonLabel, IonItem, IonContent, IonHeader, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective, IonSegmentView, IonSegmentContent, ValidationErrorDirective],
   templateUrl: './activity-calendar.page.html',
   styleUrl: './activity-calendar.page.scss',
 })
@@ -54,10 +55,6 @@ export class ActivityCalendarPage implements OnInit {
   }[] = [];
   selectedPeriod: Period = 'week';
   filterForm: FormGroup;
-
-  isTooltipOpen = false;
-  tooltipMessage = '';
-  tooltipEvent: any;
 
   dates: string[] = [];
   chartData!: ChartConfiguration<'line'>['data'];
@@ -283,45 +280,6 @@ export class ActivityCalendarPage implements OnInit {
       cssClass: 'tall-toast',
     });
     await toast.present();
-  }
-
-  openTooltip(ev: Event, fieldName: string) {
-    const errors = this.filterForm.get(fieldName)?.errors;
-    const errorMessages = [];
-
-    if (!errors) {
-      return;
-    }
-
-    if (errors['required']) {
-      errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
-    }
-
-    if (errors['maxDateRange']) {
-      errorMessages.push(
-        this.translate.instant(
-          errors['maxDateRange'].message,
-          errors['maxDateRange'].params,
-        ),
-      );
-    }
-
-    if (errors['dateRange']) {
-      errorMessages.push(this.translate.instant(errors['dateRange'].message));
-    }
-
-    if (errors['dateFormat']) {
-      errorMessages.push(this.translate.instant(errors['dateFormat'].message));
-    }
-
-    this.tooltipMessage = errorMessages.map((message) => `- ${message}`).join('<br>');
-    this.tooltipEvent = ev;
-    this.isTooltipOpen = true;
-  }
-
-  closeTooltip() {
-    this.isTooltipOpen = false;
-    this.tooltipMessage = '';
   }
 
   async goToDay(date: string) {

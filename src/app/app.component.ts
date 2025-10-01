@@ -10,12 +10,13 @@ import { AchievementService } from './services/achievement.service';
 import { Platform } from '@ionic/angular';
 import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
 import { NavigationService } from './services/navigation.service';
+import { TooltipComponent } from "./components/tooltip/tooltip.component";
 
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent],
 })
 export class AppComponent implements OnInit {
   constructor(

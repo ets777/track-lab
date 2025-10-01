@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover, IonList, IonCheckbox } from '@ionic/angular/standalone';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonRange, IonList, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
@@ -18,6 +18,7 @@ import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
+import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 
 export type ActivityForm = {
   actions: string,
@@ -37,7 +38,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonCheckbox, IonList, IonPopover, IonRange, IonTextarea, IonIcon, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective]
+  imports: [IonIcon, IonCheckbox, IonList, IonRange, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
@@ -53,10 +54,6 @@ export class ActivityFormComponent {
 
   public activityForm: ModelFormGroup<ActivityForm>;
   private defaultValue: number = 5;
-
-  isTooltipOpen = false;
-  tooltipMessage = '';
-  tooltipEvent: any;
 
   filteredActionSuggestions: string[] = [];
   private allActionSuggestions = actionSuggestions;
@@ -184,45 +181,6 @@ export class ActivityFormComponent {
 
   getDoNotMeasureValue(activity: IActivity) {
     return !activity?.mood || !activity?.energy || !activity?.satiety;
-  }
-
-  openTooltip(ev: Event, fieldName: string) {
-    const errors = this.activityForm.get(fieldName)?.errors;
-    const errorMessages = [];
-
-    if (!errors) {
-      return;
-    }
-
-    if (errors['required']) {
-      errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
-    }
-
-    if (errors['maxDateRange']) {
-      errorMessages.push(
-        this.translate.instant(
-          errors['maxDateRange'].message,
-          errors['maxDateRange'].params,
-        ),
-      );
-    }
-
-    if (errors['dateRange']) {
-      errorMessages.push(this.translate.instant(errors['dateRange'].message));
-    }
-
-    if (errors['dateFormat']) {
-      errorMessages.push(this.translate.instant(errors['dateFormat'].message));
-    }
-
-    this.tooltipMessage = errorMessages.map((message) => `- ${message}`).join('<br>');
-    this.tooltipEvent = ev;
-    this.isTooltipOpen = true;
-  }
-
-  closeTooltip() {
-    this.isTooltipOpen = false;
-    this.tooltipMessage = '';
   }
 
   onActionsInput(event: any) {

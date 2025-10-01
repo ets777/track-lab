@@ -1,0 +1,10 @@
+<ion-popover
+  [isOpen]="isOpen"
+  [event]="event"
+  size="auto"
+  (didDismiss)="onDismiss()"
+>
+  <ng-template>
+    <div class="validation-tooltip" [innerHTML]="message"></div>
+  </ng-template>
+</ion-popover>
