@@ -57,7 +57,7 @@ export class ActionService {
     return null;
   }
 
-  async addFromString(actionsString: string, activityId: number) {
+  async addFromStringWithRelation(actionsString: string, activityId: number) {
     const result = [];
     const actions = getEntitiesFromString(actionsString);
 

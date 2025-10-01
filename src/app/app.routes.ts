@@ -23,10 +23,14 @@ export const routes: Routes = [
     path: 'action',
     children: [
       {
+        path: 'add',
+        loadComponent: () => import('./pages/action-add/action-add.page').then(m => m.ActionAddPage)
+      },
+      {
         path: ':id',
         loadComponent: () => import('./pages/action-view/action-view.page').then(m => m.ActionViewPage),
       },
-    ]
+    ],
   },
   {
     path: 'tag',
@@ -35,7 +39,7 @@ export const routes: Routes = [
         path: ':id',
         loadComponent: () => import('./pages/tag-view/tag-view.page').then(m => m.TagViewPage)
       },
-    ]
+    ],
   },
   {
     path: 'activity-calendar',

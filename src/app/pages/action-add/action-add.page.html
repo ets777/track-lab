@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ 'TK_NEW_ACTION' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="addAction()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_ADD' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <app-action-form #addFormRef></app-action-form>
+</ion-content>

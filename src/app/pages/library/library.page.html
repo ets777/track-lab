@@ -1,24 +1,30 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
+    <ion-segment value="actions">
+      <ion-segment-button
+        value="actions"
+        content-id="actions"
+      >
+        <ion-label>{{ 'TK_ACTIONS' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button
+        value="tags"
+        content-id="tags"
+      >
+        <ion-label>{{ 'TK_TAGS' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-segment value="actions">
-    <ion-segment-button
-      value="actions"
-      content-id="actions"
-    >
-      <ion-label>{{ 'TK_ACTIONS' | translate }}</ion-label>
-    </ion-segment-button>
-    <ion-segment-button
-      value="tags"
-      content-id="tags"
-    >
-      <ion-label>{{ 'TK_TAGS' | translate }}</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddPage()">
+    <ion-fab-button>
+      <ion-icon src="assets/icon/plus.svg"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  
   <ion-segment-view>
     <ion-segment-content id="actions">
       <ion-list>
@@ -61,6 +67,4 @@
       </ion-list>
     </ion-segment-content>
   </ion-segment-view>
-
-
 </ion-content>

@@ -21,20 +21,31 @@ export class ValidationErrorDirective {
 
     ngOnInit() {
         const control = this.controlDir.control;
-        if (!control) return;
+
+        if (!control) {
+            return;
+        }
+        
+        this.updateWarning(control);
 
         this.subscription = control.statusChanges.subscribe(() => {
-            const ionItem = this.el.nativeElement.closest('ion-item');
-            if (!ionItem) return;
-
-            if (control.invalid) {
-                this.renderer.addClass(ionItem, 'invalid');
-                this.addWarningIcon(control);
-            } else {
-                this.renderer.removeClass(ionItem, 'invalid');
-                this.removeWarningIcon(control);
-            }
+            this.updateWarning(control);
         });
+    }
+
+    private updateWarning(control: AbstractControl) {
+        const ionItem = this.el.nativeElement.closest('ion-item');
+        if (!ionItem) {
+            return;
+        }
+
+        if (control.invalid) {
+            this.renderer.addClass(ionItem, 'invalid');
+            this.addWarningIcon(control);
+        } else {
+            this.renderer.removeClass(ionItem, 'invalid');
+            this.removeWarningIcon(control);
+        }
     }
 
     private addWarningIcon(control: AbstractControl) {
@@ -69,25 +80,25 @@ export class ValidationErrorDirective {
             return '';
         }
 
-        if (errors['required']) {
-            errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
-        }
+        const errorNames = Object.keys(errors);
 
-        if (errors['maxDateRange']) {
-            errorMessages.push(
-                this.translate.instant(
-                    errors['maxDateRange'].message,
-                    errors['maxDateRange'].params,
-                ),
-            );
-        }
+        for (const errorName of errorNames) {
+            if (errorName == 'required') {
+                errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
+            }
 
-        if (errors['dateRange']) {
-            errorMessages.push(this.translate.instant(errors['dateRange'].message));
-        }
+            if (errorName == 'maxDateRange') {
+                errorMessages.push(
+                    this.translate.instant(
+                        errors['maxDateRange'].message,
+                        errors['maxDateRange'].params,
+                    ),
+                );
+            }
 
-        if (errors['dateFormat']) {
-            errorMessages.push(this.translate.instant(errors['dateFormat'].message));
+            if (errors[errorName].message) {
+                errorMessages.push(this.translate.instant(errors[errorName].message));
+            }
         }
 
         return errorMessages.map((message) => `- ${message}`).join('<br>') ?? '';

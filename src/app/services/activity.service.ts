@@ -49,7 +49,7 @@ export class ActivityService {
 
         const activityId = await db.activities.add(activity);
 
-        await this.actionService.addFromString(activityFormValue.actions, activityId);
+        await this.actionService.addFromStringWithRelation(activityFormValue.actions, activityId);
         await this.tagService.addFromStringWithActivityRelation(activityFormValue.tags, activityId);
 
         this.hookService.emit({ type: 'activity.added', payload: { activityId } });
