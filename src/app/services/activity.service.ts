@@ -114,7 +114,7 @@ export class ActivityService {
         const activities = await db.activities
             .where('date')
             .between(startDate, endDate)
-            .toArray();
+            .sortBy('startTime');
 
         return this.enrichAll(activities);
     }
