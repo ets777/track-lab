@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityForm, ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
 import { TranslateModule } from '@ngx-translate/core';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-activity-add',
@@ -19,12 +20,18 @@ export class ActivityAddPage {
     private activityService: ActivityService,
   ) { }
 
-  async ionViewDidEnter() {
-    const currentTime = new Time().toString().slice(0, 5);
-    
-    this.addFormRef?.activityForm?.patchValue({
-      endTime: currentTime,
+  ngOnInit() {
+    App.addListener('resume', () => {
+      this.updateEndTime();
     });
+  }
+
+  async ionViewDidEnter() {
+    this.updateEndTime();
+  }
+
+  getForm() {
+    return this.addFormRef?.activityForm;
   }
 
   async addActivity(): Promise<void> {
@@ -32,16 +39,30 @@ export class ActivityAddPage {
       return;
     }
 
-    const activityFormValue = this.addFormRef.activityForm.value as ActivityForm;
+    const activityFormValue = this.getForm().value as ActivityForm;
     await this.activityService.addFromForm(activityFormValue);
     await this.resetForm();
   }
 
   isFormValid() {
-    return this.addFormRef?.activityForm?.valid;
+    return this.getForm()?.valid;
   }
 
   async resetForm() {
     await this.addFormRef?.setDefaultData();
+  }
+
+  updateEndTime() {
+    const isTouched = this.getForm()?.get('endTime')?.touched;
+
+    if (isTouched) {
+      return;
+    }
+
+    const currentTime = new Time().toString().slice(0, 5);
+
+    this.getForm()?.patchValue({
+      endTime: currentTime,
+    });
   }
 }

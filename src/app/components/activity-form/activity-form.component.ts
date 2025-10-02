@@ -132,9 +132,9 @@ export class ActivityFormComponent {
     if (lastActivity?.date == currentDate && lastActivity?.endTime) {
       startTime = lastActivity.endTime;
     }
-    
+
     if (
-      lastActivity?.date 
+      lastActivity?.date
       && yesterday == lastActivity.date
       && lastActivity.endTime
     ) {
@@ -261,7 +261,7 @@ export class ActivityFormComponent {
 
   updateEndTime(event: Event) {
     event.preventDefault();
-    
+
     this.activityForm.patchValue({
       endTime: this.currentTime,
     });
