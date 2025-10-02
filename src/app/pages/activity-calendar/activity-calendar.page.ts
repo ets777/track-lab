@@ -121,7 +121,8 @@ export class ActivityCalendarPage implements OnInit {
     const activities = await this.activityService.getByDate(startDate, endDate);
 
     this.activities = activities;
-    this.dates = [...new Set(activities.map((activity) => activity.date))];
+    this.dates = [...new Set(activities.map((activity) => activity.date))]
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
     this.activitiesGroupedByDate = this.dates
       .map((date) => {
         const activitiesAtDate = activities.filter((activity) => activity.date == date);
