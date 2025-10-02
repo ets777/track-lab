@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { IonInput, IonItem, IonLabel, IonIcon, IonText, IonTextarea, IonRange, IonPopover, IonList, IonCheckbox } from '@ionic/angular/standalone';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
-import { format } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
@@ -123,17 +123,36 @@ export class ActivityFormComponent {
 
   async setDefaultData(): Promise<void> {
     const currentDate = format(new Date(), 'yyyy-MM-dd');
-    const lastActivity = await this.activityService.getLast(currentDate);
-    const startFromCurrentTime = !lastActivity?.endTime || lastActivity.date !== currentDate;
+    const yesterday = format(addDays(new Date(currentDate), -1), 'yyyy-MM-dd');
+    const lastActivity = await this.activityService.getLast();
+
+    let startTime = this.currentTime;
+    let date = currentDate;
+
+    if (lastActivity?.date == currentDate && lastActivity?.endTime) {
+      startTime = lastActivity.endTime;
+    }
+    
+    if (
+      lastActivity?.date 
+      && yesterday == lastActivity.date
+      && lastActivity.endTime
+    ) {
+      startTime = lastActivity.endTime;
+
+      if (lastActivity.endTime > lastActivity.startTime) {
+        date = lastActivity.date;
+      }
+    }
 
     const doNotMeasure = lastActivity ? this.getDoNotMeasureValue(lastActivity) : false;
 
     this.activityForm.patchValue({
       actions: '',
-      startTime: startFromCurrentTime ? this.currentTime : lastActivity?.endTime,
+      startTime,
       endTime: this.currentTime,
       comment: '',
-      date: currentDate,
+      date,
       doNotMeasure,
       mood: !doNotMeasure ? lastActivity?.mood || this.defaultValue : null,
       energy: !doNotMeasure ? lastActivity?.energy || this.defaultValue : null,
