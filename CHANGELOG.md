@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.4] - 2025-10-02
+
+### Added
+
+- Documentation page for activities
+
+### Fixed
+
+- Dates order on graph
+- Default date and start time
+- Refresh end time button behavior
+- End time autorefresh
+
 ## [0.3.3] - 2025-10-01
 
 ### Added
