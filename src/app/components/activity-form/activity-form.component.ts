@@ -259,7 +259,9 @@ export class ActivityFormComponent {
     return this.currentTime == time;
   }
 
-  updateEndTime() {
+  updateEndTime(event: Event) {
+    event.preventDefault();
+    
     this.activityForm.patchValue({
       endTime: this.currentTime,
     });
