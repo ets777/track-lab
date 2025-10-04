@@ -124,14 +124,7 @@
     ></ion-input>
   </ion-item>
 
-  <ion-item>
-    <ion-input
-      label="{{ 'TK_TAGS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
-      labelPlacement="floating"
-      formControlName="tags"
-      name="tags"
-    ></ion-input>
-  </ion-item>
+  <app-tag-input formControlName="tags"></app-tag-input>
 
   <ion-item>
     <ion-textarea

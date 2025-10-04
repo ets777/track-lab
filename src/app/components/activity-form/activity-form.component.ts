@@ -19,6 +19,7 @@ import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
+import { TagInputComponent } from '../tag-input/tag-input.component';
 
 export type ActivityForm = {
   actions: string,
@@ -38,7 +39,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonIcon, IonCheckbox, IonList, IonRange, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective]
+  imports: [IonIcon, IonCheckbox, IonList, IonRange, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent]
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
@@ -89,7 +90,9 @@ export class ActivityFormComponent {
 
   async ngOnInit() {
     const actions = await this.actionService.getAll();
-    this.allActionSuggestions = this.allActionSuggestions.map((suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion)))
+    this.allActionSuggestions = this.allActionSuggestions.map(
+      (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
+    );
     this.allActionSuggestions.unshift(...actions.map((action) => action.name));
     this.allActionSuggestions = [...new Set(this.allActionSuggestions)];
 
