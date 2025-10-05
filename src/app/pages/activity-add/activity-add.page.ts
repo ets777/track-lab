@@ -54,6 +54,7 @@ export class ActivityAddPage {
   }
 
   async resetForm() {
+    this.getForm()?.get('endTime')?.markAsUntouched();
     await this.addFormRef?.setDefaultData();
   }
 

@@ -270,5 +270,7 @@ export class ActivityFormComponent {
     this.activityForm.patchValue({
       endTime: this.currentTime,
     });
+
+    this.activityForm.get('endTime')?.markAsUntouched();
   }
 }
