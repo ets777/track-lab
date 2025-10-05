@@ -126,8 +126,9 @@
 
   @if (!activityForm.get('doNotMeasure')?.value) {
     <ion-item>
-      <ion-label position="stacked">{{ 'TK_MOOD' | translate }} ({{
-        activityForm.get('mood')?.value }})</ion-label>
+      <ion-label position="stacked">
+        {{ 'TK_MOOD' | translate }} ({{ activityForm.get('mood')?.value }})
+      </ion-label>
       <ion-range
         min="1"
         max="10"
@@ -137,8 +138,9 @@
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">{{ 'TK_ENERGY' | translate }} ({{
-        activityForm.get('energy')?.value }})</ion-label>
+      <ion-label position="stacked">
+        {{ 'TK_ENERGY' | translate }} ({{ activityForm.get('energy')?.value }})
+      </ion-label>
       <ion-range
         min="1"
         max="10"
@@ -148,8 +150,9 @@
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">{{ 'TK_SATIETY' | translate }} ({{
-        activityForm.get('satiety')?.value }})</ion-label>
+      <ion-label position="stacked">
+        {{ 'TK_SATIETY' | translate }} ({{ activityForm.get('satiety')?.value }})
+      </ion-label>
       <ion-range
         min="1"
         max="10"
