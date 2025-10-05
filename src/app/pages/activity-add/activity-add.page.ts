@@ -27,7 +27,12 @@ export class ActivityAddPage {
   }
 
   async ionViewDidEnter() {
+    this.updateForm();
+  }
+
+  updateForm() {
     this.updateEndTime();
+    this.addFormRef?.ngOnInit();
   }
 
   getForm() {
