@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.5] - 2025-10-05
+
+### Added
+
+- Validation for repeating elements for actions and emotions inputs
+
+### Fixed
+
+- Updating start time on adding form after updating last activity's end time
+- Suggestions doesn't appear if were added to input
+- Update end time button hitbox increased
+- Default start time updating after user touched the input
+
 ## [0.3.4] - 2025-10-02
 
 ### Added
@@ -9,7 +22,7 @@
 ### Fixed
 
 - Dates order on graph
-- Default date and start time
+- Default date and start time updating
 - Refresh end time button behavior
 - End time autorefresh
 
