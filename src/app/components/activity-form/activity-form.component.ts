@@ -221,13 +221,17 @@ export class ActivityFormComponent {
 
   onActionsInput(event: any) {
     const actionsText = event.target.value;
-    const parts = actionsText.split(',');
+    const parts = actionsText
+      .split(',')
+      .map((suggestion: string) => suggestion.toLowerCase());
     const current = parts.at(-1).trim();
+    const entered = parts.slice(0, parts.length - 1);
 
     if (current.length > 0) {
       this.filteredSuggestions = this.allSuggestions
         .filter((suggestion) =>
-          suggestion.toLowerCase().startsWith(current.toLowerCase())
+          suggestion.toLowerCase().startsWith(current)
+          && !entered.includes(suggestion.toLowerCase())
         )
         .slice(0, 5);
       this.showSuggestions = this.filteredSuggestions.length > 0;
