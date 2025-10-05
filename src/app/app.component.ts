@@ -7,9 +7,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
 import { AchievementService } from './services/achievement.service';
-import { Platform } from '@ionic/angular';
+import { Platform, NavController } from '@ionic/angular';
 import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
-import { NavigationService } from './services/navigation.service';
 import { TooltipComponent } from "./components/tooltip/tooltip.component";
 
 
@@ -23,7 +22,7 @@ export class AppComponent implements OnInit {
     private translate: TranslateService,
     private achievementService: AchievementService,
     private platform: Platform,
-    private navigationService: NavigationService,
+    private navController: NavController,
   ) {
     this.setAdaptiveStatusBarColor();
   }
@@ -37,7 +36,7 @@ export class AppComponent implements OnInit {
   initializeApp() {
     this.platform.ready().then(() => {
       this.platform.backButton.subscribeWithPriority(5, () => {
-        this.navigationService.goToBackUrl();
+        this.navController.back();
       });
     });
   }

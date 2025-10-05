@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagService } from 'src/app/services/tag.service';
 import { ITag } from 'src/app/db/models/tag';
@@ -11,13 +11,14 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { addDays, format } from 'date-fns';
 import { Time } from 'src/app/Time';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
+import { BackButtonComponent } from "src/app/components/back-button/back-button.component";
 
 @Component({
   selector: 'app-tag-view',
   templateUrl: './tag-view.page.html',
   styleUrls: ['./tag-view.page.scss'],
   standalone: true,
-  imports: [IonBackButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent]
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent]
 })
 export class TagViewPage implements OnInit {
   tagId: number;
@@ -36,14 +37,12 @@ export class TagViewPage implements OnInit {
     private translate: TranslateService,
   ) {
     this.tagId = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('1');
   }
 
   ngOnInit() {
   }
 
   async ionViewDidEnter() {
-    console.log('1');
     const tag = await this.tagService.get(this.tagId);
 
     if (tag) {
@@ -51,12 +50,10 @@ export class TagViewPage implements OnInit {
     } else {
       // show an error
     }
-    console.log('1');
     await this.setActivitiesData();
   }
 
   async setActivitiesData() {
-    console.log(2);
     const activities = await this.activityService.getByDate(
       format(addDays(new Date(), -6), 'yyyy-MM-dd'),
       format(new Date(), 'yyyy-MM-dd'),
@@ -64,8 +61,6 @@ export class TagViewPage implements OnInit {
     const dates = [...new Set(activities.map((activity) => activity.date))]
       .sort((a, b) => new Date(a).getMilliseconds() - new Date(b).getMilliseconds())
       .reverse();
-
-    console.log(activities);
 
     this.activities = activities.filter(
       (activity) => activity.tags.find((tag) => tag.id == this.tagId),

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IAction } from 'src/app/db/models/action';
 import { IActivity } from 'src/app/db/models/activity';
@@ -11,13 +11,14 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-action-view',
   templateUrl: './action-view.page.html',
   styleUrls: ['./action-view.page.scss'],
   standalone: true,
-  imports: [IonBackButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent],
 })
 export class ActionViewPage implements OnInit {
   actionId: number;
