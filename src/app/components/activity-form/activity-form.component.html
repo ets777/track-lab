@@ -159,14 +159,24 @@
     </ion-item>
   }
 
-  <ion-item>
+  <ion-item [class.invalid]="activityForm.get('emotions')?.invalid">
     <ion-input
       label="{{ 'TK_EMOTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
       labelPlacement="floating"
       placeholder="{{ 'TK_WHAT_DID_YOU_FEEL' | translate }}"
       formControlName="emotions"
       name="emotions"
-    ></ion-input>
+    >
+      @if (activityForm.get('emotions')?.errors) {
+        <ion-icon
+          class="input-icon"
+          slot="end"
+          src="assets/icon/warning-sign.svg"
+          slot="end"
+          (click)="openTooltip($event, 'emotions')"
+        ></ion-icon>
+      }
+    </ion-input>
   </ion-item>
 
   <ion-item>

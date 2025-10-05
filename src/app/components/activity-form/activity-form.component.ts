@@ -17,6 +17,7 @@ import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { actionsToString } from 'src/app/functions/action';
 import { ActionService } from 'src/app/services/action.service';
+import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 
 export type ActivityForm = {
   actions: string,
@@ -68,7 +69,7 @@ export class ActivityFormComponent {
     private actionService: ActionService,
   ) {
     this.activityForm = this.formBuilder.group({
-      actions: ['', Validators.required],
+      actions: ['', [Validators.required, duplicatedItemsValidator]],
       startTime: ['', [Validators.required, timeFormatValidator]],
       endTime: ['', timeFormatValidator],
       comment: [''],
@@ -77,7 +78,7 @@ export class ActivityFormComponent {
       mood: [this.defaultValue],
       energy: [this.defaultValue],
       satiety: [this.defaultValue],
-      emotions: [''],
+      emotions: ['', duplicatedItemsValidator],
     });
     this.setCurrentTime();
 
@@ -223,8 +224,8 @@ export class ActivityFormComponent {
     const actionsText = event.target.value;
     const parts = actionsText
       .split(',')
-      .map((suggestion: string) => suggestion.toLowerCase());
-    const current = parts.at(-1).trim();
+      .map((suggestion: string) => suggestion.toLowerCase().trim());
+    const current = parts.at(-1);
     const entered = parts.slice(0, parts.length - 1);
 
     if (current.length > 0) {
