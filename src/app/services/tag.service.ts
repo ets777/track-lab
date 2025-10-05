@@ -57,23 +57,23 @@ export class TagService {
   }
 
   async addWithActionRelation(tagDto: ITagCreateDto, actionId: number) {
-    const tagDuplication = await db.tags
+    const existingTag = await db.tags
       .where('name')
       .equalsIgnoreCase(tagDto.name)
       .first();
-
-    if (tagDuplication) {
+      
+    if (existingTag) {
       await this.actionTagService.add({
         actionId,
-        tagId: tagDuplication.id,
+        tagId: existingTag.id,
       });
 
-      return tagDuplication.id;
+      return existingTag.id;
     }
 
-    if (!tagDuplication) {
+    if (!existingTag) {
       const tagId = await this.add(tagDto);
-      this.actionTagService.add({
+      await this.actionTagService.add({
         actionId,
         tagId,
       })
@@ -96,12 +96,12 @@ export class TagService {
     return result;
   }
 
-  async addFromStringWithActionRelation(tagsString: string, activityId: number) {
+  async addFromStringWithActionRelation(tagsString: string, actionId: number) {
     const result = [];
     const tags = getEntitiesFromString(tagsString);
 
     for (const tag of tags) {
-      const tagId = await this.addWithActionRelation(tag, activityId);
+      const tagId = await this.addWithActionRelation(tag, actionId);
       result.push(tagId);
     }
 

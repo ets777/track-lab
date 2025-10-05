@@ -5,6 +5,7 @@ import { ActivityActionService } from './activity-action.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ITag } from '../db/models/tag';
 import { TagService } from './tag.service';
+import { ActionForm } from '../components/action-form/action-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,28 @@ export class ActionService {
     return db.actions.add(action);
   }
 
+  async addFromForm(action: ActionForm) {
+    const existingAction = await this.getByName(action.name);
+
+    if (existingAction) {
+      return;
+    }
+
+    const actionCreateDto = { name: action.name };
+    const actionId = await this.add(actionCreateDto);
+
+    if (!actionId) {
+      return;
+    }
+
+    await this.tagService.addFromStringWithActionRelation(
+      action.tags,
+      actionId,
+    );
+
+    return actionId;
+  }
+
   async bulkAdd(actions: IActionCreateDto[] | IActionDb[]) {
     const result = [];
 
@@ -30,21 +53,18 @@ export class ActionService {
   }
 
   async addWithRelation(actionDto: IActionCreateDto, activityId: number) {
-    const actionDuplication = await db.actions
-      .where('name')
-      .equalsIgnoreCase(actionDto.name)
-      .first();
+    const existingAction = await this.getByName(actionDto.name);
 
-    if (actionDuplication) {
+    if (existingAction) {
       await this.activityActionService.add({
         activityId,
-        actionId: actionDuplication.id,
+        actionId: existingAction.id,
       });
 
-      return actionDuplication.id;
+      return existingAction.id;
     }
 
-    if (!actionDuplication) {
+    if (!existingAction) {
       const actionId = await this.add(actionDto);
       this.activityActionService.add({
         activityId,
@@ -71,6 +91,13 @@ export class ActionService {
 
   async get(id: number) {
     return db.actions.get(id);
+  }
+
+  async getByName(name: string) {
+    return await db.actions
+      .where('name')
+      .equalsIgnoreCase(name)
+      .first();
   }
 
   async getEnriched(id: number) {
@@ -141,7 +168,7 @@ export class ActionService {
   }
 
   async enrichOne(actionDb: IActionDb) {
-    const tags: ITag[] = await this.tagService.getByActivityId(actionDb.id);
+    const tags: ITag[] = await this.tagService.getByActionId(actionDb.id);
 
     return {
       ...actionDb,

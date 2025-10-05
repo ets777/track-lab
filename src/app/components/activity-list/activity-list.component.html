@@ -23,6 +23,7 @@
           {{ 'TK_EMOTIONS' | translate }}: {{ activity.emotions }}
           }
         </p>
+        <app-tags [tags]="activity.tags"></app-tags>
         <ion-buttons class="activity-item-buttons">
           <ion-button id="open-action-sheet-{{activity.id}}">
             <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>

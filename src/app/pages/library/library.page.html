@@ -23,14 +23,16 @@
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-
   
   <ion-segment-view>
     <ion-segment-content id="actions">
       <ion-list>
         @for (action of actions; track action.id) {
           <ion-item class="action">
-            <div class="title">{{ action.name | translate }}</div>
+            <ion-label>
+              <div class="title">{{ action.name }}</div>
+              <app-tags [tags]="action.tags"></app-tags>
+            </ion-label>
             <ion-buttons class="item-buttons">
               <ion-button id="open-action-sheet-action-{{action.id}}">
                 <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
@@ -50,7 +52,7 @@
       <ion-list>
         @for (tag of tags; track tag.id) {
           <ion-item class="action">
-            <div class="title">{{ tag.name | translate }}</div>
+            <div class="title">{{ tag.name }}</div>
             <ion-buttons class="item-buttons">
               <ion-button id="open-action-sheet-tag-{{tag.id}}">
                 <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>

@@ -57,7 +57,7 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
 
   onInput(event: any) {
     const val = event.target.value;
-    this.value = val;
+    this.writeValue(val);
     
     this.onTouched();
 
@@ -85,7 +85,6 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     
     parts[parts.length - 1] = ' ' + suggestion;
     this.writeValue(parts.join(',').trim());
-    this.onChange(parts.join(',').trim());
 
     this.showSuggestions = false;
   }

@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
+import { TagInputComponent } from '../tag-input/tag-input.component';
 
 export type ActionForm = {
   name: string;
@@ -16,7 +17,7 @@ export type ActionForm = {
   selector: 'app-action-form',
   templateUrl: './action-form.component.html',
   styleUrls: ['./action-form.component.scss'],
-  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
+  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent],
 })
 export class ActionFormComponent implements OnInit {
   public actionForm: ModelFormGroup<ActionForm>;

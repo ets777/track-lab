@@ -6,12 +6,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActivityService } from 'src/app/services/activity.service';
+import { TagsComponent } from "../tags/tags.component";
 
 @Component({
   selector: 'app-activity-list',
   templateUrl: './activity-list.component.html',
   styleUrls: ['./activity-list.component.scss'],
-  imports: [IonText, IonActionSheet, IonIcon, IonButton, IonButtons, IonLabel, IonList, IonItem, TranslateModule],
+  imports: [IonText, IonActionSheet, IonIcon, IonButton, IonButtons, IonLabel, IonList, IonItem, TranslateModule, TagsComponent],
 })
 export class ActivityListComponent implements OnInit {
   @Input('activities') activities: IActivity[] = [];

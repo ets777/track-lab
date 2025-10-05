@@ -9,13 +9,14 @@ import { Router } from '@angular/router';
 import { TagService } from 'src/app/services/tag.service';
 import { ITag } from 'src/app/db/models/tag';
 import { IAction } from 'src/app/db/models/action';
+import { TagsComponent } from "src/app/components/tags/tags.component";
 
 @Component({
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
   standalone: true,
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent]
+  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent, TagsComponent]
 })
 export class LibraryPage implements OnInit {
   @ViewChild(IonSegment) segment!: IonSegment;
@@ -104,8 +105,6 @@ export class LibraryPage implements OnInit {
 
   async goToAddPage() {
     const selectedSegment = this.segment.value;
-
-    console.log(selectedSegment);
 
     if (selectedSegment == 'actions') {
       await this.router.navigate(['/action/add']);

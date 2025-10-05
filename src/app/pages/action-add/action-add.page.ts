@@ -29,7 +29,8 @@ export class ActionAddPage implements OnInit {
     }
 
     const activityFormValue = this.addFormRef.actionForm.value as ActionForm;
-    await this.actionService.add({ name: activityFormValue.name });
+
+    await this.actionService.addFromForm(activityFormValue);
     await this.resetForm();
   }
 
