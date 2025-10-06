@@ -6,8 +6,13 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  @if (action?.tags?.length) {
+    <h2>{{ 'TK_TAGS' | translate }}</h2>
+    <app-tags [tags]="action?.tags ?? []"></app-tags>
+  }
+
+  <h2>{{ 'TK_ACTIVITIES_FOR_LAST_7_DAYS' | translate }}</h2>
   @if (activitiesGroupedByDate.length) {
-    <h2>{{ 'TK_ACTIVITIES_FOR_LAST_7_DAYS' | translate }}</h2>
     <div>{{ 'TK_TOTAL_TIME' | translate }}: {{ getTimeString(totalTimeMinutes) }}</div>
     <div>{{ 'TK_AVERAGE_PER_DAY' | translate }}: {{ getTimeString(totalTimeMinutes / activitiesGroupedByDate.length) }}</div>
     @for (day of activitiesGroupedByDate; track day.date) {

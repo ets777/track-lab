@@ -12,13 +12,14 @@ import { ActivityListComponent } from 'src/app/components/activity-list/activity
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { TagsComponent } from "src/app/components/tags/tags.component";
 
 @Component({
   selector: 'app-action-view',
   templateUrl: './action-view.page.html',
   styleUrls: ['./action-view.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent, TagsComponent],
 })
 export class ActionViewPage implements OnInit {
   actionId: number;
