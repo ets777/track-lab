@@ -6,37 +6,33 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
-import { TagInputComponent } from '../tag-input/tag-input.component';
 
-export type ActionForm = {
+export type TagForm = {
   name: string;
-  tags: string;
 };
 
 @Component({
-  selector: 'app-action-form',
-  templateUrl: './action-form.component.html',
-  styleUrls: ['./action-form.component.scss'],
-  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent],
+  selector: 'app-tag-form',
+  templateUrl: './tag-form.component.html',
+  styleUrls: ['./tag-form.component.scss'],
+  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
 })
-export class ActionFormComponent implements OnInit {
-  public actionForm: ModelFormGroup<ActionForm>;
+export class TagFormComponent implements OnInit {
+  public tagForm: ModelFormGroup<TagForm>;
 
   constructor(
     private formBuilder: FormBuilder,
   ) {
-    this.actionForm = this.formBuilder.group({
+    this.tagForm = this.formBuilder.group({
       name: ['', [Validators.required, commaValidator]],
-      tags: [''],
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   setDefaultData() {
-    this.actionForm.patchValue({
+    this.tagForm.patchValue({
       name: '',
-      tags: '',
     });
   }
 }

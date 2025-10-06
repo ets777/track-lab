@@ -1,0 +1,10 @@
+<form [formGroup]="tagForm">
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+    <ion-input
+      validationError
+      formControlName="name"
+      name="name"
+    ></ion-input>
+  </ion-item>
+</form>

@@ -36,6 +36,10 @@ export const routes: Routes = [
     path: 'tag',
     children: [
       {
+        path: 'add',
+        loadComponent: () => import('./pages/tag-add/tag-add.page').then(m => m.TagAddPage)
+      },
+      {
         path: ':id',
         loadComponent: () => import('./pages/tag-view/tag-view.page').then(m => m.TagViewPage)
       },

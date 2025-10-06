@@ -31,14 +31,14 @@ export class ActionAddPage implements OnInit {
     const activityFormValue = this.addFormRef.actionForm.value as ActionForm;
 
     await this.actionService.addFromForm(activityFormValue);
-    await this.resetForm();
+    this.resetForm();
   }
 
   isFormValid() {
     return this.addFormRef?.actionForm?.valid;
   }
 
-  async resetForm() {
-    await this.addFormRef?.setDefaultData();
+  resetForm() {
+    this.addFormRef?.setDefaultData();
   }
 }
