@@ -1,27 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonInput, IonChip, IonHeader, IonContent, IonItem, IonLabel, IonButton, IonList, IonText, IonToolbar, IonTitle, IonSegmentButton, IonSegment, IonSegmentView, IonSegmentContent, IonMenu, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
-import { addDays, addMonths, format } from 'date-fns';
-import { dateRangeValidator } from 'src/app/validators/date-range.validator';
-import { maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
-import { dateFormatValidator } from 'src/app/validators/date-format.validator';
-import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
-import { MaskitoDirective } from '@maskito/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { Router } from '@angular/router';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
-import { StatsMenuComponent } from "src/app/components/stats-menu/stats-menu.component";
+import { DateFilterComponent, PeriodDates } from "src/app/components/date-filter/date-filter.component";
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
-
-type Period = 'week' | 'month';
 
 interface NormalizedPoint {
   time: string;
@@ -32,17 +23,11 @@ interface NormalizedPoint {
 
 @Component({
   selector: 'app-stats',
-  imports: [IonText, IonList, IonButton, IonInput, IonLabel, IonItem, IonChip, CommonModule, FormsModule, ReactiveFormsModule, MaskitoDirective, TranslateModule, BaseChartDirective, ValidationErrorDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent],
+  imports: [IonText, IonList,  IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, DateFilterComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })
 export class StatsPage implements OnInit {
-  protected readonly dateMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
-  };
-  protected readonly maskPredicate: MaskitoElementPredicate =
-    async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
-
   activities: IActivity[] = [];
   activitiesGroupedByDate: {
     date: string,
@@ -51,58 +36,20 @@ export class StatsPage implements OnInit {
     avgSatiety: number,
     avgEnergy: number,
   }[] = [];
-  selectedPeriod: Period = 'week';
-  filterForm: FormGroup;
 
   dates: string[] = [];
   chartData!: ChartConfiguration<'line'>['data'];
 
   constructor(
     private activityService: ActivityService,
-    private formBuilder: FormBuilder,
     private toastCtrl: ToastController,
     private router: Router,
-  ) {
-    this.filterForm = this.formBuilder.group(
-      {
-        startDate: ['', [Validators.required, dateFormatValidator]],
-        endDate: ['', [Validators.required, dateFormatValidator]],
-      },
-      {
-        validators: [
-          dateRangeValidator,
-          maxDateRangeValidator(31),
-        ]
-      },
-    );
-  }
+  ) {}
 
-  async ngOnInit() {
-    this.setDefaultDates();
-  }
+  async ngOnInit() {}
 
-  async ionViewDidEnter() {
-    await this.loadStats();
-  }
-
-  setDefaultDates() {
-    const endDate = format(new Date(), 'yyyy-MM-dd');
-    let startDate;
-
-    if (this.selectedPeriod == 'week') {
-      startDate = format(addDays(new Date(), -6), 'yyyy-MM-dd');
-    } else {
-      startDate = format(addMonths(new Date(), -1), 'yyyy-MM-dd');
-    }
-
-    this.filterForm.patchValue({
-      startDate,
-      endDate,
-    });
-  }
-
-  async loadStats() {
-    const { startDate, endDate } = this.filterForm.value;
+  async loadStats(period: PeriodDates) {
+    const { startDate, endDate } = period;
 
     if (!startDate || !endDate) {
       return;
@@ -239,31 +186,6 @@ export class StatsPage implements OnInit {
     return sum / normalizedData.length;
   }
 
-  async selectPeriod(period: Period) {
-    this.selectedPeriod = period;
-
-    this.setDefaultDates();
-    await this.loadStats();
-  }
-
-  async shiftDates(shift: number) {
-    const { startDate, endDate } = this.filterForm.value;
-
-    if (this.selectedPeriod == 'week') {
-      this.filterForm.patchValue({
-        startDate: format(addDays(new Date(startDate), shift * 7), 'yyyy-MM-dd'),
-        endDate: format(addDays(new Date(endDate), shift * 7), 'yyyy-MM-dd'),
-      });
-    } else {
-      this.filterForm.patchValue({
-        startDate: format(addMonths(new Date(startDate), shift * 1), 'yyyy-MM-dd'),
-        endDate: format(addMonths(new Date(endDate), shift * 1), 'yyyy-MM-dd'),
-      });
-    }
-
-    await this.loadStats();
-  }
-
   async showError(message: string) {
     const toast = await this.toastCtrl.create({
       message,
@@ -280,5 +202,9 @@ export class StatsPage implements OnInit {
       ['/activity'],
       { queryParams: { date } },
     );
+  }
+
+  async onDatesUpdate(period: PeriodDates) {
+    await this.loadStats(period);
   }
 }

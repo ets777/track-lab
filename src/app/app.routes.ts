@@ -56,6 +56,10 @@ export const routes: Routes = [
         path: 'achievements',
         loadComponent: () => import('./pages/achievements/achievements.page').then(m => m.AchievementsPage)
       },
+      {
+        path: 'library-item',
+        loadComponent: () => import('./pages/library-item-stats/library-item-stats.page').then(m => m.LibraryItemStatsPage)
+      },
     ],
   },
   {
