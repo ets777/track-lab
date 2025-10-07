@@ -46,9 +46,17 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'activity-calendar',
-    loadComponent: () =>
-      import('./pages/activity-calendar/activity-calendar.page').then((m) => m.ActivityCalendarPage),
+    path: 'stats',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/stats/stats.page').then((m) => m.StatsPage),
+      },
+      {
+        path: 'achievements',
+        loadComponent: () => import('./pages/achievements/achievements.page').then(m => m.AchievementsPage)
+      },
+    ],
   },
   {
     path: 'database',
