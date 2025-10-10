@@ -1,0 +1,14 @@
+.suggestions {
+    position: absolute;
+    border: 1px solid var(--text-color-grey);
+    z-index: 999;
+    width: 90%;
+    max-height: 200px;
+    overflow-y: auto;
+    display: block;
+}
+
+.subtitle {
+    font-size: .75rem;
+    color: var(--text-color-grey);
+}

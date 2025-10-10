@@ -24,9 +24,6 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
   showSuggestions = false;
   value = '';
 
-  private onChange = (_: any) => { };
-  private onTouched = () => { };
-
   constructor(
     private tagService: TagService,
   ) {
@@ -37,6 +34,9 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     const tags = await this.tagService.getAll();
     this.allSuggestions = tags.map((tag) => tag.name);
   }
+
+  private onChange = (_: any) => { };
+  private onTouched = () => { };
 
   writeValue(value: any): void {
     this.value = value || '';

@@ -1,28 +1,28 @@
 <form
   class="filter-form"
-  [formGroup]="filterForm"
+  [formGroup]="form"
 >
   <ion-item>
-    <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate
-      }}</ion-label>
+    <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
     <ion-input
       validationError
       placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="startDate"
       [maskito]="dateMask"
       [maskitoElement]="maskPredicate"
+      (ionInput)="updateField('startDate', $event)"
     ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">{{ 'TK_DATE_TO' | translate
-      }}</ion-label>
+    <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
     <ion-input
       validationError
       placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="endDate"
       [maskito]="dateMask"
       [maskitoElement]="maskPredicate"
+      (ionInput)="updateField('endDate', $event)"
     ></ion-input>
   </ion-item>
 </form>
@@ -31,7 +31,7 @@
   <ion-button
     fill="clear"
     (click)="shiftDates(-1)"
-    [disabled]="!filterForm.valid"
+    [disabled]="!form.valid"
   >{{ 'TK_PREV' | translate }}</ion-button>
   <ion-chip
     [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
@@ -44,12 +44,7 @@
   <ion-button
     fill="clear"
     (click)="shiftDates(1)"
-    [disabled]="!filterForm.valid"
+    [disabled]="!form.valid"
   >{{ 'TK_NEXT' | translate }}</ion-button>
 </div>
 
-<ion-button
-  expand="block"
-  (click)="emitDates()"
-  [disabled]="!filterForm.valid"
->{{ 'TK_SHOW' | translate }}</ion-button>

@@ -258,5 +258,8 @@
   "TK_WRONG_PASSWORD": "Wrong password",
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",
-  "TK_YYYY_MM_DD": "yyyy-mm-dd"
+  "TK_YYYY_MM_DD": "yyyy-mm-dd",
+  "TK_LIBRARY_ITEM": "Library item",
+  "TK_THERE_S_NO_SUCH_ITEM_IN_THE_LIST": "There's no such item in the list",
+  "TK_ITEM_IS_NOT_SELECTED": "Item is not selected"
 }

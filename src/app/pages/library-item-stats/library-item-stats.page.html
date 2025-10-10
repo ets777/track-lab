@@ -7,5 +7,16 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
+  <form [formGroup]="filterForm">
+    <app-date-period-input
+      formControlName="datePeriod"
+    ></app-date-period-input>
 
+    <app-select-search 
+      validationError
+      formControlName="libraryItem"
+      label="TK_LIBRARY_ITEM"
+      [suggestions]="suggestions"
+    ></app-select-search>
+  </form>
 </ion-content>

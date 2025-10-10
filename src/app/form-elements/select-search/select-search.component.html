@@ -1,0 +1,30 @@
+<ion-item>
+  <ion-input
+    label="{{ label | translate }}"
+    labelPlacement="floating"
+    [value]="enteredText"
+    (ionInput)="onInput($event)"
+    (ionFocus)="openSuggestions($event)"
+    (ionBlur)="hideSuggestions()"
+  ></ion-input>
+</ion-item>
+
+@if (showSuggestions) {
+  <div class="suggestions">
+    <ion-list lines="none">
+      @for (suggestion of filteredSuggestions; track suggestion.num) {
+        <ion-item
+          button
+          (click)="selectSuggestion(suggestion)"
+        >
+          <ion-label>
+            <div>{{ suggestion.title }}</div>
+            @if (suggestion.subtitle) {
+              <div class="subtitle">{{ suggestion.subtitle }}</div>
+            }
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  </div>
+}

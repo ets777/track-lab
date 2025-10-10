@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
-import { TagInputComponent } from '../tag-input/tag-input.component';
+import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
 
 export type ActionForm = {
   name: string;

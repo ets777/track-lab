@@ -7,7 +7,11 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <app-date-filter (selectedDates)="onDatesUpdate($event)"></app-date-filter>
+  <form [formGroup]="filterForm">
+    <app-date-period-input
+      formControlName="datePeriod"
+    ></app-date-period-input>
+  </form>
   
   <canvas
     baseChart

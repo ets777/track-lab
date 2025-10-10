@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
@@ -10,7 +10,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { Router } from '@angular/router';
-import { DateFilterComponent, PeriodDates } from "src/app/components/date-filter/date-filter.component";
+import { DatePeriod } from 'src/app/types/date-period';
+import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 
 type ActivityNumberKeys = ('mood' | 'satiety' | 'energy');
 
@@ -23,7 +24,7 @@ interface NormalizedPoint {
 
 @Component({
   selector: 'app-stats',
-  imports: [IonText, IonList,  IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, DateFilterComponent],
+  imports: [IonText, IonList,  IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, FormsModule, ReactiveFormsModule, DatePeriodInputComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })
@@ -39,16 +40,28 @@ export class StatsPage implements OnInit {
 
   dates: string[] = [];
   chartData!: ChartConfiguration<'line'>['data'];
+  public filterForm: FormGroup;
 
   constructor(
     private activityService: ActivityService,
     private toastCtrl: ToastController,
     private router: Router,
-  ) {}
+    private formBuilder: FormBuilder,
+  ) {
+    this.filterForm = this.formBuilder.group({
+      datePeriod: [],
+    });
+
+    this.filterForm.valueChanges.subscribe((value) => {
+      if (this.filterForm.valid) {
+        this.onFilterChange(value);
+      }
+    });
+  }
 
   async ngOnInit() {}
 
-  async loadStats(period: PeriodDates) {
+  async loadStats(period: DatePeriod) {
     const { startDate, endDate } = period;
 
     if (!startDate || !endDate) {
@@ -204,7 +217,7 @@ export class StatsPage implements OnInit {
     );
   }
 
-  async onDatesUpdate(period: PeriodDates) {
-    await this.loadStats(period);
+  async onFilterChange(value: any) {
+    await this.loadStats(value.datePeriod);
   }
 }

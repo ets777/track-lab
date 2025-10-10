@@ -2,11 +2,13 @@
 // http://ionicframework.com/docs/theming/
 
 :root {
-    --ion-text-color: #000000;
+    --text-color: #000000;
+    --text-color-grey: #aaaaaa;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --ion-text-color: #ffffff;
+        --text-color: #ffffff;
+        --text-color-grey: #aaaaaa;
     }
 }

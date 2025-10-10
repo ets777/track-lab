@@ -19,7 +19,7 @@ import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
-import { TagInputComponent } from '../tag-input/tag-input.component';
+import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
 
 export type ActivityForm = {
   actions: string,

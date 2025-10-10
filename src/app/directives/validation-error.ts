@@ -34,21 +34,27 @@ export class ValidationErrorDirective {
     }
 
     private updateWarning(control: AbstractControl) {
-        const ionItem = this.el.nativeElement.closest('ion-item');
-        if (!ionItem) {
+        // TODO: find elements instead of hardcode (sorry)
+        const ionItem = this.el.nativeElement.closest('ion-item')
+            || this.el.nativeElement.children[0];
+        const ionInput = this.el.nativeElement.tagName.toLowerCase() == 'ion-input'
+            ? this.el.nativeElement
+            : this.el.nativeElement.children[0].children[0];
+
+        if (!ionItem || !ionInput) {
             return;
         }
 
         if (control.invalid) {
             this.renderer.addClass(ionItem, 'invalid');
-            this.addWarningIcon(control);
+            this.addWarningIcon(ionInput, control);
         } else {
             this.renderer.removeClass(ionItem, 'invalid');
-            this.removeWarningIcon(control);
+            this.removeWarningIcon(ionInput, control);
         }
     }
 
-    private addWarningIcon(control: AbstractControl) {
+    private addWarningIcon(ionInput: any, control: AbstractControl) {
         if (this.warningIcon) {
             return;
         }
@@ -58,17 +64,18 @@ export class ValidationErrorDirective {
         this.renderer.setAttribute(this.warningIcon, 'src', 'assets/icon/warning-sign.svg');
         this.renderer.setAttribute(this.warningIcon, 'class', 'input-icon');
         this.renderer.listen(this.warningIcon, 'click', (event: Event) => {
+            event.preventDefault();
             this.tooltip.show(event, this.getErrorMessages(control));
         });
-        this.renderer.appendChild(this.el.nativeElement, this.warningIcon);
+        this.renderer.appendChild(ionInput, this.warningIcon);
     }
 
-    private removeWarningIcon(control: AbstractControl) {
+    private removeWarningIcon(ionInput: any, control: AbstractControl) {
         if (!this.warningIcon) {
             return;
         }
 
-        this.renderer.removeChild(this.el.nativeElement, this.warningIcon);
+        this.renderer.removeChild(ionInput, this.warningIcon);
         this.warningIcon = undefined;
     }
 

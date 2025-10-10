@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { DateFilterComponent } from './date-filter.component';
+import { SelectSearchComponent } from './select-search.component';
 import { TranslateModule } from '@ngx-translate/core';
 
-describe('DateFilterComponent', () => {
-  let component: DateFilterComponent;
-  let fixture: ComponentFixture<DateFilterComponent>;
+describe('SelectSearchComponent', () => {
+  let component: SelectSearchComponent;
+  let fixture: ComponentFixture<SelectSearchComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), DateFilterComponent]
+      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), SelectSearchComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DateFilterComponent);
+    fixture = TestBed.createComponent(SelectSearchComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

@@ -258,5 +258,8 @@
   "TK_WRONG_PASSWORD": "Неверный пароль",
   "TK_WROTE": "Писал",
   "TK_YES": "Да",
-  "TK_YYYY_MM_DD": "гггг-мм-дд"
+  "TK_YYYY_MM_DD": "гггг-мм-дд",
+  "TK_LIBRARY_ITEM": "Элемент библиотеки",
+  "TK_THERE_S_NO_SUCH_ITEM_IN_THE_LIST": "Такого элемента нет в списке",
+  "TK_ITEM_IS_NOT_SELECTED": "Элемент не выбран"
 }
