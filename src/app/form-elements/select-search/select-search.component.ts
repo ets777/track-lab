@@ -42,19 +42,13 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
   private onChange = (_: any) => { };
   private onTouched = () => { };
 
-  constructor(
-    private translate: TranslateService,
-  ) {}
+  constructor() {}
 
   async ngOnInit() {
   }
 
-  writeValue(value: Selectable<any>): void {
-    this.value = value ?? {
-      num: 0,
-      title: '',
-      item: null,
-    };
+  writeValue(value: any): void {
+    this.value = value;
   }
 
   registerOnChange(fn: any): void {
@@ -63,10 +57,6 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
 
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    // optional: handle disabled
   }
 
   onInput(event: any) {
@@ -82,7 +72,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
       || !this.enteredText
     ) {
       this.selectedSuggestion = null;
-      this.changeValue(null);
+      this.updateValue(null);
     }
 
     this.setFilteredSuggestions();
@@ -93,7 +83,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
   selectSuggestion(suggestion: Selectable<any>) {
     this.selectedSuggestion = suggestion;
     this.enteredText = suggestion.title;
-    this.changeValue(suggestion.item);
+    this.updateValue(suggestion.item);
 
     this.showSuggestions = false;
   }
@@ -106,7 +96,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
     this.onInput(event);
   }
 
-  changeValue(value: any) {
+  updateValue(value: any) {
     this.value = value;
     this.onChange(this.value);
     this.onTouched();
@@ -121,6 +111,12 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
   }
 
   validate(control: AbstractControl): ValidationErrors | null {
+    if (control.errors?.['required'] && !this.value) {
+      return {
+        required: true,
+      };
+    }
+
     if (!this.enteredText) {
       return null;
     }

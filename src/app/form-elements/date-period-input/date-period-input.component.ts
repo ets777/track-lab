@@ -1,5 +1,5 @@
 import { Component, forwardRef, OnInit } from '@angular/core';
-import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
 import { MaskitoDirective } from '@maskito/angular';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
@@ -32,7 +32,7 @@ type PeriodName = 'week' | 'month';
     },
   ],
 })
-export class DatePeriodInputComponent implements ControlValueAccessor {
+export class DatePeriodInputComponent implements ControlValueAccessor, Validator {
   public form: ModelFormGroup<DatePeriod>;
   selectedPeriod: PeriodName = 'week';
 
@@ -82,16 +82,6 @@ export class DatePeriodInputComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    // optional: handle disabled
-  }
-
-  updateField(key: 'startDate' | 'endDate', val: any) {
-    this.form.patchValue({ [key]: val.detail.value });
-    this.onChange(this.form.value);
-    this.onTouched();
-  }
-
   shiftDates(shift: number) {
     const { startDate, endDate } = this.form.value;
     let newStartDate;
@@ -109,7 +99,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor {
       newEndDate = format(addMonths(new Date(endDate), shift * 1), 'yyyy-MM-dd');
     }
 
-    this.changeValue({
+    this.patchAndUpdate({
       startDate: newStartDate,
       endDate: newEndDate,
     });
@@ -125,7 +115,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor {
       startDate = format(addMonths(new Date(), -1), 'yyyy-MM-dd');
     }
 
-    this.changeValue({ startDate, endDate });
+    this.patchAndUpdate({ startDate, endDate });
   }
 
   selectPeriod(period: PeriodName) {
@@ -134,15 +124,23 @@ export class DatePeriodInputComponent implements ControlValueAccessor {
     this.setDefaultDates();
   }
 
-  changeValue(value: DatePeriod) {
-    this.form.patchValue(value);
+  updateValue() {
     this.onChange(this.form.value);
     this.onTouched();
   }
 
+  patchAndUpdate(value: DatePeriod) {
+    this.form.patchValue(value);
+    this.updateValue();
+  }
+
   validate(control: AbstractControl): ValidationErrors | null {
     if (!this.form.valid) {
-      return Object.entries(this.form.controls).map(([key, control]) => control.errors);
+      return Object.values(this.form.controls)
+        .reduce((result, curr) => ({
+          ...result,
+          ...curr.errors,
+        }), {});
     }
 
     return null;

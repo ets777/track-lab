@@ -22,7 +22,7 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
   filteredSuggestions: string[] = [];
   allSuggestions: string[] = [];
   showSuggestions = false;
-  value = '';
+  value: string = '';
 
   constructor(
     private tagService: TagService,
@@ -38,9 +38,8 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
   private onChange = (_: any) => { };
   private onTouched = () => { };
 
-  writeValue(value: any): void {
+  writeValue(value: string): void {
     this.value = value || '';
-    this.onChange(this.value);
   }
 
   registerOnChange(fn: any): void {
@@ -51,15 +50,15 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    // optional: handle disabled
+  updateValue(value: string) {
+    this.value = value;
+    this.onChange(this.value);
+    this.onTouched();
   }
 
   onInput(event: any) {
     const val = event.target.value;
-    this.writeValue(val);
-    
-    this.onTouched();
+    this.updateValue(val);
 
     const parts = val.split(',');
     const current = parts.at(-1).trim();
@@ -84,7 +83,7 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     }
     
     parts[parts.length - 1] = ' ' + suggestion;
-    this.writeValue(parts.join(',').trim());
+    this.updateValue(parts.join(',').trim());
 
     this.showSuggestions = false;
   }

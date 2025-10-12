@@ -10,7 +10,7 @@
       formControlName="startDate"
       [maskito]="dateMask"
       [maskitoElement]="maskPredicate"
-      (ionInput)="updateField('startDate', $event)"
+      (ionInput)="updateValue()"
     ></ion-input>
   </ion-item>
 
@@ -22,7 +22,7 @@
       formControlName="endDate"
       [maskito]="dateMask"
       [maskitoElement]="maskPredicate"
-      (ionInput)="updateField('endDate', $event)"
+      (ionInput)="updateValue()"
     ></ion-input>
   </ion-item>
 </form>

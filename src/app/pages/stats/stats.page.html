@@ -13,48 +13,38 @@
     ></app-date-period-input>
   </form>
   
-  <canvas
-    baseChart
-    [data]="chartData"
-    type="line"
-  >
-  </canvas>
+  @if (filterForm.valid) {
+    <canvas
+      baseChart
+      [data]="chartData"
+      type="line"
+    ></canvas>
+  }
   
   <ion-list>
     @if (activitiesGroupedByDate.length) {
-    <ion-item>
-      <ion-label>
-        <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase
-          }}: {{
-          getTotalAverageValue('avgMood') | number:'1.1-1' }}</p>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase
-          }}:
-          {{ getTotalAverageValue('avgEnergy') | number:'1.1-1' }}</p>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate |
-          lowercase }}:
-          {{ getTotalAverageValue('avgSatiety') | number:'1.1-1' }}</p>
-      </ion-label>
-    </ion-item>
+      <ion-item>
+        <ion-label>
+          <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{ getTotalAverageValue('avgMood') | number:'1.1-1' }}</p>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}: {{ getTotalAverageValue('avgEnergy') | number:'1.1-1' }}</p>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}: {{ getTotalAverageValue('avgSatiety') | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
     }
     @for (day of activitiesGroupedByDate; track day.date) {
-    <ion-item (click)="goToDay(day.date)">
-      <ion-label>
-        <h2>{{ day.date }}</h2>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase
-          }}: {{
-          day.avgMood | number:'1.1-1' }}</p>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase
-          }}:
-          {{ day.avgEnergy | number:'1.1-1' }}</p>
-        <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate |
-          lowercase }}:
-          {{ day.avgSatiety | number:'1.1-1' }}</p>
-      </ion-label>
-    </ion-item>
+      <ion-item (click)="goToDay(day.date)">
+        <ion-label>
+          <h2>{{ day.date }}</h2>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_MOOD' | translate | lowercase }}: {{ day.avgMood | number:'1.1-1' }}</p>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_ENERGY' | translate | lowercase }}: {{ day.avgEnergy | number:'1.1-1' }}</p>
+          <p>{{ 'TK_AVG' | translate }} {{ 'TK_SATIETY' | translate | lowercase }}: {{ day.avgSatiety | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
     } @empty {
-    <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate
-      }}</ion-text>
+      <ion-text>
+        {{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}
+      </ion-text>
     }
   </ion-list>
 </ion-content>

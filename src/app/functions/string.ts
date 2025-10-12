@@ -1,3 +1,5 @@
+import { TranslateService } from "@ngx-translate/core";
+
 export function lowerCaseFirstLetter(str: string) {
     if (typeof str !== 'string' || str.length === 0) {
         return str;
@@ -21,4 +23,18 @@ export function getEntitiesFromString(
 
 export function entitiesToString(entities: WithName[]) {
     return entities.map((entity) => entity.name).join(', ');
+}
+
+export function getTimeString(translate: TranslateService, minutes: number) {
+    const minuteUnit = translate.instant('TK_M').toLowerCase();
+    const hourUnit = translate.instant('TK_H').toLowerCase();
+
+    if (minutes < 60) {
+        return `${Math.round(minutes)} ${minuteUnit}.`;
+    } else {
+        const hours = Math.floor(minutes / 60);
+        const remainder = Math.floor(minutes % 60);
+
+        return `${hours} ${hourUnit}. ${remainder} ${minuteUnit}.`;
+    }
 }

@@ -38,7 +38,6 @@ export class StatsPage implements OnInit {
     avgEnergy: number,
   }[] = [];
 
-  dates: string[] = [];
   chartData!: ChartConfiguration<'line'>['data'];
   public filterForm: FormGroup;
 
@@ -52,17 +51,17 @@ export class StatsPage implements OnInit {
       datePeriod: [],
     });
 
-    this.filterForm.valueChanges.subscribe((value) => {
+    this.filterForm.valueChanges.subscribe(async (value) => {
       if (this.filterForm.valid) {
-        this.onFilterChange(value);
+        await this.loadStats();
       }
     });
   }
 
   async ngOnInit() {}
 
-  async loadStats(period: DatePeriod) {
-    const { startDate, endDate } = period;
+  async loadStats() {
+    const { startDate, endDate } = this.filterForm.value.datePeriod;
 
     if (!startDate || !endDate) {
       return;
@@ -71,9 +70,9 @@ export class StatsPage implements OnInit {
     const activities = await this.activityService.getByDate(startDate, endDate);
 
     this.activities = activities;
-    this.dates = [...new Set(activities.map((activity) => activity.date))]
+    const dates = [...new Set(activities.map((activity) => activity.date))]
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    this.activitiesGroupedByDate = this.dates
+    this.activitiesGroupedByDate = dates
       .map((date) => {
         const activitiesAtDate = activities.filter((activity) => activity.date == date);
         const normalizedData = this.normalizeWithInterpolation(activitiesAtDate);
@@ -86,7 +85,7 @@ export class StatsPage implements OnInit {
         };
       });
 
-    if (this.dates.length === 1) {
+    if (dates.length === 1) {
       const normalizedData = this.normalizeWithInterpolation(this.activities);
 
       this.chartData = {
@@ -99,7 +98,7 @@ export class StatsPage implements OnInit {
       };
     } else {
       this.chartData = {
-        labels: this.dates,
+        labels: dates,
         datasets: [
           { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: 'Avg. Mood' },
           { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: 'Avg. Energy' },
@@ -215,9 +214,5 @@ export class StatsPage implements OnInit {
       ['/activity'],
       { queryParams: { date } },
     );
-  }
-
-  async onFilterChange(value: any) {
-    await this.loadStats(value.datePeriod);
   }
 }

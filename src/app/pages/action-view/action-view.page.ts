@@ -13,6 +13,7 @@ import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TagsComponent } from "src/app/components/tags/tags.component";
+import { getTimeString } from 'src/app/functions/string';
 
 @Component({
   selector: 'app-action-view',
@@ -92,16 +93,6 @@ export class ActionViewPage implements OnInit {
   }
 
   getTimeString(minutes: number) {
-    const minuteUnit = this.translate.instant('TK_M').toLowerCase();
-    const hourUnit = this.translate.instant('TK_H').toLowerCase();
-
-    if (minutes < 60) {
-      return `${minutes} ${minuteUnit}.`;
-    } else {
-      const hours = Math.floor(minutes / 60);
-      const remainder = Math.floor(minutes % 60);
-
-      return `${hours} ${hourUnit}. ${remainder} ${minuteUnit}.`;
-    }
+    return getTimeString(this.translate, minutes);
   }
 }

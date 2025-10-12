@@ -12,6 +12,7 @@ import { addDays, format } from 'date-fns';
 import { Time } from 'src/app/Time';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { BackButtonComponent } from "src/app/components/back-button/back-button.component";
+import { getTimeString } from 'src/app/functions/string';
 
 @Component({
   selector: 'app-tag-view',
@@ -91,16 +92,6 @@ export class TagViewPage implements OnInit {
   }
 
   getTimeString(minutes: number) {
-    const minuteUnit = this.translate.instant('TK_M').toLowerCase();
-    const hourUnit = this.translate.instant('TK_H').toLowerCase();
-
-    if (minutes < 60) {
-      return `${minutes} ${minuteUnit}.`;
-    } else {
-      const hours = Math.floor(minutes / 60);
-      const remainder = Math.floor(minutes % 60);
-
-      return `${hours} ${hourUnit}. ${remainder} ${minuteUnit}.`;
-    }
+    return getTimeString(this.translate, minutes);
   }
 }
