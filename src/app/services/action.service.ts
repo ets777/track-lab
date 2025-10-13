@@ -8,187 +8,194 @@ import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ActionService {
-  constructor(
-    private activityActionService: ActivityActionService,
-    private tagService: TagService,
-  ) { }
+    constructor(
+        private activityActionService: ActivityActionService,
+        private tagService: TagService,
+    ) { }
 
-  async add(action: IActionCreateDto | IActionDb) {
-    return db.actions.add(action);
-  }
-
-  async addFromForm(action: ActionForm) {
-    const existingAction = await this.getByName(action.name);
-
-    if (existingAction) {
-      return;
+    async add(action: IActionCreateDto | IActionDb) {
+        return db.actions.add(action);
     }
 
-    const actionCreateDto = { name: action.name };
-    const actionId = await this.add(actionCreateDto);
+    async addFromForm(action: ActionForm) {
+        const existingAction = await this.getByName(action.name);
 
-    if (!actionId) {
-      return;
+        if (existingAction) {
+            return;
+        }
+
+        const actionCreateDto = { name: action.name };
+        const actionId = await this.add(actionCreateDto);
+
+        if (!actionId) {
+            return;
+        }
+
+        await this.tagService.addFromStringWithActionRelation(
+            action.tags,
+            actionId,
+        );
+
+        return actionId;
     }
 
-    await this.tagService.addFromStringWithActionRelation(
-      action.tags,
-      actionId,
-    );
+    async bulkAdd(actions: IActionCreateDto[] | IActionDb[]) {
+        const result = [];
 
-    return actionId;
-  }
+        for (const action of actions) {
+            result.push(await this.add(action));
+        }
 
-  async bulkAdd(actions: IActionCreateDto[] | IActionDb[]) {
-    const result = [];
-
-    for (const action of actions) {
-      result.push(await this.add(action));
+        return result;
     }
 
-    return result;
-  }
+    async addWithRelation(actionDto: IActionCreateDto, activityId: number) {
+        const existingAction = await this.getByName(actionDto.name);
 
-  async addWithRelation(actionDto: IActionCreateDto, activityId: number) {
-    const existingAction = await this.getByName(actionDto.name);
+        if (existingAction) {
+            await this.activityActionService.add({
+                activityId,
+                actionId: existingAction.id,
+            });
 
-    if (existingAction) {
-      await this.activityActionService.add({
-        activityId,
-        actionId: existingAction.id,
-      });
+            return existingAction.id;
+        }
 
-      return existingAction.id;
+        if (!existingAction) {
+            const actionId = await this.add(actionDto);
+            this.activityActionService.add({
+                activityId,
+                actionId,
+            })
+
+            return actionId;
+        }
+
+        return null;
     }
 
-    if (!existingAction) {
-      const actionId = await this.add(actionDto);
-      this.activityActionService.add({
-        activityId,
-        actionId,
-      })
+    async addFromStringWithRelation(actionsString: string, activityId: number) {
+        const result = [];
+        const actions = getEntitiesFromString(actionsString);
 
-      return actionId;
+        for (const action of actions) {
+            const actionId = await this.addWithRelation(action, activityId);
+            result.push(actionId);
+        }
+
+        return result;
     }
 
-    return null;
-  }
-
-  async addFromStringWithRelation(actionsString: string, activityId: number) {
-    const result = [];
-    const actions = getEntitiesFromString(actionsString);
-
-    for (const action of actions) {
-      const actionId = await this.addWithRelation(action, activityId);
-      result.push(actionId);
+    async get(id: number) {
+        return db.actions.get(id);
     }
 
-    return result;
-  }
-
-  async get(id: number) {
-    return db.actions.get(id);
-  }
-
-  async getByName(name: string) {
-    return await db.actions
-      .where('name')
-      .equalsIgnoreCase(name)
-      .first();
-  }
-
-  async getEnriched(id: number) {
-    const action = await db.actions.get(id);
-
-    if (!action) {
-      return;
+    async getByName(name: string) {
+        return await db.actions
+            .where('name')
+            .equalsIgnoreCase(name)
+            .first();
     }
 
-    return this.enrichOne(action);
-  }
+    async getEnriched(id: number) {
+        const action = await db.actions.get(id);
 
-  async getList(ids: number[]) {
-    return db.actions
-      .where('id')
-      .anyOf(ids)
-      .toArray();
-  }
+        if (!action) {
+            return;
+        }
 
-  async updateFromString(actionsString: string, activityId: number) {
-    const currentActions = await this.getByActivityId(activityId);
-    const formActions: IActionCreateDto[] = getEntitiesFromString(actionsString);
-
-    const actionsToRemove = currentActions.filter(
-      (currentAction) => !formActions.find(
-        (formAction) => formAction.name == currentAction.name,
-      ),
-    );
-    const actionsToAdd = formActions.filter(
-      (formAction) => !currentActions.find(
-        (currentAction) => formAction.name == currentAction.name,
-      ),
-    );
-
-    for (const action of actionsToRemove) {
-      await this.activityActionService.delete(activityId, action.id);
+        return this.enrichOne(action);
     }
 
-    for (const action of actionsToAdd) {
-      await this.addWithRelation(action, activityId);
-    }
-  }
-
-  async getByActivityId(id: number) {
-    const activityActions = await this.activityActionService.getByActivityId(id);
-    const actionIds = activityActions.map((activityAction) => activityAction.actionId);
-    const actions = await db.actions
-      .where('id')
-      .anyOf(actionIds)
-      .toArray();
-    
-    return this.enrichAll(actions);
-  }
-
-  async getAllEnriched() {
-    const actions = await this.getAll();
-    return this.enrichAll(actions);
-  }
-
-  async enrichAll(actionsDb: IActionDb[]) {
-    const result = [];
-
-    for (const activityDb of actionsDb) {
-      result.push(await this.enrichOne(activityDb));
+    async getList(ids: number[]) {
+        return db.actions
+            .where('id')
+            .anyOf(ids)
+            .toArray();
     }
 
-    return result;
-  }
+    async updateFromString(actionsString: string, activityId: number) {
+        const currentActions = await this.getByActivityId(activityId);
+        const formActions: IActionCreateDto[] = getEntitiesFromString(actionsString);
 
-  async enrichOne(actionDb: IActionDb) {
-    const tags: ITag[] = await this.tagService.getByActionId(actionDb.id);
+        const actionsToRemove = currentActions.filter(
+            (currentAction) => !formActions.find(
+                (formAction) => formAction.name == currentAction.name,
+            ),
+        );
+        const actionsToAdd = formActions.filter(
+            (formAction) => !currentActions.find(
+                (currentAction) => formAction.name == currentAction.name,
+            ),
+        );
 
-    return {
-      ...actionDb,
-      tags,
-    } as IAction;
-  }
+        for (const action of actionsToRemove) {
+            await this.activityActionService.delete(activityId, action.id);
+        }
 
-  async getAll() {
-    return db.actions.toArray();
-  }
+        for (const action of actionsToAdd) {
+            await this.addWithRelation(action, activityId);
+        }
+    }
 
-  async update(id: number, changes: Partial<IActionCreateDto>) {
-    return db.actions.update(id, changes);
-  }
+    async getByActivityId(id: number) {
+        const activityActions = await this.activityActionService
+            .getByActivityId(id);
+        const actionIds = activityActions
+            .map((activityAction) => activityAction.actionId);
+        const actions = await db.actions
+            .where('id')
+            .anyOf(actionIds)
+            .toArray();
 
-  async delete(id: number) {
-    return db.actions.delete(id);
-  }
+        return this.enrichAll(actions);
+    }
 
-  async clear() {
-    await db.actions.clear();
-  }
+    async getAllEnriched() {
+        const actions = await this.getAll();
+        return this.enrichAll(actions);
+    }
+
+    async enrichAll(actionsDb: IActionDb[]) {
+        const result = [];
+
+        for (const activityDb of actionsDb) {
+            result.push(await this.enrichOne(activityDb));
+        }
+
+        return result;
+    }
+
+    async enrichOne(actionDb: IActionDb) {
+        const tags: ITag[] = await this.tagService.getByActionId(actionDb.id);
+
+        return {
+            ...actionDb,
+            tags,
+        } as IAction;
+    }
+
+    async getAll() {
+        return db.actions.toArray();
+    }
+
+    async update(id: number, changes: Partial<ActionForm>) {
+        await this.tagService.updateFromStringWithActionRelation(
+            changes.tags ?? '',
+            id,
+        );
+
+        return db.actions.update(id, changes);
+    }
+
+    async delete(id: number) {
+        return db.actions.delete(id);
+    }
+
+    async clear() {
+        await db.actions.clear();
+    }
 }

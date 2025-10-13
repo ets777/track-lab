@@ -1,0 +1,21 @@
+<ion-header>
+    <ion-toolbar>
+        <app-back-button slot="start"></app-back-button>
+        <ion-title>{{ 'TK_EDIT' | translate }} {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button
+                (click)="updateAction()"
+                [disabled]="!isFormValid()"
+            >{{ 'TK_SAVE' | translate }}</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    @if (action) {
+        <app-action-form 
+        #updateFormRef
+        [action]="action"
+        ></app-action-form>
+    }
+</ion-content>

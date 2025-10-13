@@ -1,0 +1,21 @@
+<ion-header>
+    <ion-toolbar>
+        <app-back-button slot="start"></app-back-button>
+        <ion-title>{{ 'TK_EDIT' | translate }} {{ 'TK_TAG' | translate | lowercase }}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button
+                (click)="updateTag()"
+                [disabled]="!isFormValid()"
+            >{{ 'TK_SAVE' | translate }}</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    @if (tag) {
+        <app-tag-form 
+            #updateFormRef
+            [tag]="tag"
+        ></app-tag-form>
+    }
+</ion-content>

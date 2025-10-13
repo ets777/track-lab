@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { IonItem, IonLabel, IonInput } from "@ionic/angular/standalone";
@@ -7,6 +7,7 @@ import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
 import { existingEntityValidator } from 'src/app/validators/existing-entity.validator';
+import { ITag } from 'src/app/db/models/tag';
 
 export type TagForm = {
   name: string;
@@ -19,15 +20,19 @@ export type TagForm = {
   imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
 })
 export class TagFormComponent {
-  public tagForm: ModelFormGroup<TagForm>;
+  @Input() tag?: ITag;
+
+  public tagForm!: ModelFormGroup<TagForm>;
 
   constructor(
     private formBuilder: FormBuilder,
-  ) {
+  ) { }
+
+  ngOnInit() {
     this.tagForm = this.formBuilder.group({
       name: ['', {
         asyncValidators: [
-          existingEntityValidator('actions')
+          existingEntityValidator('tags', this.tag?.name)
         ],
         validators: [
           Validators.required,
@@ -35,11 +40,23 @@ export class TagFormComponent {
         ],
       }],
     });
+
+    if (this.tag) {
+      this.setTagData(this.tag);
+    } else {
+      this.setDefaultData();
+    }
   }
 
   setDefaultData() {
     this.tagForm.patchValue({
       name: '',
+    });
+  }
+
+  setTagData(tag: ITag) {
+    this.tagForm.patchValue({
+      name: tag.name,
     });
   }
 }

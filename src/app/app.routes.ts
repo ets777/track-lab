@@ -23,6 +23,10 @@ export const routes: Routes = [
     path: 'action',
     children: [
       {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/action-edit/action-edit.page').then(m => m.ActionEditPage)
+      },
+      {
         path: 'add',
         loadComponent: () => import('./pages/action-add/action-add.page').then(m => m.ActionAddPage)
       },
@@ -35,6 +39,10 @@ export const routes: Routes = [
   {
     path: 'tag',
     children: [
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/tag-edit/tag-edit.page').then(m => m.TagEditPage)
+      },
       {
         path: 'add',
         loadComponent: () => import('./pages/tag-add/tag-add.page').then(m => m.TagAddPage)

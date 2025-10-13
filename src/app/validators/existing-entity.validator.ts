@@ -4,10 +4,12 @@ import { db } from 'src/app/db/db';
 
 export function existingEntityValidator(
     tableName: string,
+    currentName?: string,
 ): AsyncValidatorFn {
     return async (control: AbstractControl): Promise<ValidationErrors | null> => {
         const value = control.value?.trim();
-        if (!value) {
+
+        if (!value || currentName && value == currentName) {
             return null;
         }
 

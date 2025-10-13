@@ -4,6 +4,7 @@ import { db } from '../db/db';
 import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ActionTagService } from './action-tag.service';
+import { TagForm } from '../components/tag-form/tag-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -189,7 +190,7 @@ export class TagService {
     return db.tags.toArray();
   }
 
-  async update(id: number, changes: Partial<ITagCreateDto>) {
+  async update(id: number, changes: Partial<TagForm>) {
     return db.tags.update(id, changes);
   }
 

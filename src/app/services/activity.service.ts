@@ -139,13 +139,22 @@ export class ActivityService {
         return this.enrichAll(activities);
     }
 
-    async update(id: number, changes: Partial<ActivityForm>, sendEvent: boolean = true) {
+    async update(
+        id: number, 
+        changes: Partial<ActivityForm>, 
+        sendEvent: boolean = true,
+    ) {
         if (changes.actions) {
             await this.actionService.updateFromString(
                 changes.actions,
                 id,
             );
         }
+
+        await this.tagService.updateFromStringWithActivityRelation(
+            changes.tags ?? '',
+            id,
+        );
 
         const rowsAffected = await db.activities.update(id, changes);
 

@@ -68,13 +68,13 @@ export class LibraryPage implements OnInit {
 
     switch (action) {
       case 'view':
-        await this.goToViewActionPage(actionId);
+        await this.router.navigate(['/action', actionId]);
         break;
       case 'delete':
         // await this.deleteActivity(actionId);
         break;
       case 'edit':
-        // await this.goToEditPage(actionId);
+        await this.router.navigate(['/action/edit', actionId]);
         break;
       default:
         break;
@@ -86,21 +86,17 @@ export class LibraryPage implements OnInit {
 
     switch (action) {
       case 'view':
-        await this.goToViewTagPage(tagId);
+        await this.router.navigate(['/tag', tagId]);
         break;
       case 'delete':
         // await this.deleteActivity(actionId);
         break;
       case 'edit':
-        // await this.goToEditPage(actionId);
+        await this.router.navigate(['/tag/edit', tagId]);
         break;
       default:
         break;
     }
-  }
-
-  async goToViewActionPage(actionId: number) {
-    await this.router.navigate(['/action', actionId]);
   }
 
   async goToAddPage() {
@@ -113,9 +109,5 @@ export class LibraryPage implements OnInit {
     if (selectedSegment == 'tags') {
       await this.router.navigate(['/tag/add']);
     }
-  }
-
-  async goToViewTagPage(tagId: number) {
-    await this.router.navigate(['/tag', tagId]);
   }
 }
