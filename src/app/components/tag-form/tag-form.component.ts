@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
+import { existingEntityValidator } from 'src/app/validators/existing-entity.validator';
 
 export type TagForm = {
   name: string;
@@ -24,7 +25,15 @@ export class TagFormComponent implements OnInit {
     private formBuilder: FormBuilder,
   ) {
     this.tagForm = this.formBuilder.group({
-      name: ['', [Validators.required, commaValidator]],
+      name: ['', {
+        asyncValidators: [
+          existingEntityValidator('actions')
+        ],
+        validators: [
+          Validators.required,
+          commaValidator,
+        ],
+      }],
     });
   }
 

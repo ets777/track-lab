@@ -7,6 +7,8 @@ import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
+import { existingEntityValidator } from 'src/app/validators/existing-entity.validator';
+import { db } from 'src/app/db/db';
 
 export type ActionForm = {
   name: string;
@@ -26,7 +28,15 @@ export class ActionFormComponent implements OnInit {
     private formBuilder: FormBuilder,
   ) {
     this.actionForm = this.formBuilder.group({
-      name: ['', [Validators.required, commaValidator]],
+      name: ['', {
+        asyncValidators: [
+          existingEntityValidator('actions')
+        ],
+        validators: [
+          Validators.required,
+          commaValidator,
+        ],
+      }],
       tags: [''],
     });
   }
