@@ -18,7 +18,7 @@ export type TagForm = {
   styleUrls: ['./tag-form.component.scss'],
   imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
 })
-export class TagFormComponent implements OnInit {
+export class TagFormComponent {
   public tagForm: ModelFormGroup<TagForm>;
 
   constructor(
@@ -36,8 +36,6 @@ export class TagFormComponent implements OnInit {
       }],
     });
   }
-
-  ngOnInit() { }
 
   setDefaultData() {
     this.tagForm.patchValue({
