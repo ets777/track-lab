@@ -38,6 +38,12 @@ export class LibraryPage implements OnInit {
       },
     },
     {
+      text: this.translate.instant('TK_REPLACE'),
+      data: {
+        action: 'replace',
+      },
+    },
+    {
       text: this.translate.instant('TK_DELETE'),
       role: 'destructive',
       data: {
@@ -72,6 +78,9 @@ export class LibraryPage implements OnInit {
         break;
       case 'delete':
         // await this.deleteActivity(actionId);
+        break;
+      case 'replace':
+        await this.router.navigate(['/action/replace', actionId]);
         break;
       case 'edit':
         await this.router.navigate(['/action/edit', actionId]);

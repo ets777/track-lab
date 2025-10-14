@@ -23,6 +23,10 @@ export const routes: Routes = [
     path: 'action',
     children: [
       {
+        path: 'replace/:id',
+        loadComponent: () => import('./pages/action-replace/action-replace.page').then(m => m.ActionReplacePage)
+      },
+      {
         path: 'edit/:id',
         loadComponent: () => import('./pages/action-edit/action-edit.page').then(m => m.ActionEditPage)
       },

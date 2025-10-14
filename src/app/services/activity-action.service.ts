@@ -35,6 +35,13 @@ export class ActivityActionService {
       .toArray();
   }
 
+  async getByActionId(id: number) {
+    return db.activityActions
+      .where('actionId')
+      .equals(id)
+      .toArray();
+  }
+
   async update(id: number, changes: Partial<IActivityActionCreateDto>) {
     return db.activityActions.update(id, changes);
   }
@@ -55,5 +62,15 @@ export class ActivityActionService {
 
   async clear() {
     await db.activityActions.clear();
+  }
+
+  async replaceAction(oldActionId: number, newActionId: number) {
+    const relations = await this.getByActionId(oldActionId);
+
+    for (const relation of relations) {
+      await this.update(relation.id, {
+        actionId: newActionId,
+      });
+    }
   }
 }

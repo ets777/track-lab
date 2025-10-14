@@ -14,7 +14,6 @@ import { HookService } from 'src/app/services/hook.service';
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  standalone: true,
   imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
 })
 export class SettingsPage implements OnInit {

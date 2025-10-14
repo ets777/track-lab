@@ -158,9 +158,9 @@ export class LibraryItemStatsPage {
         }
       );
 
-    durationMinutes = result.map((item) => item.durationMinutes).filter((item) => item);
-    amount = result.map((item) => item.amount).filter((item) => item);
-    averages = result.map((item) => item.averages).filter((item) => item);
+    durationMinutes = result.map((item) => item.durationMinutes);
+    amount = result.map((item) => item.amount);
+    averages = result.map((item) => item.averages);
 
     this.totalDuration = durationMinutes.reduce((sum, curr) => sum += curr, 0);
     this.averageTimePerDay = this.totalDuration / durationMinutes.length;

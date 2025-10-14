@@ -50,11 +50,11 @@ export class ActivityService {
         const activityId = await db.activities.add(activity);
 
         await this.actionService.addFromStringWithRelation(
-            activityFormValue.actions, 
+            activityFormValue.actions,
             activityId,
         );
         await this.tagService.addFromStringWithActivityRelation(
-            activityFormValue.tags, 
+            activityFormValue.tags,
             activityId,
         );
 
@@ -140,8 +140,8 @@ export class ActivityService {
     }
 
     async update(
-        id: number, 
-        changes: Partial<ActivityForm>, 
+        id: number,
+        changes: Partial<ActivityForm>,
         sendEvent: boolean = true,
     ) {
         if (changes.actions) {

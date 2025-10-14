@@ -1,0 +1,41 @@
+<ion-header>
+    <ion-toolbar>
+        <app-back-button slot="start"></app-back-button>
+        <ion-title>{{ 'TK_REPLACE' | translate }} {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button
+                (click)="replaceAction()"
+                [disabled]="!isFormValid()"
+            >{{ 'TK_REPLACE' | translate }}</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    @if (currentAction) {
+        @if (hasRelation) {
+            <ion-item>
+                {{ getFormText() }}
+            </ion-item>
+        
+            <form [formGroup]="replaceForm">
+                <app-select-search 
+                    validationError
+                    formControlName="newAction"
+                    label="TK_ACTION"
+                    [suggestions]="suggestions"
+                ></app-select-search>
+
+                <ion-item>
+                    <ion-checkbox
+                        formControlName="deleteOldAction"
+                        labelPlacement="end"
+                    >{{ 'TK_DELETE_THE_ACTION_AFTER_THE_REPLACEMENT' | translate }}</ion-checkbox>
+                </ion-item>
+            </form>
+        } @else {
+            <div>{{ 'TK_THE_ACTION_WAS_NEVER_PERFORMED_THERE_IS_NOTHING_TO_REPLACE' | translate }}</div>
+        }
+
+    }
+</ion-content>

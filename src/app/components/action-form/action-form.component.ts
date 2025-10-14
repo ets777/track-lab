@@ -7,7 +7,7 @@ import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
-import { existingEntityValidator } from 'src/app/validators/existing-entity.validator';
+import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { IAction } from 'src/app/db/models/action';
 import { entitiesToString } from 'src/app/functions/string';
 

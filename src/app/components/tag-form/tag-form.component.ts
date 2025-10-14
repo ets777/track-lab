@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
 import { commaValidator } from 'src/app/validators/comma.validator';
-import { existingEntityValidator } from 'src/app/validators/existing-entity.validator';
+import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { ITag } from 'src/app/db/models/tag';
 
 export type TagForm = {
