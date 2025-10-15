@@ -10,6 +10,7 @@ import { ActivityActionService } from './activity-action.service';
 import { HookService } from './hook.service';
 import { TagService } from './tag.service';
 import { ITag } from '../db/models/tag';
+import { ActivityTagService } from './activity-tag.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
@@ -18,6 +19,7 @@ export class ActivityService {
         private activityActionService: ActivityActionService,
         private hookService: HookService,
         private tagService: TagService,
+        private activityTagService: ActivityTagService,
     ) { }
 
     async add(activity: IActivityCreateDto | IActivityDb) {
@@ -167,6 +169,7 @@ export class ActivityService {
 
     async delete(id: number) {
         await this.activityActionService.deleteByActivityId(id);
+        await this.activityTagService.deleteByActivityId(id);
 
         return db.activities.delete(id);
     }

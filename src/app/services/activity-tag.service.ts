@@ -53,6 +53,13 @@ export class ActivityTagService {
       .delete();
   }
 
+  async deleteByTagId(tagId: number) {
+    return db.activityTags
+      .where('tagId')
+      .equals(tagId)
+      .delete();
+  }
+
   async clear() {
     await db.activityTags.clear();
   }

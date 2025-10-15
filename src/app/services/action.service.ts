@@ -6,6 +6,7 @@ import { getEntitiesFromString } from '../functions/string';
 import { ITag } from '../db/models/tag';
 import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
+import { ActionTagService } from './action-tag.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,7 @@ export class ActionService {
     constructor(
         private activityActionService: ActivityActionService,
         private tagService: TagService,
+        private actionTagService: ActionTagService,
     ) { }
 
     async add(action: IActionCreateDto | IActionDb) {
@@ -192,6 +194,8 @@ export class ActionService {
     }
 
     async delete(id: number) {
+        await this.actionTagService.deleteByActionId(id);
+        
         return db.actions.delete(id);
     }
 

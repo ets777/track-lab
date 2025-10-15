@@ -195,6 +195,9 @@ export class TagService {
   }
 
   async delete(id: number) {
+    await this.activityTagService.deleteByTagId(id);
+    await this.actionTagService.deleteByTagId(id);
+
     return db.tags.delete(id);
   }
 
