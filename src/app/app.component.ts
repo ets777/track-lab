@@ -11,12 +11,15 @@ import { Platform, NavController } from '@ionic/angular';
 import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
 import { TooltipComponent } from "./components/tooltip/tooltip.component";
 import { StatsMenuComponent } from "./components/stats-menu/stats-menu.component";
-
+import { autoBackupOption } from './pages/settings/settings.page';
+import { differenceInDays, differenceInMonths } from 'date-fns';
+import { ToastComponent } from './components/toast/toast.component';
+import { DatabaseService } from './services/database.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
 })
 export class AppComponent implements OnInit {
   constructor(
@@ -24,6 +27,7 @@ export class AppComponent implements OnInit {
     private achievementService: AchievementService,
     private platform: Platform,
     private navController: NavController,
+    private databaseService: DatabaseService,
   ) {
     this.setAdaptiveStatusBarColor();
   }
@@ -32,6 +36,7 @@ export class AppComponent implements OnInit {
     this.setLanguages();
     await this.achievementService.init();
     this.initializeApp();
+    await this.autoBackup();
   }
 
   initializeApp() {
@@ -84,9 +89,40 @@ export class AppComponent implements OnInit {
 
     this.translate.use(
       savedLanguage
-      || systemLanguage
       || browserLanguage
+      || systemLanguage
       || defaultLanguage
     );
+  }
+
+  async autoBackup() {
+    const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
+    
+    if (autobackupPeriod == autoBackupOption.none) {
+      return;
+    }
+    
+    const lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value;
+    let needBackup = false;
+    
+    if (lastBackupDate) {
+      const currentDate = new Date();
+      const daysDiff = differenceInDays(currentDate, new Date(lastBackupDate));
+      const monthsDiff = differenceInMonths(currentDate, new Date(lastBackupDate));
+
+      console.log(autobackupPeriod);
+      console.log(lastBackupDate);
+      console.log(daysDiff, monthsDiff);
+
+      needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
+        || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
+        || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0
+    } else {
+      needBackup = true
+    }
+
+    if (needBackup) {
+      this.databaseService.backup();
+    }
   }
 }

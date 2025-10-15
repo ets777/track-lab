@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { TagsComponent } from './tags.component';
+import { ToastComponent } from './toast.component';
 import { TranslateModule } from '@ngx-translate/core';
 
-describe('TagsComponent', () => {
-    let component: TagsComponent;
-    let fixture: ComponentFixture<TagsComponent>;
+describe('ToastComponent', () => {
+    let component: ToastComponent;
+    let fixture: ComponentFixture<ToastComponent>;
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            imports: [TagsComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
+            imports: [ToastComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
         }).compileComponents();
 
-        fixture = TestBed.createComponent(TagsComponent);
+        fixture = TestBed.createComponent(ToastComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     }));

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
@@ -9,16 +9,28 @@ import { appVersion } from '../../../environments/version';
 import { DatabaseService } from 'src/app/services/database.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
+import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
+
+export enum autoBackupOption {
+  'none' = 'TK_NONE',
+  'daily' = 'TK_DAILY',
+  'weekly' = 'TK_WEEKLY',
+  'monthly' = 'TK_MONTHLY',
+}
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
+  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption],
 })
 export class SettingsPage implements OnInit {
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
+  autoBackupOption = autoBackupOption;
+  autoBackupPeriod: autoBackupOption = autoBackupOption.none;
+  password = '';
+  lastBackupDate = '';
 
   constructor(
     private markdownParserService: MarkdownParserService,
@@ -27,7 +39,15 @@ export class SettingsPage implements OnInit {
     private hookService: HookService,
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
+
+    if (autobackupPeriod) {
+      this.autoBackupPeriod = autobackupPeriod as autoBackupOption;
+    }
+
+    this.password = (await SecureStoragePlugin.get({ key: 'backup-password' }).catch(() => null))?.value ?? '';
+    this.lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value ?? '';
   }
 
   async onMdFileSelected(event: Event) {
@@ -73,8 +93,8 @@ export class SettingsPage implements OnInit {
     return this.translate.getCurrentLang();
   }
 
-  backupDatabase() {
-    this.databaseService.backup();
+  async backupDatabase() {
+    await this.databaseService.backup();
   }
 
   visitHomePage(event: Event) {
@@ -86,5 +106,23 @@ export class SettingsPage implements OnInit {
     });
 
     window.location.href = 'https://etsbox.com/track-lab';
+  }
+
+  getAutobackupValue() {
+    return this.autoBackupPeriod;
+  }
+
+  async setAutobackupPeriod(event: any) {
+    const value = event.target?.value;
+
+    this.autoBackupPeriod = await this.databaseService.setAutobackupPeriod(value);
+  }
+
+  async changePassword(initialSet: boolean) {
+    this.password = await this.databaseService.askPasswordToSet(initialSet) ?? '';
+  }
+
+  getDefaultPassword() {
+    return this.databaseService.defaultPassword;
   }
 }
