@@ -19,12 +19,21 @@ import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { autoBackupOption } from '../pages/settings/settings.page';
 import { Preferences } from '@capacitor/preferences';
 import { ToastService } from './toast.service';
+import { ITagDb } from '../db/models/tag';
+import { IActionTagDb } from '../db/models/action-tag';
+import { IActivityTagDb } from '../db/models/activity-tag';
+import { TagService } from './tag.service';
+import { ActionTagService } from './action-tag.service';
+import { ActivityTagService } from './activity-tag.service';
 
 type Backup = {
     activities: IActivityDb[],
     actions: IActionDb[],
     activityActions: IActivityActionDb[],
     achievements: IAchievementDb[],
+    tags: ITagDb[],
+    actionTags: IActionTagDb[],
+    activityTags: IActivityTagDb[],
     version: string,
 };
 
@@ -41,6 +50,9 @@ export class DatabaseService {
         private translate: TranslateService,
         private hookService: HookService,
         private toastService: ToastService,
+        private tagService: TagService,
+        private actionTagService: ActionTagService,
+        private activityTagService: ActivityTagService,
     ) { }
 
     async backup() {
@@ -54,6 +66,9 @@ export class DatabaseService {
             actions: await this.actionService.getAll(),
             activityActions: await this.activityActionService.getAll(),
             achievements: await this.achievementService.getAll(),
+            tags: await this.tagService.getAll(),
+            actionTags: await this.actionTagService.getAll(),
+            activityTags: await this.activityTagService.getAll(),
             version: appVersion,
         };
 
@@ -156,6 +171,9 @@ export class DatabaseService {
         await this.actionService.bulkAdd(backup.actions);
         await this.activityService.bulkAdd(backup.activities);
         await this.achievementService.bulkAdd(backup.achievements);
+        await this.tagService.bulkAdd(backup.tags);
+        await this.actionTagService.bulkAdd(backup.actionTags);
+        await this.activityTagService.bulkAdd(backup.activityTags);
 
         await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
     }
