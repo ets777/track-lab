@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2025-10-17
+
+### Added
+
+- Tags for actions and activities
+- Library item lists (actions and tags)
+- Statistics for actions and tags
+- Auto backup
+
 ## [0.3.5] - 2025-10-05
 
 ### Added
