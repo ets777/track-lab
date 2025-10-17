@@ -98,7 +98,7 @@ export class AppComponent implements OnInit {
     async autoBackup() {
         const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
 
-        if (autobackupPeriod == autoBackupOption.none) {
+        if (!autobackupPeriod || autobackupPeriod == autoBackupOption.none) {
             return;
         }
 
