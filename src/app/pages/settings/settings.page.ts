@@ -10,6 +10,7 @@ import { DatabaseService } from 'src/app/services/database.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
+import { ToastService } from 'src/app/services/toast.service';
 
 export enum autoBackupOption {
   'none' = 'TK_NONE',
@@ -37,6 +38,7 @@ export class SettingsPage implements OnInit {
     private translate: TranslateService,
     private databaseService: DatabaseService,
     private hookService: HookService,
+    private toastService: ToastService,
   ) { }
 
   async ngOnInit() {
@@ -60,7 +62,14 @@ export class SettingsPage implements OnInit {
     reader.onload = async () => {
       const content = reader.result as string;
 
-      await this.markdownParserService.parseMarkdownFile(file.name, content);
+      try {
+        await this.markdownParserService.parseMarkdownFile(file.name, content);
+      } catch (e: any) {
+        this.toastService.enqueue({
+          title: this.translate.instant(e.message),
+          type: 'error',
+        });
+      }
     };
 
     reader.readAsText(file);

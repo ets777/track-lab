@@ -41,7 +41,7 @@
             <ion-action-sheet
               trigger="open-action-sheet-action-{{action.id}}"
               header="{{ 'TK_ACTIONS' | translate }}"
-              [buttons]="actionSheetButtons"
+              [buttons]="actionActionSheetButtons"
               (didDismiss)="doActionAction($event, action.id)"
             ></ion-action-sheet>
           </ion-item>
@@ -61,7 +61,7 @@
             <ion-action-sheet
               trigger="open-action-sheet-tag-{{tag.id}}"
               header="{{ 'TK_ACTIONS' | translate }}"
-              [buttons]="actionSheetButtons"
+              [buttons]="tagActionSheetButtons"
               (didDismiss)="doTagAction($event, tag.id)"
             ></ion-action-sheet>
           </ion-item>

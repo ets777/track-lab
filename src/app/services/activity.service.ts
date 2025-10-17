@@ -153,10 +153,12 @@ export class ActivityService {
             );
         }
 
-        await this.tagService.updateFromStringWithActivityRelation(
-            changes.tags ?? '',
-            id,
-        );
+        if (typeof changes.tags !== 'undefined') {
+            await this.tagService.updateFromStringWithActivityRelation(
+                changes.tags,
+                id,
+            );
+        }
 
         const rowsAffected = await db.activities.update(id, changes);
 

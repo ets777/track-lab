@@ -9,6 +9,70 @@ import { isDateValid } from '../functions/date';
 import { ActivityForm } from '../components/activity-form/activity-form.component';
 import { entitiesToString } from '../functions/string';
 
+const helperRevision1 = {
+    parseLine: (date: string) => {
+        return (line: string) => {
+            const columns = line.split(' | ');
+
+            if (columns.length < 7) {
+                return;
+            }
+
+            return {
+                date,
+                startTime: columns[0].replace('| ', '').trim(),
+                actions: columns[1].replaceAll(' \\|', ',').trim(),
+                mood: Number(columns[2].trim()),
+                energy: Number(columns[3].trim()),
+                satiety: Number(columns[4].trim()),
+                emotions: columns[5].trim(),
+                comment: columns[6].replace(' |', '').trim(),
+            } as ActivityForm;
+        }
+    }
+}
+
+const helperRevision2 = {
+    parseLine: (date: string) => {
+        return (line: string) => {
+            const columns = line.split(' | ');
+
+            if (columns.length < 8) {
+                return;
+            }
+
+            const tags = columns[6].replaceAll('#', '');
+            const regex = /^[A-Za-zА-Яа-я0-9_-\s]+$/;
+
+            if (!regex.test(tags)) {
+                throw new Error('TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES');
+            }
+
+            return {
+                date,
+                startTime: columns[0].replace('| ', '').trim(),
+                actions: columns[1].trim(),
+                mood: Number(columns[2].trim()),
+                energy: Number(columns[3].trim()),
+                satiety: Number(columns[4].trim()),
+                emotions: columns[5].trim(),
+                tags: columns[6].replaceAll('#', '').replaceAll(' ', ', ').trim(),
+                comment: columns[7].replace(' |', '').trim(),
+            } as ActivityForm;
+        }
+    }
+}
+
+const versionMap = [
+    { version: '0.4.0', helper: helperRevision2 },
+    { version: '0.0.0', helper: helperRevision1 },
+];
+
+type MetaData = {
+    date: string;
+    version: string;
+};
+
 @Injectable({ providedIn: 'root' })
 export class MarkdownParserService {
     constructor(
@@ -17,8 +81,7 @@ export class MarkdownParserService {
         private translate: TranslateService,
     ) { }
 
-    async parseMarkdownFile(fileName: string, content: string) {
-        const lines = content.split('\n');
+    getMetaData(fileName: string, lines: string[]): MetaData {
         let date = this.extractDateFromFileName(fileName);
         let capturingMetaData = false;
         let version = '';
@@ -46,6 +109,17 @@ export class MarkdownParserService {
                 break;
             }
         }
+
+        return {
+            date,
+            version,
+        };
+    }
+
+    async parseMarkdownFile(fileName: string, content: string) {
+        const lines = content.split('\n');
+        const metaData = this.getMetaData(fileName, lines);
+        const date = metaData.date;
 
         if (!date || !isDateValid(date)) {
             await this.showMessage('TK_FILE_MUST_CONTAIN_META_DATA_WITH_A_DATE_IN_FORMAT_YYYY_MM_DD');
@@ -87,24 +161,7 @@ export class MarkdownParserService {
         }
 
         const activities: ActivityForm[] = tableLines
-            .map((line) => {
-                const columns = line.split(' | ');
-
-                if (columns.length < 7) {
-                    return;
-                }
-
-                return {
-                    date,
-                    startTime: columns[0].replace('| ', '').trim(),
-                    actions: columns[1].replaceAll(' \\|', ',').trim(),
-                    mood: Number(columns[2].trim()),
-                    energy: Number(columns[3].trim()),
-                    satiety: Number(columns[4].trim()),
-                    emotions: columns[5].trim(),
-                    comment: columns[6].replace(' |', '').trim(),
-                } as ActivityForm;
-            })
+            .map(this.getHelper(metaData.version).parseLine(date))
             .filter((activity) => typeof activity !== 'undefined');
 
         if (activities) {
@@ -119,6 +176,24 @@ export class MarkdownParserService {
         }
 
         return activities;
+    }
+
+    getHelper(version: string) {
+        if (!version) {
+            return helperRevision1;
+        }
+
+        const [fileMajor, fileMinor, filePatch] = version.split('.').map(Number);
+
+        const map = versionMap.find((map) => {
+            const [mapMajor, mapMinor, mapPatch] = map.version.split('.').map(Number);
+
+            return mapMajor < fileMajor
+                || mapMajor == fileMajor && mapMinor < fileMinor
+                || mapMajor == fileMajor && mapMinor == fileMinor && mapPatch <= filePatch;
+        });
+
+        return map?.helper ?? helperRevision1;
     }
 
     extractDateFromFileName(fileName: string): string {
@@ -162,6 +237,7 @@ export class MarkdownParserService {
             'TK_ENERGY',
             'TK_SATIETY',
             'TK_EMOTIONS',
+            'TK_TAGS',
             'TK_COMMENT',
         ];
 
@@ -174,7 +250,7 @@ export class MarkdownParserService {
         const table = `| ${tableContentTitle} |\n`
             + `| ${tableTitleSeparator} |\n`
             + activities.map(
-                (activity) => `| ${activity.startTime} | ${entitiesToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${activity.comment ?? ''} |`
+                (activity) => `| ${activity.startTime} | ${entitiesToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${entitiesToString(activity.tags.map((tag) => ({...tag, name: '#' + tag.name})), ' ') ?? ''} | ${activity.comment ?? ''} |`
             ).join('\n');
 
         const content = metaData + table;

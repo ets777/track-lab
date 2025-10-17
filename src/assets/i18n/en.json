@@ -229,6 +229,7 @@
   "TK_STUDIED": "Studied",
   "TK_SWAM": "Swam",
   "TK_TAG": "Tag",
+  "TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES": "Tags can only contain letters, digits, hyphens and underscores",
   "TK_TAGS": "Tags",
   "TK_TAUGHT": "Taught",
   "TK_TELL_MORE_ABOUT_THIS_ACTIVITY": "Tell more about this activity",

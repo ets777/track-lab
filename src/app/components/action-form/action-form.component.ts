@@ -10,6 +10,7 @@ import { TagInputComponent } from '../../form-elements/tag-input/tag-input.compo
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { IAction } from 'src/app/db/models/action';
 import { entitiesToString } from 'src/app/functions/string';
+import { tagsValidator } from 'src/app/validators/tags.validator';
 
 export type ActionForm = {
   name: string;
@@ -42,7 +43,7 @@ export class ActionFormComponent implements OnInit {
           commaValidator,
         ],
       }],
-      tags: [''],
+      tags: ['', tagsValidator],
     });
 
     if (this.action) {

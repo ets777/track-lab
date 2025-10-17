@@ -21,8 +21,8 @@ export function getEntitiesFromString(
         .map((entity) => ({ name: entity }));
 }
 
-export function entitiesToString(entities: WithName[]) {
-    return entities.map((entity) => entity.name).join(', ');
+export function entitiesToString(entities: WithName[], separator: string = ', ') {
+    return entities.map((entity) => entity.name).join(separator);
 }
 
 export function getTimeString(translate: TranslateService, minutes: number) {

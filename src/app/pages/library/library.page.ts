@@ -26,7 +26,7 @@ export class LibraryPage {
   tags: ITag[] = [];
   actions: IAction[] = [];
 
-  public actionSheetButtons = [
+  public actionActionSheetButtons = [
     {
       text: this.translate.instant('TK_VIEW'),
       data: {
@@ -43,6 +43,28 @@ export class LibraryPage {
       text: this.translate.instant('TK_REPLACE'),
       data: {
         action: 'replace',
+      },
+    },
+    {
+      text: this.translate.instant('TK_DELETE'),
+      role: 'destructive',
+      data: {
+        action: 'delete',
+      },
+    },
+  ];
+
+  public tagActionSheetButtons = [
+    {
+      text: this.translate.instant('TK_VIEW'),
+      data: {
+        action: 'view',
+      },
+    },
+    {
+      text: this.translate.instant('TK_EDIT'),
+      data: {
+        action: 'edit',
       },
     },
     {

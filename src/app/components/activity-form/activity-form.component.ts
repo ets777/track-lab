@@ -17,6 +17,7 @@ import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
+import { tagsValidator } from 'src/app/validators/tags.validator';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
@@ -79,7 +80,7 @@ export class ActivityFormComponent {
       energy: [this.defaultValue],
       satiety: [this.defaultValue],
       emotions: ['', duplicatedItemsValidator],
-      tags: [''],
+      tags: ['', tagsValidator],
     });
     this.setCurrentTime();
 

@@ -229,6 +229,7 @@
   "TK_STUDIED": "Учился",
   "TK_SWAM": "Плавал",
   "TK_TAG": "Тег",
+  "TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES": "Теги могут содержать только буквы, цифры, дефисы и подчеркивания",
   "TK_TAGS": "Теги",
   "TK_TAUGHT": "Учил",
   "TK_TELL_MORE_ABOUT_THIS_ACTIVITY": "Расскажите подробнее об этой активности",

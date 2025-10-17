@@ -34,7 +34,7 @@ export class TagService {
       .where('name')
       .equalsIgnoreCase(tagDto.name)
       .first();
-
+    
     if (tagDuplication) {
       await this.activityTagService.add({
         activityId,
@@ -46,7 +46,7 @@ export class TagService {
 
     if (!tagDuplication) {
       const tagId = await this.add(tagDto);
-      this.activityTagService.add({
+      await this.activityTagService.add({
         activityId,
         tagId,
       })
@@ -88,7 +88,7 @@ export class TagService {
   async addFromStringWithActivityRelation(tagsString: string, activityId: number) {
     const result = [];
     const tags = getEntitiesFromString(tagsString);
-
+    
     for (const tag of tags) {
       const tagId = await this.addWithActivityRelation(tag, activityId);
       result.push(tagId);
@@ -170,6 +170,7 @@ export class TagService {
 
   async getByActivityId(id: number) {
     const activityTags = await this.activityTagService.getByActivityId(id);
+
     const tagIds = activityTags.map((activityTag) => activityTag.tagId);
     return db.tags
       .where('id')
