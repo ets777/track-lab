@@ -106,7 +106,7 @@ export class SettingsPage implements OnInit {
     await this.databaseService.backup();
   }
 
-  visitHomePage(event: Event) {
+  async visitHomePage(event: Event) {
     event.preventDefault(); 
 
     this.hookService.emit({
@@ -114,7 +114,13 @@ export class SettingsPage implements OnInit {
       payload: {},
     });
 
-    window.location.href = 'https://etsbox.com/track-lab';
+    const currentLanguage = (await Preferences.get({ key: 'language' })).value;
+
+    console.log(currentLanguage);
+
+    window.location.href = currentLanguage == 'ru' 
+      ? 'https://etsbox.com/ru/tracklab'
+      : 'https://etsbox.com/track-lab';
   }
 
   getAutobackupValue() {
