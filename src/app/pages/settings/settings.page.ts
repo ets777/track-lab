@@ -116,8 +116,6 @@ export class SettingsPage implements OnInit {
 
     const currentLanguage = (await Preferences.get({ key: 'language' })).value;
 
-    console.log(currentLanguage);
-
     window.location.href = currentLanguage == 'ru' 
       ? 'https://etsbox.com/ru/tracklab'
       : 'https://etsbox.com/track-lab';

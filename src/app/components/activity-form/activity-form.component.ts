@@ -90,12 +90,7 @@ export class ActivityFormComponent {
   }
 
   async ngOnInit() {
-    const actions = await this.actionService.getAll();
-    this.allActionSuggestions = this.allActionSuggestions.map(
-      (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
-    );
-    this.allActionSuggestions.unshift(...actions.map((action) => action.name));
-    this.allActionSuggestions = [...new Set(this.allActionSuggestions)];
+    await this.fetchAllSuggestions();
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -122,24 +117,73 @@ export class ActivityFormComponent {
       });
   }
 
+  async fetchAllSuggestions() {
+    const actions = await this.actionService.getAll();
+    this.allActionSuggestions = this.allActionSuggestions.map(
+      (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
+    );
+    this.allActionSuggestions.unshift(...actions.map((action) => action.name));
+    this.allActionSuggestions = [...new Set(this.allActionSuggestions)];
+  }
+
   setCurrentTime() {
     this.currentTime = new Time().toString().slice(0, 5);
   }
 
-  async setDefaultData(): Promise<void> {
+  getDefaultData() {
+    const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+    return {
+      actions: '',
+      startTime: this.currentTime,
+      endTime: this.currentTime,
+      comment: '',
+      date: currentDate,
+      doNotMeasure: false,
+      mood: this.defaultValue,
+      energy: this.defaultValue,
+      satiety: this.defaultValue,
+      emotions: '',
+      tags: '',
+    };
+  }
+
+  async setDefaultData() {
+    const defaultData = this.getDefaultData();
+    const lastActivityData = await this.getLastActivityData();
+
+    this.activityForm.patchValue({
+      ...defaultData,
+      ...lastActivityData,
+    });
+  }
+
+  async updateLastActivityData() {
+    const lastActivityData = await this.getLastActivityData();
+
+    this.activityForm.patchValue({
+      ...lastActivityData,
+    });
+  }
+
+  async getLastActivityData() {
     const currentDate = format(new Date(), 'yyyy-MM-dd');
     const yesterday = format(addDays(new Date(currentDate), -1), 'yyyy-MM-dd');
     const lastActivity = await this.activityService.getLast();
 
+    if (!lastActivity) {
+      return {};
+    }
+
     let startTime = this.currentTime;
     let date = currentDate;
 
-    if (lastActivity?.date == currentDate && lastActivity?.endTime) {
+    if (lastActivity.date == currentDate && lastActivity.endTime) {
       startTime = lastActivity.endTime;
     }
 
     if (
-      lastActivity?.date
+      lastActivity.date
       && yesterday == lastActivity.date
       && lastActivity.endTime
     ) {
@@ -150,21 +194,16 @@ export class ActivityFormComponent {
       }
     }
 
-    const doNotMeasure = lastActivity ? this.getDoNotMeasureValue(lastActivity) : false;
+    const doNotMeasure = this.getDoNotMeasureValue(lastActivity);
 
-    this.activityForm.patchValue({
-      actions: '',
+    return {
       startTime,
-      endTime: this.currentTime,
-      comment: '',
       date,
       doNotMeasure,
-      mood: !doNotMeasure ? lastActivity?.mood || this.defaultValue : null,
-      energy: !doNotMeasure ? lastActivity?.energy || this.defaultValue : null,
-      satiety: !doNotMeasure ? lastActivity?.satiety || this.defaultValue : null,
-      emotions: '',
-      tags: '',
-    });
+      mood: !doNotMeasure ? lastActivity.mood : null,
+      energy: !doNotMeasure ? lastActivity.energy : null,
+      satiety: !doNotMeasure ? lastActivity.satiety : null,
+    };
   }
 
   setActivityData(activity: IActivity) {
