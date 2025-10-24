@@ -38,3 +38,38 @@ export function getTimeString(translate: TranslateService, minutes: number) {
         return `${hours} ${hourUnit}. ${remainder} ${minuteUnit}.`;
     }
 }
+
+export function getPartIndex(text: string, caretPosition: number, separator: string = ',') {
+    const commaPositions = [
+        ...findAllIndexes(text, separator),
+        text.length,
+    ];
+
+    if (caretPosition >= text.length) {
+        return commaPositions.length - 1;
+    }
+
+    for (let i = 0; i < commaPositions.length; i++) {
+        if (commaPositions[i] >= caretPosition) {
+            return i;
+        }
+    }
+
+    return commaPositions.length - 1;
+}
+
+function findAllIndexes(text: string, subString: string) {
+    let index = 0;
+    let result: number[] = [];
+
+    if (!text) {
+        return result;
+    }
+
+    while (text.indexOf(subString, index + 1) >= 0) {
+        index = text.indexOf(subString, index + 1);
+        result.push(index);
+    }
+
+    return result;
+}

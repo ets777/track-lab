@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonTextarea, IonRange, IonList, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
@@ -11,7 +11,7 @@ import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
-import { lowerCaseFirstLetter } from 'src/app/functions/string';
+import { getPartIndex, lowerCaseFirstLetter } from 'src/app/functions/string';
 import { actionSuggestions } from './action-suggestions';
 import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
@@ -44,6 +44,9 @@ export type ActivityForm = {
 })
 export class ActivityFormComponent {
   @Input() activity?: IActivity;
+
+  @ViewChild('actionsInput') actionInput!: IonInput;
+  actionInputCaretPosition = 0;
 
   protected readonly dateMask: MaskitoOptions = {
     mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
@@ -226,13 +229,28 @@ export class ActivityFormComponent {
     return !activity?.mood || !activity?.energy || !activity?.satiety;
   }
 
-  onActionsInput(event: any) {
+  async updateCaret(event: any) {
+    const actionsText = event.target.value;
+    const indexBefore = getPartIndex(actionsText, this.actionInputCaretPosition);
+    const nativeInput = await this.actionInput.getInputElement();
+    this.actionInputCaretPosition = nativeInput.selectionStart ?? 0;
+    const indexAfter = getPartIndex(actionsText, this.actionInputCaretPosition);
+
+    if (indexBefore !== indexAfter) {
+      this.hideActionSuggestions();
+    }
+  }
+
+  async onActionsInput(event: any) {
+    this.updateCaret(event);
+
     const actionsText = event.target.value;
     const parts = actionsText
       .split(',')
       .map((suggestion: string) => suggestion.toLowerCase().trim());
-    const current = parts.at(-1);
-    const entered = parts.slice(0, parts.length - 1);
+    const currentIndex = getPartIndex(actionsText, this.actionInputCaretPosition);
+    const current = parts[currentIndex];
+    const entered = parts.slice(currentIndex, currentIndex + 1);
 
     if (current.length > 0) {
       this.filteredActionSuggestions = this.allActionSuggestions
@@ -243,23 +261,30 @@ export class ActivityFormComponent {
         .slice(0, 5);
       this.showActionSuggestions = this.filteredActionSuggestions.length > 0;
     } else {
-      this.showActionSuggestions = false;
+      this.hideActionSuggestions();
     }
   }
 
   selectSuggestion(suggestion: string) {
-    let parts = this.activityForm.get('actions')?.value?.split(',') ?? [];
+    const actionsText = this.activityForm.get('actions')?.value;
+
+    if (!actionsText) {
+      return;
+    }
+
+    const currentIndex = getPartIndex(actionsText, this.actionInputCaretPosition);
+    let parts = actionsText.split(',') ?? [];
 
     if (!parts.length) {
       return;
     }
 
-    parts[parts.length - 1] = ' ' + suggestion;
+    parts[currentIndex] = ' ' + suggestion;
     this.activityForm.patchValue({
       actions: parts.join(',').trim(),
     });
 
-    this.showActionSuggestions = false;
+    this.hideActionSuggestions();
   }
 
   hideActionSuggestions() {
