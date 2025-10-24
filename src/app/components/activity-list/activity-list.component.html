@@ -2,7 +2,14 @@
   @for (activity of activities; track activity.id) {
     <ion-item>
       <ion-label>
-        <h2>{{ entitiesToString(activity.actions) }}</h2>
+        <div class="activity-header">
+          <h2>{{ entitiesToString(activity.actions) }}</h2>
+          <ion-buttons class="activity-item-buttons">
+            <ion-button id="open-action-sheet-{{activity.id}}">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </div>
         <p>
           {{ activity.startTime }} @if (activity.endTime) { - {{ activity.endTime
           }} }
@@ -24,11 +31,6 @@
           }
         </p>
         <app-tags [tags]="activity.tags"></app-tags>
-        <ion-buttons class="activity-item-buttons">
-          <ion-button id="open-action-sheet-{{activity.id}}">
-            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-          </ion-button>
-        </ion-buttons>
         <ion-action-sheet
           trigger="open-action-sheet-{{activity.id}}"
           header="{{ 'TK_ACTIONS' | translate }}"
