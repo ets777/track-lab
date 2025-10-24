@@ -6,12 +6,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TagForm, TagFormComponent } from 'src/app/components/tag-form/tag-form.component';
 import { TagService } from 'src/app/services/tag.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 
 @Component({
   selector: 'app-tag-add',
   templateUrl: './tag-add.page.html',
   styleUrls: ['./tag-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagFormComponent, ReactiveFormsModule]
+  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagFormComponent, ReactiveFormsModule, BackButtonComponent],
 })
 export class TagAddPage implements OnInit {
   @ViewChild('addFormRef') addFormRef!: TagFormComponent;
