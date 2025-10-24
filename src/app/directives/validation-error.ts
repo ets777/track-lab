@@ -37,7 +37,7 @@ export class ValidationErrorDirective {
         // TODO: find elements instead of hardcode (sorry)
         const ionItem = this.el.nativeElement.closest('ion-item')
             || this.el.nativeElement.children[0];
-        const ionInput = this.el.nativeElement.tagName.toLowerCase() == 'ion-input'
+        const ionInput = ['ion-input', 'ion-textarea'].includes(this.el.nativeElement.tagName.toLowerCase())
             ? this.el.nativeElement
             : this.el.nativeElement.children[0].children[0];
 

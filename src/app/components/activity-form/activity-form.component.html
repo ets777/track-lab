@@ -1,16 +1,18 @@
 <form [formGroup]="activityForm">
   <ion-item>
     <ion-label position="stacked">{{ 'TK_ACTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})</ion-label>
-    <ion-input
+    <ion-textarea
       #actionsInput
       validationError
       formControlName="actions"
       name="actions"
+      rows="1"
+      [autoGrow]="true"
       (ionInput)="onActionsInput($event)"
       (ionBlur)="hideActionSuggestions()"
       (click)="updateCaret($event)"
       (keyup)="updateCaret($event)"
-    ></ion-input>
+    ></ion-textarea>
   </ion-item>
 
   @if (showActionSuggestions) {
