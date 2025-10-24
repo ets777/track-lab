@@ -6,6 +6,7 @@ import { ActivityForm, ActivityFormComponent } from "src/app/components/activity
 import { Time } from 'src/app/Time';
 import { TranslateModule } from '@ngx-translate/core';
 import { App } from '@capacitor/app';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-activity-add',
@@ -18,6 +19,7 @@ export class ActivityAddPage {
 
   constructor(
     private activityService: ActivityService,
+    private toastService: ToastService,
   ) { }
 
   ngOnInit() {
@@ -48,6 +50,11 @@ export class ActivityAddPage {
     const activityFormValue = this.getForm().value as ActivityForm;
     await this.activityService.addFromForm(activityFormValue);
     await this.resetForm();
+
+    this.toastService.enqueue({
+      title: 'TK_ACTIVITY_ADDED_SUCCESSFULLY',
+      type: 'success',
+    });
   }
 
   isFormValid() {

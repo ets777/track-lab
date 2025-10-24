@@ -5,19 +5,20 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } fr
 import { TranslateModule } from '@ngx-translate/core';
 import { ActionForm, ActionFormComponent } from 'src/app/components/action-form/action-form.component';
 import { ActionService } from 'src/app/services/action.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-action-add',
   templateUrl: './action-add.page.html',
   styleUrls: ['./action-add.page.scss'],
-  standalone: true,
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActionFormComponent, ReactiveFormsModule]
+  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActionFormComponent, ReactiveFormsModule],
 })
 export class ActionAddPage implements OnInit {
   @ViewChild('addFormRef') addFormRef!: ActionFormComponent;
   
   constructor(
     private actionService: ActionService,
+    private toastService: ToastService,
   ) { }
 
   ngOnInit() {
@@ -32,6 +33,11 @@ export class ActionAddPage implements OnInit {
 
     await this.actionService.addFromForm(activityFormValue);
     this.resetForm();
+
+    this.toastService.enqueue({
+      title: 'TK_ACTION_ADDED_SUCCESSFULLY',
+      type: 'success',
+    });
   }
 
   isFormValid() {

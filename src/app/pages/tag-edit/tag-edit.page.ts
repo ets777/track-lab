@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TagService } from 'src/app/services/tag.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-tag-edit',
@@ -24,6 +25,7 @@ export class TagEditPage {
     constructor(
         private route: ActivatedRoute,
         private tagService: TagService,
+        private toastService: ToastService,
         private cdr: ChangeDetectorRef,
         private router: Router,
     ) {
@@ -42,6 +44,12 @@ export class TagEditPage {
 
         const tagFormValue = this.updateFormRef.tagForm.value as TagForm;
         await this.tagService.update(this.tagId, tagFormValue);
+
+        this.toastService.enqueue({
+            title: 'TK_TAG_UPDATED_SUCCESSFULLY',
+            type: 'success',
+        });
+
         await this.router.navigate(['/library']);
     }
 

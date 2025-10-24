@@ -7,6 +7,7 @@ import { IActivity } from 'src/app/db/models/activity';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActivityService } from 'src/app/services/activity.service';
 import { TagsComponent } from "../tags/tags.component";
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-activity-list',
@@ -40,6 +41,7 @@ export class ActivityListComponent implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
     private activityService: ActivityService,
+    private toastService: ToastService,
   ) { }
 
   ngOnInit() { }
@@ -64,8 +66,13 @@ export class ActivityListComponent implements OnInit {
 
     if (answer) {
       await this.activityService.delete(activityId);
-      // refresh list
-      // await this.setActivities();
+      this.activities = this.activities
+        .filter((activity) => activity.id !== activityId);
+
+      this.toastService.enqueue({
+        title: 'TK_ACTIVITY_DELETED_SUCCESSFULLY',
+        type: 'success',
+      });
     }
   }
 

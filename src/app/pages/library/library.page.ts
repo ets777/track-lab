@@ -12,6 +12,7 @@ import { IAction } from 'src/app/db/models/action';
 import { TagsComponent } from "src/app/components/tags/tags.component";
 import { AlertController } from '@ionic/angular';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-library',
@@ -83,6 +84,7 @@ export class LibraryPage {
     private translate: TranslateService,
     private router: Router,
     private alertController: AlertController,
+    private toastService: ToastService,
   ) { }
 
   async ionViewDidEnter() {
@@ -156,6 +158,12 @@ export class LibraryPage {
 
     if (confirmation) {
       this.actionService.delete(actionId);
+
+      this.toastService.enqueue({
+        title: 'TK_ACTION_DELETED_SUCCESSFULLY',
+        type: 'success',
+      });
+
       await this.fetchActions();
     }
   }
@@ -182,6 +190,12 @@ export class LibraryPage {
 
     if (confirmation) {
       this.tagService.delete(tagId);
+
+      this.toastService.enqueue({
+        title: 'TK_TAG_DELETED_SUCCESSFULLY',
+        type: 'success',
+      });
+
       await this.fetchTags();
     }
   }

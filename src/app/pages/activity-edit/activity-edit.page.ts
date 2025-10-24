@@ -8,6 +8,7 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-activity-edit',
@@ -25,6 +26,7 @@ export class ActivityEditPage {
   constructor(
     private route: ActivatedRoute,
     private activityService: ActivityService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router,
   ) {
@@ -43,6 +45,12 @@ export class ActivityEditPage {
 
     const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
     await this.activityService.update(this.activityId, activityFormValue);
+
+    this.toastService.enqueue({
+      title: 'TK_ACTIVITY_UPDATED_SUCCESSFULLY',
+      type: 'success',
+    });
+
     await this.router.navigate(
       ['/activity'], 
       { queryParams: { date: activityFormValue.date }},

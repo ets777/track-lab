@@ -12,6 +12,7 @@ import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { replacementValidator } from 'src/app/validators/replacement.validator';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
 import { AlertController } from '@ionic/angular';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-action-replace',
@@ -35,6 +36,7 @@ export class ActionReplacePage implements OnInit {
         private alertController: AlertController,
         private translate: TranslateService,
         private router: Router,
+        private toastService: ToastService,
     ) {
         this.currentActionId = Number(this.route.snapshot.paramMap.get('id'));
     }
@@ -83,6 +85,11 @@ export class ActionReplacePage implements OnInit {
         if (this.replaceForm.value.deleteOldAction) {
             await this.actionService.delete(this.currentActionId);
         }
+
+        this.toastService.enqueue({
+            title: 'TK_ACTION_REPLACED_SUCCESSFULLY',
+            type: 'success',
+        });
 
         await this.router.navigate(
             ['/library'],

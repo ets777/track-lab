@@ -8,6 +8,7 @@ import { ActionForm, ActionFormComponent } from 'src/app/components/action-form/
 import { IAction } from 'src/app/db/models/action';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionService } from 'src/app/services/action.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-action-edit',
@@ -24,6 +25,7 @@ export class ActionEditPage {
     constructor(
         private route: ActivatedRoute,
         private actionService: ActionService,
+        private toastService: ToastService,
         private cdr: ChangeDetectorRef,
         private router: Router,
     ) {
@@ -42,6 +44,12 @@ export class ActionEditPage {
 
         const actionFormValue = this.updateFormRef.actionForm.value as ActionForm;
         await this.actionService.update(this.actionId, actionFormValue);
+
+        this.toastService.enqueue({
+            title: 'TK_ACTION_UPDATED_SUCCESSFULLY',
+            type: 'success',
+        });
+
         await this.router.navigate(['/library']);
     }
 

@@ -5,6 +5,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } fr
 import { TranslateModule } from '@ngx-translate/core';
 import { TagForm, TagFormComponent } from 'src/app/components/tag-form/tag-form.component';
 import { TagService } from 'src/app/services/tag.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-tag-add',
@@ -17,6 +18,7 @@ export class TagAddPage implements OnInit {
 
   constructor(
     private tagService: TagService,
+    private toastService: ToastService,
   ) { }
 
   ngOnInit() {
@@ -31,6 +33,11 @@ export class TagAddPage implements OnInit {
 
     await this.tagService.add({ name: activityFormValue.name });
     this.resetForm();
+
+    this.toastService.enqueue({
+      title: 'TK_TAG_ADDED_SUCCESSFULLY',
+      type: 'success',
+    });
   }
 
   isFormValid() {
