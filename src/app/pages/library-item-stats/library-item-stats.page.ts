@@ -167,20 +167,25 @@ export class LibraryItemStatsPage {
     
     this.totalAmount = amount.reduce((sum, curr) => sum += curr, 0);
     this.averageTimePerTime = this.totalDuration / this.totalAmount;
-    this.averageAmountPerDay = this.totalAmount / durationMinutes.length
+    this.averageAmountPerDay = this.totalAmount / durationMinutes.length;
+
+    const units = '(' + this.translate.instant('TK_M') + '.)';
+    const timeLabel = this.translate.instant('TK_TIME') + ' ' + units;
+    const averageTimeLabel = this.translate.instant('TK_AVG') + ' ' + timeLabel.toLowerCase();
+    const timesLabel = this.translate.instant('TK_TIMES');
 
     this.minutesChartData = {
       labels: dates,
       datasets: [
-        { data: durationMinutes, label: 'Time (m.)' },
-        { data: averages, label: 'Average time (m.)' },
+        { data: durationMinutes, label: timeLabel },
+        { data: averages, label: averageTimeLabel },
       ]
     };
 
     this.amountChartData = {
       labels: dates,
       datasets: [
-        { data: amount, label: 'Times' },
+        { data: amount, label: timesLabel },
       ]
     };
   }

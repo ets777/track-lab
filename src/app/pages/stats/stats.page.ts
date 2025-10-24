@@ -4,7 +4,7 @@ import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar,
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
@@ -46,6 +46,7 @@ export class StatsPage implements OnInit {
     private toastCtrl: ToastController,
     private router: Router,
     private formBuilder: FormBuilder,
+    private translate: TranslateService,
   ) {
     this.filterForm = this.formBuilder.group({
       datePeriod: [],
@@ -85,24 +86,29 @@ export class StatsPage implements OnInit {
         };
       });
 
+    const avg = this.translate.instant('TK_AVG');
+    const moodLabel = avg + ' ' + this.translate.instant('TK_MOOD');
+    const energyLabel = avg + ' ' + this.translate.instant('TK_ENERGY');
+    const satietyLabel = avg + ' ' + this.translate.instant('TK_SATIETY');
+
     if (dates.length === 1) {
       const normalizedData = this.normalizeWithInterpolation(this.activities);
 
       this.chartData = {
         labels: normalizedData.map((data) => data.time),
         datasets: [
-          { data: normalizedData.map((data) => data.mood || 0), label: 'Avg. Mood' },
-          { data: normalizedData.map((data) => data.energy || 0), label: 'Avg. Energy' },
-          { data: normalizedData.map((data) => data.satiety || 0), label: 'Avg. Satiety' },
+          { data: normalizedData.map((data) => data.mood || 0), label: moodLabel },
+          { data: normalizedData.map((data) => data.energy || 0), label: energyLabel },
+          { data: normalizedData.map((data) => data.satiety || 0), label: satietyLabel },
         ]
       };
     } else {
       this.chartData = {
         labels: dates,
         datasets: [
-          { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: 'Avg. Mood' },
-          { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: 'Avg. Energy' },
-          { data: this.activitiesGroupedByDate.map((activity) => activity.avgSatiety), label: 'Avg. Satiety' },
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgMood), label: moodLabel },
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgEnergy), label: energyLabel },
+          { data: this.activitiesGroupedByDate.map((activity) => activity.avgSatiety), label: satietyLabel },
         ]
       };
     }

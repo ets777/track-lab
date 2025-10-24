@@ -258,6 +258,7 @@
   "TK_TIME_MUST_BE_IN_FORMAT_HH_MM": "Время должно быть в формате ЧЧ:ММ.",
   "TK_TIME_PER_DAY": "Время за день",
   "TK_TIME": "Время",
+  "TK_TIMES": "Разы",
   "TK_TOTAL_AMOUNT": "Общее количество",
   "TK_TOTAL_FOR_PERIOD": "Итог за период",
   "TK_TOTAL_TIME": "Затраченное время",

@@ -258,6 +258,7 @@
   "TK_TIME_MUST_BE_IN_FORMAT_HH_MM": "Time must be in format HH:MM.",
   "TK_TIME_PER_DAY": "Time per day",
   "TK_TIME": "Time",
+  "TK_TIMES": "Times",
   "TK_TOTAL_AMOUNT": "Total count",
   "TK_TOTAL_FOR_PERIOD": "Total for period",
   "TK_TOTAL_TIME": "Total time",
