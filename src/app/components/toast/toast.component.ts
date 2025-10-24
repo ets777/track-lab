@@ -47,7 +47,10 @@ export class ToastComponent implements OnInit {
             }
         }
         this.visible = true;
-        setTimeout(() => this.visible = false, 5000);
+        setTimeout(
+            () => this.visible = false, 
+            toast.duration ?? this.toastService.getDefaultDuration(),
+        );
     }
 
 }

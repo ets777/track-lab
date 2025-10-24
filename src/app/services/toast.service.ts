@@ -6,6 +6,7 @@ export interface IToast {
     title: string,
     type?: ('info' | 'warning' | 'error' | 'success' | 'waiting'),
     icon?: string,
+    duration?: number,
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class ToastService {
     private toastEvent$ = new Subject<IToast>();
     private queue: IToast[] = [];
     private showing = false;
+    private defaultDuration: number = 5000;
 
     constructor(
         private achievementService: AchievementService,
@@ -37,11 +39,11 @@ export class ToastService {
         }
 
         if (this.achievementService.isShowing()) {
-            // the best option would be combine achievement queue with 
+            // the best solution would be combine achievement queue with 
             // toast one, but I'm to lazy
             setTimeout(() => {
                 this.processQueue();
-            }, 5000);
+            }, this.defaultDuration);
 
             return;
         }
@@ -54,6 +56,10 @@ export class ToastService {
         setTimeout(() => {
             this.showing = false;
             this.processQueue();
-        }, 5000);
+        }, next.duration ?? this.defaultDuration);
+    }
+
+    getDefaultDuration() {
+        return this.defaultDuration;
     }
 }

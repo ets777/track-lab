@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -7,7 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
 import { AchievementService } from './services/achievement.service';
-import { Platform, NavController } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { AchievementToastComponent } from "./components/achievement-toast/achievement-toast.component";
 import { TooltipComponent } from "./components/tooltip/tooltip.component";
 import { StatsMenuComponent } from "./components/stats-menu/stats-menu.component";
@@ -15,6 +15,9 @@ import { autoBackupOption } from './pages/settings/settings.page';
 import { differenceInDays, differenceInMonths } from 'date-fns';
 import { ToastComponent } from './components/toast/toast.component';
 import { DatabaseService } from './services/database.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { NavigationService } from './services/navigation.service';
 
 @Component({
     selector: 'app-root',
@@ -22,12 +25,15 @@ import { DatabaseService } from './services/database.service';
     imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
 })
 export class AppComponent implements OnInit {
+    @ViewChild(IonRouterOutlet, { static: true }) routerOutlet!: IonRouterOutlet;
+
     constructor(
         private translate: TranslateService,
         private achievementService: AchievementService,
         private platform: Platform,
-        private navController: NavController,
         private databaseService: DatabaseService,
+        private router: Router,
+        private navigationService: NavigationService,
     ) {
         this.setAdaptiveStatusBarColor();
     }
@@ -40,9 +46,14 @@ export class AppComponent implements OnInit {
     }
 
     initializeApp() {
+        this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+            .subscribe((e: NavigationEnd) => {
+                this.navigationService.pushUrl(e.urlAfterRedirects);
+            });
+
         this.platform.ready().then(() => {
-            this.platform.backButton.subscribeWithPriority(5, () => {
-                this.navController.back();
+            this.platform.backButton.subscribeWithPriority(5, async () => {
+                await this.navigationService.goBack();
             });
         });
     }

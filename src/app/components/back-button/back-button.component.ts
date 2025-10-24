@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { IonButton, IonIcon } from "@ionic/angular/standalone";
-import { NavController } from '@ionic/angular';
+import { NavigationService } from 'src/app/services/navigation.service';
 
 @Component({
   selector: 'app-back-button',
@@ -11,12 +11,12 @@ import { NavController } from '@ionic/angular';
 export class BackButtonComponent implements OnInit {
 
   constructor(
-    private navController: NavController,
+    private navigationService: NavigationService,
   ) { }
 
   ngOnInit() {}
 
   goToBackUrl() {
-    this.navController.back();
+    this.navigationService.goBack();
   }
 }
