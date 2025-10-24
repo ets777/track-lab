@@ -10,8 +10,6 @@ import { IActivityDb } from '../db/models/activity';
 import { IActionDb } from '../db/models/action';
 import { IActivityActionDb } from '../db/models/activity-action';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
-import { Capacitor } from '@capacitor/core';
-import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { IAchievementDb } from '../db/models/achievement';
 import { AchievementService } from './achievement.service';
 import { HookService } from './hook.service';
@@ -25,6 +23,7 @@ import { IActivityTagDb } from '../db/models/activity-tag';
 import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { ActivityTagService } from './activity-tag.service';
+import { FileService } from './file.service';
 
 type Backup = {
     activities: IActivityDb[],
@@ -53,6 +52,7 @@ export class DatabaseService {
         private tagService: TagService,
         private actionTagService: ActionTagService,
         private activityTagService: ActivityTagService,
+        private fileService: FileService,
     ) { }
 
     async backup() {
@@ -81,41 +81,16 @@ export class DatabaseService {
         const content = encode(all, password);
         const currentDate = format(new Date(), 'yyyy-MM-dd');
 
-        if (Capacitor.isNativePlatform()) {
-            const dirPath = 'TrackLab/backups';
+        const dirPath = 'TrackLab/backups';
+        const fileName = `${currentDate}.txt`;
+        const mimeType = 'text/plain';
 
-            await Filesystem.mkdir({
-                path: dirPath,
-                directory: Directory.Documents,
-                recursive: true,
-            }).catch(() => {
-                // ignore if already exists
-            });
-
-            const fullPath = `${dirPath}/${currentDate}.txt`;
-
-            await Filesystem.writeFile({
-                path: fullPath,
-                data: content,
-                directory: Directory.Documents,
-                encoding: Encoding.UTF8,
-            });
-
-            await this.showMessage(
-                'TK_FILE_SAVED_IN_PATH', 
-                { path: 'Documents/' + fullPath },
-            );
-        } else {
-            const blob = new Blob([content], { type: 'text/plain' });
-
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'backup_' + currentDate + '.txt';
-            a.click();
-
-            URL.revokeObjectURL(url);
-        }
+        await this.fileService.saveFile(
+            content,
+            dirPath,
+            fileName,
+            mimeType,
+        );
 
         await Preferences.set({
             key: 'last-backup-date',

@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { ActivityService } from './activity.service';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { Capacitor } from '@capacitor/core';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import { appVersion } from '../../environments/version';
 import { isDateValid } from '../functions/date';
 import { ActivityForm } from '../components/activity-form/activity-form.component';
 import { entitiesToString } from '../functions/string';
+import { FileService } from './file.service';
 
 const helperRevision1 = {
     parseLine: (date: string) => {
@@ -79,6 +78,7 @@ export class MarkdownParserService {
         private toastCtrl: ToastController,
         private activityService: ActivityService,
         private translate: TranslateService,
+        private fileService: FileService,
     ) { }
 
     getMetaData(fileName: string, lines: string[]): MetaData {
@@ -254,42 +254,17 @@ export class MarkdownParserService {
             ).join('\n');
 
         const content = metaData + table;
+        
+        const [year, month] = date.split('-');
+        const dirPath = `TrackLab/${year}/${month}`;
+        const fileName = `${date}.md`;
+        const mimeType = 'text/markdown';
 
-        if (Capacitor.isNativePlatform()) {
-            const [year, month] = date.split('-');
-            const dirPath = `TrackLab/${year}/${month}`;
-
-            await Filesystem.mkdir({
-                path: dirPath,
-                directory: Directory.Documents,
-                recursive: true,
-            }).catch(() => {
-                // ignore if already exists
-            });
-
-            const fullPath = `${dirPath}/${date}.md`;
-
-            await Filesystem.writeFile({
-                path: fullPath,
-                data: content,
-                directory: Directory.Documents,
-                encoding: Encoding.UTF8,
-            });
-
-            await this.showMessage(
-                'TK_FILE_SAVED_IN_PATH', 
-                { path: 'Documents/' + fullPath },
-            );
-        } else {
-            const blob = new Blob([content], { type: 'text/markdown' });
-
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = date + '.md';
-            a.click();
-
-            URL.revokeObjectURL(url);
-        }
+        await this.fileService.saveFile(
+            content,
+            dirPath,
+            fileName,
+            mimeType,
+        );
     }
 }
