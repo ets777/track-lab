@@ -29,6 +29,10 @@ export class AchievementService {
         );
     }
 
+    isShowing() {
+        return this.showing;
+    }
+
     emit(achievement: IAchievement) {
         this.achievementEvent$.next(achievement);
     }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { AchievementService } from './achievement.service';
 
 export interface IToast {
     title: string,
@@ -13,7 +14,9 @@ export class ToastService {
     private queue: IToast[] = [];
     private showing = false;
 
-    constructor() {}
+    constructor(
+        private achievementService: AchievementService,
+    ) {}
 
     emit(toast: IToast) {
         this.toastEvent$.next(toast);
@@ -30,6 +33,16 @@ export class ToastService {
 
     private processQueue() {
         if (this.showing || this.queue.length === 0) {
+            return;
+        }
+
+        if (this.achievementService.isShowing()) {
+            // the best option would be combine achievement queue with 
+            // toast one, but I'm to lazy
+            setTimeout(() => {
+                this.processQueue();
+            }, 5000);
+
             return;
         }
 
