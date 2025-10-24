@@ -255,7 +255,7 @@ export class ActivityFormComponent {
     if (current.length > 0) {
       this.filteredActionSuggestions = this.allActionSuggestions
         .filter((suggestion) =>
-          suggestion.toLowerCase().startsWith(current)
+          suggestion.toLowerCase().includes(current)
           && !entered.includes(suggestion.toLowerCase())
         )
         .slice(0, 5);

@@ -105,7 +105,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
   setFilteredSuggestions() {
     this.filteredSuggestions = this.suggestions
       .filter((suggestion) =>
-        suggestion.title.toLowerCase().startsWith(this.enteredText.toLowerCase())
+        suggestion.title.toLowerCase().includes(this.enteredText.toLowerCase())
       )
       .slice(0, 5);
   }

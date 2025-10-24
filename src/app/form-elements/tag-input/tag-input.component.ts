@@ -66,7 +66,7 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     if (current.length > 0) {
       this.filteredSuggestions = this.allSuggestions
         .filter((suggestion) =>
-          suggestion.toLowerCase().startsWith(current.toLowerCase())
+          suggestion.toLowerCase().includes(current.toLowerCase())
         )
         .slice(0, 5);
       this.showSuggestions = this.filteredSuggestions.length > 0;
