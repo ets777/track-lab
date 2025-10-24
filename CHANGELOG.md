@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.1] - 2025-10-24
+
+### Added
+
+- Toast notifications for actions
+- Exit the app by double-pressing the system back button
+
+### Improved
+
+- Homepage link now depends on the selected language
+- Action input field now expands to multiple lines for long text
+- Suggestions now depend on the cursor position in the input field
+- Search now matches any part of a string, not only the beginning
+
+### Fixed
+
+- Pre-filling from the last activity (again)
+- Hitbox of the "Update end time" button
+- Missing translations in graph labels restored
+- Graph width issues
+- Overlap between the three-dots menu and activity title
+- Toasts appearing simultaneously with achievements
+
+
 ## [0.4.0] - 2025-10-17
 
 ### Added
