@@ -37,7 +37,7 @@ type Backup = {
 };
 
 @Injectable({ providedIn: 'root' })
-export class DatabaseService {
+export class BackupService {
     defaultPassword = 'etsbox.com';
 
     constructor(

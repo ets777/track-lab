@@ -6,7 +6,7 @@ import { MarkdownParserService } from 'src/app/services/markdown-parser.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
-import { DatabaseService } from 'src/app/services/database.service';
+import { BackupService } from 'src/app/services/backup.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
@@ -36,7 +36,7 @@ export class SettingsPage implements OnInit {
   constructor(
     private markdownParserService: MarkdownParserService,
     private translate: TranslateService,
-    private databaseService: DatabaseService,
+    private backupService: BackupService,
     private hookService: HookService,
     private toastService: ToastService,
   ) { }
@@ -86,7 +86,7 @@ export class SettingsPage implements OnInit {
     reader.onload = async () => {
       const content = reader.result as string;
 
-      await this.databaseService.restore(content);
+      await this.backupService.restore(content);
     };
 
     reader.readAsText(file);
@@ -103,7 +103,7 @@ export class SettingsPage implements OnInit {
   }
 
   async backupDatabase() {
-    await this.databaseService.backup();
+    await this.backupService.backup();
   }
 
   async visitHomePage(event: Event) {
@@ -128,14 +128,14 @@ export class SettingsPage implements OnInit {
   async setAutobackupPeriod(event: any) {
     const value = event.target?.value;
 
-    this.autoBackupPeriod = await this.databaseService.setAutobackupPeriod(value);
+    this.autoBackupPeriod = await this.backupService.setAutobackupPeriod(value);
   }
 
   async changePassword(initialSet: boolean) {
-    this.password = await this.databaseService.askPasswordToSet(initialSet) ?? '';
+    this.password = await this.backupService.askPasswordToSet(initialSet) ?? '';
   }
 
   getDefaultPassword() {
-    return this.databaseService.defaultPassword;
+    return this.backupService.defaultPassword;
   }
 }

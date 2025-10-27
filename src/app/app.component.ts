@@ -14,7 +14,7 @@ import { StatsMenuComponent } from "./components/stats-menu/stats-menu.component
 import { autoBackupOption } from './pages/settings/settings.page';
 import { differenceInDays, differenceInMonths } from 'date-fns';
 import { ToastComponent } from './components/toast/toast.component';
-import { DatabaseService } from './services/database.service';
+import { BackupService } from './services/backup.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
         private translate: TranslateService,
         private achievementService: AchievementService,
         private platform: Platform,
-        private databaseService: DatabaseService,
+        private backupService: BackupService,
         private router: Router,
         private navigationService: NavigationService,
     ) {
@@ -129,7 +129,7 @@ export class AppComponent implements OnInit {
         }
 
         if (needBackup) {
-            this.databaseService.backup();
+            this.backupService.backup();
         }
     }
 }

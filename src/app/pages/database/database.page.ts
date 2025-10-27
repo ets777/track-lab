@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { entitiesToString } from 'src/app/functions/string';
 import { IAchievement } from 'src/app/db/models/achievement';
 import { AchievementService } from 'src/app/services/achievement.service';
-import { DatabaseService } from 'src/app/services/database.service';
+import { BackupService } from 'src/app/services/backup.service';
 
 @Component({
   selector: 'app-database',
@@ -33,7 +33,7 @@ export class DatabasePage implements OnInit {
     private actionService: ActionService,
     private activityActionService: ActivityActionService,
     private achievementService: AchievementService,
-    private databaseService: DatabaseService,
+    private backupService: BackupService,
   ) { }
 
   async ngOnInit() {
@@ -44,6 +44,6 @@ export class DatabasePage implements OnInit {
   }
 
   async clearDatabase() {
-    await this.databaseService.clearDatabase();
+    await this.backupService.clearDatabase();
   }
 }
