@@ -43,7 +43,7 @@ export class ActionEditPage {
         }
 
         const actionFormValue = this.updateFormRef.actionForm.value as ActionForm;
-        await this.actionService.update(this.actionId, actionFormValue);
+        await this.actionService.updateWithTags(this.actionId, actionFormValue);
 
         this.toastService.enqueue({
             title: 'TK_ACTION_UPDATED_SUCCESSFULLY',

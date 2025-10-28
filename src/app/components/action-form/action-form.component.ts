@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { IonItem, IonLabel, IonInput } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,59 +11,61 @@ import { existingEntityValidator } from 'src/app/validators-async/existing-entit
 import { IAction } from 'src/app/db/models/action';
 import { entitiesToString } from 'src/app/functions/string';
 import { tagsValidator } from 'src/app/validators/tags.validator';
+import { ActionService } from 'src/app/services/action.service';
 
 export type ActionForm = {
-  name: string;
-  tags: string;
+    name: string;
+    tags: string;
 };
 
 @Component({
-  selector: 'app-action-form',
-  templateUrl: './action-form.component.html',
-  styleUrls: ['./action-form.component.scss'],
-  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent],
+    selector: 'app-action-form',
+    templateUrl: './action-form.component.html',
+    styleUrls: ['./action-form.component.scss'],
+    imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent],
 })
 export class ActionFormComponent implements OnInit {
-  @Input() action?: IAction;
+    @Input() action?: IAction;
 
-  public actionForm!: ModelFormGroup<ActionForm>;
+    public actionForm!: ModelFormGroup<ActionForm>;
 
-  constructor(
-    private formBuilder: FormBuilder,
-  ) { }
+    constructor(
+        private formBuilder: FormBuilder,
+        private actionService: ActionService,
+    ) { }
 
-  ngOnInit() {
-    this.actionForm = this.formBuilder.group({
-      name: ['', {
-        asyncValidators: [
-          existingEntityValidator('actions', this.action?.name)
-        ],
-        validators: [
-          Validators.required,
-          commaValidator,
-        ],
-      }],
-      tags: ['', tagsValidator],
-    });
+    ngOnInit() {
+        this.actionForm = this.formBuilder.group({
+            name: ['', {
+                asyncValidators: [
+                    existingEntityValidator(this.actionService, this.action?.name)
+                ],
+                validators: [
+                    Validators.required,
+                    commaValidator,
+                ],
+            }],
+            tags: ['', tagsValidator],
+        });
 
-    if (this.action) {
-      this.setActionData(this.action);
-    } else {
-      this.setDefaultData();
+        if (this.action) {
+            this.setActionData(this.action);
+        } else {
+            this.setDefaultData();
+        }
     }
-  }
 
-  setDefaultData() {
-    this.actionForm.patchValue({
-      name: '',
-      tags: '',
-    });
-  }
+    setDefaultData() {
+        this.actionForm.patchValue({
+            name: '',
+            tags: '',
+        });
+    }
 
-  setActionData(action: IAction) {
-    this.actionForm.patchValue({
-      name: action.name,
-      tags: entitiesToString(action.tags),
-    });
-  }
+    setActionData(action: IAction) {
+        this.actionForm.patchValue({
+            name: action.name,
+            tags: entitiesToString(action.tags),
+        });
+    }
 }

@@ -1,25 +1,33 @@
 import { Injectable } from '@angular/core';
 import { IAction, IActionCreateDto, IActionDb } from '../db/models/action';
-import { db } from '../db/db';
 import { ActivityActionService } from './activity-action.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ITag } from '../db/models/tag';
 import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
 import { ActionTagService } from './action-tag.service';
+import { DatabaseService } from './database.service';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class ActionService {
+@Injectable({ providedIn: 'root' })
+export class ActionService extends DatabaseService<'actions'> {
+    protected tableName = 'actions' as const;
+
     constructor(
         private activityActionService: ActivityActionService,
         private tagService: TagService,
         private actionTagService: ActionTagService,
-    ) { }
+    ) {
+        super();
+    }
 
-    async add(action: IActionCreateDto | IActionDb) {
-        return db.actions.add(action);
+    async getEnriched(id: number) {
+        const action = await this.getById(id);
+
+        if (!action) {
+            return;
+        }
+
+        return this.enrichOne(action);
     }
 
     async addFromForm(action: ActionForm) {
@@ -42,16 +50,6 @@ export class ActionService {
         );
 
         return actionId;
-    }
-
-    async bulkAdd(actions: IActionCreateDto[] | IActionDb[]) {
-        const result = [];
-
-        for (const action of actions) {
-            result.push(await this.add(action));
-        }
-
-        return result;
     }
 
     async addWithRelation(actionDto: IActionCreateDto, activityId: number) {
@@ -91,32 +89,12 @@ export class ActionService {
         return result;
     }
 
-    async get(id: number) {
-        return db.actions.get(id);
-    }
-
     async getByName(name: string) {
-        return await db.actions
-            .where('name')
-            .equalsIgnoreCase(name)
-            .first();
-    }
-
-    async getEnriched(id: number) {
-        const action = await db.actions.get(id);
-
-        if (!action) {
-            return;
-        }
-
-        return this.enrichOne(action);
+        return this.getFirstWhereEqualsIgnoringCase('name', name);
     }
 
     async getList(ids: number[]) {
-        return db.actions
-            .where('id')
-            .anyOf(ids)
-            .toArray();
+        return this.getAnyOf('id', ids);
     }
 
     async updateFromString(actionsString: string, activityId: number) {
@@ -135,7 +113,10 @@ export class ActionService {
         );
 
         for (const action of actionsToRemove) {
-            await this.activityActionService.delete(activityId, action.id);
+            await this.activityActionService.deleteByActivityIdAndActionId(
+                activityId, 
+                action.id,
+            );
         }
 
         for (const action of actionsToAdd) {
@@ -148,10 +129,7 @@ export class ActionService {
             .getByActivityId(id);
         const actionIds = activityActions
             .map((activityAction) => activityAction.actionId);
-        const actions = await db.actions
-            .where('id')
-            .anyOf(actionIds)
-            .toArray();
+        const actions = await this.getAnyOf('id', actionIds);
 
         return this.enrichAll(actions);
     }
@@ -180,26 +158,18 @@ export class ActionService {
         } as IAction;
     }
 
-    async getAll() {
-        return db.actions.toArray();
-    }
-
-    async update(id: number, changes: Partial<ActionForm>) {
+    async updateWithTags(id: number, changes: Partial<ActionForm>) {
         await this.tagService.updateFromStringWithActionRelation(
             changes.tags ?? '',
             id,
         );
 
-        return db.actions.update(id, changes);
+        return this.update(id, changes);
     }
 
-    async delete(id: number) {
+    async deleteWithRelations(id: number) {
         await this.actionTagService.deleteByActionId(id);
         
-        return db.actions.delete(id);
-    }
-
-    async clear() {
-        await db.actions.clear();
+        return this.delete(id);
     }
 }

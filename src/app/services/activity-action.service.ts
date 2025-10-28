@@ -1,76 +1,36 @@
 import { Injectable } from '@angular/core';
-import { IActivityActionCreateDto, IActivityActionDb } from '../db/models/activity-action';
-import { db } from '../db/db';
+import { DatabaseService } from './database.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class ActivityActionService {
-  async add(activityAction: IActivityActionCreateDto | IActivityActionDb) {
-    return db.activityActions.add(activityAction);
-  }
+@Injectable({ providedIn: 'root' })
+export class ActivityActionService extends DatabaseService<'activityActions'> {
+    protected tableName = 'activityActions' as const;
 
-  async bulkAdd(activityActions: IActivityActionCreateDto[] | IActivityActionDb[]) {
-    const result = [];
-
-    for (const activityAction of activityActions) {
-      result.push(await this.add(activityAction));
+    async getByActivityId(activityId: number) {
+        return this.getAllWhereEquals('activityId', activityId);
     }
 
-    return result;
-  }
-
-  async get(id: number) {
-    return db.activityActions.get(id);
-  }
-
-  async getAll() {
-    return db.activityActions.toArray();
-  }
-
-  async getByActivityId(id: number) {
-    return db.activityActions
-      .where('activityId')
-      .equals(id)
-      .toArray();
-  }
-
-  async getByActionId(id: number) {
-    return db.activityActions
-      .where('actionId')
-      .equals(id)
-      .toArray();
-  }
-
-  async update(id: number, changes: Partial<IActivityActionCreateDto>) {
-    return db.activityActions.update(id, changes);
-  }
-
-  async delete(activityId: number, actionId: number) {
-    return db.activityActions
-      .where('[activityId+actionId]')
-      .equals([activityId, actionId])
-      .delete();
-  }
-
-  async deleteByActivityId(activityId: number) {
-    return db.activityActions
-      .where('activityId')
-      .equals(activityId)
-      .delete();
-  }
-
-  async clear() {
-    await db.activityActions.clear();
-  }
-
-  async replaceAction(oldActionId: number, newActionId: number) {
-    const relations = await this.getByActionId(oldActionId);
-
-    for (const relation of relations) {
-      await this.update(relation.id, {
-        actionId: newActionId,
-      });
+    async getByActionId(actionId: number) {
+        return this.getAllWhereEquals('actionId', actionId);
     }
-  }
+
+    async deleteByActivityIdAndActionId(activityId: number, actionId: number) {
+        return this.deleteWhereEquals(
+            ['activityId', 'actionId'], 
+            [activityId, actionId],
+        );
+    }
+
+    async deleteByActivityId(activityId: number) {
+        return this.deleteWhereEquals('activityId', activityId);
+    }
+
+    async replaceAction(oldActionId: number, newActionId: number) {
+        const relations = await this.getByActionId(oldActionId);
+
+        for (const relation of relations) {
+            await this.update(relation.id, {
+                actionId: newActionId,
+            });
+        }
+    }
 }

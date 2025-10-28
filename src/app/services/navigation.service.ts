@@ -4,9 +4,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 
-@Injectable({
-    providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class NavigationService {
     private history: string[] = [];
     private lastBackPress = 0;

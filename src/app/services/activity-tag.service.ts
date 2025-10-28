@@ -1,66 +1,26 @@
 import { Injectable } from '@angular/core';
-import { IActivityTagCreateDto, IActivityTagDb } from '../db/models/activity-tag';
-import { db } from '../db/db';
+import { DatabaseService } from './database.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class ActivityTagService {
-  async add(activityTag: IActivityTagCreateDto | IActivityTagDb) {
-    return db.activityTags.add(activityTag);
-  }
+@Injectable({ providedIn: 'root' })
+export class ActivityTagService extends DatabaseService<'activityTags'> {
+    protected tableName = 'activityTags' as const;
 
-  async bulkAdd(activityTags: IActivityTagCreateDto[] | IActivityTagDb[]) {
-    const result = [];
-
-    for (const activityTag of activityTags) {
-      result.push(await this.add(activityTag));
+    async getByActivityId(activityId: number) {
+        return this.getAllWhereEquals('activityId', activityId);
     }
 
-    return result;
-  }
+    async deleteByActivityIdAndTagId(activityId: number, tagId: number) {
+        return this.deleteWhereEquals(
+            ['activityId', 'tagId'], 
+            [activityId, tagId],
+        );
+    }
 
-  async get(id: number) {
-    return db.activityTags.get(id);
-  }
+    async deleteByActivityId(activityId: number) {
+        return this.deleteWhereEquals('activityId', activityId);
+    }
 
-  async getAll() {
-    return db.activityTags.toArray();
-  }
-
-  async getByActivityId(id: number) {
-    return db.activityTags
-      .where('activityId')
-      .equals(id)
-      .toArray();
-  }
-
-  async update(id: number, changes: Partial<IActivityTagCreateDto>) {
-    return db.activityTags.update(id, changes);
-  }
-
-  async delete(activityId: number, tagId: number) {
-    return db.activityTags
-      .where('[activityId+tagId]')
-      .equals([activityId, tagId])
-      .delete();
-  }
-
-  async deleteByActivityId(activityId: number) {
-    return db.activityTags
-      .where('activityId')
-      .equals(activityId)
-      .delete();
-  }
-
-  async deleteByTagId(tagId: number) {
-    return db.activityTags
-      .where('tagId')
-      .equals(tagId)
-      .delete();
-  }
-
-  async clear() {
-    await db.activityTags.clear();
-  }
+    async deleteByTagId(tagId: number) {
+        return this.deleteWhereEquals('tagId', tagId);
+    }
 }

@@ -1,9 +1,8 @@
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
-import Dexie from 'dexie';
-import { db } from 'src/app/db/db';
+import { DatabaseService } from '../services/database.service';
 
 export function existingEntityValidator(
-    tableName: string,
+    service: DatabaseService<any>,
     currentName?: string,
 ): AsyncValidatorFn {
     return async (control: AbstractControl): Promise<ValidationErrors | null> => {
@@ -13,10 +12,7 @@ export function existingEntityValidator(
             return null;
         }
 
-        const table = (db as any)[tableName] as Dexie.Table;
-        const existing = await table.where('name')
-            .equalsIgnoreCase(value)
-            .first();
+        const existing = await service.getFirstWhereEqualsIgnoringCase('name', value);
 
         return existing 
             ? { entityExists: { message: 'TK_THE_ITEM_WITH_THIS_NAME_ALREADY_EXISTS' } } 

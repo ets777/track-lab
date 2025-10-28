@@ -14,6 +14,10 @@ type WithName = {
 export function getEntitiesFromString(
     entities: string
 ): { name: string }[] {
+    if (!entities) {
+        return [];
+    }
+
     return entities
         .split(',')
         .map((entity) => entity.trim())

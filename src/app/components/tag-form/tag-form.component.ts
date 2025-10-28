@@ -8,55 +8,57 @@ import { CommonModule } from '@angular/common';
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { ITag } from 'src/app/db/models/tag';
 import { tagValidator } from 'src/app/validators/tag.validator';
+import { TagService } from 'src/app/services/tag.service';
 
 export type TagForm = {
-  name: string;
+    name: string;
 };
 
 @Component({
-  selector: 'app-tag-form',
-  templateUrl: './tag-form.component.html',
-  styleUrls: ['./tag-form.component.scss'],
-  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
+    selector: 'app-tag-form',
+    templateUrl: './tag-form.component.html',
+    styleUrls: ['./tag-form.component.scss'],
+    imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
 })
-export class TagFormComponent {
-  @Input() tag?: ITag;
+export class TagFormComponent implements OnInit {
+    @Input() tag?: ITag;
 
-  public tagForm!: ModelFormGroup<TagForm>;
+    public tagForm!: ModelFormGroup<TagForm>;
 
-  constructor(
-    private formBuilder: FormBuilder,
-  ) { }
+    constructor(
+        private formBuilder: FormBuilder,
+        private tagService: TagService,
+    ) { }
 
-  ngOnInit() {
-    this.tagForm = this.formBuilder.group({
-      name: ['', {
-        asyncValidators: [
-          existingEntityValidator('tags', this.tag?.name)
-        ],
-        validators: [
-          Validators.required,
-          tagValidator,
-        ],
-      }],
-    });
+    ngOnInit() {
+        this.tagForm = this.formBuilder.group({
+            name: ['', {
+                asyncValidators: [
+                    existingEntityValidator(this.tagService, this.tag?.name)
+                ],
+                validators: [
+                    Validators.required,
+                    tagValidator,
+                ],
+            }],
+        });
 
-    if (this.tag) {
-      this.setTagData(this.tag);
-    } else {
-      this.setDefaultData();
+        if (this.tag) {
+            this.setTagData(this.tag);
+        } else {
+            this.setDefaultData();
+        }
     }
-  }
 
-  setDefaultData() {
-    this.tagForm.patchValue({
-      name: '',
-    });
-  }
+    setDefaultData() {
+        this.tagForm.patchValue({
+            name: '',
+        });
+    }
 
-  setTagData(tag: ITag) {
-    this.tagForm.patchValue({
-      name: tag.name,
-    });
-  }
+    setTagData(tag: ITag) {
+        this.tagForm.patchValue({
+            name: tag.name,
+        });
+    }
 }

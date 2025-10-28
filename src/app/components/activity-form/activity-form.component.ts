@@ -173,7 +173,7 @@ export class ActivityFormComponent {
     async getLastActivityData() {
         const currentDate = format(new Date(), 'yyyy-MM-dd');
         const yesterday = format(addDays(new Date(currentDate), -1), 'yyyy-MM-dd');
-        const lastActivity = await this.activityService.getLast();
+        const lastActivity = await this.activityService.getLastEnriched();
 
         if (!lastActivity) {
             return {};

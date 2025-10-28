@@ -5,20 +5,20 @@ import { BackButtonComponent } from './back-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 describe('BackButtonComponent', () => {
-  let component: BackButtonComponent;
-  let fixture: ComponentFixture<BackButtonComponent>;
+    let component: BackButtonComponent;
+    let fixture: ComponentFixture<BackButtonComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [BackButtonComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
-    }).compileComponents();
+    beforeEach(waitForAsync(() => {
+        TestBed.configureTestingModule({
+            imports: [BackButtonComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(BackButtonComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+        fixture = TestBed.createComponent(BackButtonComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    }));
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

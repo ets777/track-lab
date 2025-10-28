@@ -33,7 +33,7 @@ export class TagEditPage {
     }
 
     async ionViewDidEnter() {
-        this.tag = await this.tagService.get(this.tagId);
+        this.tag = await this.tagService.getById(this.tagId);
         this.cdr.detectChanges();
     }
 

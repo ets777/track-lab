@@ -40,7 +40,7 @@ export class ToastService {
 
         if (this.achievementService.isShowing()) {
             // the best solution would be combine achievement queue with 
-            // toast one, but I'm to lazy
+            // toast one, but I'm too lazy
             setTimeout(() => {
                 this.processQueue();
             }, this.defaultDuration);

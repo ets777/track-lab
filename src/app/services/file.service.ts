@@ -4,9 +4,7 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular';
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class FileService {
     constructor(
         private alertController: AlertController,

@@ -83,7 +83,7 @@ export class ActionReplacePage implements OnInit {
         );
 
         if (this.replaceForm.value.deleteOldAction) {
-            await this.actionService.delete(this.currentActionId);
+            await this.actionService.deleteWithRelations(this.currentActionId);
         }
 
         this.toastService.enqueue({

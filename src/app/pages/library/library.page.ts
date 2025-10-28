@@ -157,7 +157,7 @@ export class LibraryPage {
         const confirmation = await this.confirm();
 
         if (confirmation) {
-            await this.actionService.delete(actionId);
+            await this.actionService.deleteWithRelations(actionId);
 
             this.toastService.enqueue({
                 title: 'TK_ACTION_DELETED_SUCCESSFULLY',
@@ -175,7 +175,7 @@ export class LibraryPage {
             const answer = await this.showReplacementError();
 
             if (answer == 'delete') {
-                this.actionService.delete(actionId);
+                await this.actionService.deleteWithRelations(actionId);
                 await this.fetchActions();
             }
 
@@ -189,7 +189,7 @@ export class LibraryPage {
         const confirmation = await this.confirm();
 
         if (confirmation) {
-            await this.tagService.delete(tagId);
+            await this.tagService.deleteWithRelations(tagId);
 
             this.toastService.enqueue({
                 title: 'TK_TAG_DELETED_SUCCESSFULLY',

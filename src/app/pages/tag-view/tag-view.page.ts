@@ -44,7 +44,7 @@ export class TagViewPage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    const tag = await this.tagService.get(this.tagId);
+    const tag = await this.tagService.getById(this.tagId);
 
     if (tag) {
       this.tag = tag;

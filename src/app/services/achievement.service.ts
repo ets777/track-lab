@@ -1,15 +1,17 @@
 // achievement.service.ts
 import { Injectable } from '@angular/core';
 import { HookService } from './hook.service';
-import { db } from '../db/db';
-import { IAchievement, IAchievementCreateDto, IAchievementDb } from '../db/models/achievement';
+import { IAchievement } from '../db/models/achievement';
 import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
 import { Subject } from 'rxjs';
 import { format } from 'date-fns';
+import { DatabaseService } from './database.service';
 
 @Injectable({ providedIn: 'root' })
-export class AchievementService {
+export class AchievementService extends DatabaseService<'achievements'> {
+    protected tableName = 'achievements' as const;
+
     private achievementEvent$ = new Subject<IAchievement>();
     private queue: IAchievement[] = [];
     private showing = false;
@@ -18,15 +20,7 @@ export class AchievementService {
         private hookService: HookService,
         private activityService: ActivityService,
     ) {
-        this.hookService.onEvent().subscribe(
-            async (event) => {
-                if (event.type === 'achievement.init') {
-                    await this.checkAllInit(event);
-                } else {
-                    await this.checkAll(event);
-                }
-            }
-        );
+        super();
     }
 
     isShowing() {
@@ -63,6 +57,16 @@ export class AchievementService {
     }
 
     async init() {
+        this.hookService.onEvent().subscribe(
+            async (event) => {
+                if (event.type === 'achievement.init') {
+                    await this.checkAllInit(event);
+                } else {
+                    await this.checkAll(event);
+                }
+            }
+        );
+        
         const achievements = await this.getAll();
 
         // first launch
@@ -133,51 +137,14 @@ export class AchievementService {
         }
     }
 
-    async add(achievement: IAchievementCreateDto | IAchievementDb) {
-        return db.achievements.add(achievement);
-    }
-
-    async bulkAdd(achievements: IAchievementCreateDto[] | IAchievementDb[]) {
-        const result = [];
-
-        for (const achievement of achievements) {
-            result.push(await this.add(achievement));
-        }
-
-        return result;
-    }
-
-    async get(id: number) {
-        return db.achievements.get(id);
-    }
-
     async getByCode(code: string) {
-        return db.achievements
-            .where('code')
-            .equals(code)
-            .first();
+        return this.getFirstWhereEquals('code', code);
     }
 
     async getUnlocked() {
-        return db.achievements
-            .filter((achievement) => achievement.unlocked === true)
-            .toArray();
-    }
-
-    async getAll() {
-        return db.achievements.toArray();
-    }
-
-    async update(id: number, changes: Partial<IAchievementCreateDto>) {
-        return db.achievements.update(id, changes);
-    }
-
-    async delete(id: number) {
-        return db.achievements.delete(id);
-    }
-
-    async clear() {
-        await db.achievements.clear();
+        return this.getAllFilter(
+            (achievement) => achievement.unlocked === true,
+        );
     }
 
     async checkAchievement(achievementCode: string, payload?: any) {
@@ -366,7 +333,7 @@ export class AchievementService {
         await this.checkOneTimeAchievement(
             'new_year',
             async (activityId) => {
-                const activity = await this.activityService.get(activityId!);
+                const activity = await this.activityService.getById(activityId!);
                 return activity?.date.slice(5) === '01-01'
                     && format(new Date(), 'MM-dd') === '01-01';
             },
@@ -378,7 +345,7 @@ export class AchievementService {
         await this.checkOneTimeAchievement<number>(
             'max_mood',
             async (activityId) => {
-                const activity = await this.activityService.get(activityId!);
+                const activity = await this.activityService.getById(activityId!);
                 return !!(activity?.mood && activity.mood >= 9);
             },
             activityId,
@@ -389,7 +356,7 @@ export class AchievementService {
         await this.checkOneTimeAchievement<number>(
             'min_mood',
             async (activityId) => {
-                const activity = await this.activityService.get(activityId!);
+                const activity = await this.activityService.getById(activityId!);
                 return !!(activity?.mood && activity.mood <= 2);
             },
             activityId,
@@ -400,7 +367,7 @@ export class AchievementService {
         await this.checkOneTimeAchievement<number>(
             'min_energy',
             async (activityId) => {
-                const activity = await this.activityService.get(activityId!);
+                const activity = await this.activityService.getById(activityId!);
                 return !!(activity?.energy && activity.energy <= 2);
             },
             activityId,
@@ -411,7 +378,7 @@ export class AchievementService {
         await this.checkOneTimeAchievement<number>(
             'max_energy',
             async (activityId) => {
-                const activity = await this.activityService.get(activityId!);
+                const activity = await this.activityService.getById(activityId!);
                 return !!(activity?.energy && activity.energy >= 9);
             },
             activityId,

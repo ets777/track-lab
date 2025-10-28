@@ -1,208 +1,177 @@
 import { Injectable } from '@angular/core';
-import { ITagCreateDto, ITagDb } from '../db/models/tag';
-import { db } from '../db/db';
+import { ITagCreateDto } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ActionTagService } from './action-tag.service';
-import { TagForm } from '../components/tag-form/tag-form.component';
+import { DatabaseService } from './database.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class TagService {
-  constructor(
-    private activityTagService: ActivityTagService,
-    private actionTagService: ActionTagService,
-  ) { }
+@Injectable({ providedIn: 'root' })
+export class TagService extends DatabaseService<'tags'> {
+    protected tableName = 'tags' as const;
 
-  async add(tag: ITagCreateDto | ITagDb) {
-    return db.tags.add(tag);
-  }
-
-  async bulkAdd(tags: ITagCreateDto[] | ITagDb[]) {
-    const result = [];
-
-    for (const tag of tags) {
-      result.push(await this.add(tag));
+    constructor(
+        private activityTagService: ActivityTagService,
+        private actionTagService: ActionTagService,
+    ) {
+        super();
     }
 
-    return result;
-  }
+    async addWithActivityRelation(tagDto: ITagCreateDto, activityId: number) {
+        const existingTag = await this.getFirstWhereEqualsIgnoringCase(
+            'name',
+            tagDto.name,
+        );
 
-  async addWithActivityRelation(tagDto: ITagCreateDto, activityId: number) {
-    const tagDuplication = await db.tags
-      .where('name')
-      .equalsIgnoreCase(tagDto.name)
-      .first();
-    
-    if (tagDuplication) {
-      await this.activityTagService.add({
-        activityId,
-        tagId: tagDuplication.id,
-      });
+        if (existingTag) {
+            await this.activityTagService.add({
+                activityId,
+                tagId: existingTag.id,
+            });
 
-      return tagDuplication.id;
+            return existingTag.id;
+        }
+
+        if (!existingTag) {
+            const tagId = await this.add(tagDto);
+            await this.activityTagService.add({
+                activityId,
+                tagId,
+            })
+
+            return tagId;
+        }
+
+        return null;
     }
 
-    if (!tagDuplication) {
-      const tagId = await this.add(tagDto);
-      await this.activityTagService.add({
-        activityId,
-        tagId,
-      })
+    async addWithActionRelation(tagDto: ITagCreateDto, actionId: number) {
+        const existingTag = await this.getFirstWhereEqualsIgnoringCase(
+            'name',
+            tagDto.name,
+        );
 
-      return tagId;
+        if (existingTag) {
+            await this.actionTagService.add({
+                actionId,
+                tagId: existingTag.id,
+            });
+
+            return existingTag.id;
+        }
+
+        if (!existingTag) {
+            const tagId = await this.add(tagDto);
+            await this.actionTagService.add({
+                actionId,
+                tagId,
+            })
+
+            return tagId;
+        }
+
+        return null;
     }
 
-    return null;
-  }
+    async addFromStringWithActivityRelation(tagsString: string, activityId: number) {
+        const result = [];
+        const tags = getEntitiesFromString(tagsString);
 
-  async addWithActionRelation(tagDto: ITagCreateDto, actionId: number) {
-    const existingTag = await db.tags
-      .where('name')
-      .equalsIgnoreCase(tagDto.name)
-      .first();
-      
-    if (existingTag) {
-      await this.actionTagService.add({
-        actionId,
-        tagId: existingTag.id,
-      });
+        for (const tag of tags) {
+            const tagId = await this.addWithActivityRelation(tag, activityId);
+            result.push(tagId);
+        }
 
-      return existingTag.id;
+        return result;
     }
 
-    if (!existingTag) {
-      const tagId = await this.add(tagDto);
-      await this.actionTagService.add({
-        actionId,
-        tagId,
-      })
+    async addFromStringWithActionRelation(tagsString: string, actionId: number) {
+        const result = [];
+        const tags = getEntitiesFromString(tagsString);
 
-      return tagId;
+        for (const tag of tags) {
+            const tagId = await this.addWithActionRelation(tag, actionId);
+            result.push(tagId);
+        }
+
+        return result;
     }
 
-    return null;
-  }
-
-  async addFromStringWithActivityRelation(tagsString: string, activityId: number) {
-    const result = [];
-    const tags = getEntitiesFromString(tagsString);
-    
-    for (const tag of tags) {
-      const tagId = await this.addWithActivityRelation(tag, activityId);
-      result.push(tagId);
+    async getList(ids: number[]) {
+        return this.getAnyOf('id', ids);
     }
 
-    return result;
-  }
+    async updateFromStringWithActivityRelation(tagsString: string, activityId: number) {
+        const currentTags = await this.getByActivityId(activityId);
+        const formTags = getEntitiesFromString(tagsString);
 
-  async addFromStringWithActionRelation(tagsString: string, actionId: number) {
-    const result = [];
-    const tags = getEntitiesFromString(tagsString);
+        const tagsToRemove = currentTags.filter(
+            (currentTag) => !formTags.find(
+                (formTag) => formTag.name == currentTag.name,
+            ),
+        );
+        const tagsToAdd = formTags.filter(
+            (formTag) => !currentTags.find(
+                (currentTag) => formTag.name == currentTag.name,
+            ),
+        );
 
-    for (const tag of tags) {
-      const tagId = await this.addWithActionRelation(tag, actionId);
-      result.push(tagId);
+        for (const tag of tagsToRemove) {
+            await this.activityTagService.deleteByActivityIdAndTagId(
+                activityId, 
+                tag.id,
+            );
+        }
+
+        for (const tag of tagsToAdd) {
+            await this.addWithActivityRelation(tag, activityId);
+        }
     }
 
-    return result;
-  }
+    async updateFromStringWithActionRelation(tagsString: string, actionId: number) {
+        const currentTags = await this.getByActionId(actionId);
+        const formTags = getEntitiesFromString(tagsString);
 
-  async get(id: number) {
-    return db.tags.get(id);
-  }
+        const tagsToRemove = currentTags.filter(
+            (currentTag) => !formTags.find(
+                (formTag) => formTag.name == currentTag.name,
+            ),
+        );
+        const tagsToAdd = formTags.filter(
+            (formTag) => !currentTags.find(
+                (currentTag) => formTag.name == currentTag.name,
+            ),
+        );
 
-  async getList(ids: number[]) {
-    return db.tags
-      .where('id')
-      .anyOf(ids)
-      .toArray();
-  }
+        for (const tag of tagsToRemove) {
+            await this.actionTagService.deleteByActionIdAndTagId(
+                actionId, 
+                tag.id,
+            );
+        }
 
-  async updateFromStringWithActivityRelation(tagsString: string, activityId: number) {
-    const currentTags = await this.getByActivityId(activityId);
-    const formTags = getEntitiesFromString(tagsString);
-
-    const tagsToRemove = currentTags.filter(
-      (currentTag) => !formTags.find(
-        (formTag) => formTag.name == currentTag.name,
-      ),
-    );
-    const tagsToAdd = formTags.filter(
-      (formTag) => !currentTags.find(
-        (currentTag) => formTag.name == currentTag.name,
-      ),
-    );
-
-    for (const tag of tagsToRemove) {
-      await this.activityTagService.delete(activityId, tag.id);
+        for (const tag of tagsToAdd) {
+            await this.addWithActionRelation(tag, actionId);
+        }
     }
 
-    for (const tag of tagsToAdd) {
-      await this.addWithActivityRelation(tag, activityId);
-    }
-  }
+    async getByActivityId(id: number) {
+        const activityTags = await this.activityTagService.getByActivityId(id);
+        const tagIds = activityTags.map((activityTag) => activityTag.tagId);
 
-  async updateFromStringWithActionRelation(tagsString: string, actionId: number) {
-    const currentTags = await this.getByActionId(actionId);
-    const formTags = getEntitiesFromString(tagsString);
-
-    const tagsToRemove = currentTags.filter(
-      (currentTag) => !formTags.find(
-        (formTag) => formTag.name == currentTag.name,
-      ),
-    );
-    const tagsToAdd = formTags.filter(
-      (formTag) => !currentTags.find(
-        (currentTag) => formTag.name == currentTag.name,
-      ),
-    );
-
-    for (const tag of tagsToRemove) {
-      await this.actionTagService.delete(actionId, tag.id);
+        return this.getList(tagIds);
     }
 
-    for (const tag of tagsToAdd) {
-      await this.addWithActionRelation(tag, actionId);
+    async getByActionId(id: number) {
+        const actionTags = await this.actionTagService.getByActionId(id);
+        const tagIds = actionTags.map((actionTag) => actionTag.tagId);
+
+        return this.getList(tagIds);
     }
-  }
 
-  async getByActivityId(id: number) {
-    const activityTags = await this.activityTagService.getByActivityId(id);
+    async deleteWithRelations(id: number) {
+        await this.activityTagService.deleteByTagId(id);
+        await this.actionTagService.deleteByTagId(id);
 
-    const tagIds = activityTags.map((activityTag) => activityTag.tagId);
-    return db.tags
-      .where('id')
-      .anyOf(tagIds)
-      .toArray();
-  }
-
-  async getByActionId(id: number) {
-    const actionTags = await this.actionTagService.getByActionId(id);
-    const tagIds = actionTags.map((actionTag) => actionTag.tagId);
-    return db.tags
-      .where('id')
-      .anyOf(tagIds)
-      .toArray();
-  }
-
-  async getAll() {
-    return db.tags.toArray();
-  }
-
-  async update(id: number, changes: Partial<TagForm>) {
-    return db.tags.update(id, changes);
-  }
-
-  async delete(id: number) {
-    await this.activityTagService.deleteByTagId(id);
-    await this.actionTagService.deleteByTagId(id);
-
-    return db.tags.delete(id);
-  }
-
-  async clear() {
-    await db.tags.clear();
-  }
+        return this.delete(id);
+    }
 }

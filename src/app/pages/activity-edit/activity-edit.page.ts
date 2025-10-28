@@ -11,53 +11,56 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-  selector: 'app-activity-edit',
-  templateUrl: './activity-edit.page.html',
-  styleUrls: ['./activity-edit.page.scss'],
-  standalone: true,
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule, BackButtonComponent],
+    selector: 'app-activity-edit',
+    templateUrl: './activity-edit.page.html',
+    styleUrls: ['./activity-edit.page.scss'],
+    standalone: true,
+    imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule, BackButtonComponent],
 })
 export class ActivityEditPage {
-  @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
-  
-  activityId: number;
-  activity?: IActivity;
+    @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
 
-  constructor(
-    private route: ActivatedRoute,
-    private activityService: ActivityService,
-    private toastService: ToastService,
-    private cdr: ChangeDetectorRef,
-    private router: Router,
-  ) {
-    this.activityId = Number(this.route.snapshot.paramMap.get('id'));
-  }
+    activityId: number;
+    activity?: IActivity;
 
-  async ionViewDidEnter() {
-    this.activity = await this.activityService.get(this.activityId);
-    this.cdr.detectChanges();
-  }
-
-  async updateActivity(): Promise<void> {
-    if (!this.isFormValid()) {
-      return;
+    constructor(
+        private route: ActivatedRoute,
+        private activityService: ActivityService,
+        private toastService: ToastService,
+        private cdr: ChangeDetectorRef,
+        private router: Router,
+    ) {
+        this.activityId = Number(this.route.snapshot.paramMap.get('id'));
     }
 
-    const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
-    await this.activityService.update(this.activityId, activityFormValue);
+    async ionViewDidEnter() {
+        this.activity = await this.activityService.getEnriched(this.activityId);
+        this.cdr.detectChanges();
+    }
 
-    this.toastService.enqueue({
-      title: 'TK_ACTIVITY_UPDATED_SUCCESSFULLY',
-      type: 'success',
-    });
+    async updateActivity(): Promise<void> {
+        if (!this.isFormValid()) {
+            return;
+        }
 
-    await this.router.navigate(
-      ['/activity'], 
-      { queryParams: { date: activityFormValue.date }},
-    );
-  }
+        const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
+        await this.activityService.updateWithLibraryItems(
+            this.activityId,
+            activityFormValue,
+        );
 
-  isFormValid() {
-    return this.updateFormRef?.activityForm?.valid;
-  }
+        this.toastService.enqueue({
+            title: 'TK_ACTIVITY_UPDATED_SUCCESSFULLY',
+            type: 'success',
+        });
+
+        await this.router.navigate(
+            ['/activity'],
+            { queryParams: { date: activityFormValue.date } },
+        );
+    }
+
+    isFormValid() {
+        return this.updateFormRef?.activityForm?.valid;
+    }
 }
