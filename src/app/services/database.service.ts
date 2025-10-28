@@ -42,7 +42,7 @@ export abstract class DatabaseService<K extends TableName> {
     }
 
     async add(row: CreateDtoFor<K>): Promise<number> {
-        return this.table.add(row as any);
+        return this.table.add(row);
     }
 
     async bulkAdd(rows: CreateDtoFor<K>[]) {

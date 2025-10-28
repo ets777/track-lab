@@ -160,6 +160,8 @@ export class MarkdownParserService {
             return;
         }
 
+        console.log(tableLines);
+
         const activities: ActivityForm[] = tableLines
             .map(this.getHelper(metaData.version).parseLine(date))
             .filter((activity) => typeof activity !== 'undefined');
