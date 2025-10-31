@@ -1,4 +1,3 @@
-// achievement.service.ts
 import { Injectable } from '@angular/core';
 import { HookService } from './hook.service';
 import { IAchievement } from '../db/models/achievement';
@@ -6,11 +5,12 @@ import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
 import { Subject } from 'rxjs';
 import { format } from 'date-fns';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './db/database.service';
+import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
-    protected tableName = 'achievements' as const;
+    protected tableName: 'achievements' = 'achievements';
 
     private achievementEvent$ = new Subject<IAchievement>();
     private queue: IAchievement[] = [];
@@ -19,8 +19,9 @@ export class AchievementService extends DatabaseService<'achievements'> {
     constructor(
         private hookService: HookService,
         private activityService: ActivityService,
+        adapter: DatabaseRouter,
     ) {
-        super();
+        super(adapter);
     }
 
     isShowing() {
@@ -66,7 +67,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
                 }
             }
         );
-        
+
         const achievements = await this.getAll();
 
         // first launch
@@ -78,23 +79,24 @@ export class AchievementService extends DatabaseService<'achievements'> {
                     newAchievementCodes: defaultAchievements.map((achievement) => achievement.code),
                 },
             });
-        } else
-            // new achievements added
-            if (achievements.length < defaultAchievements.length) {
-                const achievementsToAdd = defaultAchievements.filter(
-                    (defaultAchievement) => !achievements.find(
-                        (achievement) => achievement.code == defaultAchievement.code,
-                    ),
-                );
 
-                await this.bulkAdd(achievementsToAdd);
-                this.hookService.emit({
-                    type: 'achievement.init',
-                    payload: {
-                        newAchievementCodes: achievementsToAdd.map((achievement) => achievement.code),
-                    },
-                });
-            }
+        }
+        // new achievements added
+        else if (achievements.length < defaultAchievements.length) {
+            const achievementsToAdd = defaultAchievements.filter(
+                (defaultAchievement) => !achievements.find(
+                    (achievement) => achievement.code == defaultAchievement.code,
+                ),
+            );
+
+            await this.bulkAdd(achievementsToAdd);
+            this.hookService.emit({
+                type: 'achievement.init',
+                payload: {
+                    newAchievementCodes: achievementsToAdd.map((achievement) => achievement.code),
+                },
+            });
+        }
     }
 
     private async checkAllInit(event: any) {

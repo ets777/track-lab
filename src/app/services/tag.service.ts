@@ -3,17 +3,19 @@ import { ITagCreateDto } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ActionTagService } from './action-tag.service';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './db/database.service';
+import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class TagService extends DatabaseService<'tags'> {
-    protected tableName = 'tags' as const;
+    tableName: 'tags' = 'tags';
 
     constructor(
         private activityTagService: ActivityTagService,
         private actionTagService: ActionTagService,
+        adapter: DatabaseRouter,
     ) {
-        super();
+        super(adapter);
     }
 
     async addWithActivityRelation(tagDto: ITagCreateDto, activityId: number) {

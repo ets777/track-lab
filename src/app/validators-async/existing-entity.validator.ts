@@ -1,8 +1,9 @@
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
-import { DatabaseService } from '../services/database.service';
+import { DatabaseService } from '../services/db/database.service';
+import { TableName } from '../services/db/types';
 
 export function existingEntityValidator(
-    service: DatabaseService<any>,
+    service: DatabaseService<TableName>,
     currentName?: string,
 ): AsyncValidatorFn {
     return async (control: AbstractControl): Promise<ValidationErrors | null> => {

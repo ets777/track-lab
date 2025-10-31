@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './db/database.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityActionService extends DatabaseService<'activityActions'> {
-    protected tableName = 'activityActions' as const;
+    protected tableName: 'activityActions' = 'activityActions';
 
     async getByActivityId(activityId: number) {
         return this.getAllWhereEquals('activityId', activityId);

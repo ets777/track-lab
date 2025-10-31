@@ -9,11 +9,12 @@ import { HookService } from './hook.service';
 import { TagService } from './tag.service';
 import { ITag } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './db/database.service';
+import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService extends DatabaseService<'activities'> {
-    protected tableName = 'activities' as const;
+    tableName: 'activities' = 'activities' as const;
 
     constructor(
         private actionService: ActionService,
@@ -21,8 +22,9 @@ export class ActivityService extends DatabaseService<'activities'> {
         private hookService: HookService,
         private tagService: TagService,
         private activityTagService: ActivityTagService,
+        adapter: DatabaseRouter,
     ) {
-        super();
+        super(adapter);
     }
 
     async getEnriched(id: number) {

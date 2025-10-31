@@ -6,18 +6,20 @@ import { ITag } from '../db/models/tag';
 import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
 import { ActionTagService } from './action-tag.service';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './db/database.service';
+import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActionService extends DatabaseService<'actions'> {
-    protected tableName = 'actions' as const;
+    protected tableName: 'actions' = 'actions';
 
     constructor(
         private activityActionService: ActivityActionService,
         private tagService: TagService,
         private actionTagService: ActionTagService,
+        adapter: DatabaseRouter,
     ) {
-        super();
+        super(adapter);
     }
 
     async getEnriched(id: number) {
