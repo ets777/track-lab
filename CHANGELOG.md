@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.2] - 2025-11-03
+
+### Fixed
+
+- Shorter toast display duration
+- Markdown import error
+- Suggestion display and behavior bugs
+- Library view not refreshing after item deletion
+
 ## [0.4.1] - 2025-10-24
 
 ### Added
