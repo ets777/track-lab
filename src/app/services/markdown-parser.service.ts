@@ -43,7 +43,7 @@ const helperRevision2 = {
             const tags = columns[6].replaceAll('#', '');
             const regex = /^[A-Za-zА-Яа-я0-9_-\s]+$/;
 
-            if (!regex.test(tags)) {
+            if (tags && !regex.test(tags)) {
                 throw new Error('TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES');
             }
 
