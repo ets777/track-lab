@@ -40,22 +40,22 @@ export function getTimeString(translate: TranslateService, minutes: number) {
 }
 
 export function getPartIndex(text: string, caretPosition: number, separator: string = ',') {
-    const commaPositions = [
+    const separatorPositions = [
         ...findAllIndexes(text, separator),
         text.length,
     ];
 
     if (caretPosition >= text.length) {
-        return commaPositions.length - 1;
+        return separatorPositions.length - 1;
     }
 
-    for (let i = 0; i < commaPositions.length; i++) {
-        if (commaPositions[i] >= caretPosition) {
+    for (let i = 0; i < separatorPositions.length; i++) {
+        if (separatorPositions[i] >= caretPosition) {
             return i;
         }
     }
 
-    return commaPositions.length - 1;
+    return separatorPositions.length - 1;
 }
 
 function findAllIndexes(text: string, subString: string) {
