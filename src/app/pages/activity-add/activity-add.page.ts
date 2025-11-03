@@ -9,74 +9,75 @@ import { App } from '@capacitor/app';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-  selector: 'app-activity-add',
-  templateUrl: './activity-add.page.html',
-  styleUrl: './activity-add.page.scss',
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule],
+    selector: 'app-activity-add',
+    templateUrl: './activity-add.page.html',
+    styleUrl: './activity-add.page.scss',
+    imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule],
 })
 export class ActivityAddPage {
-  @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
+    @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
 
-  constructor(
-    private activityService: ActivityService,
-    private toastService: ToastService,
-  ) { }
+    constructor(
+        private activityService: ActivityService,
+        private toastService: ToastService,
+    ) { }
 
-  ngOnInit() {
-    App.addListener('resume', () => {
-      this.updateEndTime();
-    });
-  }
-
-  async ionViewDidEnter() {
-    await this.updateForm();
-  }
-
-  async updateForm() {
-    this.updateEndTime();
-    await this.addFormRef?.fetchAllSuggestions();
-    await this.addFormRef?.updateLastActivityData();
-  }
-
-  getForm() {
-    return this.addFormRef?.activityForm;
-  }
-
-  async addActivity(): Promise<void> {
-    if (!this.isFormValid()) {
-      return;
+    ngOnInit() {
+        App.addListener('resume', () => {
+            this.updateEndTime();
+        });
     }
 
-    const activityFormValue = this.getForm().value as ActivityForm;
-    await this.activityService.addFromForm(activityFormValue);
-    await this.resetForm();
-
-    this.toastService.enqueue({
-      title: 'TK_ACTIVITY_ADDED_SUCCESSFULLY',
-      type: 'success',
-    });
-  }
-
-  isFormValid() {
-    return this.getForm()?.valid;
-  }
-
-  async resetForm() {
-    this.getForm()?.get('endTime')?.markAsUntouched();
-    await this.addFormRef?.setDefaultData();
-  }
-
-  updateEndTime() {
-    const isTouched = this.getForm()?.get('endTime')?.touched;
-
-    if (isTouched) {
-      return;
+    async ionViewDidEnter() {
+        await this.updateForm();
     }
 
-    const currentTime = new Time().toString().slice(0, 5);
+    async updateForm() {
+        this.updateEndTime();
+        await this.addFormRef?.fetchAllSuggestions();
+        await this.addFormRef?.updateLastActivityData();
+    }
 
-    this.getForm()?.patchValue({
-      endTime: currentTime,
-    });
-  }
+    getForm() {
+        return this.addFormRef?.activityForm;
+    }
+
+    async addActivity(): Promise<void> {
+        if (!this.isFormValid()) {
+            return;
+        }
+
+        const activityFormValue = this.getForm().value as ActivityForm;
+        await this.activityService.addFromForm(activityFormValue);
+        await this.resetForm();
+
+        this.toastService.enqueue({
+            title: 'TK_ACTIVITY_ADDED_SUCCESSFULLY',
+            type: 'success',
+        });
+    }
+
+    isFormValid() {
+        return this.getForm()?.valid;
+    }
+
+    async resetForm() {
+        this.getForm()?.get('endTime')?.markAsUntouched();
+        await this.addFormRef?.setDefaultData();
+        await this.addFormRef?.fetchAllSuggestions();
+    }
+
+    updateEndTime() {
+        const isTouched = this.getForm()?.get('endTime')?.touched;
+
+        if (isTouched) {
+            return;
+        }
+
+        const currentTime = new Time().toString().slice(0, 5);
+
+        this.getForm()?.patchValue({
+            endTime: currentTime,
+        });
+    }
 }

@@ -1,15 +1,15 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>{{ 'TK_NEW_ACTIVITY' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="addActivity()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_ADD' | translate }}</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-title>{{ 'TK_NEW_ACTIVITY' | translate }}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button
+                (click)="addActivity()"
+                [disabled]="!isFormValid()"
+            >{{ 'TK_ADD' | translate }}</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <app-activity-form #addFormRef></app-activity-form>
+    <app-activity-form #addFormRef></app-activity-form>
 </ion-content>
