@@ -14,7 +14,7 @@ export class ToastService {
     private toastEvent$ = new Subject<IToast>();
     private queue: IToast[] = [];
     private showing = false;
-    private defaultDuration: number = 5000;
+    private defaultDuration: number = 3000;
 
     constructor(
         private achievementService: AchievementService,
