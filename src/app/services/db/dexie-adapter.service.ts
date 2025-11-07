@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { db } from '../../db/db';
-import Dexie, { UpdateSpec } from 'dexie';
+import Dexie from 'dexie';
 import { IDatabaseAdapter } from './database-adapter.interface';
-import { CreateDtoFor, RowFor, TableName } from './types';
+import { CreateDtoFor, RowFor, TableName, Where } from './types';
 
 @Injectable({ providedIn: 'root' })
 export abstract class DexieAdapter implements IDatabaseAdapter {
@@ -24,17 +24,30 @@ export abstract class DexieAdapter implements IDatabaseAdapter {
         return (db as any)[table].get(id);
     }
 
-    async getAll<K extends TableName>(table: K): Promise<RowFor<K>[]> {
-        return (db as any)[table].toArray();
-    }
+    async getAll<K extends TableName>(table: K, where?: Where): Promise<RowFor<K>[]> {
+        const tableRef = (db as any)[table];
 
-    async getAllFilter<K extends TableName>(
-        table: K,
-        callback: (...args: any) => boolean,
-    ): Promise<RowFor<K>[]> {
-        return (db as any)[table]
-            .filter(callback)
-            .toArray();
+        if (where) {    
+            if (where.OR) {
+                return await Promise.all(
+                    where.OR.map((condition) => {
+                        const [key, value] = Object.entries(condition)[0];
+                        return tableRef.where(key).equals(value).toArray();
+                    })
+                );
+            } else {
+                const keys = Object.keys(where).filter((key) => !['OR', 'AND', 'NOT'].includes(key));
+                const column = (keys.length == 1) ? keys[0] : '[' + keys.join('+') + ']';
+                const value = (keys.length == 1) ? where[column] : Object.values(where);
+
+                return tableRef
+                    .where(column)
+                    .equals(value)
+                    .toArray();
+            }
+        }
+
+        return tableRef.toArray();
     }
 
     async getFirstWhereEquals<K extends TableName>(
@@ -110,32 +123,37 @@ export abstract class DexieAdapter implements IDatabaseAdapter {
     async update<K extends TableName>(
         table: K, 
         id: number, 
-        changes: UpdateSpec<CreateDtoFor<K>>,
+        changes: Partial<CreateDtoFor<K>>,
     ): Promise<number> {
         return (db as any)[table].update(id, changes);
     }
 
-    async delete<K extends TableName>(table: K, id: number): Promise<void> {
-        return (db as any)[table].delete(id);
-    }
+    async delete<K extends TableName>(
+        table: K,
+        where: Where,
+    ): Promise<void> {
+        const tableRef = (db as any)[table];
 
-    async deleteWhereEquals<K extends TableName>(
-        table: K, 
-        columnName: string | string[], 
-        value: any,
-    ): Promise<number> {
-        let column;
-
-        if (Array.isArray(columnName)) {
-            column = '[' + columnName.join('+') + ']';
+        if (where.OR) {
+            await Promise.all(
+                where.OR.map((condition) => {
+                    const [key, value] = Object.entries(condition)[0];
+                    
+                    return tableRef.where(key)
+                        .equals(value)
+                        .delete();
+                })
+            );
         } else {
-            column = columnName;
-        }
+            const keys = Object.keys(where).filter((key) => !['OR', 'AND', 'NOT'].includes(key));
+            const column = (keys.length == 1) ? keys[0] : '[' + keys.join('+') + ']';
+            const value = (keys.length == 1) ? where[column] : Object.values(where);
 
-        return (db as any)[table]
-            .where(column)
-            .equals(value)
-            .delete();
+            return tableRef
+                .where(column)
+                .equals(value)
+                .delete();
+        }
     }
 
     async getLast<K extends TableName>(table: K, columns: string[]): Promise<RowFor<K> | undefined> {

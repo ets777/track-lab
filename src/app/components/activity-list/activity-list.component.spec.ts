@@ -3,6 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { ActivityListComponent } from './activity-list.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('ActivityListComponent', () => {
   let component: ActivityListComponent;
@@ -10,7 +11,8 @@ describe('ActivityListComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ActivityListComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
+      imports: [ActivityListComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActivityListComponent);

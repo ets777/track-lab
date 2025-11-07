@@ -174,6 +174,6 @@ export class TagService extends DatabaseService<'tags'> {
         await this.activityTagService.deleteByTagId(id);
         await this.actionTagService.deleteByTagId(id);
 
-        return this.delete(id);
+        return this.delete({ id });
     }
 }

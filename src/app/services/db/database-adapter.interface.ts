@@ -1,12 +1,10 @@
-import { UpdateSpec } from "dexie";
-import { CreateDtoFor, RowFor, TableName } from "./types";
+import { CreateDtoFor, RowFor, TableName, Where } from "./types";
 
 export interface IDatabaseAdapter {
     add<K extends TableName>(table: K, row: CreateDtoFor<K>): Promise<number>;
     bulkAdd<K extends TableName>(table: K, rows: CreateDtoFor<K>[]): Promise<number[]>;
     getById<K extends TableName>(table: K, id: number): Promise<RowFor<K> | undefined>;
-    getAll<K extends TableName>(table: K): Promise<RowFor<K>[]>;
-    getAllFilter<K extends TableName>(table: K, callback: (...args: any) => boolean): Promise<RowFor<K>[]>;
+    getAll<K extends TableName>(table: K, where?: Where): Promise<RowFor<K>[]>;
     getFirstWhereEquals<K extends TableName>(
         table: K, 
         columnName: string, 
@@ -27,9 +25,8 @@ export interface IDatabaseAdapter {
         startValue: string | number, 
         endValue: string | number,
     ): Promise<RowFor<K>[]>;
-    update<K extends TableName>(table: K, id: number, changes: UpdateSpec<CreateDtoFor<K>>): Promise<number>;
-    delete<K extends TableName>(table: K, id: number): Promise<void>;
-    deleteWhereEquals<K extends TableName>(table: K, columnName: string | string[], value: any): Promise<number>;
+    update<K extends TableName>(table: K, id: number, changes: Partial<CreateDtoFor<K>>): Promise<number>;
+    delete<K extends TableName>(table: K, where: Where): Promise<void>;
     getLast<K extends TableName>(table: K, columns: string[]): Promise<RowFor<K> | undefined>;
     getLastBeforeDate<K extends TableName>(table: K, columns: string[], date: string): Promise<RowFor<K> | undefined>;
     clear<K extends TableName>(table: K): Promise<void>;

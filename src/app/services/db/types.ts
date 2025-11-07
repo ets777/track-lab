@@ -29,3 +29,13 @@ export interface ICreateDto {
 export type TableName = keyof ITable;
 export type CreateDtoFor<K extends TableName> = ICreateDto[K];
 export type RowFor<K extends TableName> = ITable[K];
+
+type Primitive = string | number | boolean | null;
+type WhereValue = Primitive | Primitive[] | Where | Where[];
+
+export interface Where {
+    [key: string]: WhereValue | undefined;
+    AND?: Where[];
+    OR?: Where[];
+    NOT?: Where;
+}

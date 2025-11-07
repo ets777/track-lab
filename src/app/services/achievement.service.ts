@@ -144,9 +144,8 @@ export class AchievementService extends DatabaseService<'achievements'> {
     }
 
     async getUnlocked() {
-        return this.getAllFilter(
-            (achievement) => achievement.unlocked === true,
-        );
+        const all = await this.getAll();
+        return all.filter((achievement) => achievement.unlocked);
     }
 
     async checkAchievement(achievementCode: string, payload?: any) {

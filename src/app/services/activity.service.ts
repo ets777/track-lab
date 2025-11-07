@@ -110,14 +110,19 @@ export class ActivityService extends DatabaseService<'activities'> {
             endDate,
         );
             
-
         return this.enrichAll(activities);
     }
 
     async getByNewYear() {
-        const activities = await this.getAllFilter(
-            (activity) => activity.date.slice(5) == '01-01',
-        );
+        const activities = await this.getAll({
+            OR: [
+                { date: '2026-01-01' },
+                { date: '2027-01-01' },
+                { date: '2028-01-01' },
+                { date: '2029-01-01' },
+                { date: '2030-01-01' },
+            ]
+        });
 
         return this.enrichAll(activities);
     }
@@ -154,7 +159,7 @@ export class ActivityService extends DatabaseService<'activities'> {
         await this.activityActionService.deleteByActivityId(id);
         await this.activityTagService.deleteByActivityId(id);
 
-        return this.delete(id);
+        return this.delete({ id });
     }
 
     prepareActivityFormValue(activityFormValue: ActivityForm) {
@@ -202,14 +207,14 @@ export class ActivityService extends DatabaseService<'activities'> {
     async enrichOne(activityDb: IActivityDb) {
         const actions: IAction[] = await this.actionService.getByActivityId(activityDb.id);
         const tags: ITag[] = await this.tagService.getByActivityId(activityDb.id);
-
+        
         return {
             ...activityDb,
             actions,
             tags,
         } as IActivity;
     }
-
+    
     async enrichAll(activitiesDb: IActivityDb[]) {
         const result = [];
 

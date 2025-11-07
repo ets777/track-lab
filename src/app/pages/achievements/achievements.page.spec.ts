@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AchievementsPage } from './achievements.page';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('AchievementsPage', () => {
   let component: AchievementsPage;
@@ -9,7 +10,8 @@ describe('AchievementsPage', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), AchievementsPage]
+      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), AchievementsPage],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AchievementsPage);

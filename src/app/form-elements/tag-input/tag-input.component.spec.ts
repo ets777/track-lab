@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TagInputComponent } from './tag-input.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideRouter } from '@angular/router';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('TagInputComponent', () => {
   let component: TagInputComponent;
@@ -11,7 +12,7 @@ describe('TagInputComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [TagInputComponent, TranslateModule.forRoot()],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TagInputComponent);

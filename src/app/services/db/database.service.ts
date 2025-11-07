@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DatabaseRouter } from './database-router.service';
-import { CreateDtoFor, RowFor, TableName } from './types';
-import { UpdateSpec } from 'dexie';
+import { CreateDtoFor, RowFor, TableName, Where } from './types';
 
 @Injectable()
 export abstract class DatabaseService<K extends TableName> {
@@ -21,12 +20,8 @@ export abstract class DatabaseService<K extends TableName> {
         return this.adapter.getById(this.tableName, id);
     }
 
-    getAll(): Promise<RowFor<K>[]> {
-        return this.adapter.getAll(this.tableName);
-    }
-
-    getAllFilter(callback: (...args: any[]) => boolean): Promise<RowFor<K>[]> {
-        return this.adapter.getAllFilter(this.tableName, callback);
+    getAll(where?: Where): Promise<RowFor<K>[]> {
+        return this.adapter.getAll(this.tableName, where);
     }
 
     getFirstWhereEquals(columnName: string, value: string | number): Promise<RowFor<K> | undefined> {
@@ -64,16 +59,12 @@ export abstract class DatabaseService<K extends TableName> {
         );
     }
 
-    update(id: number, changes: UpdateSpec<CreateDtoFor<K>>): Promise<number> {
+    update(id: number, changes: Partial<CreateDtoFor<K>>): Promise<number> {
         return this.adapter.update(this.tableName, id, changes);
     }
 
-    delete(id: number): Promise<void> {
-        return this.adapter.delete(this.tableName, id);
-    }
-
-    deleteWhereEquals(columnName: string | string[], value: any): Promise<number> {
-        return this.adapter.deleteWhereEquals(this.tableName, columnName, value);
+    delete(where: Where): Promise<void> {
+        return this.adapter.delete(this.tableName, where);
     }
 
     getLast(columns: string[]): Promise<RowFor<K> | undefined> {

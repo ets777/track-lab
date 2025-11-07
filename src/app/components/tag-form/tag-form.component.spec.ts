@@ -3,6 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { TagFormComponent } from './tag-form.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('TagFormComponent', () => {
   let component: TagFormComponent;
@@ -10,7 +11,8 @@ describe('TagFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TagFormComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
+      imports: [TagFormComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TagFormComponent);

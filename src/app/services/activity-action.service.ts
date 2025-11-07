@@ -14,14 +14,11 @@ export class ActivityActionService extends DatabaseService<'activityActions'> {
     }
 
     async deleteByActivityIdAndActionId(activityId: number, actionId: number) {
-        return this.deleteWhereEquals(
-            ['activityId', 'actionId'], 
-            [activityId, actionId],
-        );
+        return this.delete({ activityId, actionId });
     }
 
     async deleteByActivityId(activityId: number) {
-        return this.deleteWhereEquals('activityId', activityId);
+        return this.delete({ activityId });
     }
 
     async replaceAction(oldActionId: number, newActionId: number) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, ViewChild } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -18,6 +18,8 @@ import { BackupService } from './services/backup.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
+import { SQLiteService } from './services/db/sqlite.service';
+import { SQLiteInitService } from './services/db/sqlite-init.service';
 
 @Component({
     selector: 'app-root',
@@ -34,28 +36,40 @@ export class AppComponent implements OnInit {
         private backupService: BackupService,
         private router: Router,
         private navigationService: NavigationService,
+        private sqlite: SQLiteService,
+        private sqliteInit: SQLiteInitService,
     ) {
         this.setAdaptiveStatusBarColor();
     }
-
+    
     async ngOnInit() {
-        this.setLanguages();
-        await this.achievementService.init();
-        this.initializeApp();
-        await this.autoBackup();
+        await this.setLanguages();
+        await this.initializeApp();
     }
 
-    initializeApp() {
+    async initializeApp() {
         this.router.events.pipe(filter(e => e instanceof NavigationEnd))
             .subscribe((e: NavigationEnd) => {
                 this.navigationService.pushUrl(e.urlAfterRedirects);
             });
 
-        this.platform.ready().then(() => {
-            this.platform.backButton.subscribeWithPriority(5, async () => {
-                await this.navigationService.goBack();
-            });
+        await this.platform.ready();
+        await this.initializeDatabase();
+
+        this.platform.backButton.subscribeWithPriority(5, async () => {
+            await this.navigationService.goBack();
         });
+    }
+
+    async initializeDatabase() {
+        const useSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value;
+
+        if (useSqlite) {
+            await this.sqliteInit.createSqliteSchema();
+        }
+        
+        await this.achievementService.init();
+        await this.autoBackup();
     }
 
     setAdaptiveStatusBarColor() {
@@ -123,9 +137,9 @@ export class AppComponent implements OnInit {
 
             needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
                 || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
-                || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0
+                || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0;
         } else {
-            needBackup = true
+            needBackup = true;
         }
 
         if (needBackup) {

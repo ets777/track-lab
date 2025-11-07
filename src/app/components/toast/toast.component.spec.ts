@@ -3,6 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { ToastComponent } from './toast.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('ToastComponent', () => {
     let component: ToastComponent;
@@ -10,7 +11,8 @@ describe('ToastComponent', () => {
 
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            imports: [ToastComponent, IonicModule.forRoot(), TranslateModule.forRoot()]
+            imports: [ToastComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+            providers: [SQLiteService],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ToastComponent);

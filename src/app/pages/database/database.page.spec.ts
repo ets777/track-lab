@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DatabasePage } from './database.page';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('DatabasePage', () => {
   let component: DatabasePage;
@@ -9,6 +10,7 @@ describe('DatabasePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), DatabasePage],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DatabasePage);

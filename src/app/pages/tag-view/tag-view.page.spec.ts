@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TagViewPage } from './tag-view.page';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideRouter } from '@angular/router';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('TagViewPage', () => {
   let component: TagViewPage;
@@ -10,7 +11,7 @@ describe('TagViewPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TagViewPage, TranslateModule.forRoot()],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), SQLiteService],
     }).compileComponents();
     fixture = TestBed.createComponent(TagViewPage);
     component = fixture.componentInstance;

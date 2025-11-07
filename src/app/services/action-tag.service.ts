@@ -10,14 +10,14 @@ export class ActionTagService extends DatabaseService<'actionTags'> {
     }
 
     async deleteByActionIdAndTagId(actionId: number, tagId: number) {
-        return this.deleteWhereEquals(['actionId', 'tagId'], [actionId, tagId]);
+        return this.delete({ actionId, tagId });
     }
 
     async deleteByActionId(actionId: number) {
-        return this.deleteWhereEquals('actionId', actionId);
+        return this.delete({ actionId });
     }
 
     async deleteByTagId(tagId: number) {
-        return this.deleteWhereEquals('tagId', tagId);
+        return this.delete({ tagId });
     }
 }

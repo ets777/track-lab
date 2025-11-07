@@ -33,7 +33,6 @@ describe('Database Migration (v1 to v2)', () => {
 
     beforeEach(async () => {
         await Dexie.delete('TestDatabase');
-        console.log('db deleted');
     });
 
     it('should correctly migrate friends data from v1 to v2', async () => {

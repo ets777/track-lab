@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivityFormComponent } from './activity-form.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('ActivityFormComponent', () => {
   let component: ActivityFormComponent;
@@ -10,6 +11,7 @@ describe('ActivityFormComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), ReactiveFormsModule, FormsModule, ActivityFormComponent],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActivityFormComponent);

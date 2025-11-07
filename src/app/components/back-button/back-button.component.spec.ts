@@ -3,6 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { BackButtonComponent } from './back-button.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('BackButtonComponent', () => {
     let component: BackButtonComponent;
@@ -11,6 +12,7 @@ describe('BackButtonComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [BackButtonComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+            providers: [SQLiteService],
         }).compileComponents();
 
         fixture = TestBed.createComponent(BackButtonComponent);

@@ -131,6 +131,7 @@ export class ActionService extends DatabaseService<'actions'> {
             .getByActivityId(id);
         const actionIds = activityActions
             .map((activityAction) => activityAction.actionId);
+
         const actions = await this.getAnyOf('id', actionIds);
 
         return this.enrichAll(actions);
@@ -172,6 +173,6 @@ export class ActionService extends DatabaseService<'actions'> {
     async deleteWithRelations(id: number) {
         await this.actionTagService.deleteByActionId(id);
         
-        return this.delete(id);
+        return this.delete({ id });
     }
 }

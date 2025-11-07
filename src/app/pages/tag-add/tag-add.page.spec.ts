@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TagAddPage } from './tag-add.page';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { SQLiteService } from 'src/app/services/db/sqlite.service';
 
 describe('TagAddPage', () => {
   let component: TagAddPage;
@@ -9,7 +10,8 @@ describe('TagAddPage', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TagAddPage, IonicModule.forRoot(), TranslateModule.forRoot()]
+      imports: [TagAddPage, IonicModule.forRoot(), TranslateModule.forRoot()],
+      providers: [SQLiteService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TagAddPage);
