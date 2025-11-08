@@ -40,7 +40,7 @@ export class MyAppDatabase extends Dexie {
 
                     for (const actionDto of actionsDto) {
                         let action = await tx.table('actions').where('name').equalsIgnoreCase(actionDto.name).first();
-                        
+
                         if (!action) {
                             const id = await tx.table('actions').add(actionDto);
                             action = { id, name: actionDto.name };
@@ -92,4 +92,3 @@ export class MyAppDatabase extends Dexie {
 }
 
 export const db = new MyAppDatabase('myAppDB');
-    

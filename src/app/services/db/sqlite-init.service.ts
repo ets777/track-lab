@@ -1,11 +1,30 @@
 import { Injectable } from '@angular/core';
 import { SQLiteService } from './sqlite.service';
+import { ActivityService } from '../activity.service';
+import { ActionService } from '../action.service';
+import { ActivityActionService } from '../activity-action.service';
+import { AchievementService } from '../achievement.service';
+import { TagService } from '../tag.service';
+import { ActionTagService } from '../action-tag.service';
+import { ActivityTagService } from '../activity-tag.service';
+import { Preferences } from '@capacitor/preferences';
+import { DatabaseRouter } from './database-router.service';
 
 @Injectable()
 export class SQLiteInitService {
     private versionUpgrades;
 
-    constructor(private sqliteService: SQLiteService) {
+    constructor(
+        private sqliteService: SQLiteService,
+        private activityService: ActivityService,
+        private actionService: ActionService,
+        private activityActionService: ActivityActionService,
+        private achievementService: AchievementService,
+        private tagService: TagService,
+        private actionTagService: ActionTagService,
+        private activityTagService: ActivityTagService,
+        private databaseRouter: DatabaseRouter,
+    ) {
         this.versionUpgrades = [
             {
                 toVersion: 1,
@@ -80,9 +99,156 @@ export class SQLiteInitService {
         ];
     }
 
-    async createSqliteSchema() {        
+    async createSqliteSchema() {
         await this.sqliteService.addUpgradeStatement({
             upgrade: this.versionUpgrades,
         });
+        
+        await this.migrateFromDexie();
+    }
+
+    async exportFromDexie() {
+        const activities = await this.activityService.getAll();
+        const actions = await this.actionService.getAll();
+        const activityActions = await this.activityActionService.getAll();
+        const achievements = await this.achievementService.getAll();
+        const tags = await this.tagService.getAll();
+        const actionTags = await this.actionTagService.getAll();
+        const activityTags = await this.activityTagService.getAll();
+
+        return {
+            activities,
+            actions,
+            activityActions,
+            achievements,
+            tags,
+            actionTags,
+            activityTags,
+        };
+    }
+
+    async insertArrayChunked(
+        table: string,
+        rows: any[],
+        cols: string[],
+        chunkSize = 200,
+    ) {
+        if (!rows || rows.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < rows.length; i += chunkSize) {
+            const chunk = rows.slice(i, i + chunkSize);
+
+            const valuesSql = chunk.map((row) => {
+                const vals = cols.map((column) => {
+                    const value = row[column];
+
+                    if (value === null || value === undefined) {
+                        return 'NULL';
+                    }
+
+                    if (typeof value === 'string') {
+                        return `'${value.replace(/'/g, "''")}'`;
+                    }
+
+                    return value;
+                });
+
+                return `(${vals.join(',')})`;
+            }).join(',');
+
+            const colsString = cols.join(',');
+            const sql = `INSERT INTO ${table} (${colsString}) VALUES ${valuesSql};`;
+
+            await this.sqliteService.execute(sql);
+        }
+    }
+
+    async migrateFromDexie() {
+        const {
+            activities,
+            actions,
+            activityActions,
+            achievements,
+            tags,
+            actionTags,
+            activityTags,
+        } = await this.exportFromDexie();
+
+        try {
+            await this.sqliteService.beginTransaction();
+
+            if (achievements.length) {
+                await this.sqliteService.run('DELETE FROM achievements');
+                await this.insertArrayChunked(
+                    'achievements', 
+                    achievements,
+                    ['icon', 'code', 'title', 'description', 'target', 'current', 'unlocked', 'id'],
+                );
+            }
+
+            if (actions.length) {
+                await this.sqliteService.run('DELETE FROM actions');
+                await this.insertArrayChunked(
+                    'actions', 
+                    actions,
+                    ['name', 'id'],
+                );
+            }
+
+            if (tags.length) {
+                await this.sqliteService.run('DELETE FROM tags');
+                await this.insertArrayChunked(
+                    'tags', 
+                    tags,
+                    ['name', 'id'],
+                );
+            }
+
+            if (activities.length) {
+                await this.sqliteService.run('DELETE FROM activities');
+                await this.insertArrayChunked(
+                    'activities', 
+                    activities,
+                    ['startTime', 'date', 'endTime', 'mood', 'energy', 'satiety', 'id']
+                );
+            }
+
+            if (activityActions.length) {
+                await this.sqliteService.run('DELETE FROM activityActions');
+                await this.insertArrayChunked(
+                    'activityActions', 
+                    activityActions,
+                    ['activityId', 'actionId', 'id'],
+                );
+            }
+
+            if (actionTags.length) {
+                await this.sqliteService.run('DELETE FROM actionTags');
+                await this.insertArrayChunked(
+                    'actionTags', 
+                    actionTags,
+                    ['id', 'actionId', 'tagId'],
+                );
+            }
+
+            if (activityTags.length) {
+                await this.sqliteService.run('DELETE FROM activityTags');
+                await this.insertArrayChunked(
+                    'activityTags', 
+                    activityTags,
+                    ['id', 'activityId', 'tagId'],
+                );
+            }
+
+            await this.sqliteService.commitTransaction();
+            await Preferences.set({ key: 'migratedToSqlite', value: 'true' });
+
+            this.databaseRouter.setAdapterToSqlite();
+        } catch (err) {
+            await this.sqliteService.rollbackTransaction();
+            throw err;
+        }
     }
 }

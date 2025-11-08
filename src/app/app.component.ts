@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
     async initializeDatabase() {
         const useSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value;
 
-        if (useSqlite) {
+        if (useSqlite !== 'true') {
             await this.sqliteInit.createSqliteSchema();
         }
         

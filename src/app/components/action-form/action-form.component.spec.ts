@@ -4,23 +4,27 @@ import { IonicModule } from '@ionic/angular';
 import { ActionFormComponent } from './action-form.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { SQLiteService } from 'src/app/services/db/sqlite.service';
+import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 
 describe('ActionFormComponent', () => {
-  let component: ActionFormComponent;
-  let fixture: ComponentFixture<ActionFormComponent>;
+    let component: ActionFormComponent;
+    let fixture: ComponentFixture<ActionFormComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [ActionFormComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
-      providers: [SQLiteService],
-    }).compileComponents();
+    beforeEach(waitForAsync(async () => {
+        TestBed.configureTestingModule({
+            imports: [ActionFormComponent, IonicModule.forRoot(), TranslateModule.forRoot()],
+            providers: [SQLiteService, DatabaseRouter],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(ActionFormComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+        const adapter = TestBed.inject(DatabaseRouter);
+        await adapter.setAdapter();
+        
+        fixture = TestBed.createComponent(ActionFormComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    }));
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

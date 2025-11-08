@@ -7,15 +7,26 @@ import { Preferences } from "@capacitor/preferences";
 
 @Injectable({ providedIn: 'root' })
 export class DatabaseRouter implements IDatabaseAdapter {
-    private adapter: IDatabaseAdapter;
+    private adapter!: IDatabaseAdapter;
 
-    constructor(private dexie: DexieAdapter, private sqlite: SqliteAdapter) {
-        let useSqlite = false;
-        
-        Preferences.get({ key: 'migratedToSqlite' })
-            .then(({ value }) => useSqlite = (value === 'true'));
+    constructor(private dexie: DexieAdapter, private sqlite: SqliteAdapter) {}
 
-        this.adapter = useSqlite ? sqlite : dexie;
+    async setAdapter() {
+        const migratedToSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value;
+
+        if (migratedToSqlite === 'true') {
+            this.setAdapterToSqlite();
+        } else {
+            this.setAdapterToDexie();
+        }
+    }
+
+    setAdapterToSqlite() {
+        this.adapter = this.sqlite;
+    }
+    
+    setAdapterToDexie() {
+        this.adapter = this.dexie;
     }
 
     add = <K extends TableName>(table: K, row: CreateDtoFor<K>) => this.adapter.add(table, row);

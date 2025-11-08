@@ -14,6 +14,7 @@ import { defineCustomElements as pwaElements } from '@ionic/pwa-elements/loader'
 import { SQLiteService } from './app/services/db/sqlite.service';
 import { SQLiteInitService } from './app/services/db/sqlite-init.service';
 import { Capacitor } from '@capacitor/core';
+import { DatabaseRouter } from './app/services/db/database-router.service';
 
 const platform = Capacitor.getPlatform();
 if (platform === 'web') {
@@ -25,7 +26,6 @@ if (platform === 'web') {
         document.body.appendChild(jeepEl);
         customElements.whenDefined('jeep-sqlite');
         jeepEl.autoSave = true;
-
     });
 }
 
@@ -50,7 +50,10 @@ bootstrapApplication(AppComponent, {
         }),
         provideCharts(withDefaultRegisterables()),
         provideAppInitializer(async () => {
+            const databaseRouter = inject(DatabaseRouter);
             const sqlite = inject(SQLiteService);
+            
+            await databaseRouter.setAdapter();
             const isPluginInitialized = await sqlite.initializePlugin();
 
             if (!isPluginInitialized) {

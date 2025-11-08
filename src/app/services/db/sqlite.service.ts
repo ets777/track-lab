@@ -87,25 +87,25 @@ export class SQLiteService {
 
     async beginTransaction() {
         const isTransactionActive = await this.isTransactionActive();
-
-        if (!isTransactionActive) {
-            await this.execute('BEGIN TRANSACTION;', false);
+        
+        if (!isTransactionActive.result) {
+            await this.connection.beginTransaction();
         }
     }
 
     async commitTransaction() {
         const isTransactionActive = await this.isTransactionActive();
 
-        if (isTransactionActive) {
-            await this.execute('COMMIT;', false);
+        if (isTransactionActive.result) {
+            await this.connection.commitTransaction();
         }
     }
 
     async rollbackTransaction() {
         const isTransactionActive = await this.isTransactionActive();
 
-        if (isTransactionActive) {
-            await this.execute('ROLLBACK;', false);
+        if (isTransactionActive.result) {
+            await this.connection.rollbackTransaction();
         }
     }
 
