@@ -1,9 +1,16 @@
 import { IAchievementCreateDto, IAchievementDb } from "src/app/db/models/achievement";
 import { IActionCreateDto, IActionDb } from "src/app/db/models/action";
+import { IActionLibraryCreateDto, IActionLibraryDb } from "src/app/db/models/action-library";
+import { IActionMetricCreateDto, IActionMetricDb } from "src/app/db/models/action-metric";
 import { IActionTagCreateDto, IActionTagDb } from "src/app/db/models/action-tag";
 import { IActivityCreateDto, IActivityDb } from "src/app/db/models/activity";
 import { IActivityActionCreateDto, IActivityActionDb } from "src/app/db/models/activity-action";
+import { IActivityLibraryItemCreateDto, IActivityLibraryItemDb } from "src/app/db/models/activity-library-item";
+import { IActivityMetricCreateDto, IActivityMetricDb } from "src/app/db/models/activity-metric";
 import { IActivityTagCreateDto, IActivityTagDb } from "src/app/db/models/activity-tag";
+import { ILibraryCreateDto, ILibraryDb } from "src/app/db/models/library";
+import { ILibraryItemCreateDto, ILibraryItemDb } from "src/app/db/models/library-item";
+import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
 import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 
 export interface ITable {
@@ -14,6 +21,13 @@ export interface ITable {
     activityTags: IActivityTagDb;
     activityActions: IActivityActionDb;
     actionTags: IActionTagDb;
+    actionLibraries: IActionLibraryDb;
+    actionMetrics: IActionMetricDb;
+    activityLibraryItems: IActivityLibraryItemDb;
+    activityMetrics: IActivityMetricDb;
+    libraryItems: ILibraryItemDb;
+    libraries: ILibraryDb;
+    metrics: IMetricDb;
 }
 
 export interface ICreateDto {
@@ -24,6 +38,13 @@ export interface ICreateDto {
     activityTags: IActivityTagCreateDto | IActivityTagDb;
     activityActions: IActivityActionCreateDto | IActivityActionDb;
     actionTags: IActionTagCreateDto | IActionTagDb;
+    actionLibraries: IActionLibraryDb | IActionLibraryCreateDto;
+    actionMetrics: IActionMetricDb | IActionMetricCreateDto;
+    activityLibraryItems: IActivityLibraryItemDb | IActivityLibraryItemCreateDto;
+    activityMetrics: IActivityMetricDb | IActivityMetricCreateDto;
+    libraryItems: ILibraryItemDb | ILibraryItemCreateDto;
+    libraries: ILibraryDb | ILibraryCreateDto;
+    metrics: IMetricDb | IMetricCreateDto;
 }
 
 export type TableName = keyof ITable;

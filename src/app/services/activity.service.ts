@@ -11,6 +11,10 @@ import { ITag } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
 import { DatabaseService } from './db/database.service';
 import { DatabaseRouter } from './db/database-router.service';
+import { IActivityMetric } from '../db/models/activity-metric';
+import { ActivityMetricService } from './activity-metric.service';
+import { ILibraryItem } from '../db/models/library-item';
+import { LibraryItemService } from './library-item.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService extends DatabaseService<'activities'> {
@@ -22,6 +26,8 @@ export class ActivityService extends DatabaseService<'activities'> {
         private hookService: HookService,
         private tagService: TagService,
         private activityTagService: ActivityTagService,
+        private activityMetricService: ActivityMetricService,
+        private libraryItemService: LibraryItemService,
         adapter: DatabaseRouter,
     ) {
         super(adapter);
@@ -181,22 +187,6 @@ export class ActivityService extends DatabaseService<'activities'> {
             activity.endTime = activityFormValue.endTime;
         }
 
-        if (activityFormValue.mood) {
-            activity.mood = activityFormValue.mood;
-        }
-
-        if (activityFormValue.energy) {
-            activity.energy = activityFormValue.energy;
-        }
-
-        if (activityFormValue.satiety) {
-            activity.satiety = activityFormValue.satiety;
-        }
-
-        if (activityFormValue.emotions) {
-            activity.emotions = activityFormValue.emotions;
-        }
-
         if (activityFormValue.comment) {
             activity.comment = activityFormValue.comment;
         }
@@ -207,11 +197,15 @@ export class ActivityService extends DatabaseService<'activities'> {
     async enrichOne(activityDb: IActivityDb) {
         const actions: IAction[] = await this.actionService.getByActivityId(activityDb.id);
         const tags: ITag[] = await this.tagService.getByActivityId(activityDb.id);
+        const metricRecords: IActivityMetric[] = await this.activityMetricService.getByActivityId(activityDb.id);
+        const libraryItems: ILibraryItem[] = await this.libraryItemService.getByActivityId(activityDb.id);
         
         return {
             ...activityDb,
             actions,
             tags,
+            metricRecords,
+            libraryItems,
         } as IActivity;
     }
     

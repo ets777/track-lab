@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -18,8 +18,6 @@ import { BackupService } from './services/backup.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
-import { SQLiteService } from './services/db/sqlite.service';
-import { SQLiteInitService } from './services/db/sqlite-init.service';
 
 @Component({
     selector: 'app-root',
@@ -36,8 +34,6 @@ export class AppComponent implements OnInit {
         private backupService: BackupService,
         private router: Router,
         private navigationService: NavigationService,
-        private sqlite: SQLiteService,
-        private sqliteInit: SQLiteInitService,
     ) {
         this.setAdaptiveStatusBarColor();
     }
@@ -54,22 +50,12 @@ export class AppComponent implements OnInit {
             });
 
         await this.platform.ready();
-        await this.initializeDatabase();
+        await this.achievementService.init();
+        await this.autoBackup();
 
         this.platform.backButton.subscribeWithPriority(5, async () => {
             await this.navigationService.goBack();
         });
-    }
-
-    async initializeDatabase() {
-        const useSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value;
-
-        if (useSqlite !== 'true') {
-            await this.sqliteInit.createSqliteSchema();
-        }
-        
-        await this.achievementService.init();
-        await this.autoBackup();
     }
 
     setAdaptiveStatusBarColor() {

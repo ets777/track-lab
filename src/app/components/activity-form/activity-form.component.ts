@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonRange, IonList, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon } from '@ionic/angular/standalone';
 import { ActivityService } from 'src/app/services/activity.service';
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
@@ -28,11 +28,6 @@ export type ActivityForm = {
     endTime: string,
     comment: string,
     date: string,
-    doNotMeasure: boolean,
-    mood: number,
-    energy: number,
-    satiety: number,
-    emotions: string,
     tags: string,
 };
 
@@ -40,7 +35,7 @@ export type ActivityForm = {
     selector: 'app-activity-form',
     templateUrl: './activity-form.component.html',
     styleUrls: ['./activity-form.component.scss'],
-    imports: [IonIcon, IonCheckbox, IonList, IonRange, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent]
+    imports: [IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
 })
 export class ActivityFormComponent {
     @Input() activity?: IActivity;
@@ -79,11 +74,6 @@ export class ActivityFormComponent {
             endTime: ['', timeFormatValidator],
             comment: [''],
             date: ['', [Validators.required, dateFormatValidator]],
-            doNotMeasure: [false],
-            mood: [this.defaultValue],
-            energy: [this.defaultValue],
-            satiety: [this.defaultValue],
-            emotions: ['', duplicatedItemsValidator],
             tags: ['', tagsValidator],
         });
         this.setCurrentTime();
@@ -101,24 +91,6 @@ export class ActivityFormComponent {
         } else {
             await this.setDefaultData();
         }
-
-        this.activityForm.get('doNotMeasure')
-            ?.valueChanges
-            .subscribe((value) => {
-                if (value) {
-                    this.activityForm.patchValue({
-                        mood: null,
-                        energy: null,
-                        satiety: null,
-                    });
-                } else {
-                    this.activityForm.patchValue({
-                        mood: this.defaultValue,
-                        energy: this.defaultValue,
-                        satiety: this.defaultValue,
-                    });
-                }
-            });
     }
 
     async fetchAllSuggestions() {
@@ -143,11 +115,6 @@ export class ActivityFormComponent {
             endTime: this.currentTime,
             comment: '',
             date: currentDate,
-            doNotMeasure: false,
-            mood: this.defaultValue,
-            energy: this.defaultValue,
-            satiety: this.defaultValue,
-            emotions: '',
             tags: '',
         };
     }
@@ -198,15 +165,9 @@ export class ActivityFormComponent {
             }
         }
 
-        const doNotMeasure = this.getDoNotMeasureValue(lastActivity);
-
         return {
             startTime,
             date,
-            doNotMeasure,
-            mood: !doNotMeasure ? lastActivity.mood : null,
-            energy: !doNotMeasure ? lastActivity.energy : null,
-            satiety: !doNotMeasure ? lastActivity.satiety : null,
         };
     }
 
@@ -217,17 +178,8 @@ export class ActivityFormComponent {
             endTime: activity.endTime,
             comment: activity.comment,
             date: activity.date,
-            doNotMeasure: this.getDoNotMeasureValue(activity),
-            mood: activity.mood,
-            energy: activity.energy,
-            satiety: activity.satiety,
-            emotions: activity.emotions,
             tags: entitiesToString(activity.tags),
         });
-    }
-
-    getDoNotMeasureValue(activity: IActivity) {
-        return !activity?.mood || !activity?.energy || !activity?.satiety;
     }
 
     async updateActionCaretAndText(event: any) {
@@ -252,7 +204,7 @@ export class ActivityFormComponent {
 
         const currentIndex = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
         const current = parts[currentIndex];
-    
+
         parts.splice(currentIndex, 1);
 
         if (current.length > 0) {

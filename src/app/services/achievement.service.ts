@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { format } from 'date-fns';
 import { DatabaseService } from './db/database.service';
 import { DatabaseRouter } from './db/database-router.service';
+import { MetricService } from './metric.service';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
@@ -19,6 +20,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
     constructor(
         private hookService: HookService,
         private activityService: ActivityService,
+        private metricService: MetricService,
         adapter: DatabaseRouter,
     ) {
         super(adapter);
@@ -346,8 +348,11 @@ export class AchievementService extends DatabaseService<'achievements'> {
         await this.checkOneTimeAchievement<number>(
             'max_mood',
             async (activityId) => {
-                const activity = await this.activityService.getById(activityId!);
-                return !!(activity?.mood && activity.mood >= 9);
+                const activity = await this.activityService.getEnriched(activityId!);
+                const moodMetric = await this.metricService.getFirstWhereEquals('name', 'TK_MOOD');
+                const record = activity?.metricRecords.find((record) => record.metricId == moodMetric?.id);
+
+                return !!(record?.value && record.value >= 9);
             },
             activityId,
         );
@@ -357,8 +362,11 @@ export class AchievementService extends DatabaseService<'achievements'> {
         await this.checkOneTimeAchievement<number>(
             'min_mood',
             async (activityId) => {
-                const activity = await this.activityService.getById(activityId!);
-                return !!(activity?.mood && activity.mood <= 2);
+                const activity = await this.activityService.getEnriched(activityId!);
+                const moodMetric = await this.metricService.getFirstWhereEquals('name', 'TK_MOOD');
+                const record = activity?.metricRecords.find((record) => record.metricId == moodMetric?.id);
+
+                return !!(record?.value && record.value <= 2);
             },
             activityId,
         );
@@ -368,8 +376,11 @@ export class AchievementService extends DatabaseService<'achievements'> {
         await this.checkOneTimeAchievement<number>(
             'min_energy',
             async (activityId) => {
-                const activity = await this.activityService.getById(activityId!);
-                return !!(activity?.energy && activity.energy <= 2);
+                const activity = await this.activityService.getEnriched(activityId!);
+                const moodMetric = await this.metricService.getFirstWhereEquals('name', 'TK_ENERGY');
+                const record = activity?.metricRecords.find((record) => record.metricId == moodMetric?.id);
+
+                return !!(record?.value && record.value <= 2);
             },
             activityId,
         );
@@ -379,8 +390,11 @@ export class AchievementService extends DatabaseService<'achievements'> {
         await this.checkOneTimeAchievement<number>(
             'max_energy',
             async (activityId) => {
-                const activity = await this.activityService.getById(activityId!);
-                return !!(activity?.energy && activity.energy >= 9);
+                const activity = await this.activityService.getEnriched(activityId!);
+                const moodMetric = await this.metricService.getFirstWhereEquals('name', 'TK_ENERGY');
+                const record = activity?.metricRecords.find((record) => record.metricId == moodMetric?.id);
+
+                return !!(record?.value && record.value >= 9);
             },
             activityId,
         );

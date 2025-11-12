@@ -11,16 +11,6 @@ export class DatabaseRouter implements IDatabaseAdapter {
 
     constructor(private dexie: DexieAdapter, private sqlite: SqliteAdapter) {}
 
-    async setAdapter() {
-        const migratedToSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value;
-
-        if (migratedToSqlite === 'true') {
-            this.setAdapterToSqlite();
-        } else {
-            this.setAdapterToDexie();
-        }
-    }
-
     setAdapterToSqlite() {
         this.adapter = this.sqlite;
     }

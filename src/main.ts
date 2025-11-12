@@ -14,7 +14,7 @@ import { defineCustomElements as pwaElements } from '@ionic/pwa-elements/loader'
 import { SQLiteService } from './app/services/db/sqlite.service';
 import { SQLiteInitService } from './app/services/db/sqlite-init.service';
 import { Capacitor } from '@capacitor/core';
-import { DatabaseRouter } from './app/services/db/database-router.service';
+import { InitializeAppService } from './app/services/initialize-app.service';
 
 const platform = Capacitor.getPlatform();
 if (platform === 'web') {
@@ -33,6 +33,7 @@ bootstrapApplication(AppComponent, {
     providers: [
         SQLiteService,
         SQLiteInitService,
+        InitializeAppService,
         { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
         provideIonicAngular(),
         provideRouter(routes, withPreloading(PreloadAllModules)),
@@ -50,21 +51,9 @@ bootstrapApplication(AppComponent, {
         }),
         provideCharts(withDefaultRegisterables()),
         provideAppInitializer(async () => {
-            const databaseRouter = inject(DatabaseRouter);
-            const sqlite = inject(SQLiteService);
-            
-            await databaseRouter.setAdapter();
-            const isPluginInitialized = await sqlite.initializePlugin();
+            const init = inject(InitializeAppService);
 
-            if (!isPluginInitialized) {
-                return;
-            }
-
-            if (sqlite.platform === 'web') {
-                await sqlite.initWebStore();
-            }
-
-            return sqlite.openDatabase();
+            return init.initializeApp();
         }),
     ],
 });

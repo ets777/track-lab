@@ -7,6 +7,13 @@ import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
 import { IActivityTagCreateDto, IActivityTagDb } from './models/activity-tag';
 import { IActionTagCreateDto, IActionTagDb } from './models/action-tag';
 import { ITagCreateDto, ITagDb } from './models/tag';
+import { IActionLibraryCreateDto, IActionLibraryDb } from './models/action-library';
+import { IActionMetricCreateDto, IActionMetricDb } from './models/action-metric';
+import { IActivityLibraryItemCreateDto, IActivityLibraryItemDb } from './models/activity-library-item';
+import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-metric';
+import { ILibraryItemCreateDto, ILibraryItemDb } from './models/library-item';
+import { ILibraryCreateDto, ILibraryDb } from './models/library';
+import { IMetricCreateDto, IMetricDb } from './models/metric';
 
 export class MyAppDatabase extends Dexie {
     activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -16,6 +23,14 @@ export class MyAppDatabase extends Dexie {
     tags!: Table<ITagDb, number, ITagCreateDto>;
     actionTags!: Table<IActionTagDb, number, IActionTagCreateDto>;
     activityTags!: Table<IActivityTagDb, number, IActivityTagCreateDto>;
+
+    actionLibraries!: Table<IActionLibraryDb, number, IActionLibraryCreateDto>;
+    actionMetrics!: Table<IActionMetricDb, number, IActionMetricCreateDto>;
+    activityLibraryItems!: Table<IActivityLibraryItemDb, number, IActivityLibraryItemCreateDto>;
+    activityMetrics!: Table<IActivityMetricDb, number, IActivityMetricCreateDto>;
+    libraryItems!: Table<ILibraryItemDb, number, ILibraryItemCreateDto>;
+    libraries!: Table<ILibraryDb, number, ILibraryCreateDto>;
+    metrics!: Table<IMetricDb, number, IMetricCreateDto>;
 
     constructor(databaseName: string) {
         super(databaseName);
@@ -87,6 +102,97 @@ export class MyAppDatabase extends Dexie {
             tags: '++id, name',
             actionTags: '++id, actionId, tagId, [actionId+tagId]',
             activityTags: '++id, activityId, tagId, [activityId+tagId]',
+        });
+
+        this.version(4).stores({
+            activities: '++id, date, [date+startTime]',
+            actions: '++id, name',
+            activityActions: '++id, activityId, actionId, [activityId+actionId]',
+            achievements: '++id, code, unlocked',
+            tags: '++id, name',
+            actionTags: '++id, actionId, tagId, [actionId+tagId]',
+            activityTags: '++id, activityId, tagId, [activityId+tagId]',
+            
+            actionLibraries: '++id, [actionId+libraryId]',
+            actionMetrics: '++id, [actionId+metricId]',
+            activityLibraryItems: '++id, [activityId+libraryItemId]',
+            activityMetrics: '++id, [activityId+metricId]',
+            libraryItems: '++id, name',
+            libraries: '++id, name',
+            metrics: '++id, name',
+        }).upgrade(async (tx) => {
+            // 1. create 3 metrics - mood, energy, satiety
+            const moodMetricId = await tx.table('metrics').add({ name: 'TK_MOOD', isInt: true, minValue: 1, maxValue: 10 });
+            const energyMetricId = await tx.table('metrics').add({ name: 'TK_ENERGY', isInt: true, minValue: 1, maxValue: 10 });
+            const satietyMetricId = await tx.table('metrics').add({ name: 'TK_SATIETY', isInt: true, minValue: 1, maxValue: 10 });
+
+            // 2. create 1 library - emotions
+            const emotionsLibraryId = await tx.table('libraries').add({ name: 'emotions' });
+
+            // 3. get all activities
+            const allActivities = await tx.table('activities').toArray();
+
+            // 4, 5, 6, 7. process each activity
+            for (const activity of allActivities) {
+                // 4. save mood, energy, satiety to activity-metric
+                if (activity.mood && activity.mood > 0) {
+                    await tx.table('activityMetrics').add({
+                        activityId: activity.id,
+                        metricId: moodMetricId,
+                        value: activity.mood,
+                    });
+                }
+
+                if (activity.energy && activity.energy > 0) {
+                    await tx.table('activityMetrics').add({
+                        activityId: activity.id,
+                        metricId: energyMetricId,
+                        value: activity.energy,
+                    });
+                }
+
+                if (activity.satiety && activity.satiety > 0) {
+                    await tx.table('activityMetrics').add({
+                        activityId: activity.id,
+                        metricId: satietyMetricId,
+                        value: activity.satiety,
+                    });
+                }
+
+                // 5. save emotions as library items (check for existing ones)
+                if (activity.emotions && activity.emotions !== '') {
+                    const emotionNames = getEntitiesFromString(activity.emotions);
+                    for (const emotionDto of emotionNames) {
+                        let libraryItem = await tx.table('libraryItems')
+                            .where('name')
+                            .equalsIgnoreCase(emotionDto.name)
+                            .first();
+
+                        if (!libraryItem) {
+                            const itemId = await tx.table('libraryItems').add({
+                                name: emotionDto.name,
+                                libraryId: emotionsLibraryId,
+                            });
+                            libraryItem = { id: itemId, name: emotionDto.name, libraryId: emotionsLibraryId };
+                        }
+
+                        // create relation
+                        await tx.table('activityLibraryItems').add({
+                            activityId: activity.id,
+                            libraryItemId: libraryItem.id!,
+                        });
+                    }
+                }
+
+                // 6. delete mood, energy, satiety, emotions values
+                delete activity.mood;
+                delete activity.energy;
+                delete activity.satiety;
+                delete activity.emotions;
+
+                // 7. save activity
+                await tx.table('activities').put(activity);
+            }
         });
     }
 }

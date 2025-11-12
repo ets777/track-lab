@@ -7,6 +7,8 @@ import { isDateValid } from '../functions/date';
 import { ActivityForm } from '../components/activity-form/activity-form.component';
 import { entitiesToString } from '../functions/string';
 import { FileService } from './file.service';
+import { MetricService } from './metric.service';
+import { LibraryService } from './library.service';
 
 const helperRevision1 = {
     parseLine: (date: string) => {
@@ -21,10 +23,6 @@ const helperRevision1 = {
                 date,
                 startTime: columns[0].replace('| ', '').trim(),
                 actions: columns[1].replaceAll(' \\|', ',').trim(),
-                mood: Number(columns[2].trim()),
-                energy: Number(columns[3].trim()),
-                satiety: Number(columns[4].trim()),
-                emotions: columns[5].trim(),
                 comment: columns[6].replace(' |', '').trim(),
             } as ActivityForm;
         }
@@ -51,10 +49,6 @@ const helperRevision2 = {
                 date,
                 startTime: columns[0].replace('| ', '').trim(),
                 actions: columns[1].trim(),
-                mood: Number(columns[2].trim()),
-                energy: Number(columns[3].trim()),
-                satiety: Number(columns[4].trim()),
-                emotions: columns[5].trim(),
                 tags: columns[6].replaceAll('#', '').replaceAll(' ', ', ').trim(),
                 comment: columns[7].replace(' |', '').trim(),
             } as ActivityForm;
@@ -77,6 +71,8 @@ export class MarkdownParserService {
     constructor(
         private toastCtrl: ToastController,
         private activityService: ActivityService,
+        private metricService: MetricService,
+        private libraryService: LibraryService,
         private translate: TranslateService,
         private fileService: FileService,
     ) { }
@@ -230,6 +226,8 @@ export class MarkdownParserService {
             + `${this.translate.instant('TK_VERSION')}: ${appVersion}\n`
             + `---\n\n`;
         const activities = await this.activityService.getByDate(date);
+        const metrics = await this.metricService.getAll();
+        const libraries = await this.libraryService.getAll();
         const tableTitleTranslationKeys = [
             'TK_TIME',
             'TK_ACTIONS',
@@ -250,7 +248,32 @@ export class MarkdownParserService {
         const table = `| ${tableContentTitle} |\n`
             + `| ${tableTitleSeparator} |\n`
             + activities.map(
-                (activity) => `| ${activity.startTime} | ${entitiesToString(activity.actions)} | ${activity.mood} | ${activity.energy} | ${activity.satiety} | ${activity.emotions ?? ''} | ${entitiesToString(activity.tags.map((tag) => ({...tag, name: '#' + tag.name})), ' ') ?? ''} | ${activity.comment ?? ''} |`
+                (activity) => {
+                    const records = activity.metricRecords;
+                    const moodMetric = metrics.find((metric) => metric.name == 'TK_MOOD');
+                    const energyMetric = metrics.find((metric) => metric.name == 'TK_ENERGY');
+                    const satietyMetric = metrics.find((metric) => metric.name == 'TK_SATIETY');
+                    const moodRecord = records.find((record) => record.metricId == moodMetric?.id);
+                    const energyRecord = records.find((record) => record.metricId == energyMetric?.id);
+                    const satietyRecord = records.find((record) => record.metricId == satietyMetric?.id);
+                    
+                    const libraryItems = activity.libraryItems;
+                    const emotionsLibrary = libraries.find((library) => library.name == 'TK_EMOTIONS');
+                    const emotionItems = libraryItems.filter((libraryItem) => libraryItem.libraryId == emotionsLibrary?.id);
+
+                    const emotionsString = entitiesToString(emotionItems);
+                    const tagsString = entitiesToString(activity.tags.map((tag) => ({ ...tag, name: '#' + tag.name })), ' ');
+
+
+                    return `| ${activity.startTime} ` 
+                        + `| ${entitiesToString(activity.actions)} `
+                        + `| ${moodRecord?.value ?? 0} `
+                        + `| ${energyRecord?.value ?? 0} `
+                        + `| ${satietyRecord?.value ?? 0} `
+                        + `| ${emotionsString ?? ''} `
+                        + `| ${tagsString ?? ''} `
+                        + `| ${activity.comment ?? ''} |`
+                }
             ).join('\n');
 
         const content = metaData + table;

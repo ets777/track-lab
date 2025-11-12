@@ -21,7 +21,6 @@ export class SQLiteService {
     databaseName = 'tracklabDatabase';
     encrypted = false;
     mode = 'no-encryption';
-    version = 1;
     readonly = false;
 
     initializePlugin(): Promise<boolean> {
@@ -38,7 +37,7 @@ export class SQLiteService {
         });
     }
 
-    async openDatabase(): Promise<void> {
+    async openDatabase(version: number): Promise<void> {
         let db: SQLiteDBConnection;
         const dbName = this.databaseName;
         const readonly = this.readonly;
@@ -53,7 +52,7 @@ export class SQLiteService {
                     dbName,
                     this.encrypted,
                     this.mode,
-                    this.version,
+                    version,
                     readonly,
                 );
         }

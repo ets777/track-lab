@@ -29,7 +29,7 @@
         }
         </ion-list>
     }
-    
+  
     <ion-item>
         <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
         <ion-input
@@ -73,62 +73,6 @@
             ></ion-icon>
         }
         </ion-input>
-    </ion-item>
-
-    <ion-item>
-        <ion-checkbox 
-            formControlName="doNotMeasure"
-            labelPlacement="end"
-        >{{ 'TK_DON_T_MEASURE' | translate }}</ion-checkbox>
-    </ion-item>
-
-    @if (!activityForm.get('doNotMeasure')?.value) {
-        <ion-item>
-            <ion-label position="stacked">
-                {{ 'TK_MOOD' | translate }} ({{ activityForm.get('mood')?.value }})
-            </ion-label>
-            <ion-range
-                min="1"
-                max="10"
-                formControlName="mood"
-                name="mood"
-            ></ion-range>
-        </ion-item>
-
-        <ion-item>
-            <ion-label position="stacked">
-                {{ 'TK_ENERGY' | translate }} ({{ activityForm.get('energy')?.value }})
-            </ion-label>
-            <ion-range
-                min="1"
-                max="10"
-                formControlName="energy"
-                name="energy"
-            ></ion-range>
-        </ion-item>
-
-        <ion-item>
-            <ion-label position="stacked">
-                {{ 'TK_SATIETY' | translate }} ({{ activityForm.get('satiety')?.value }})
-            </ion-label>
-            <ion-range
-                min="1"
-                max="10"
-                formControlName="satiety"
-                name="satiety"
-            ></ion-range>
-        </ion-item>
-    }
-
-    <ion-item>
-        <ion-input
-            validationError
-            label="{{ 'TK_EMOTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
-            labelPlacement="floating"
-            placeholder="{{ 'TK_WHAT_DID_YOU_FEEL' | translate }}"
-            formControlName="emotions"
-            name="emotions"
-        ></ion-input>
     </ion-item>
 
     <app-tag-input 

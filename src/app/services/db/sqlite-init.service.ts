@@ -9,10 +9,19 @@ import { ActionTagService } from '../action-tag.service';
 import { ActivityTagService } from '../activity-tag.service';
 import { Preferences } from '@capacitor/preferences';
 import { DatabaseRouter } from './database-router.service';
+import { ActionLibraryService } from '../action-library.service';
+import { ActionMetricService } from '../action-metric.service';
+import { ActivityLibraryItemService } from '../activity-library-item.service';
+import { ActivityMetricService } from '../activity-metric.service';
+import { LibraryItemService } from '../library-item.service';
+import { LibraryService } from '../library.service';
+import { MetricService } from '../metric.service';
+import { databaseUpgrades } from './database.upgrade';
 
 @Injectable()
 export class SQLiteInitService {
     private versionUpgrades;
+    private loadToVersion;
 
     constructor(
         private sqliteService: SQLiteService,
@@ -23,108 +32,32 @@ export class SQLiteInitService {
         private tagService: TagService,
         private actionTagService: ActionTagService,
         private activityTagService: ActivityTagService,
+        private actionLibraryService: ActionLibraryService,
+        private actionMetricService: ActionMetricService,
+        private activityLibraryItemService: ActivityLibraryItemService,
+        private activityMetricService: ActivityMetricService,
+        private libraryItemService: LibraryItemService,
+        private libraryService: LibraryService,
+        private metricService: MetricService,
         private databaseRouter: DatabaseRouter,
     ) {
-        this.versionUpgrades = [
-            {
-                toVersion: 1,
-                statements: [
-                    `CREATE TABLE IF NOT EXISTS users(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
-                        active INTEGER DEFAULT 1
-                    );`,
-                    `CREATE TABLE IF NOT EXISTS activities (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        date TEXT NOT NULL,
-                        startTime TEXT NOT NULL,
-                        endTime TEXT,
-                        mood INTEGER,
-                        energy INTEGER,
-                        satiety INTEGER,
-                        emotions TEXT,
-                        comment TEXT
-                    );`,
-                    `CREATE INDEX IF NOT EXISTS idx_activities_date_startTime ON activities(date, startTime);`,
-                    `CREATE INDEX IF NOT EXISTS idx_activities_date ON activities(date);`,
-                    `CREATE TABLE IF NOT EXISTS actions (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL UNIQUE
-                    );`,
-                    `CREATE INDEX IF NOT EXISTS idx_actions_name ON actions(name);`,
-                    `CREATE TABLE IF NOT EXISTS activityActions (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        activityId INTEGER NOT NULL,
-                        actionId INTEGER NOT NULL,
-                        FOREIGN KEY(activityId) REFERENCES activities(id) ON DELETE CASCADE,
-                        FOREIGN KEY(actionId) REFERENCES actions(id) ON DELETE CASCADE,
-                        UNIQUE(activityId, actionId)
-                    );`,
-                    `CREATE INDEX IF NOT EXISTS idx_activityActions_activity_action ON activityActions(activityId, actionId);`,
-                    `CREATE TABLE IF NOT EXISTS achievements (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        icon TEXT,
-                        code TEXT NOT NULL UNIQUE,
-                        title TEXT NOT NULL,
-                        target INTEGER NOT NULL DEFAULT 0,
-                        current INTEGER NOT NULL DEFAULT 0,
-                        unlocked INTEGER NOT NULL DEFAULT 0,
-                        description TEXT,
-                        data TEXT
-                    );`,
-                    `CREATE TABLE IF NOT EXISTS tags (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL UNIQUE
-                    );`,
-                    `CREATE TABLE IF NOT EXISTS actionTags (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        actionId INTEGER NOT NULL,
-                        tagId INTEGER NOT NULL,
-                        FOREIGN KEY(actionId) REFERENCES actions(id) ON DELETE CASCADE,
-                        FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
-                        UNIQUE(actionId, tagId)
-                    );`,
-                    `CREATE INDEX IF NOT EXISTS idx_actionTags_action_tag ON actionTags(actionId, tagId);`,
-                    `CREATE TABLE IF NOT EXISTS activityTags (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        activityId INTEGER NOT NULL,
-                        tagId INTEGER NOT NULL,
-                        FOREIGN KEY(activityId) REFERENCES activities(id) ON DELETE CASCADE,
-                        FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
-                        UNIQUE(activityId, tagId)
-                    );`,
-                    `CREATE INDEX IF NOT EXISTS idx_activityTags_activity_tag ON activityTags(activityId, tagId);`,
-                ],
-            },
-        ];
+        this.versionUpgrades = databaseUpgrades;
+        this.loadToVersion = this.versionUpgrades[this.versionUpgrades.length - 1].toVersion;
     }
 
-    async createSqliteSchema() {
+    async initializeDatabase() {
         await this.sqliteService.addUpgradeStatement({
             upgrade: this.versionUpgrades,
         });
         
-        await this.migrateFromDexie();
-    }
+        await this.sqliteService.openDatabase(this.loadToVersion);
+        
+        const migratedToSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value === 'true';
 
-    async exportFromDexie() {
-        const activities = await this.activityService.getAll();
-        const actions = await this.actionService.getAll();
-        const activityActions = await this.activityActionService.getAll();
-        const achievements = await this.achievementService.getAll();
-        const tags = await this.tagService.getAll();
-        const actionTags = await this.actionTagService.getAll();
-        const activityTags = await this.activityTagService.getAll();
-
-        return {
-            activities,
-            actions,
-            activityActions,
-            achievements,
-            tags,
-            actionTags,
-            activityTags,
-        };
+        if (!migratedToSqlite) {
+            this.databaseRouter.setAdapterToDexie();
+            await this.migrateFromDexie();
+        }
     }
 
     async insertArrayChunked(
@@ -166,15 +99,21 @@ export class SQLiteInitService {
     }
 
     async migrateFromDexie() {
-        const {
-            activities,
-            actions,
-            activityActions,
-            achievements,
-            tags,
-            actionTags,
-            activityTags,
-        } = await this.exportFromDexie();
+        const activities = await this.activityService.getAll();
+        const actions = await this.actionService.getAll();
+        const activityActions = await this.activityActionService.getAll();
+        const achievements = await this.achievementService.getAll();
+        const tags = await this.tagService.getAll();
+        const actionTags = await this.actionTagService.getAll();
+        const activityTags = await this.activityTagService.getAll();
+
+        const actionLibraries = await this.actionLibraryService.getAll();
+        const actionMetrics = await this.actionMetricService.getAll();
+        const activityLibraryItems = await this.activityLibraryItemService.getAll();
+        const activityMetrics = await this.activityMetricService.getAll();
+        const libraryItems = await this.libraryItemService.getAll();
+        const libraries = await this.libraryService.getAll();
+        const metrics = await this.metricService.getAll();
 
         try {
             await this.sqliteService.beginTransaction();
@@ -211,7 +150,7 @@ export class SQLiteInitService {
                 await this.insertArrayChunked(
                     'activities', 
                     activities,
-                    ['startTime', 'date', 'endTime', 'mood', 'energy', 'satiety', 'id']
+                    ['startTime', 'date', 'endTime', 'id']
                 );
             }
 
@@ -239,6 +178,69 @@ export class SQLiteInitService {
                     'activityTags', 
                     activityTags,
                     ['id', 'activityId', 'tagId'],
+                );
+            }
+
+            if (actionLibraries.length) {
+                await this.sqliteService.run('DELETE FROM actionLibraries');
+                await this.insertArrayChunked(
+                    'actionLibraries',
+                    actionLibraries,
+                    ['id', 'actionId', 'libraryId'],
+                );
+            }
+
+            if (actionMetrics.length) {
+                await this.sqliteService.run('DELETE FROM actionMetrics');
+                await this.insertArrayChunked(
+                    'actionMetrics',
+                    actionMetrics,
+                    ['id', 'actionId', 'metricId'],
+                );
+            }
+
+            if (activityLibraryItems.length) {
+                await this.sqliteService.run('DELETE FROM activityLibraryItems');
+                await this.insertArrayChunked(
+                    'activityLibraryItems',
+                    activityLibraryItems,
+                    ['id', 'activityId', 'libraryItemId'],
+                );
+            }
+
+            if (activityMetrics.length) {
+                await this.sqliteService.run('DELETE FROM activityMetrics');
+                await this.insertArrayChunked(
+                    'activityMetrics',
+                    activityMetrics,
+                    ['id', 'activityId', 'metricId', 'value'],
+                );
+            }
+
+            if (libraryItems.length) {
+                await this.sqliteService.run('DELETE FROM libraryItems');
+                await this.insertArrayChunked(
+                    'libraryItems',
+                    libraryItems,
+                    ['id', 'name', 'libraryId'],
+                );
+            }
+
+            if (libraries.length) {
+                await this.sqliteService.run('DELETE FROM libraries');
+                await this.insertArrayChunked(
+                    'libraries',
+                    libraries,
+                    ['id', 'name'],
+                );
+            }
+
+            if (metrics.length) {
+                await this.sqliteService.run('DELETE FROM metrics');
+                await this.insertArrayChunked(
+                    'metrics',
+                    metrics,
+                    ['id', 'name', 'isInt', 'unit', 'minValue', 'maxValue'],
                 );
             }
 
