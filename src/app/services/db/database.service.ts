@@ -32,7 +32,7 @@ export abstract class DatabaseService<K extends TableName> {
         return this.adapter.getFirstWhereEqualsIgnoringCase(this.tableName, columnName, value);
     }
 
-    getAllWhereEquals(columnName: string, value: string | number): Promise<RowFor<K>[]> {
+    getAllWhereEquals(columnName: string, value: string | number | boolean): Promise<RowFor<K>[]> {
         return this.adapter.getAllWhereEquals(this.tableName, columnName, value);
     }
 

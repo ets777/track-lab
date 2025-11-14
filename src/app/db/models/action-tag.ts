@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IActionTagDb {
     id: number;
@@ -6,6 +6,6 @@ export interface IActionTagDb {
     tagId: number;
 }
 
-export type IActionTagCreateDto = WithOptionalId<IActionTagDb>;
+export type IActionTagCreateDto = WithOptionalKeys<IActionTagDb, 'id'>;
 
 export interface IActionTag extends IActionTagDb {}

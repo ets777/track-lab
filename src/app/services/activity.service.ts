@@ -152,6 +152,9 @@ export class ActivityService extends DatabaseService<'activities'> {
             );
         }
 
+        delete changes.actions;
+        delete changes.tags;
+
         const rowsAffected = await this.update(id, changes);
 
         if (sendEvent) {

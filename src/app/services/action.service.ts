@@ -39,7 +39,10 @@ export class ActionService extends DatabaseService<'actions'> {
             return;
         }
 
-        const actionCreateDto = { name: action.name };
+        const actionCreateDto = { 
+            name: action.name,
+            isHidden: action.isHidden ?? false,
+        };
         const actionId = await this.add(actionCreateDto);
 
         if (!actionId) {
@@ -142,6 +145,10 @@ export class ActionService extends DatabaseService<'actions'> {
         return this.enrichAll(actions);
     }
 
+    async getAllUnhidden() {
+        return this.getAllWhereEquals('isHidden', false);
+    }
+
     async enrichAll(actionsDb: IActionDb[]) {
         const result = [];
 
@@ -166,6 +173,8 @@ export class ActionService extends DatabaseService<'actions'> {
             changes.tags ?? '',
             id,
         );
+
+        delete changes.tags;
 
         return this.update(id, changes);
     }

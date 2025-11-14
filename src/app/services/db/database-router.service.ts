@@ -3,7 +3,6 @@ import { CreateDtoFor, TableName, Where } from "./types";
 import { IDatabaseAdapter } from "./database-adapter.interface";
 import { DexieAdapter } from "./dexie-adapter.service";
 import { SqliteAdapter } from "./sqlite-adapter.service";
-import { Preferences } from "@capacitor/preferences";
 
 @Injectable({ providedIn: 'root' })
 export class DatabaseRouter implements IDatabaseAdapter {
@@ -25,7 +24,7 @@ export class DatabaseRouter implements IDatabaseAdapter {
     getAll = <K extends TableName>(table: K, where?: Where) => this.adapter.getAll(table, where);
     getFirstWhereEquals = <K extends TableName>(table: K, columnName: string, value: string | number) => this.adapter.getFirstWhereEquals(table, columnName, value);
     getFirstWhereEqualsIgnoringCase = <K extends TableName>(table: K, columnName: string, value: string) => this.adapter.getFirstWhereEqualsIgnoringCase(table, columnName, value);
-    getAllWhereEquals = <K extends TableName>(table: K, columnName: string, value: string | number) => this.adapter.getAllWhereEquals(table, columnName, value);
+    getAllWhereEquals = <K extends TableName>(table: K, columnName: string, value: string | number | boolean) => this.adapter.getAllWhereEquals(table, columnName, value);
     getAnyOf = <K extends TableName>(table: K, columnName: string, values: string[] | number[]) => this.adapter.getAnyOf(table, columnName, values);
     getAllByRange = <K extends TableName>(table: K, columnName: string, range: { 0: any; 1: any; }) => this.adapter.getAllByRange(table, columnName, range);
     getAllBetweenOrderedBy = <K extends TableName>(table: K, columnName: string, orderByColumn: string, startValue: string | number, endValue: string | number) => this.adapter.getAllBetweenOrderedBy(table, columnName, orderByColumn, startValue, endValue);

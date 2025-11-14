@@ -58,6 +58,8 @@ export class SQLiteInitService {
             this.databaseRouter.setAdapterToDexie();
             await this.migrateFromDexie();
         }
+
+        this.databaseRouter.setAdapterToSqlite();
     }
 
     async insertArrayChunked(
@@ -246,8 +248,6 @@ export class SQLiteInitService {
 
             await this.sqliteService.commitTransaction();
             await Preferences.set({ key: 'migratedToSqlite', value: 'true' });
-
-            this.databaseRouter.setAdapterToSqlite();
         } catch (err) {
             await this.sqliteService.rollbackTransaction();
             throw err;

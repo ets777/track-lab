@@ -27,7 +27,7 @@ describe('TagInputComponent', () => {
                 },
                 {
                     provide: TagService,
-                    useValue: { getAll: async () => [] },
+                    useValue: { getAllUnhidden: async () => [] },
                 },
             ],
         }).compileComponents();

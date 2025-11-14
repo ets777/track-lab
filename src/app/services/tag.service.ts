@@ -18,6 +18,10 @@ export class TagService extends DatabaseService<'tags'> {
         super(adapter);
     }
 
+    async getAllUnhidden() {
+        return this.getAllWhereEquals('isHidden', false);
+    }
+
     async addWithActivityRelation(tagDto: ITagCreateDto, activityId: number) {
         const existingTag = await this.getFirstWhereEqualsIgnoringCase(
             'name',

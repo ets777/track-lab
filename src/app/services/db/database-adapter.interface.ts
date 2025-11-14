@@ -15,7 +15,7 @@ export interface IDatabaseAdapter {
         columnName: string, 
         value: string,
     ): Promise<RowFor<K> | undefined>;
-    getAllWhereEquals<K extends TableName>(table: K, columnName: string, value: string | number): Promise<RowFor<K>[]>;
+    getAllWhereEquals<K extends TableName>(table: K, columnName: string, value: string | number | boolean): Promise<RowFor<K>[]>;
     getAnyOf<K extends TableName>(table: K, columnName: string, values: string[] | number[]): Promise<RowFor<K>[]>;
     getAllByRange<K extends TableName>(table: K, columnName: string, range: { 0: any; 1: any; }): Promise<RowFor<K>[]>;
     getAllBetweenOrderedBy<K extends TableName>(

@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IActivityLibraryItemDb {
     id: number;
@@ -6,6 +6,6 @@ export interface IActivityLibraryItemDb {
     libraryItemId: number;
 }
 
-export type IActivityLibraryItemCreateDto = WithOptionalId<IActivityLibraryItemDb>;
+export type IActivityLibraryItemCreateDto = WithOptionalKeys<IActivityLibraryItemDb, 'id'>;
 
 export interface IActivityLibraryItem extends IActivityLibraryItemDb {}

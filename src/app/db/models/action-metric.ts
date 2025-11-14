@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IActionMetricDb {
     id: number;
@@ -6,6 +6,6 @@ export interface IActionMetricDb {
     metricId: number;
 }
 
-export type IActionMetricCreateDto = WithOptionalId<IActionMetricDb>;
+export type IActionMetricCreateDto = WithOptionalKeys<IActionMetricDb, 'id'>;
 
 export interface IActionMetric extends IActionMetricDb {}

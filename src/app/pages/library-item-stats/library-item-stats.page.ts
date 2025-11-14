@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonButton, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
@@ -16,210 +16,212 @@ import { getTimeString } from 'src/app/functions/string';
 import { addDays, format } from 'date-fns';
 
 type LibraryItem = {
-  name: string;
-  type: ('action' | 'tag');
+    name: string;
+    type: ('action' | 'tag');
 };
 
 export type FilterForm = {
-  libraryItem: LibraryItem;
-  datePeriod: DatePeriod;
+    libraryItem: LibraryItem;
+    datePeriod: DatePeriod;
 };
 
 @Component({
-  selector: 'app-library-item-stats',
-  templateUrl: './library-item-stats.page.html',
-  styleUrls: ['./library-item-stats.page.scss'],
-  standalone: true,
-  imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
+    selector: 'app-library-item-stats',
+    templateUrl: './library-item-stats.page.html',
+    styleUrls: ['./library-item-stats.page.scss'],
+    imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
 })
 export class LibraryItemStatsPage {
-  activities: IActivity[] = [];
-  public libraryItems: LibraryItem[] = [];
-  public filterForm: FormGroup;
-  public suggestions: Selectable<LibraryItem>[] = [];
-  minutesChartData!: ChartConfiguration<'bar'>['data'];
-  amountChartData!: ChartConfiguration<'bar'>['data'];
-  totalAmount: number = 0;
-  totalDuration: number = 0;
-  averageAmountPerDay: number = 0;
-  averageTimePerTime: number = 0;
-  averageTimePerDay: number = 0;
+    activities: IActivity[] = [];
+    public libraryItems: LibraryItem[] = [];
+    public filterForm: FormGroup;
+    public suggestions: Selectable<LibraryItem>[] = [];
+    minutesChartData!: ChartConfiguration<'bar'>['data'];
+    amountChartData!: ChartConfiguration<'bar'>['data'];
+    totalAmount: number = 0;
+    totalDuration: number = 0;
+    averageAmountPerDay: number = 0;
+    averageTimePerTime: number = 0;
+    averageTimePerDay: number = 0;
 
-  constructor(
-    private activityService: ActivityService,
-    private translate: TranslateService,
-    private formBuilder: FormBuilder,
-  ) {
-    this.filterForm = this.formBuilder.group({
-      datePeriod: [null, Validators.required],
-      libraryItem: [null, Validators.required],
-    });
+    constructor(
+        private activityService: ActivityService,
+        private translate: TranslateService,
+        private formBuilder: FormBuilder,
+    ) {
+        this.filterForm = this.formBuilder.group({
+            datePeriod: [null, Validators.required],
+            libraryItem: [null, Validators.required],
+        });
 
-    this.filterForm.valueChanges.subscribe(() => {
-      if (this.filterForm.valid) {
-        this.setChartData();
-      }
-    });
+        this.filterForm.valueChanges.subscribe(() => {
+            if (this.filterForm.valid) {
+                this.setChartData();
+            }
+        });
 
-    this.filterForm.get('datePeriod')?.valueChanges.subscribe(async () => {
-      // wait until Angular syncs parent form
-      await Promise.resolve();
+        this.filterForm.get('datePeriod')?.valueChanges.subscribe(async () => {
+            // wait until Angular syncs parent form
+            await Promise.resolve();
 
-      if (this.filterForm.controls['datePeriod'].valid) {
-        await this.loadSuggestions();
-      }
-    });
-  }
-
-  async loadSuggestions() {
-    const { startDate, endDate } = this.filterForm.value.datePeriod;
-
-    if (!startDate || !endDate) {
-      return;
+            if (this.filterForm.controls['datePeriod'].valid) {
+                await this.loadSuggestions();
+            }
+        });
     }
 
-    this.activities = await this.activityService.getByDate(startDate, endDate);
+    async loadSuggestions() {
+        const { startDate, endDate } = this.filterForm.value.datePeriod;
 
-    const actions = this.activities
-      .flatMap((activity) => activity.actions)
-      .map((action) => ({
-        name: action.name,
-        type: 'action',
-      } as LibraryItem));
+        if (!startDate || !endDate) {
+            return;
+        }
 
-    const activityTags = this.activities
-      .flatMap((activity) => activity.tags)
-      .map((tag) => ({
-        name: tag.name,
-        type: 'tag',
-      } as LibraryItem));
+        this.activities = await this.activityService.getByDate(startDate, endDate);
 
-    const actionTags = this.activities
-      .flatMap((activity) => activity.actions)
-      .flatMap((action) => action.tags)
-      .map((tag) => ({
-        name: tag.name,
-        type: 'tag',
-      } as LibraryItem));
+        const actions = this.activities
+            .flatMap((activity) => activity.actions)
+            .filter((action) => !action.isHidden)
+            .map((action) => ({
+                name: action.name,
+                type: 'action',
+            } as LibraryItem));
 
-    this.libraryItems = this.filterUniqueElements([
-      ...actions,
-      ...activityTags,
-      ...actionTags,
-    ]);
+        const activityTags = this.activities
+            .flatMap((activity) => activity.tags)
+            .filter((tag) => !tag.isHidden)
+            .map((tag) => ({
+                name: tag.name,
+                type: 'tag',
+            } as LibraryItem));
 
-    this.suggestions = this.libraryItems.map((item, index) => ({
-      num: index,
-      title: item.name,
-      subtitle: this.translate.instant('TK_' + item.type.toUpperCase()),
-      item,
-    }));
-  }
+        const actionTags = this.activities
+            .flatMap((activity) => activity.actions)
+            .flatMap((action) => action.tags)
+            .filter((tag) => !tag.isHidden)
+            .map((tag) => ({
+                name: tag.name,
+                type: 'tag',
+            } as LibraryItem));
 
-  setChartData() {
-    const libraryItem: LibraryItem = this.filterForm.value.libraryItem;
-    const { startDate, endDate } = this.filterForm.value.datePeriod;
+        this.libraryItems = this.filterUniqueElements([
+            ...actions,
+            ...activityTags,
+            ...actionTags,
+        ]);
 
-    const dates: string[] = [];
-    let i = 0;
-    
-    while (!dates.includes(endDate)) {
-      dates.push(format(addDays(new Date(startDate), i), 'yyyy-MM-dd'));
-
-      i++;
-
-      if (i > 31) {
-        break;
-      }
+        this.suggestions = this.libraryItems.map((item, index) => ({
+            num: index,
+            title: item.name,
+            subtitle: this.translate.instant('TK_' + item.type.toUpperCase()),
+            item,
+        }));
     }
 
-    const activitiesGroupedByDate = dates.map(
-      (date) => this.activities.filter((activity) => activity.date == date),
-    );
-    let durationMinutes: number[] = [];
-    let amount: number[] = [];
-    let averages: number[] = [];
+    setChartData() {
+        const libraryItem: LibraryItem = this.filterForm.value.libraryItem;
+        const { startDate, endDate } = this.filterForm.value.datePeriod;
 
-    const result = activitiesGroupedByDate
-      .map(
-        (activities) => {
-          const filteredActivities = activities
-            .filter(
-              (activity) => this.hasLibraryItem(activity, libraryItem),
+        const dates: string[] = [];
+        let i = 0;
+
+        while (!dates.includes(endDate)) {
+            dates.push(format(addDays(new Date(startDate), i), 'yyyy-MM-dd'));
+
+            i++;
+
+            if (i > 31) {
+                break;
+            }
+        }
+
+        const activitiesGroupedByDate = dates.map(
+            (date) => this.activities.filter((activity) => activity.date == date),
+        );
+        let durationMinutes: number[] = [];
+        let amount: number[] = [];
+        let averages: number[] = [];
+
+        const result = activitiesGroupedByDate
+            .map(
+                (activities) => {
+                    const filteredActivities = activities
+                        .filter(
+                            (activity) => this.hasLibraryItem(activity, libraryItem),
+                        );
+
+                    const totalMinutes = filteredActivities.reduce((sum, curr) => sum += getActivityDurationMinutes(curr), 0);
+
+                    return {
+                        durationMinutes: totalMinutes,
+                        amount: filteredActivities.length,
+                        averages: totalMinutes / filteredActivities.length,
+                    };
+                }
             );
 
-          const totalMinutes = filteredActivities.reduce((sum, curr) => sum += getActivityDurationMinutes(curr), 0);
+        durationMinutes = result.map((item) => item.durationMinutes);
+        amount = result.map((item) => item.amount);
+        averages = result.map((item) => item.averages);
 
-          return {
-            durationMinutes: totalMinutes,
-            amount: filteredActivities.length,
-            averages: totalMinutes / filteredActivities.length,
-          };
+        this.totalDuration = durationMinutes.reduce((sum, curr) => sum += curr, 0);
+        this.averageTimePerDay = this.totalDuration / durationMinutes.length;
+
+        this.totalAmount = amount.reduce((sum, curr) => sum += curr, 0);
+        this.averageTimePerTime = this.totalDuration / this.totalAmount;
+        this.averageAmountPerDay = this.totalAmount / durationMinutes.length;
+
+        const units = '(' + this.translate.instant('TK_M') + '.)';
+        const timeLabel = this.translate.instant('TK_TIME') + ' ' + units;
+        const averageTimeLabel = this.translate.instant('TK_AVG') + ' ' + timeLabel.toLowerCase();
+        const timesLabel = this.translate.instant('TK_TIMES');
+
+        this.minutesChartData = {
+            labels: dates,
+            datasets: [
+                { data: durationMinutes, label: timeLabel },
+                { data: averages, label: averageTimeLabel },
+            ]
+        };
+
+        this.amountChartData = {
+            labels: dates,
+            datasets: [
+                { data: amount, label: timesLabel },
+            ]
+        };
+    }
+
+    hasLibraryItem(activity: IActivity, libraryItem: LibraryItem) {
+        if (libraryItem.type == 'action') {
+            return activity.actions.some(
+                (action) => action.name == libraryItem.name,
+            );
         }
-      );
 
-    durationMinutes = result.map((item) => item.durationMinutes);
-    amount = result.map((item) => item.amount);
-    averages = result.map((item) => item.averages);
+        if (libraryItem.type == 'tag') {
+            return activity.tags.some(
+                (tag) => tag.name == libraryItem.name,
+            ) || activity.actions.some(
+                (action) => action.tags.some(
+                    (tag) => tag.name == libraryItem.name,
+                ),
+            );
+        }
 
-    this.totalDuration = durationMinutes.reduce((sum, curr) => sum += curr, 0);
-    this.averageTimePerDay = this.totalDuration / durationMinutes.length;
-    
-    this.totalAmount = amount.reduce((sum, curr) => sum += curr, 0);
-    this.averageTimePerTime = this.totalDuration / this.totalAmount;
-    this.averageAmountPerDay = this.totalAmount / durationMinutes.length;
-
-    const units = '(' + this.translate.instant('TK_M') + '.)';
-    const timeLabel = this.translate.instant('TK_TIME') + ' ' + units;
-    const averageTimeLabel = this.translate.instant('TK_AVG') + ' ' + timeLabel.toLowerCase();
-    const timesLabel = this.translate.instant('TK_TIMES');
-
-    this.minutesChartData = {
-      labels: dates,
-      datasets: [
-        { data: durationMinutes, label: timeLabel },
-        { data: averages, label: averageTimeLabel },
-      ]
-    };
-
-    this.amountChartData = {
-      labels: dates,
-      datasets: [
-        { data: amount, label: timesLabel },
-      ]
-    };
-  }
-
-  hasLibraryItem(activity: IActivity, libraryItem: LibraryItem) {
-    if (libraryItem.type == 'action') {
-      return activity.actions.some(
-        (action) => action.name == libraryItem.name,
-      );
+        return false;
     }
 
-    if (libraryItem.type == 'tag') {
-      return activity.tags.some(
-        (tag) => tag.name == libraryItem.name,
-      ) || activity.actions.some(
-        (action) => action.tags.some(
-          (tag) => tag.name == libraryItem.name,
-        ),
-      );
+    filterUniqueElements(array: LibraryItem[]) {
+        return array.filter(
+            (item, index, self) =>
+                index === self.findIndex(
+                    (t) => t.name === item.name && t.type === item.type
+                )
+        );
     }
 
-    return false;
-  }
-
-  filterUniqueElements(array: LibraryItem[]) {
-    return array.filter(
-      (item, index, self) =>
-        index === self.findIndex(
-          (t) => t.name === item.name && t.type === item.type
-        )
-    );
-  }
-
-  getTimeString(minutes: number) {
-    return getTimeString(this.translate, minutes);
-  }
+    getTimeString(minutes: number) {
+        return getTimeString(this.translate, minutes);
+    }
 }

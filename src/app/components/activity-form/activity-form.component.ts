@@ -94,7 +94,7 @@ export class ActivityFormComponent {
     }
 
     async fetchAllSuggestions() {
-        const actions = await this.actionService.getAll();
+        const actions = await this.actionService.getAllUnhidden();
         this.allActionSuggestions = this.allActionSuggestions.map(
             (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
         );

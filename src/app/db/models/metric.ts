@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IMetricDb {
     id: number;
@@ -9,6 +9,6 @@ export interface IMetricDb {
     maxValue?: number;
 }
 
-export type IMetricCreateDto = WithOptionalId<IMetricDb>;
+export type IMetricCreateDto = WithOptionalKeys<IMetricDb, 'id'>;
 
 export interface IMetric extends IMetricDb {}

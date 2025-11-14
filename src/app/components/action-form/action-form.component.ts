@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { IonItem, IonLabel, IonInput } from "@ionic/angular/standalone";
+import { IonItem, IonLabel, IonInput, IonCheckbox } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
 import { ValidationErrorDirective } from "src/app/directives/validation-error";
 import { CommonModule } from '@angular/common';
@@ -16,13 +16,14 @@ import { ActionService } from 'src/app/services/action.service';
 export type ActionForm = {
     name: string;
     tags: string;
+    isHidden: boolean;
 };
 
 @Component({
     selector: 'app-action-form',
     templateUrl: './action-form.component.html',
     styleUrls: ['./action-form.component.scss'],
-    imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent],
+    imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective, TagInputComponent, IonCheckbox],
 })
 export class ActionFormComponent implements OnInit {
     @Input() action?: IAction;
@@ -46,6 +47,7 @@ export class ActionFormComponent implements OnInit {
                 ],
             }],
             tags: ['', tagsValidator],
+            isHidden: [false],
         });
 
         if (this.action) {
@@ -59,6 +61,7 @@ export class ActionFormComponent implements OnInit {
         this.actionForm.patchValue({
             name: '',
             tags: '',
+            isHidden: false,
         });
     }
 
@@ -66,6 +69,7 @@ export class ActionFormComponent implements OnInit {
         this.actionForm.patchValue({
             name: action.name,
             tags: entitiesToString(action.tags),
+            isHidden: action.isHidden,
         });
     }
 }

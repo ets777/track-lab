@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 import { IAction } from "./action";
 import { ITag } from "./tag";
 import { IActivityLibraryItem } from "./activity-library-item";
@@ -13,7 +13,7 @@ export interface IActivityDb {
     comment?: string;
 }
 
-export type IActivityCreateDto = WithOptionalId<IActivityDb>;
+export type IActivityCreateDto = WithOptionalKeys<IActivityDb, 'id'>;
 
 export interface IActivity extends IActivityDb {
     actions: IAction[];

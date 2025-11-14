@@ -1,12 +1,13 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 import { ITag } from "./tag";
 
 export interface IActionDb {
     id: number;
     name: string;
+    isHidden: boolean;
 }
 
-export type IActionCreateDto = WithOptionalId<IActionDb>;
+export type IActionCreateDto = WithOptionalKeys<IActionDb, 'id' | 'isHidden'>;
 
 export interface IAction extends IActionDb {
     tags: ITag[];

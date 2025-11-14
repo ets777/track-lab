@@ -1,10 +1,10 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface ILibraryDb {
     id: number;
     name: string;
 }
 
-export type ILibraryCreateDto = WithOptionalId<ILibraryDb>;
+export type ILibraryCreateDto = WithOptionalKeys<ILibraryDb, 'id'>;
 
 export interface ILibrary extends ILibraryDb {}

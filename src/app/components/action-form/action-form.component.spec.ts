@@ -28,7 +28,7 @@ describe('ActionFormComponent', () => {
                 },
                 {
                     provide: TagService,
-                    useValue: { getAll: async () => [] },
+                    useValue: { getAllUnhidden: async () => [] },
                 },
             ],
         }).compileComponents();

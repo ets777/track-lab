@@ -13,7 +13,8 @@ export const databaseUpgrades = [
             `CREATE INDEX IF NOT EXISTS idxActivitiesDate ON activities(date);`,
             `CREATE TABLE IF NOT EXISTS actions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0
             );`,
             `CREATE INDEX IF NOT EXISTS idxActionsName ON actions(name);`,
             `CREATE TABLE IF NOT EXISTS activityActions (
@@ -38,7 +39,8 @@ export const databaseUpgrades = [
             );`,
             `CREATE TABLE IF NOT EXISTS tags (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0
             );`,
             `CREATE TABLE IF NOT EXISTS actionTags (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +85,7 @@ export const databaseUpgrades = [
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activityId INTEGER NOT NULL,
                 libraryItemId INTEGER NOT NULL,
+                isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0,
                 FOREIGN KEY(activityId) REFERENCES activities(id) ON DELETE CASCADE,
                 FOREIGN KEY(libraryItemId) REFERENCES libraryItems(id) ON DELETE CASCADE,
                 UNIQUE(activityId, libraryItemId)

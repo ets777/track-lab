@@ -24,14 +24,10 @@ export class TagInputComponent implements ControlValueAccessor, OnInit {
     showSuggestions = false;
     value: string = '';
 
-    constructor(
-        private tagService: TagService,
-    ) {
-
-    }
+    constructor(private tagService: TagService) { }
 
     async ngOnInit() {
-        const tags = await this.tagService.getAll();
+        const tags = await this.tagService.getAllUnhidden();
         this.allSuggestions = tags.map((tag) => tag.name);
     }
 

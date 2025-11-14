@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IActionLibraryDb {
     id: number;
@@ -6,6 +6,6 @@ export interface IActionLibraryDb {
     libraryId: number;
 }
 
-export type IActionLibraryCreateDto = WithOptionalId<IActionLibraryDb>;
+export type IActionLibraryCreateDto = WithOptionalKeys<IActionLibraryDb, 'id'>;
 
 export interface IActionLibrary extends IActionLibraryDb {}

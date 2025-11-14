@@ -1,4 +1,4 @@
-import { WithOptionalId } from "src/app/types/with-optional-id";
+import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
 export interface IAchievementDb {
     id: number;
@@ -12,6 +12,6 @@ export interface IAchievementDb {
     data?: string;
 }
 
-export type IAchievementCreateDto = WithOptionalId<IAchievementDb>;
+export type IAchievementCreateDto = WithOptionalKeys<IAchievementDb, 'id'>;
 
 export interface IAchievement extends IAchievementDb {}

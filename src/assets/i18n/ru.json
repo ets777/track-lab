@@ -307,5 +307,6 @@
   "TK_WRONG_PASSWORD": "Неверный пароль",
   "TK_WROTE": "Писал",
   "TK_YES": "Да",
-  "TK_YYYY_MM_DD": "гггг-мм-дд"
+  "TK_YYYY_MM_DD": "гггг-мм-дд",
+  "TK_HIDE_FROM_SEARCH": "Скрыть из поиска"
 }
