@@ -11,6 +11,7 @@ import { IActivityTagCreateDto, IActivityTagDb } from "src/app/db/models/activit
 import { ILibraryCreateDto, ILibraryDb } from "src/app/db/models/library";
 import { ILibraryItemCreateDto, ILibraryItemDb } from "src/app/db/models/library-item";
 import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
+import { IStreakCreateDto, IStreakDb } from "src/app/db/models/streak";
 import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 
 export interface ITable {
@@ -28,6 +29,7 @@ export interface ITable {
     libraryItems: ILibraryItemDb;
     libraries: ILibraryDb;
     metrics: IMetricDb;
+    streaks: IStreakDb;
 }
 
 export interface ICreateDto {
@@ -45,6 +47,7 @@ export interface ICreateDto {
     libraryItems: ILibraryItemDb | ILibraryItemCreateDto;
     libraries: ILibraryDb | ILibraryCreateDto;
     metrics: IMetricDb | IMetricCreateDto;
+    streaks: IStreakDb | IStreakCreateDto;
 }
 
 export type TableName = keyof ITable;

@@ -16,7 +16,6 @@ export const databaseUpgrades = [
                 name TEXT NOT NULL UNIQUE,
                 isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActionsName ON actions(name);`,
             `CREATE TABLE IF NOT EXISTS activityActions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activityId INTEGER NOT NULL,
@@ -25,7 +24,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(actionId) REFERENCES actions(id) ON DELETE CASCADE,
                 UNIQUE(activityId, actionId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActivityActionsActivityAction ON activityActions(activityId, actionId);`,
             `CREATE TABLE IF NOT EXISTS achievements (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 icon TEXT,
@@ -50,7 +48,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
                 UNIQUE(actionId, tagId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActionTagsActionTag ON actionTags(actionId, tagId);`,
             `CREATE TABLE IF NOT EXISTS activityTags (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activityId INTEGER NOT NULL,
@@ -59,7 +56,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
                 UNIQUE(activityId, tagId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActivityTagsActivityTag ON activityTags(activityId, tagId);`,
             `CREATE TABLE IF NOT EXISTS libraries (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE
@@ -71,7 +67,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(libraryId) REFERENCES libraries(id) ON DELETE CASCADE,
                 UNIQUE(libraryId, name)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxLibraryItemsLibraryId ON libraryItems(libraryId);`,
             `CREATE TABLE IF NOT EXISTS actionLibraries (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 actionId INTEGER NOT NULL,
@@ -80,7 +75,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(libraryId) REFERENCES libraries(id) ON DELETE CASCADE,
                 UNIQUE(actionId, libraryId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActionLibrariesActionLibrary ON actionLibraries(actionId, libraryId);`,
             `CREATE TABLE IF NOT EXISTS activityLibraryItems (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activityId INTEGER NOT NULL,
@@ -90,10 +84,11 @@ export const databaseUpgrades = [
                 FOREIGN KEY(libraryItemId) REFERENCES libraryItems(id) ON DELETE CASCADE,
                 UNIQUE(activityId, libraryItemId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActivityLibraryItemsActivityItem ON activityLibraryItems(activityId, libraryItemId);`,
             `CREATE TABLE IF NOT EXISTS metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
+                isBase INTEGER CHECK (isBase IN (0, 1)) DEFAULT 0,
+                isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0,
                 isInt INTEGER CHECK (isInt IN (0, 1)) DEFAULT 0,
                 unit TEXT,
                 minValue REAL,
@@ -108,7 +103,6 @@ export const databaseUpgrades = [
                 FOREIGN KEY(metricId) REFERENCES metrics(id) ON DELETE CASCADE,
                 UNIQUE(actionId, metricId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActionMetricsActionMetric ON actionMetrics(actionId, metricId);`,
             `CREATE TABLE IF NOT EXISTS activityMetrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activityId INTEGER NOT NULL,
@@ -118,7 +112,18 @@ export const databaseUpgrades = [
                 FOREIGN KEY(metricId) REFERENCES metrics(id) ON DELETE CASCADE,
                 UNIQUE(activityId, metricId)
             );`,
-            `CREATE INDEX IF NOT EXISTS idxActivityMetricsActivityMetric ON activityMetrics(activityId, metricId);`,
+            `CREATE TABLE IF NOT EXISTS streaks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tagId INTEGER,
+                actionId INTEGER,
+                libraryItemId INTEGER,
+                FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
+                FOREIGN KEY(actionId) REFERENCES actions(id) ON DELETE CASCADE,
+                FOREIGN KEY(libraryItemId) REFERENCES libraryItems(id) ON DELETE CASCADE,
+                UNIQUE(tagId),
+                UNIQUE(actionId),
+                UNIQUE(libraryItemId)
+            );`,
         ],
     },
 ];

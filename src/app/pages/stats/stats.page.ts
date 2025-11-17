@@ -35,6 +35,7 @@ export class StatsPage implements OnInit {
         id: 1,
         name: 'mood',
         isInt: true,
+        isHidden: false,
     };
 
     chartData!: ChartConfiguration<'line'>['data'];

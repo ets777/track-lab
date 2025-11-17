@@ -14,6 +14,7 @@ import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-m
 import { ILibraryItemCreateDto, ILibraryItemDb } from './models/library-item';
 import { ILibraryCreateDto, ILibraryDb } from './models/library';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
+import { IStreakCreateDto, IStreakDb } from './models/streak';
 
 export class MyAppDatabase extends Dexie {
     activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -31,6 +32,7 @@ export class MyAppDatabase extends Dexie {
     libraryItems!: Table<ILibraryItemDb, number, ILibraryItemCreateDto>;
     libraries!: Table<ILibraryDb, number, ILibraryCreateDto>;
     metrics!: Table<IMetricDb, number, IMetricCreateDto>;
+    streaks!: Table<IStreakDb, number, IStreakCreateDto>;
 
     constructor(databaseName: string) {
         super(databaseName);
@@ -112,7 +114,7 @@ export class MyAppDatabase extends Dexie {
             tags: '++id, name',
             actionTags: '++id, actionId, tagId, [actionId+tagId]',
             activityTags: '++id, activityId, tagId, [activityId+tagId]',
-            
+
             actionLibraries: '++id, [actionId+libraryId]',
             actionMetrics: '++id, [actionId+metricId]',
             activityLibraryItems: '++id, [activityId+libraryItemId]',
@@ -120,11 +122,36 @@ export class MyAppDatabase extends Dexie {
             libraryItems: '++id, name',
             libraries: '++id, name',
             metrics: '++id, name',
+            streaks: '++id, lastDate, actionId, tagId, libraryItemId',
         }).upgrade(async (tx) => {
             // 1. create 3 metrics - mood, energy, satiety
-            const moodMetricId = await tx.table('metrics').add({ name: 'TK_MOOD', isInt: true, minValue: 1, maxValue: 10 });
-            const energyMetricId = await tx.table('metrics').add({ name: 'TK_ENERGY', isInt: true, minValue: 1, maxValue: 10 });
-            const satietyMetricId = await tx.table('metrics').add({ name: 'TK_SATIETY', isInt: true, minValue: 1, maxValue: 10 });
+            const moodMetricId = await tx.table('metrics')
+                .add({ 
+                    name: 'TK_MOOD', 
+                    isInt: true, 
+                    minValue: 1, 
+                    maxValue: 10,
+                    isHidden: false,
+                    isBase: true,
+                });
+            const energyMetricId = await tx.table('metrics')
+                .add({ 
+                    name: 'TK_ENERGY', 
+                    isInt: true, 
+                    minValue: 1, 
+                    maxValue: 10,
+                    isHidden: false,
+                    isBase: true,
+                });
+            const satietyMetricId = await tx.table('metrics')
+                .add({ 
+                    name: 'TK_SATIETY', 
+                    isInt: true, 
+                    minValue: 1, 
+                    maxValue: 10,
+                    isHidden: false,
+                    isBase: true,
+                });
 
             // 2. create 1 library - emotions
             const emotionsLibraryId = await tx.table('libraries').add({ name: 'emotions' });
@@ -173,7 +200,11 @@ export class MyAppDatabase extends Dexie {
                                 name: emotionDto.name,
                                 libraryId: emotionsLibraryId,
                             });
-                            libraryItem = { id: itemId, name: emotionDto.name, libraryId: emotionsLibraryId };
+                            libraryItem = {
+                                id: itemId,
+                                name: emotionDto.name,
+                                libraryId: emotionsLibraryId,
+                            };
                         }
 
                         // create relation
