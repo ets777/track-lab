@@ -1,6 +1,6 @@
 .toast {
     position: fixed;
-    bottom: 20px;
+    bottom: calc(20px + var(--ion-safe-area-bottom));
     left: 50%;
     right: -10%;
     transform: translateX(-50%);
