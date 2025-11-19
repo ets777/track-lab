@@ -17,6 +17,10 @@ export const routes: Routes = [
         path: 'edit/:id',
         loadComponent: () => import('./pages/activity-edit/activity-edit.page').then(m => m.ActivityEditPage)
       },
+      {
+        path: 'view',
+        loadComponent: () => import('./pages/activity-view/activity-view.page').then(m => m.ActivityViewPage)
+      },
     ]
   },
   {
@@ -71,6 +75,36 @@ export const routes: Routes = [
       {
         path: 'library-item',
         loadComponent: () => import('./pages/library-item-stats/library-item-stats.page').then(m => m.LibraryItemStatsPage)
+      },
+    ],
+  },
+  {
+    path: 'metric',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/metric-list/metric-list.page').then(m => m.MetricListPage)
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/metric-edit/metric-edit.page').then(m => m.MetricEditPage)
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/metric-add/metric-add.page').then(m => m.MetricAddPage)
+      },
+    ],
+  },
+  {
+    path: 'streak',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/streak-list/streak-list.page').then(m => m.StreakListPage)
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/streak-add/streak-add.page').then(m => m.StreakAddPage)
       },
     ],
   },

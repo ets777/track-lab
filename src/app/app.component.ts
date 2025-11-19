@@ -20,116 +20,116 @@ import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: 'app.component.html',
-    imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
+  selector: 'app-root',
+  templateUrl: 'app.component.html',
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
 })
 export class AppComponent implements OnInit {
-    @ViewChild(IonRouterOutlet, { static: true }) routerOutlet!: IonRouterOutlet;
+  @ViewChild(IonRouterOutlet, { static: true }) routerOutlet!: IonRouterOutlet;
 
-    constructor(
-        private translate: TranslateService,
-        private achievementService: AchievementService,
-        private platform: Platform,
-        private backupService: BackupService,
-        private router: Router,
-        private navigationService: NavigationService,
-    ) {
-        this.setAdaptiveStatusBarColor();
-    }
-    
-    async ngOnInit() {
-        await this.setLanguages();
-        await this.initializeApp();
-    }
+  constructor(
+    private translate: TranslateService,
+    private achievementService: AchievementService,
+    private platform: Platform,
+    private backupService: BackupService,
+    private router: Router,
+    private navigationService: NavigationService,
+  ) {
+    this.setAdaptiveStatusBarColor();
+  }
 
-    async initializeApp() {
-        this.router.events.pipe(filter(e => e instanceof NavigationEnd))
-            .subscribe((e: NavigationEnd) => {
-                this.navigationService.pushUrl(e.urlAfterRedirects);
-            });
+  async ngOnInit() {
+    await this.setLanguages();
+    await this.initializeApp();
+  }
 
-        await this.platform.ready();
-        await this.achievementService.init();
-        await this.autoBackup();
+  async initializeApp() {
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: NavigationEnd) => {
+        this.navigationService.pushUrl(e.urlAfterRedirects);
+      });
 
-        this.platform.backButton.subscribeWithPriority(5, async () => {
-            await this.navigationService.goBack();
-        });
-    }
+    await this.platform.ready();
+    await this.achievementService.init();
+    await this.autoBackup();
 
-    setAdaptiveStatusBarColor() {
-        if (!Capacitor.isNativePlatform()) {
-            return;
-        }
+    this.platform.backButton.subscribeWithPriority(5, async () => {
+      await this.navigationService.goBack();
+    });
+  }
 
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        const applyTheme = () => {
-            if (mediaQuery.matches) {
-                StatusBar.setBackgroundColor({ color: '#000000' });
-            } else {
-                StatusBar.setBackgroundColor({ color: '#ffffff' });
-            }
-        };
-
-        applyTheme();
-
-        mediaQuery.addEventListener('change', applyTheme);
+  setAdaptiveStatusBarColor() {
+    if (!Capacitor.isNativePlatform()) {
+      return;
     }
 
-    async setLanguages() {
-        const languages = ['en', 'ru'];
-        const defaultLanguage = languages[0];
-        this.translate.addLangs(languages);
-        this.translate.setFallbackLang(defaultLanguage);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-        let systemLanguage = (await Device.getLanguageCode())?.value;
+    const applyTheme = () => {
+      if (mediaQuery.matches) {
+        StatusBar.setBackgroundColor({ color: '#000000' });
+      } else {
+        StatusBar.setBackgroundColor({ color: '#ffffff' });
+      }
+    };
 
-        if (!languages.includes(systemLanguage)) {
-            systemLanguage = '';
-        }
+    applyTheme();
 
-        let browserLanguage = this.translate.getBrowserLang() ?? '';
+    mediaQuery.addEventListener('change', applyTheme);
+  }
 
-        if (!browserLanguage.includes(systemLanguage)) {
-            browserLanguage = '';
-        }
+  async setLanguages() {
+    const languages = ['en', 'ru'];
+    const defaultLanguage = languages[0];
+    this.translate.addLangs(languages);
+    this.translate.setFallbackLang(defaultLanguage);
 
-        const savedLanguage = (await Preferences.get({ key: 'language' }))?.value;
+    let systemLanguage = (await Device.getLanguageCode())?.value;
 
-        this.translate.use(
-            savedLanguage
-            || browserLanguage
-            || systemLanguage
-            || defaultLanguage
-        );
+    if (!languages.includes(systemLanguage)) {
+      systemLanguage = '';
     }
 
-    async autoBackup() {
-        const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
+    let browserLanguage = this.translate.getBrowserLang() ?? '';
 
-        if (!autobackupPeriod || autobackupPeriod == autoBackupOption.none) {
-            return;
-        }
-
-        const lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value;
-        let needBackup = false;
-
-        if (lastBackupDate) {
-            const currentDate = new Date();
-            const daysDiff = differenceInDays(currentDate, new Date(lastBackupDate));
-            const monthsDiff = differenceInMonths(currentDate, new Date(lastBackupDate));
-
-            needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
-                || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
-                || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0;
-        } else {
-            needBackup = true;
-        }
-
-        if (needBackup) {
-            this.backupService.backup();
-        }
+    if (!browserLanguage.includes(systemLanguage)) {
+      browserLanguage = '';
     }
+
+    const savedLanguage = (await Preferences.get({ key: 'language' }))?.value;
+
+    this.translate.use(
+      savedLanguage
+      || browserLanguage
+      || systemLanguage
+      || defaultLanguage
+    );
+  }
+
+  async autoBackup() {
+    const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
+
+    if (!autobackupPeriod || autobackupPeriod == autoBackupOption.none) {
+      return;
+    }
+
+    const lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value;
+    let needBackup = false;
+
+    if (lastBackupDate) {
+      const currentDate = new Date();
+      const daysDiff = differenceInDays(currentDate, new Date(lastBackupDate));
+      const monthsDiff = differenceInMonths(currentDate, new Date(lastBackupDate));
+
+      needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
+        || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
+        || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0;
+    } else {
+      needBackup = true;
+    }
+
+    if (needBackup) {
+      this.backupService.backup();
+    }
+  }
 }
