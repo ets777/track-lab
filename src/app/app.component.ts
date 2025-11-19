@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -25,16 +25,16 @@ import { NavigationService } from './services/navigation.service';
   imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
 })
 export class AppComponent implements OnInit {
+  private translate = inject(TranslateService);
+  private achievementService = inject(AchievementService);
+  private platform = inject(Platform);
+  private backupService = inject(BackupService);
+  private router = inject(Router);
+  private navigationService = inject(NavigationService);
+
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet!: IonRouterOutlet;
 
-  constructor(
-    private translate: TranslateService,
-    private achievementService: AchievementService,
-    private platform: Platform,
-    private backupService: BackupService,
-    private router: Router,
-    private navigationService: NavigationService,
-  ) {
+  constructor() {
     this.setAdaptiveStatusBarColor();
   }
 

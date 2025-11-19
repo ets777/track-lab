@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
@@ -14,16 +14,11 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
   styleUrls: ['./tag-add.page.scss'],
   imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagFormComponent, ReactiveFormsModule, BackButtonComponent],
 })
-export class TagAddPage implements OnInit {
+export class TagAddPage {
+  private tagService = inject(TagService);
+  private toastService = inject(ToastService);
+
   @ViewChild('addFormRef') addFormRef!: TagFormComponent;
-
-  constructor(
-    private tagService: TagService,
-    private toastService: ToastService,
-  ) { }
-
-  ngOnInit() {
-  }
 
   async addTag(): Promise<void> {
     if (!this.isFormValid()) {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
@@ -26,20 +26,18 @@ export enum autoBackupOption {
   imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption],
 })
 export class SettingsPage implements OnInit {
+  private markdownParserService = inject(MarkdownParserService);
+  private translate = inject(TranslateService);
+  private backupService = inject(BackupService);
+  private hookService = inject(HookService);
+  private toastService = inject(ToastService);
+
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
   autoBackupOption = autoBackupOption;
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;
   password = '';
   lastBackupDate = '';
-
-  constructor(
-    private markdownParserService: MarkdownParserService,
-    private translate: TranslateService,
-    private backupService: BackupService,
-    private hookService: HookService,
-    private toastService: ToastService,
-  ) { }
 
   async ngOnInit() {
     const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;

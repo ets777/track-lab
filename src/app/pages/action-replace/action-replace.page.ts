@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonCheckbox, IonItem } from '@ionic/angular/standalone';
@@ -15,122 +15,122 @@ import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-    selector: 'app-action-replace',
-    templateUrl: './action-replace.page.html',
-    styleUrls: ['./action-replace.page.scss'],
-    imports: [IonItem, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective, IonCheckbox],
+  selector: 'app-action-replace',
+  templateUrl: './action-replace.page.html',
+  styleUrls: ['./action-replace.page.scss'],
+  imports: [IonItem, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective, IonCheckbox],
 })
 export class ActionReplacePage implements OnInit {
-    public replaceForm!: FormGroup;
-    public suggestions: Selectable<IAction>[] = [];
+  private route = inject(ActivatedRoute);
+  private formBuilder = inject(FormBuilder);
+  private actionService = inject(ActionService);
+  private activityActionService = inject(ActivityActionService);
+  private alertController = inject(AlertController);
+  private translate = inject(TranslateService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
 
-    hasRelation: boolean = false;
-    currentActionId: number;
-    currentAction?: IAction;
+  public replaceForm!: FormGroup;
+  public suggestions: Selectable<IAction>[] = [];
 
-    constructor(
-        private route: ActivatedRoute,
-        private formBuilder: FormBuilder,
-        private actionService: ActionService,
-        private activityActionService: ActivityActionService,
-        private alertController: AlertController,
-        private translate: TranslateService,
-        private router: Router,
-        private toastService: ToastService,
-    ) {
-        this.currentActionId = Number(this.route.snapshot.paramMap.get('id'));
+  hasRelation: boolean = false;
+  currentActionId: number;
+  currentAction?: IAction;
+
+  constructor() {
+    this.currentActionId = Number(this.route.snapshot.paramMap.get('id'));
+  }
+
+  async ngOnInit() {
+    this.currentAction = await this.actionService.getEnriched(
+      this.currentActionId
+    );
+
+    const relations = await this.activityActionService.getByActionId(this.currentActionId);
+
+    this.hasRelation = !!(relations.length);
+
+    this.replaceForm = this.formBuilder.group({
+      newAction: [
+        null,
+        [
+          Validators.required,
+          replacementValidator(this.currentAction),
+        ],
+      ],
+      deleteOldAction: [false],
+    });
+
+    await this.loadSuggestions();
+  }
+
+  async replaceAction() {
+    const newActionId = this.replaceForm.value.newAction.id;
+
+    if (!this.replaceForm.value.newAction.id || !this.currentActionId) {
+      return;
     }
 
-    async ngOnInit() {
-        this.currentAction = await this.actionService.getEnriched(
-            this.currentActionId
-        );
+    const confirmation = await this.askConfirmation();
 
-        const relations = await this.activityActionService.getByActionId(this.currentActionId);
-
-        this.hasRelation = !!(relations.length);
-        
-        this.replaceForm = this.formBuilder.group({
-            newAction: [
-                null,
-                [
-                    Validators.required, 
-                    replacementValidator(this.currentAction),
-                ],
-            ],
-            deleteOldAction: [false],
-        });
-
-        await this.loadSuggestions();
+    if (!confirmation) {
+      return;
     }
 
-    async replaceAction() {
-        const newActionId = this.replaceForm.value.newAction.id;
+    await this.activityActionService.replaceAction(
+      this.currentActionId,
+      newActionId,
+    );
 
-        if (!this.replaceForm.value.newAction.id || !this.currentActionId) {
-            return;
-        }
-
-        const confirmation = await this.askConfirmation();
-
-        if (!confirmation) {
-            return;
-        }
-
-        await this.activityActionService.replaceAction(
-            this.currentActionId,
-            newActionId,
-        );
-
-        if (this.replaceForm.value.deleteOldAction) {
-            await this.actionService.deleteWithRelations(this.currentActionId);
-        }
-
-        this.toastService.enqueue({
-            title: 'TK_ACTION_REPLACED_SUCCESSFULLY',
-            type: 'success',
-        });
-
-        await this.router.navigate(
-            ['/library'],
-        );
+    if (this.replaceForm.value.deleteOldAction) {
+      await this.actionService.deleteWithRelations(this.currentActionId);
     }
 
-    async askConfirmation(): Promise<boolean> {
-        const alert = await this.alertController.create({
-            header: this.translate.instant('TK_CONFIRMATION'),
-            subHeader: this.translate.instant('TK_THE_REPLACEMENT_PROCESS_IS_IRREVERSIBLE_DO_YOU_WANT_TO_CONTINUE'),
-            buttons: [
-                { text: this.translate.instant('TK_YES'), role: 'yes' },
-                { text: this.translate.instant('TK_NO'), role: 'no' },
-            ],
-        });
+    this.toastService.enqueue({
+      title: 'TK_ACTION_REPLACED_SUCCESSFULLY',
+      type: 'success',
+    });
 
-        await alert.present();
+    await this.router.navigate(
+      ['/library'],
+    );
+  }
 
-        const { role } = await alert.onDidDismiss();
+  async askConfirmation(): Promise<boolean> {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_CONFIRMATION'),
+      subHeader: this.translate.instant('TK_THE_REPLACEMENT_PROCESS_IS_IRREVERSIBLE_DO_YOU_WANT_TO_CONTINUE'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
 
-        return role === 'yes';
-    }
+    await alert.present();
 
-    isFormValid() {
-        return this.replaceForm?.valid;
-    }
+    const { role } = await alert.onDidDismiss();
 
-    async loadSuggestions() {
-        const actions = await this.actionService.getAllEnriched();
+    return role === 'yes';
+  }
 
-        this.suggestions = actions.map((item, index) => ({
-            num: index,
-            title: item.name,
-            item,
-        }));
-    }
+  isFormValid() {
+    return this.replaceForm?.valid;
+  }
 
-    getFormText() {
-        return this.translate.instant(
-            'TK_REPLACE_ALL_OCCURRENCES_OF_THE_ACTION_ACTIONNAME_WITH',
-            { actionName: this.currentAction?.name }
-        );
-    }
+  async loadSuggestions() {
+    const actions = await this.actionService.getAllEnriched();
+
+    this.suggestions = actions.map((item, index) => ({
+      num: index,
+      title: item.name,
+      item,
+    }));
+  }
+
+  getFormText() {
+    return this.translate.instant(
+      'TK_REPLACE_ALL_OCCURRENCES_OF_THE_ACTION_ACTIONNAME_WITH',
+      { actionName: this.currentAction?.name }
+    );
+  }
 }

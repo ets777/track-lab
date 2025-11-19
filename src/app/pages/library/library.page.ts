@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonSegmentButton, IonLabel, IonList, IonItem, IonSegment, IonSegmentView, IonSegmentContent, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton } from '@ionic/angular/standalone';
@@ -15,254 +15,252 @@ import { ActivityActionService } from 'src/app/services/activity-action.service'
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-    selector: 'app-library',
-    templateUrl: './library.page.html',
-    styleUrls: ['./library.page.scss'],
-    standalone: true,
-    imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent, TagsComponent]
+  selector: 'app-library',
+  templateUrl: './library.page.html',
+  styleUrls: ['./library.page.scss'],
+  standalone: true,
+  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent, TagsComponent]
 })
 export class LibraryPage {
-    @ViewChild(IonSegment) segment!: IonSegment;
+  private actionService = inject(ActionService);
+  private activityActionService = inject(ActivityActionService);
+  private tagService = inject(TagService);
+  private translate = inject(TranslateService);
+  private router = inject(Router);
+  private alertController = inject(AlertController);
+  private toastService = inject(ToastService);
 
-    tags: ITag[] = [];
-    actions: IAction[] = [];
+  @ViewChild(IonSegment) segment!: IonSegment;
 
-    public actionActionSheetButtons = [
-        {
-            text: this.translate.instant('TK_VIEW'),
-            data: {
-                action: 'view',
-            },
-        },
-        {
-            text: this.translate.instant('TK_EDIT'),
-            data: {
-                action: 'edit',
-            },
-        },
-        {
-            text: this.translate.instant('TK_REPLACE'),
-            data: {
-                action: 'replace',
-            },
-        },
-        {
-            text: this.translate.instant('TK_DELETE'),
-            role: 'destructive',
-            data: {
-                action: 'delete',
-            },
-        },
-    ];
+  tags: ITag[] = [];
+  actions: IAction[] = [];
 
-    public tagActionSheetButtons = [
-        {
-            text: this.translate.instant('TK_VIEW'),
-            data: {
-                action: 'view',
-            },
-        },
-        {
-            text: this.translate.instant('TK_EDIT'),
-            data: {
-                action: 'edit',
-            },
-        },
-        {
-            text: this.translate.instant('TK_DELETE'),
-            role: 'destructive',
-            data: {
-                action: 'delete',
-            },
-        },
-    ];
+  public actionActionSheetButtons = [
+    {
+      text: this.translate.instant('TK_VIEW'),
+      data: {
+        action: 'view',
+      },
+    },
+    {
+      text: this.translate.instant('TK_EDIT'),
+      data: {
+        action: 'edit',
+      },
+    },
+    {
+      text: this.translate.instant('TK_REPLACE'),
+      data: {
+        action: 'replace',
+      },
+    },
+    {
+      text: this.translate.instant('TK_DELETE'),
+      role: 'destructive',
+      data: {
+        action: 'delete',
+      },
+    },
+  ];
 
-    constructor(
-        private actionService: ActionService,
-        private activityActionService: ActivityActionService,
-        private tagService: TagService,
-        private translate: TranslateService,
-        private router: Router,
-        private alertController: AlertController,
-        private toastService: ToastService,
-    ) { }
+  public tagActionSheetButtons = [
+    {
+      text: this.translate.instant('TK_VIEW'),
+      data: {
+        action: 'view',
+      },
+    },
+    {
+      text: this.translate.instant('TK_EDIT'),
+      data: {
+        action: 'edit',
+      },
+    },
+    {
+      text: this.translate.instant('TK_DELETE'),
+      role: 'destructive',
+      data: {
+        action: 'delete',
+      },
+    },
+  ];
 
-    async ionViewDidEnter() {
+  async ionViewDidEnter() {
+    await this.fetchActions();
+    await this.fetchTags();
+  }
+
+  async fetchActions() {
+    this.actions = (await this.actionService.getAllEnriched())
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async fetchTags() {
+    this.tags = (await this.tagService.getAll())
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async doActionAction(event: CustomEvent<OverlayEventDetail>, actionId: number) {
+    const action = event.detail.data?.action;
+
+    switch (action) {
+      case 'view':
+        await this.router.navigate(['/action', actionId]);
+        break;
+      case 'delete':
+        await this.deleteAction(actionId);
+        break;
+      case 'replace':
+        await this.replaceAction(actionId);
+        break;
+      case 'edit':
+        await this.router.navigate(['/action/edit', actionId]);
+        break;
+      default:
+        break;
+    }
+  }
+
+  async doTagAction(event: CustomEvent<OverlayEventDetail>, tagId: number) {
+    const action = event.detail.data?.action;
+
+    switch (action) {
+      case 'view':
+        await this.router.navigate(['/tag', tagId]);
+        break;
+      case 'delete':
+        await this.deleteTag(tagId);
+        break;
+      case 'edit':
+        await this.router.navigate(['/tag/edit', tagId]);
+        break;
+      default:
+        break;
+    }
+  }
+
+  async deleteAction(actionId: number) {
+    const relations = await this.activityActionService.getByActionId(actionId);
+
+    if (relations.length) {
+      const answer = await this.showDeletionError();
+
+      if (answer == 'replace') {
+        await this.goToReplacePage(actionId);
+      }
+
+      return;
+    }
+
+    const confirmation = await this.confirm();
+
+    if (confirmation) {
+      await this.actionService.deleteWithRelations(actionId);
+
+      this.toastService.enqueue({
+        title: 'TK_ACTION_DELETED_SUCCESSFULLY',
+        type: 'success',
+      });
+
+      await this.fetchActions();
+    }
+  }
+
+  async replaceAction(actionId: number) {
+    const relations = await this.activityActionService.getByActionId(actionId);
+
+    if (!relations.length) {
+      const answer = await this.showReplacementError();
+
+      if (answer == 'delete') {
+        await this.actionService.deleteWithRelations(actionId);
         await this.fetchActions();
-        await this.fetchTags();
+      }
+
+      return;
     }
 
-    async fetchActions() {
-        this.actions = (await this.actionService.getAllEnriched())
-            .sort((a, b) => a.name.localeCompare(b.name));
+    this.goToReplacePage(actionId);
+  }
+
+  async deleteTag(tagId: number) {
+    const confirmation = await this.confirm();
+
+    if (confirmation) {
+      await this.tagService.deleteWithRelations(tagId);
+
+      this.toastService.enqueue({
+        title: 'TK_TAG_DELETED_SUCCESSFULLY',
+        type: 'success',
+      });
+
+      await this.fetchTags();
+    }
+  }
+
+  async goToReplacePage(actionId: number) {
+    await this.router.navigate(['/action/replace', actionId]);
+  }
+
+  async showDeletionError() {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_CAN_T_PROCEED'),
+      subHeader: this.translate.instant('TK_THE_ACTION_CAN_T_BE_DELETED_BECAUSE_IT_HAS_OCCURRENCES_IN_THE_ACTIVITIES'),
+      buttons: [
+        { text: this.translate.instant('TK_REPLACE'), role: 'replace' },
+        { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
+      ],
+    });
+
+    await alert.present();
+
+    const { role } = await alert.onDidDismiss();
+
+    return role;
+  }
+
+  async showReplacementError() {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_CAN_T_PROCEED'),
+      subHeader: this.translate.instant('TK_THE_ACTION_WAS_NEVER_PERFORMED_THERE_IS_NOTHING_TO_REPLACE'),
+      buttons: [
+        { text: this.translate.instant('TK_DELETE'), role: 'delete' },
+        { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
+      ],
+    });
+
+    await alert.present();
+
+    const { role } = await alert.onDidDismiss();
+
+    return role;
+  }
+
+  async confirm() {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_ARE_YOU_SURE'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+
+    await alert.present();
+
+    const { role } = await alert.onDidDismiss();
+
+    return role === 'yes';
+  }
+
+  async goToAddPage() {
+    const selectedSegment = this.segment.value;
+
+    if (selectedSegment == 'actions') {
+      await this.router.navigate(['/action/add']);
     }
 
-    async fetchTags() {
-        this.tags = (await this.tagService.getAll())
-            .sort((a, b) => a.name.localeCompare(b.name));
+    if (selectedSegment == 'tags') {
+      await this.router.navigate(['/tag/add']);
     }
-
-    async doActionAction(event: CustomEvent<OverlayEventDetail>, actionId: number) {
-        const action = event.detail.data?.action;
-
-        switch (action) {
-            case 'view':
-                await this.router.navigate(['/action', actionId]);
-                break;
-            case 'delete':
-                await this.deleteAction(actionId);
-                break;
-            case 'replace':
-                await this.replaceAction(actionId);
-                break;
-            case 'edit':
-                await this.router.navigate(['/action/edit', actionId]);
-                break;
-            default:
-                break;
-        }
-    }
-
-    async doTagAction(event: CustomEvent<OverlayEventDetail>, tagId: number) {
-        const action = event.detail.data?.action;
-
-        switch (action) {
-            case 'view':
-                await this.router.navigate(['/tag', tagId]);
-                break;
-            case 'delete':
-                await this.deleteTag(tagId);
-                break;
-            case 'edit':
-                await this.router.navigate(['/tag/edit', tagId]);
-                break;
-            default:
-                break;
-        }
-    }
-
-    async deleteAction(actionId: number) {
-        const relations = await this.activityActionService.getByActionId(actionId);
-
-        if (relations.length) {
-            const answer = await this.showDeletionError();
-
-            if (answer == 'replace') {
-                await this.goToReplacePage(actionId);
-            }
-
-            return;
-        }
-
-        const confirmation = await this.confirm();
-
-        if (confirmation) {
-            await this.actionService.deleteWithRelations(actionId);
-
-            this.toastService.enqueue({
-                title: 'TK_ACTION_DELETED_SUCCESSFULLY',
-                type: 'success',
-            });
-
-            await this.fetchActions();
-        }
-    }
-
-    async replaceAction(actionId: number) {
-        const relations = await this.activityActionService.getByActionId(actionId);
-
-        if (!relations.length) {
-            const answer = await this.showReplacementError();
-
-            if (answer == 'delete') {
-                await this.actionService.deleteWithRelations(actionId);
-                await this.fetchActions();
-            }
-
-            return;
-        }
-
-        this.goToReplacePage(actionId);
-    }
-
-    async deleteTag(tagId: number) {
-        const confirmation = await this.confirm();
-
-        if (confirmation) {
-            await this.tagService.deleteWithRelations(tagId);
-
-            this.toastService.enqueue({
-                title: 'TK_TAG_DELETED_SUCCESSFULLY',
-                type: 'success',
-            });
-
-            await this.fetchTags();
-        }
-    }
-
-    async goToReplacePage(actionId: number) {
-        await this.router.navigate(['/action/replace', actionId]);
-    }
-
-    async showDeletionError() {
-        const alert = await this.alertController.create({
-            header: this.translate.instant('TK_CAN_T_PROCEED'),
-            subHeader: this.translate.instant('TK_THE_ACTION_CAN_T_BE_DELETED_BECAUSE_IT_HAS_OCCURRENCES_IN_THE_ACTIVITIES'),
-            buttons: [
-                { text: this.translate.instant('TK_REPLACE'), role: 'replace' },
-                { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
-            ],
-        });
-
-        await alert.present();
-
-        const { role } = await alert.onDidDismiss();
-
-        return role;
-    }
-
-    async showReplacementError() {
-        const alert = await this.alertController.create({
-            header: this.translate.instant('TK_CAN_T_PROCEED'),
-            subHeader: this.translate.instant('TK_THE_ACTION_WAS_NEVER_PERFORMED_THERE_IS_NOTHING_TO_REPLACE'),
-            buttons: [
-                { text: this.translate.instant('TK_DELETE'), role: 'delete' },
-                { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
-            ],
-        });
-
-        await alert.present();
-
-        const { role } = await alert.onDidDismiss();
-
-        return role;
-    }
-
-    async confirm() {
-        const alert = await this.alertController.create({
-            header: this.translate.instant('TK_ARE_YOU_SURE'),
-            buttons: [
-                { text: this.translate.instant('TK_YES'), role: 'yes' },
-                { text: this.translate.instant('TK_NO'), role: 'no' },
-            ],
-        });
-
-        await alert.present();
-
-        const { role } = await alert.onDidDismiss();
-
-        return role === 'yes';
-    }
-
-    async goToAddPage() {
-        const selectedSegment = this.segment.value;
-
-        if (selectedSegment == 'actions') {
-            await this.router.navigate(['/action/add']);
-        }
-
-        if (selectedSegment == 'tags') {
-            await this.router.navigate(['/tag/add']);
-        }
-    }
+  }
 }

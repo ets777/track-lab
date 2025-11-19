@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { IonPopover } from "@ionic/angular/standalone";
 import { Subscription } from 'rxjs';
 import { TooltipService } from 'src/app/services/tooltip.service';
@@ -10,13 +10,13 @@ import { TooltipService } from 'src/app/services/tooltip.service';
   imports: [IonPopover, ],
 })
 export class TooltipComponent implements OnInit, OnDestroy {
+  private tooltip = inject(TooltipService);
+
   isOpen = false;
   event?: Event;
   message = '';
 
   private sub?: Subscription;
-
-  constructor(private tooltip: TooltipService) { }
 
   ngOnInit() {
     this.sub = this.tooltip.state$.subscribe((state) => {

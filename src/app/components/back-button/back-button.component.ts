@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { IonButton, IonIcon } from "@ionic/angular/standalone";
 import { NavigationService } from 'src/app/services/navigation.service';
 
@@ -8,13 +8,8 @@ import { NavigationService } from 'src/app/services/navigation.service';
   styleUrls: ['./back-button.component.scss'],
   imports: [IonIcon, IonButton],
 })
-export class BackButtonComponent implements OnInit {
-
-  constructor(
-    private navigationService: NavigationService,
-  ) { }
-
-  ngOnInit() {}
+export class BackButtonComponent {
+  private navigationService = inject(NavigationService);
 
   goToBackUrl() {
     this.navigationService.goBack();

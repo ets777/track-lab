@@ -1,14 +1,14 @@
 <ion-header>
-    <ion-toolbar>
-        <app-back-button slot="start"></app-back-button>
-        <ion-title>{{ 'TK_REPLACE' | translate }} {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
-        <ion-buttons slot="end">
-            <ion-button
-                (click)="replaceAction()"
-                [disabled]="!isFormValid()"
-            >{{ 'TK_REPLACE' | translate }}</ion-button>
-        </ion-buttons>
-    </ion-toolbar>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_REPLACE' | translate }} {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="replaceAction()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_REPLACE' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
@@ -20,7 +20,7 @@
         
             <form [formGroup]="replaceForm">
                 <app-select-search 
-                    validationError
+                    appValidationError
                     formControlName="newAction"
                     label="TK_ACTION"
                     [suggestions]="suggestions"

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
@@ -14,16 +14,11 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
   styleUrls: ['./action-add.page.scss'],
   imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActionFormComponent, ReactiveFormsModule, BackButtonComponent],
 })
-export class ActionAddPage implements OnInit {
-  @ViewChild('addFormRef') addFormRef!: ActionFormComponent;
-  
-  constructor(
-    private actionService: ActionService,
-    private toastService: ToastService,
-  ) { }
+export class ActionAddPage {
+  private actionService = inject(ActionService);
+  private toastService = inject(ToastService);
 
-  ngOnInit() {
-  }
+  @ViewChild('addFormRef') addFormRef!: ActionFormComponent;
 
   async addAction(): Promise<void> {
     if (!this.isFormValid()) {

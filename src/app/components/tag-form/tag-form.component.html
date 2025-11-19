@@ -1,12 +1,11 @@
 <form [formGroup]="tagForm">
-    <ion-item>
-        <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-        <ion-input validationError formControlName="name" name="name"></ion-input>
-    </ion-item>
-
-    <ion-item>
-        <ion-checkbox labelPlacement="end" formControlName="isHidden" name="isHidden">
-            {{ 'TK_HIDE_FROM_SEARCH' | translate }}
-        </ion-checkbox>
-    </ion-item>
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+    <ion-input appValidationError formControlName="name" name="name"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-checkbox labelPlacement="end" formControlName="isHidden" name="isHidden">
+      {{ 'TK_HIDE_FROM_SEARCH' | translate }}
+    </ion-checkbox>
+  </ion-item>
 </form>

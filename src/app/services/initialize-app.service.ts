@@ -1,43 +1,39 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import { SQLiteService } from './db/sqlite.service';
 import { SQLiteInitService } from './db/sqlite-init.service';
 
 @Injectable()
 export class InitializeAppService {
-    isAppInit: boolean = false;
-    platform!: string;
+  private sqliteService = inject(SQLiteService);
+  private sqliteInitService = inject(SQLiteInitService);
 
-    constructor(
-        private sqliteService: SQLiteService,
-        private sqliteInitService: SQLiteInitService,
-    ) {
+  isAppInit: boolean = false;
+  platform!: string;
 
+  async initializeApp() {
+    const isPluginInitialized = await this.sqliteService.initializePlugin();
+
+    if (!isPluginInitialized) {
+      return;
     }
 
-    async initializeApp() {
-        const isPluginInitialized = await this.sqliteService.initializePlugin();
+    this.platform = this.sqliteService.platform;
+    try {
+      if (this.sqliteService.platform === 'web') {
+        await this.sqliteService.initWebStore();
+      }
 
-        if (!isPluginInitialized) {
-            return;
-        }
+      await this.sqliteInitService.initializeDatabase();
 
-        this.platform = this.sqliteService.platform;
-        try {
-            if (this.sqliteService.platform === 'web') {
-                await this.sqliteService.initWebStore();
-            }
+      if (this.sqliteService.platform === 'web') {
+        await this.sqliteService.saveToStore();
+      }
 
-            await this.sqliteInitService.initializeDatabase();
-
-            if (this.sqliteService.platform === 'web') {
-                await this.sqliteService.saveToStore();
-            }
-
-            this.isAppInit = true;
-        } catch (error) {
-            console.log(`initializeAppError: ${error}`);
-        }
+      this.isAppInit = true;
+    } catch (error) {
+      console.log(`initializeAppError: ${error}`);
     }
+  }
 
 }

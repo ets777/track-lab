@@ -5,7 +5,7 @@
   <ion-item>
     <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
     <ion-input
-      validationError
+      appValidationError
       placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="startDate"
       [maskito]="dateMask"
@@ -17,7 +17,7 @@
   <ion-item>
     <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
     <ion-input
-      validationError
+      appValidationError
       placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
       formControlName="endDate"
       [maskito]="dateMask"

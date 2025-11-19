@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonActionSheet } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,12 @@ import { ActivityListComponent } from 'src/app/components/activity-list/activity
   imports: [IonActionSheet, IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent],
 })
 export class ActivityListPage {
+  private activityService = inject(ActivityService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private markdownParserService = inject(MarkdownParserService);
+  private translate = inject(TranslateService);
+
   
   activities: IActivity[] = [];
   currentDate: string = '';
@@ -29,14 +35,6 @@ export class ActivityListPage {
       },
     },
   ];
-
-  constructor(
-    private activityService: ActivityService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private markdownParserService: MarkdownParserService,
-    private translate: TranslateService,
-  ) { }
 
   async ionViewDidEnter() {
     let date = this.route.snapshot.queryParamMap.get('date');

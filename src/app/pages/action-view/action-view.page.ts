@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -23,6 +23,11 @@ import { getTimeString } from 'src/app/functions/string';
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent, TagsComponent],
 })
 export class ActionViewPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private actionService = inject(ActionService);
+  private activityService = inject(ActivityService);
+  private translate = inject(TranslateService);
+
   actionId: number;
   action?: IAction;
   totalTimeMinutes: number = 0;
@@ -32,12 +37,7 @@ export class ActionViewPage implements OnInit {
     activities: IActivity[],
   }[] = [];
 
-  constructor(
-    private route: ActivatedRoute,
-    private actionService: ActionService,
-    private activityService: ActivityService,
-    private translate: TranslateService,
-  ) {
+  constructor() {
     this.actionId = Number(this.route.snapshot.paramMap.get('id'));
   }
 

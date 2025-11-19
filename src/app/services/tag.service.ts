@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ITagCreateDto } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
@@ -8,13 +8,14 @@ import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class TagService extends DatabaseService<'tags'> {
+  private activityTagService = inject(ActivityTagService);
+  private actionTagService = inject(ActionTagService);
+
   tableName: 'tags' = 'tags';
 
-  constructor(
-    private activityTagService: ActivityTagService,
-    private actionTagService: ActionTagService,
-    adapter: DatabaseRouter,
-  ) {
+  constructor() {
+    const adapter = inject(DatabaseRouter);
+
     super(adapter);
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
@@ -11,49 +11,49 @@ import { ActionService } from 'src/app/services/action.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-    selector: 'app-action-edit',
-    templateUrl: './action-edit.page.html',
-    styleUrls: ['./action-edit.page.scss'],
-    imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, ActionFormComponent],
+  selector: 'app-action-edit',
+  templateUrl: './action-edit.page.html',
+  styleUrls: ['./action-edit.page.scss'],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, ActionFormComponent],
 })
 export class ActionEditPage {
-    @ViewChild('updateFormRef') updateFormRef!: ActionFormComponent;
+  private route = inject(ActivatedRoute);
+  private actionService = inject(ActionService);
+  private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
-    actionId: number;
-    action?: IAction;
+  @ViewChild('updateFormRef') updateFormRef!: ActionFormComponent;
 
-    constructor(
-        private route: ActivatedRoute,
-        private actionService: ActionService,
-        private toastService: ToastService,
-        private cdr: ChangeDetectorRef,
-        private router: Router,
-    ) {
-        this.actionId = Number(this.route.snapshot.paramMap.get('id'));
+  actionId: number;
+  action?: IAction;
+
+  constructor() {
+    this.actionId = Number(this.route.snapshot.paramMap.get('id'));
+  }
+
+  async ionViewDidEnter() {
+    this.action = await this.actionService.getEnriched(this.actionId);
+    this.cdr.detectChanges();
+  }
+
+  async updateAction(): Promise<void> {
+    if (!this.isFormValid()) {
+      return;
     }
 
-    async ionViewDidEnter() {
-        this.action = await this.actionService.getEnriched(this.actionId);
-        this.cdr.detectChanges();
-    }
+    const actionFormValue = this.updateFormRef.actionForm.value as ActionForm;
+    await this.actionService.updateWithTags(this.actionId, actionFormValue);
 
-    async updateAction(): Promise<void> {
-        if (!this.isFormValid()) {
-            return;
-        }
+    this.toastService.enqueue({
+      title: 'TK_ACTION_UPDATED_SUCCESSFULLY',
+      type: 'success',
+    });
 
-        const actionFormValue = this.updateFormRef.actionForm.value as ActionForm;
-        await this.actionService.updateWithTags(this.actionId, actionFormValue);
+    await this.router.navigate(['/library']);
+  }
 
-        this.toastService.enqueue({
-            title: 'TK_ACTION_UPDATED_SUCCESSFULLY',
-            type: 'success',
-        });
-
-        await this.router.navigate(['/library']);
-    }
-
-    isFormValid() {
-        return this.updateFormRef?.actionForm?.valid;
-    }
+  isFormValid() {
+    return this.updateFormRef?.actionForm?.valid;
+  }
 }

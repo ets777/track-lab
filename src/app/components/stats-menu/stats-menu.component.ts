@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonHeader, IonContent, IonMenu, IonToolbar, IonTitle, IonList, IonItem, MenuController } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,11 +10,8 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [IonItem, IonList, IonHeader, IonContent, IonTitle, IonToolbar, IonMenu, TranslateModule],
 })
 export class StatsMenuComponent {
-
-  constructor(
-    private menuCtrl: MenuController,
-    private router: Router,
-  ) { }
+  private menuCtrl = inject(MenuController);
+  private router = inject(Router);
 
   async goTo(path: string) {
     await this.menuCtrl.close('stats-menu');

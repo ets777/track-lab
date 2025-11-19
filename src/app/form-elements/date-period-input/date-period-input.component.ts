@@ -1,4 +1,4 @@
-import { Component, forwardRef, OnInit } from '@angular/core';
+import { Component, forwardRef, inject } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
 import { MaskitoDirective } from '@maskito/angular';
@@ -33,6 +33,8 @@ type PeriodName = 'week' | 'month';
   ],
 })
 export class DatePeriodInputComponent implements ControlValueAccessor, Validator {
+  private formBuilder = inject(FormBuilder);
+
   public form: ModelFormGroup<DatePeriod>;
   selectedPeriod: PeriodName = 'week';
 
@@ -42,9 +44,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   protected readonly maskPredicate: MaskitoElementPredicate =
     async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
 
-  constructor(
-    private formBuilder: FormBuilder,
-  ) {
+  constructor() {
     this.form = this.formBuilder.group(
       {
         startDate: ['', [Validators.required, dateFormatValidator]],

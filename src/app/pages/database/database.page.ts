@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton } from '@ionic/angular/standalone';
@@ -22,19 +22,17 @@ import { BackupService } from 'src/app/services/backup.service';
   imports: [IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule]
 })
 export class DatabasePage implements OnInit {
+  private activityService = inject(ActivityService);
+  private actionService = inject(ActionService);
+  private activityActionService = inject(ActivityActionService);
+  private achievementService = inject(AchievementService);
+  private backupService = inject(BackupService);
+
   entitiesToString = entitiesToString;
   activities: IActivity[] = [];
   actions: IAction[] = [];
   activityActions: IActivityAction[] = [];
   achievements: IAchievement[] = [];
-
-  constructor(
-    private activityService: ActivityService,
-    private actionService: ActionService,
-    private activityActionService: ActivityActionService,
-    private achievementService: AchievementService,
-    private backupService: BackupService,
-  ) { }
 
   async ngOnInit() {
     this.activities = await this.activityService.getAllEnriched();

@@ -47,7 +47,9 @@ export default defineConfig([globalIgnores(["projects/**/*"]), {
       style: "camelCase",
     }],
 
-    "indent": ["error", 2]
+    "indent": ["error", 2, {
+      "SwitchCase": 1
+    }]
   },
 }, {
   files: ["**/*.html"],

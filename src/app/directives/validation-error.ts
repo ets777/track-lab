@@ -1,117 +1,115 @@
-import { Directive, ElementRef, Input, Renderer2 } from "@angular/core";
+import { Directive, ElementRef, OnInit, Renderer2, inject } from "@angular/core";
 import { AbstractControl, NgControl } from "@angular/forms";
 import { TooltipService } from "../services/tooltip.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs";
 
 @Directive({
-    selector: '[validationError]',
+  selector: '[appValidationError]',
 })
-export class ValidationErrorDirective {
-    private subscription?: Subscription;
-    private warningIcon?: HTMLElement;
+export class ValidationErrorDirective implements OnInit {
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
+  private controlDir = inject(NgControl);
+  private tooltip = inject(TooltipService);
+  private translate = inject(TranslateService);
 
-    constructor(
-        private el: ElementRef,
-        private renderer: Renderer2,
-        private controlDir: NgControl,
-        private tooltip: TooltipService,
-        private translate: TranslateService,
-    ) { }
+  private subscription?: Subscription;
+  private warningIcon?: HTMLElement;
 
-    ngOnInit() {
-        const control = this.controlDir.control;
+  ngOnInit() {
+    const control = this.controlDir.control;
 
-        if (!control) {
-            return;
-        }
-        
-        this.updateWarning(control);
-
-        this.subscription = control.statusChanges.subscribe(() => {
-            this.updateWarning(control);
-        });
+    if (!control) {
+      return;
     }
 
-    private updateWarning(control: AbstractControl) {
-        // TODO: find elements instead of hardcode (sorry)
-        const ionItem = this.el.nativeElement.closest('ion-item')
-            || this.el.nativeElement.children[0];
-        const ionInput = ['ion-input', 'ion-textarea'].includes(this.el.nativeElement.tagName.toLowerCase())
-            ? this.el.nativeElement
-            : this.el.nativeElement.children[0].children[0];
+    this.updateWarning(control);
 
-        if (!ionItem || !ionInput) {
-            return;
-        }
+    this.subscription = control.statusChanges.subscribe(() => {
+      this.updateWarning(control);
+    });
+  }
 
-        if (control.invalid) {
-            this.renderer.addClass(ionItem, 'invalid');
-            this.addWarningIcon(ionInput, control);
-        } else {
-            this.renderer.removeClass(ionItem, 'invalid');
-            this.removeWarningIcon(ionInput, control);
-        }
+  private updateWarning(control: AbstractControl) {
+    // TODO: find elements instead of hardcode (sorry)
+    const ionItem = this.el.nativeElement.closest('ion-item')
+      || this.el.nativeElement.children[0];
+    const ionInput = ['ion-input', 'ion-textarea'].includes(this.el.nativeElement.tagName.toLowerCase())
+      ? this.el.nativeElement
+      : this.el.nativeElement.children[0].children[0];
+
+    if (!ionItem || !ionInput) {
+      return;
     }
 
-    private addWarningIcon(ionInput: any, control: AbstractControl) {
-        if (this.warningIcon) {
-            return;
-        }
+    if (control.invalid) {
+      this.renderer.addClass(ionItem, 'invalid');
+      this.addWarningIcon(ionInput, control);
+    } else {
+      this.renderer.removeClass(ionItem, 'invalid');
+      this.removeWarningIcon(ionInput, control);
+    }
+  }
 
-        this.warningIcon = this.renderer.createElement('ion-icon');
-        this.renderer.setAttribute(this.warningIcon, 'slot', 'end');
-        this.renderer.setAttribute(this.warningIcon, 'src', 'assets/icon/warning-sign.svg');
-        this.renderer.setAttribute(this.warningIcon, 'class', 'input-icon');
-        this.renderer.listen(this.warningIcon, 'click', (event: Event) => {
-            event.preventDefault();
-            this.tooltip.show(event, this.getErrorMessages(control));
-        });
-        this.renderer.appendChild(ionInput, this.warningIcon);
+  private addWarningIcon(ionInput: any, control: AbstractControl) {
+    if (this.warningIcon) {
+      return;
     }
 
-    private removeWarningIcon(ionInput: any, control: AbstractControl) {
-        if (!this.warningIcon) {
-            return;
-        }
+    this.warningIcon = this.renderer.createElement('ion-icon');
+    this.renderer.setAttribute(this.warningIcon, 'slot', 'end');
+    this.renderer.setAttribute(this.warningIcon, 'src', 'assets/icon/warning-sign.svg');
+    this.renderer.setAttribute(this.warningIcon, 'class', 'input-icon');
+    this.renderer.listen(this.warningIcon, 'click', (event: Event) => {
+      event.preventDefault();
+      this.tooltip.show(event, this.getErrorMessages(control));
+    });
+    this.renderer.appendChild(ionInput, this.warningIcon);
+  }
 
-        this.renderer.removeChild(ionInput, this.warningIcon);
-        this.warningIcon = undefined;
+  private removeWarningIcon(ionInput: any, control: AbstractControl) {
+    if (!this.warningIcon) {
+      return;
     }
 
-    private getErrorMessages(control: AbstractControl) {
-        const errors = control?.errors;
-        const errorMessages = [];
+    this.renderer.removeChild(ionInput, this.warningIcon);
+    this.warningIcon = undefined;
+  }
 
-        if (!errors) {
-            return '';
-        }
+  private getErrorMessages(control: AbstractControl) {
+    const errors = control?.errors;
+    const errorMessages = [];
 
-        const errorNames = Object.keys(errors);
-
-        for (const errorName of errorNames) {
-            if (errorName == 'required') {
-                errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
-            }
-
-            if (errorName == 'maxDateRange') {
-                errorMessages.push(
-                    this.translate.instant(
-                        errors['maxDateRange'].message,
-                        errors['maxDateRange'].params,
-                    ),
-                );
-            }
-
-            if (errors[errorName].message) {
-                errorMessages.push(this.translate.instant(errors[errorName].message));
-            }
-        }
-
-        return errorMessages.map((message) => `- ${message}`).join('<br>') ?? '';
+    if (!errors) {
+      return '';
     }
 
-    ngOnDestroy() {
-        this.subscription?.unsubscribe();
+    const errorNames = Object.keys(errors);
+
+    for (const errorName of errorNames) {
+      if (errorName == 'required') {
+        errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
+      }
+
+      if (errorName == 'maxDateRange') {
+        errorMessages.push(
+          this.translate.instant(
+            errors['maxDateRange'].message,
+            errors['maxDateRange'].params,
+          ),
+        );
+      }
+
+      if (errors[errorName].message) {
+        errorMessages.push(this.translate.instant(errors[errorName].message));
+      }
     }
+
+    return errorMessages.map((message) => `- ${message}`).join('<br>') ?? '';
+  }
+
+  ngOnDestroy() {
+    this.subscription?.unsubscribe();
+  }
 }

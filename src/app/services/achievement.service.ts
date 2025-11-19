@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HookService } from './hook.service';
 import { IAchievement } from '../db/models/achievement';
 import { defaultAchievements } from '../db/data/achievement';
@@ -11,18 +11,19 @@ import { MetricService } from './metric.service';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
+  private hookService = inject(HookService);
+  private activityService = inject(ActivityService);
+  private metricService = inject(MetricService);
+
   protected tableName: 'achievements' = 'achievements';
 
   private achievementEvent$ = new Subject<IAchievement>();
   private queue: IAchievement[] = [];
   private showing = false;
 
-  constructor(
-    private hookService: HookService,
-    private activityService: ActivityService,
-    private metricService: MetricService,
-    adapter: DatabaseRouter,
-  ) {
+  constructor() {
+    const adapter = inject(DatabaseRouter);
+
     super(adapter);
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -21,7 +21,12 @@ import { getTimeString } from 'src/app/functions/string';
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ActivityListComponent, BackButtonComponent]
 })
-export class TagViewPage implements OnInit {
+export class TagViewPage {
+  private route = inject(ActivatedRoute);
+  private tagService = inject(TagService);
+  private activityService = inject(ActivityService);
+  private translate = inject(TranslateService);
+
   tagId: number;
   tag?: ITag;
   totalTimeMinutes: number = 0;
@@ -31,16 +36,8 @@ export class TagViewPage implements OnInit {
     activities: IActivity[],
   }[] = [];
 
-  constructor(
-    private route: ActivatedRoute,
-    private tagService: TagService,
-    private activityService: ActivityService,
-    private translate: TranslateService,
-  ) {
+  constructor() {
     this.tagId = Number(this.route.snapshot.paramMap.get('id'));
-  }
-
-  ngOnInit() {
   }
 
   async ionViewDidEnter() {

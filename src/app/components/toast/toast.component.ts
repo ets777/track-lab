@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { IToast, ToastService } from 'src/app/services/toast.service';
 
@@ -9,11 +9,11 @@ import { IToast, ToastService } from 'src/app/services/toast.service';
   imports: [TranslateModule],
 })
 export class ToastComponent implements OnInit {
+  private toastService = inject(ToastService);
+
   title = '';
   icon = '';
   visible = false;
-
-  constructor(private toastService: ToastService) { }
 
   ngOnInit() {
     this.toastService.onEvent().subscribe(

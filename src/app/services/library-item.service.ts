@@ -1,27 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DatabaseService } from './db/database.service';
 import { DatabaseRouter } from './db/database-router.service';
 import { ActivityLibraryItemService } from './activity-library-item.service';
 
 @Injectable({ providedIn: 'root' })
 export class LibraryItemService extends DatabaseService<'libraryItems'> {
-    protected tableName: 'libraryItems' = 'libraryItems';
+  private activityLibraryItemService = inject(ActivityLibraryItemService);
 
-    constructor(
-        private activityLibraryItemService: ActivityLibraryItemService,
-        adapter: DatabaseRouter,
-    ) {
-        super(adapter);
-    }
+  protected tableName: 'libraryItems' = 'libraryItems';
 
-    async getByActivityId(activityId: number) {
-        const activityLibraryItems = await this.activityLibraryItemService.getByActivityId(
-            activityId,
-        );
+  constructor() {
+    const adapter = inject(DatabaseRouter);
 
-        const libraryItemIds = activityLibraryItems.map((activityLibraryItem) => activityLibraryItem.libraryItemId);
-        const libraryItems = await this.getAnyOf('id', libraryItemIds);
+    super(adapter);
+  }
 
-        return libraryItems;
-    }
+  async getByActivityId(activityId: number) {
+    const activityLibraryItems = await this.activityLibraryItemService.getByActivityId(
+      activityId,
+    );
+
+    const libraryItemIds = activityLibraryItems.map((activityLibraryItem) => activityLibraryItem.libraryItemId);
+    const libraryItems = await this.getAnyOf('id', libraryItemIds);
+
+    return libraryItems;
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { AchievementService } from 'src/app/services/achievement.service';
 
@@ -9,11 +9,11 @@ import { AchievementService } from 'src/app/services/achievement.service';
   imports: [TranslateModule],
 })
 export class AchievementToastComponent implements OnInit {
+  private achievementService = inject(AchievementService);
+
   title = '';
   icon = '';
   visible = false;
-
-  constructor(private achievementService: AchievementService) { }
 
   ngOnInit() {
     this.achievementService.onEvent().subscribe(

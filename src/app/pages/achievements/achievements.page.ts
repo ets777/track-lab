@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonList, IonItem, IonContent, IonHeader, IonToolbar, IonButtons, IonTitle, IonMenuButton } from '@ionic/angular/standalone';
@@ -10,17 +10,12 @@ import { TranslateModule } from '@ngx-translate/core';
   selector: 'app-achievements',
   templateUrl: './achievements.page.html',
   styleUrls: ['./achievements.page.scss'],
-  imports: [IonTitle, IonButtons, IonToolbar, IonHeader, IonContent, IonItem, IonList, CommonModule, FormsModule, TranslateModule, IonMenuButton]
+  imports: [IonTitle, IonButtons, IonToolbar, IonHeader, IonContent, IonItem, IonList, CommonModule, FormsModule, TranslateModule, IonMenuButton],
 })
-export class AchievementsPage implements OnInit {
+export class AchievementsPage {
+  private achievementService = inject(AchievementService);
+
   achievements: IAchievement[] = [];
-
-  constructor(
-    private achievementService: AchievementService,
-  ) { }
-
-  ngOnInit() {
-  }
 
   async ionViewDidEnter() {
     this.achievements = await this.achievementService.getUnlocked();
