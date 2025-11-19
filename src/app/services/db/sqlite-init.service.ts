@@ -118,7 +118,7 @@ export class SQLiteInitService {
     const metrics = await this.metricService.getAll();
 
     try {
-      await this.sqliteService.beginTransaction();
+      // await this.sqliteService.beginTransaction();
 
       if (achievements.length) {
         await this.sqliteService.run('DELETE FROM achievements');
@@ -183,12 +183,12 @@ export class SQLiteInitService {
         );
       }
 
-      if (actionLibraries.length) {
-        await this.sqliteService.run('DELETE FROM actionLibraries');
+      if (metrics.length) {
+        await this.sqliteService.run('DELETE FROM metrics');
         await this.insertArrayChunked(
-          'actionLibraries',
-          actionLibraries,
-          ['id', 'actionId', 'libraryId'],
+          'metrics',
+          metrics,
+          ['id', 'name', 'isInt', 'unit', 'minValue', 'maxValue'],
         );
       }
 
@@ -201,30 +201,12 @@ export class SQLiteInitService {
         );
       }
 
-      if (activityLibraryItems.length) {
-        await this.sqliteService.run('DELETE FROM activityLibraryItems');
-        await this.insertArrayChunked(
-          'activityLibraryItems',
-          activityLibraryItems,
-          ['id', 'activityId', 'libraryItemId'],
-        );
-      }
-
       if (activityMetrics.length) {
         await this.sqliteService.run('DELETE FROM activityMetrics');
         await this.insertArrayChunked(
           'activityMetrics',
           activityMetrics,
           ['id', 'activityId', 'metricId', 'value'],
-        );
-      }
-
-      if (libraryItems.length) {
-        await this.sqliteService.run('DELETE FROM libraryItems');
-        await this.insertArrayChunked(
-          'libraryItems',
-          libraryItems,
-          ['id', 'name', 'libraryId'],
         );
       }
 
@@ -237,19 +219,37 @@ export class SQLiteInitService {
         );
       }
 
-      if (metrics.length) {
-        await this.sqliteService.run('DELETE FROM metrics');
+      if (actionLibraries.length) {
+        await this.sqliteService.run('DELETE FROM actionLibraries');
         await this.insertArrayChunked(
-          'metrics',
-          metrics,
-          ['id', 'name', 'isInt', 'unit', 'minValue', 'maxValue'],
+          'actionLibraries',
+          actionLibraries,
+          ['id', 'actionId', 'libraryId'],
         );
       }
 
-      await this.sqliteService.commitTransaction();
+      if (libraryItems.length) {
+        await this.sqliteService.run('DELETE FROM libraryItems');
+        await this.insertArrayChunked(
+          'libraryItems',
+          libraryItems,
+          ['id', 'name', 'libraryId'],
+        );
+      }
+
+      if (activityLibraryItems.length) {
+        await this.sqliteService.run('DELETE FROM activityLibraryItems');
+        await this.insertArrayChunked(
+          'activityLibraryItems',
+          activityLibraryItems,
+          ['id', 'activityId', 'libraryItemId'],
+        );
+      }
+
+      // await this.sqliteService.commitTransaction();
       await Preferences.set({ key: 'migratedToSqlite', value: 'true' });
     } catch (err) {
-      await this.sqliteService.rollbackTransaction();
+      // await this.sqliteService.rollbackTransaction();
       throw err;
     }
   }
