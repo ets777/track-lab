@@ -24,6 +24,23 @@ import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { ActivityTagService } from './activity-tag.service';
 import { FileService } from './file.service';
+import { IActionLibraryDb } from '../db/models/action-library';
+import { IActionMetricDb } from '../db/models/action-metric';
+import { IActivityLibraryItemDb } from '../db/models/activity-library-item';
+import { IActivityMetricDb } from '../db/models/activity-metric';
+import { ILibraryItemDb } from '../db/models/library-item';
+import { ILibraryDb } from '../db/models/library';
+import { IMetricDb } from '../db/models/metric';
+import { IStreakDb } from '../db/models/streak';
+import { ActionLibraryService } from './action-library.service';
+import { ActionMetricService } from './action-metric.service';
+import { ActivityLibraryItemService } from './activity-library-item.service';
+import { ActivityMetricService } from './activity-metric.service';
+import { LibraryItemService } from './library-item.service';
+import { LibraryService } from './library.service';
+import { MetricService } from './metric.service';
+import { StreakService } from './streak.service';
+import { getEntitiesFromString } from '../functions/string';
 
 type Backup = {
     activities: IActivityDb[],
@@ -33,12 +50,174 @@ type Backup = {
     tags: ITagDb[],
     actionTags: IActionTagDb[],
     activityTags: IActivityTagDb[],
+    actionLibraries: IActionLibraryDb[],
+    actionMetrics: IActionMetricDb[],
+    activityLibraryItems: IActivityLibraryItemDb[],
+    activityMetrics: IActivityMetricDb[],
+    libraryItems: ILibraryItemDb[],
+    libraries: ILibraryDb[],
+    metrics: IMetricDb[],
+    streaks: IStreakDb[],
     version: string,
+};
+
+const uniqueByProperties = (array: any, properties: [string, string]) => {
+    const map = new Map();
+    for (const o of array) {
+        map.set(`${o[properties[0]]}::${o[properties[1]]}`, o);
+    }
+    return [...map.values()];
+}
+
+const helperRevision1 = {
+    prepareBackup: (backup: any) => {
+        const moodMetricId = 1;
+        const energyMetricId = 2;
+        const satietyMetricId = 3;
+        const emotionLibraryId = 1;
+
+        backup.metrics = [
+            {
+                id: moodMetricId,
+                name: 'TK_MOOD',
+                isInt: true,
+                minValue: 1,
+                maxValue: 10,
+                isHidden: false,
+                isBase: true,
+            },
+            {
+                id: energyMetricId,
+                name: 'TK_ENERGY',
+                isInt: true,
+                minValue: 1,
+                maxValue: 10,
+                isHidden: false,
+                isBase: true,
+            },
+            {
+                id: 3,
+                name: 'TK_SATIETY',
+                isInt: true,
+                minValue: 1,
+                maxValue: 10,
+                isHidden: false,
+                isBase: true,
+            },
+        ];
+
+        backup.libraries = [{
+            id: emotionLibraryId, 
+            name: 'emotions',
+        }];
+
+        backup.activityMetrics = [];
+        backup.libraryItems = [];
+        backup.activityLibraryItems = [];
+
+        let libraryItemId = 1;
+
+        for (const activity of backup.activities) {
+            if (activity.mood && activity.mood > 0) {
+                backup.activityMetrics.push({
+                    activityId: activity.id,
+                    metricId: moodMetricId,
+                    value: activity.mood,
+                });
+            }
+
+            if (activity.energy && activity.energy > 0) {
+                backup.activityMetrics.push({
+                    activityId: activity.id,
+                    metricId: energyMetricId,
+                    value: activity.energy,
+                });
+            }
+
+            if (activity.satiety && activity.satiety > 0) {
+                backup.activityMetrics.push({
+                    activityId: activity.id,
+                    metricId: satietyMetricId,
+                    value: activity.satiety,
+                });
+            }
+
+            if (activity.emotions && activity.emotions !== '') {
+                const emotionNames = [...new Set(getEntitiesFromString(activity.emotions)
+                    ?.map((emotion) => emotion.name))];
+
+                for (const emotion of emotionNames) {
+                    let libraryItem = backup.libraryItems.find(
+                        (item: any) => item.name == emotion,
+                    );
+
+                    if (!libraryItem) {                        
+                        backup.libraryItems.push({
+                            id: libraryItemId,
+                            name: emotion,
+                            libraryId: emotionLibraryId,
+                        });
+
+                        backup.activityLibraryItems.push({
+                            activityId: activity.id,
+                            libraryItemId: libraryItemId,
+                        });
+                        
+                        libraryItemId++;
+                    } else {
+                        backup.activityLibraryItems.push({
+                            activityId: activity.id,
+                            libraryItemId: libraryItem.id,
+                        });
+                    }
+                }
+            }
+
+            delete activity.mood;
+            delete activity.energy;
+            delete activity.satiety;
+            delete activity.emotions;
+        }
+
+        backup.activityActions = uniqueByProperties(
+            backup.activityActions, 
+            ['activityId', 'actionId'],
+        );
+
+        backup.actions.forEach((obj: any) => {
+            Object.keys(obj).forEach(key => {
+                if (key == 'tags' || key == 'doNotMeasure') delete obj[key];
+            });
+        });
+
+        backup.activities.forEach((obj: any) => {
+            Object.keys(obj).forEach(key => {
+                if (['actions', 'doNotMeasure', 'tags'].includes(key)) delete obj[key];
+            });
+        });
+
+        backup.actionLibraries = [];
+        backup.actionMetrics = [];
+        backup.streaks = [];
+
+        return backup;
+    },
+};
+
+const helperRevision2 = {
+    prepareBackup: (backup: any) => {
+        return backup;
+    },
 };
 
 @Injectable({ providedIn: 'root' })
 export class BackupService {
     defaultPassword = 'etsbox.com';
+
+    versionMap = [
+        { version: '0.5.0', helper: helperRevision2 },
+        { version: '0.0.0', helper: helperRevision1 },
+    ];
 
     constructor(
         private activityService: ActivityService,
@@ -52,6 +231,14 @@ export class BackupService {
         private tagService: TagService,
         private actionTagService: ActionTagService,
         private activityTagService: ActivityTagService,
+        private actionLibraryService: ActionLibraryService,
+        private actionMetricService: ActionMetricService,
+        private activityLibraryItemService: ActivityLibraryItemService,
+        private activityMetricService: ActivityMetricService,
+        private libraryItemService: LibraryItemService,
+        private libraryService: LibraryService,
+        private metricService: MetricService,
+        private streakService: StreakService,
         private fileService: FileService,
     ) { }
 
@@ -69,6 +256,16 @@ export class BackupService {
             tags: await this.tagService.getAll(),
             actionTags: await this.actionTagService.getAll(),
             activityTags: await this.activityTagService.getAll(),
+
+            actionLibraries: await this.actionLibraryService.getAll(),
+            actionMetrics: await this.actionMetricService.getAll(),
+            activityLibraryItems: await this.activityLibraryItemService.getAll(),
+            activityMetrics: await this.activityMetricService.getAll(),
+            libraryItems: await this.libraryItemService.getAll(),
+            libraries: await this.libraryService.getAll(),
+            metrics: await this.metricService.getAll(),
+            streaks: await this.streakService.getAll(),
+
             version: appVersion,
         };
 
@@ -128,7 +325,9 @@ export class BackupService {
             try {
                 await this.fillDatabase(decode(content, password));
             } catch(e) {
-                await this.showMessage('TK_WRONG_PASSWORD');
+                if ((e instanceof Error ? e.message : String(e)) == 'Malformed UTF-8 data') {
+                    await this.showMessage('TK_WRONG_PASSWORD');
+                }
             }
         }
     }
@@ -140,6 +339,10 @@ export class BackupService {
             return;
         }
 
+        const helper = this.getHelper(backup.version);
+
+        backup = helper.prepareBackup(backup);
+
         await this.clearDatabase();
 
         await this.activityActionService.bulkAdd(backup.activityActions);
@@ -150,6 +353,15 @@ export class BackupService {
         await this.actionTagService.bulkAdd(backup.actionTags);
         await this.activityTagService.bulkAdd(backup.activityTags);
 
+        await this.actionLibraryService.bulkAdd(backup.actionLibraries);
+        await this.actionMetricService.bulkAdd(backup.actionMetrics);
+        await this.activityLibraryItemService.bulkAdd(backup.activityLibraryItems);
+        await this.activityMetricService.bulkAdd(backup.activityMetrics);
+        await this.libraryItemService.bulkAdd(backup.libraryItems);
+        await this.libraryService.bulkAdd(backup.libraries);
+        await this.metricService.bulkAdd(backup.metrics);
+        await this.streakService.bulkAdd(backup.streaks);
+
         await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
     }
 
@@ -158,6 +370,36 @@ export class BackupService {
         await this.actionService.clear();
         await this.activityService.clear();
         await this.achievementService.clear();
+        await this.tagService.clear();
+        await this.actionTagService.clear();
+        await this.activityTagService.clear();
+        
+        await this.actionLibraryService.clear();
+        await this.actionMetricService.clear();
+        await this.activityLibraryItemService.clear();
+        await this.activityMetricService.clear();
+        await this.libraryItemService.clear();
+        await this.libraryService.clear();
+        await this.metricService.clear();
+        await this.streakService.clear();
+    }
+
+    getHelper(version: string) {
+        if (!version) {
+            return helperRevision2;
+        }
+
+        const [fileMajor, fileMinor, filePatch] = version.split('.').map(Number);
+
+        const map = this.versionMap.find((map) => {
+            const [mapMajor, mapMinor, mapPatch] = map.version.split('.').map(Number);
+
+            return mapMajor < fileMajor
+                || mapMajor == fileMajor && mapMinor < fileMinor
+                || mapMajor == fileMajor && mapMinor == fileMinor && mapPatch <= filePatch;
+        });
+
+        return map?.helper ?? helperRevision2;
     }
 
     async askPasswordToRestore(): Promise<string | null> {
@@ -293,6 +535,5 @@ export class BackupService {
             // user cancelled password setting
             return (await Preferences.get({ key: 'auto-backup-period' }))?.value as autoBackupOption;
         }
-
     }
 }

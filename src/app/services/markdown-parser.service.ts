@@ -26,8 +26,8 @@ const helperRevision1 = {
                 comment: columns[6].replace(' |', '').trim(),
             } as ActivityForm;
         }
-    }
-}
+    },
+};
 
 const helperRevision2 = {
     parseLine: (date: string) => {
@@ -53,8 +53,8 @@ const helperRevision2 = {
                 comment: columns[7].replace(' |', '').trim(),
             } as ActivityForm;
         }
-    }
-}
+    },
+};
 
 const versionMap = [
     { version: '0.4.0', helper: helperRevision2 },
