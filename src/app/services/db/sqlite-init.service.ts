@@ -118,7 +118,7 @@ export class SQLiteInitService {
     const metrics = await this.metricService.getAll();
 
     try {
-      // await this.sqliteService.beginTransaction();
+      await this.sqliteService.beginTransaction();
 
       if (achievements.length) {
         await this.sqliteService.run('DELETE FROM achievements');
@@ -246,10 +246,10 @@ export class SQLiteInitService {
         );
       }
 
-      // await this.sqliteService.commitTransaction();
+      await this.sqliteService.commitTransaction();
       await Preferences.set({ key: 'migratedToSqlite', value: 'true' });
     } catch (err) {
-      // await this.sqliteService.rollbackTransaction();
+      await this.sqliteService.rollbackTransaction();
       throw err;
     }
   }

@@ -65,7 +65,7 @@ export class SQLiteService {
   }
 
   async run(statement: string, values?: any[]) {
-    const result = await this.connection.run(statement, values);
+    const result = await this.connection.run(statement, values, false);
 
     if (this.platform == 'web' && result) {
       await this.saveToStore();
@@ -74,8 +74,8 @@ export class SQLiteService {
     return result;
   }
 
-  async execute(statement: string, transaction?: boolean) {
-    const result = await this.connection.execute(statement, transaction);
+  async execute(statement: string) {
+    const result = await this.connection.execute(statement, false);
 
     if (this.platform == 'web' && result) {
       await this.saveToStore();

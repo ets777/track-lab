@@ -18,42 +18,42 @@ import { InitializeAppService } from './app/services/initialize-app.service';
 
 const platform = Capacitor.getPlatform();
 if (platform === 'web') {
-    pwaElements(window);
-    jeepSqlite(window);
+  pwaElements(window);
+  jeepSqlite(window);
 
-    window.addEventListener('DOMContentLoaded', () => {
-        const jeepEl = document.createElement("jeep-sqlite");
-        document.body.appendChild(jeepEl);
-        customElements.whenDefined('jeep-sqlite');
-        jeepEl.autoSave = true;
-    });
+  window.addEventListener('DOMContentLoaded', () => {
+    const jeepEl = document.createElement("jeep-sqlite");
+    document.body.appendChild(jeepEl);
+    customElements.whenDefined('jeep-sqlite');
+    jeepEl.autoSave = true;
+  });
 }
 
 bootstrapApplication(AppComponent, {
-    providers: [
-        SQLiteService,
-        SQLiteInitService,
-        InitializeAppService,
-        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-        provideIonicAngular(),
-        provideRouter(routes, withPreloading(PreloadAllModules)),
-        importProvidersFrom(IonicModule.forRoot()),
-        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-        provideIonicAngular(),
-        provideRouter(routes, withPreloading(PreloadAllModules)),
-        provideHttpClient(withInterceptorsFromDi()),
-        provideTranslateService({
-            loader: provideTranslateHttpLoader({
-                prefix: 'assets/i18n/',
-                suffix: '.json',
-            }),
-            fallbackLang: 'en',
-        }),
-        provideCharts(withDefaultRegisterables()),
-        provideAppInitializer(async () => {
-            const init = inject(InitializeAppService);
+  providers: [
+    SQLiteService,
+    SQLiteInitService,
+    InitializeAppService,
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicAngular(),
+    provideRouter(routes, withPreloading(PreloadAllModules)),
+    importProvidersFrom(IonicModule.forRoot()),
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicAngular(),
+    provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideHttpClient(withInterceptorsFromDi()),
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({
+        prefix: 'assets/i18n/',
+        suffix: '.json',
+      }),
+      fallbackLang: 'en',
+    }),
+    provideCharts(withDefaultRegisterables()),
+    provideAppInitializer(async () => {
+      const init = inject(InitializeAppService);
 
-            return init.initializeApp();
-        }),
-    ],
+      return init.initializeApp();
+    }),
+  ],
 });
