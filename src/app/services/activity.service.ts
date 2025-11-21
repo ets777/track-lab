@@ -10,7 +10,6 @@ import { TagService } from './tag.service';
 import { ITag } from '../db/models/tag';
 import { ActivityTagService } from './activity-tag.service';
 import { DatabaseService } from './db/database.service';
-import { DatabaseRouter } from './db/database-router.service';
 import { IActivityMetric } from '../db/models/activity-metric';
 import { ActivityMetricService } from './activity-metric.service';
 import { ILibraryItem } from '../db/models/library-item';
@@ -27,12 +26,6 @@ export class ActivityService extends DatabaseService<'activities'> {
   private libraryItemService = inject(LibraryItemService);
 
   tableName: 'activities' = 'activities' as const;
-
-  constructor() {
-    const adapter = inject(DatabaseRouter);
-
-    super(adapter);
-  }
 
   async getEnriched(id: number) {
     const activity = await this.getById(id);

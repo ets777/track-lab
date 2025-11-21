@@ -7,7 +7,6 @@ import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
 import { ActionTagService } from './action-tag.service';
 import { DatabaseService } from './db/database.service';
-import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActionService extends DatabaseService<'actions'> {
@@ -16,12 +15,6 @@ export class ActionService extends DatabaseService<'actions'> {
   private actionTagService = inject(ActionTagService);
 
   protected tableName: 'actions' = 'actions';
-
-  constructor() {
-    const adapter = inject(DatabaseRouter);
-
-    super(adapter);
-  }
 
   async getEnriched(id: number) {
     const action = await this.getById(id);

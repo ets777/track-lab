@@ -6,7 +6,6 @@ import { ActivityService } from './activity.service';
 import { Subject } from 'rxjs';
 import { format } from 'date-fns';
 import { DatabaseService } from './db/database.service';
-import { DatabaseRouter } from './db/database-router.service';
 import { MetricService } from './metric.service';
 
 @Injectable({ providedIn: 'root' })
@@ -20,12 +19,6 @@ export class AchievementService extends DatabaseService<'achievements'> {
   private achievementEvent$ = new Subject<IAchievement>();
   private queue: IAchievement[] = [];
   private showing = false;
-
-  constructor() {
-    const adapter = inject(DatabaseRouter);
-
-    super(adapter);
-  }
 
   isShowing() {
     return this.showing;

@@ -4,7 +4,6 @@ import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ActionTagService } from './action-tag.service';
 import { DatabaseService } from './db/database.service';
-import { DatabaseRouter } from './db/database-router.service';
 
 @Injectable({ providedIn: 'root' })
 export class TagService extends DatabaseService<'tags'> {
@@ -12,12 +11,6 @@ export class TagService extends DatabaseService<'tags'> {
   private actionTagService = inject(ActionTagService);
 
   tableName: 'tags' = 'tags';
-
-  constructor() {
-    const adapter = inject(DatabaseRouter);
-
-    super(adapter);
-  }
 
   async getAllUnhidden() {
     const allTags = await this.getAll();
