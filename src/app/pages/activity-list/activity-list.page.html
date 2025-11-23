@@ -6,12 +6,8 @@
         <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-action-sheet
-      trigger="open-action-sheet"
-      header="{{ 'TK_ACTIONS' | translate }}"
-      [buttons]="listActionSheetButtons"
-      (didDismiss)="doListAction($event)"
-    ></ion-action-sheet>
+    <ion-action-sheet trigger="open-action-sheet" header="{{ 'TK_ACTIONS' | translate }}"
+      [buttons]="listActionSheetButtons" (didDismiss)="doListAction($event)"></ion-action-sheet>
   </ion-toolbar>
 </ion-header>
 
@@ -21,5 +17,5 @@
     <ion-text>{{ currentDate }}</ion-text>
     <ion-button (click)="goToNextDay()">{{ 'TK_NEXT' | translate }}</ion-button>
   </ion-buttons>
-  <app-activity-list [activities]="activities"></app-activity-list>
+  <app-activity-list [activities]="activities" [metrics]="metrics" [libraries]="libraries"></app-activity-list>
 </ion-content>

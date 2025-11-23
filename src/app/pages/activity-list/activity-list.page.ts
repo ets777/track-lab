@@ -9,6 +9,10 @@ import type { OverlayEventDetail } from '@ionic/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
+import { IMetric } from 'src/app/db/models/metric';
+import { MetricService } from 'src/app/services/metric.service';
+import { LibraryService } from 'src/app/services/library.service';
+import { ILibrary } from 'src/app/db/models/library';
 
 @Component({
   selector: 'app-activity-list-page',
@@ -18,13 +22,16 @@ import { ActivityListComponent } from 'src/app/components/activity-list/activity
 })
 export class ActivityListPage {
   private activityService = inject(ActivityService);
+  private metricService = inject(MetricService);
+  private libraryService = inject(LibraryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private markdownParserService = inject(MarkdownParserService);
   private translate = inject(TranslateService);
 
-  
   activities: IActivity[] = [];
+  metrics: IMetric[] = [];
+  libraries: ILibrary[] = [];
   currentDate: string = '';
 
   public listActionSheetButtons = [
@@ -47,6 +54,8 @@ export class ActivityListPage {
     this.currentDate = date;
 
     await this.setActivities();
+    await this.setMetrics();
+    await this.setLibraries();
   }
 
   async goToPreviousDay() {
@@ -72,6 +81,14 @@ export class ActivityListPage {
 
   async setActivities() {
     this.activities = await this.activityService.getByDate(this.currentDate);
+  }
+
+  async setMetrics() {
+    this.metrics = await this.metricService.getAll();
+  }
+
+  async setLibraries() {
+    this.libraries = await this.libraryService.getAll();
   }
 
   async doListAction(event: CustomEvent<OverlayEventDetail>) {
