@@ -308,5 +308,8 @@
   "TK_WROTE": "Писал",
   "TK_YES": "Да",
   "TK_YYYY_MM_DD": "гггг-мм-дд",
-  "TK_HIDE_FROM_SEARCH": "Скрыть из поиска"
+  "TK_HIDE_FROM_SEARCH": "Скрыть из поиска",
+  "TK_LAB": "Лаба",
+  "TK_DICTIONARIES": "Словари",
+  "TK_STREAKS": "Серии"
 }

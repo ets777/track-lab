@@ -1,10 +1,10 @@
 import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
-export interface ILibraryDb {
+export interface IDictionaryDb {
     id: number;
     name: string;
 }
 
-export type ILibraryCreateDto = WithOptionalKeys<ILibraryDb, 'id'>;
+export type IDictionaryCreateDto = WithOptionalKeys<IDictionaryDb, 'id'>;
 
-export interface ILibrary extends ILibraryDb {}
+export interface IDictionary extends IDictionaryDb {}

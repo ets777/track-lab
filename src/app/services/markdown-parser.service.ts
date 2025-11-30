@@ -8,7 +8,7 @@ import { ActivityForm } from '../components/activity-form/activity-form.componen
 import { entitiesToString } from '../functions/string';
 import { FileService } from './file.service';
 import { MetricService } from './metric.service';
-import { LibraryService } from './library.service';
+import { DictionaryService } from './library.service';
 
 const helperRevision1 = {
   parseLine: (date: string) => {
@@ -71,7 +71,7 @@ export class MarkdownParserService {
   private toastCtrl = inject(ToastController);
   private activityService = inject(ActivityService);
   private metricService = inject(MetricService);
-  private libraryService = inject(LibraryService);
+  private dictionaryService = inject(DictionaryService);
   private translate = inject(TranslateService);
   private fileService = inject(FileService);
 
@@ -226,7 +226,7 @@ export class MarkdownParserService {
       + `---\n\n`;
     const activities = await this.activityService.getByDate(date);
     const metrics = await this.metricService.getAll();
-    const libraries = await this.libraryService.getAll();
+    const libraries = await this.dictionaryService.getAll();
     const tableTitleTranslationKeys = [
       'TK_TIME',
       'TK_ACTIONS',

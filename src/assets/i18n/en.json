@@ -308,5 +308,8 @@
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",
   "TK_YYYY_MM_DD": "yyyy-mm-dd",
-  "TK_HIDE_FROM_SEARCH": "Hide from search"
+  "TK_HIDE_FROM_SEARCH": "Hide from search",
+  "TK_LAB": "Lab",
+  "TK_DICTIONARIES": "Dictionaries",
+  "TK_STREAKS": "Streaks"
 }

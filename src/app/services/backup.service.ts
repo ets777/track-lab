@@ -29,7 +29,7 @@ import { IActionMetricDb } from '../db/models/action-metric';
 import { IActivityLibraryItemDb } from '../db/models/activity-library-item';
 import { IActivityMetricDb } from '../db/models/activity-metric';
 import { ILibraryItemDb } from '../db/models/library-item';
-import { ILibraryDb } from '../db/models/library';
+import { IDictionaryDb } from '../db/models/library';
 import { IMetricDb } from '../db/models/metric';
 import { IStreakDb } from '../db/models/streak';
 import { ActionLibraryService } from './action-library.service';
@@ -37,7 +37,7 @@ import { ActionMetricService } from './action-metric.service';
 import { ActivityLibraryItemService } from './activity-library-item.service';
 import { ActivityMetricService } from './activity-metric.service';
 import { LibraryItemService } from './library-item.service';
-import { LibraryService } from './library.service';
+import { DictionaryService } from './library.service';
 import { MetricService } from './metric.service';
 import { StreakService } from './streak.service';
 import { getEntitiesFromString } from '../functions/string';
@@ -55,7 +55,7 @@ type Backup = {
   activityLibraryItems: IActivityLibraryItemDb[],
   activityMetrics: IActivityMetricDb[],
   libraryItems: ILibraryItemDb[],
-  libraries: ILibraryDb[],
+  libraries: IDictionaryDb[],
   metrics: IMetricDb[],
   streaks: IStreakDb[],
   version: string,
@@ -108,7 +108,7 @@ const helperRevision1 = {
 
     backup.libraries = [{
       id: emotionLibraryId,
-      name: 'emotions',
+      name: 'TK_EMOTIONS',
     }];
 
     backup.activityMetrics = [];
@@ -228,7 +228,7 @@ export class BackupService {
   private activityLibraryItemService = inject(ActivityLibraryItemService);
   private activityMetricService = inject(ActivityMetricService);
   private libraryItemService = inject(LibraryItemService);
-  private libraryService = inject(LibraryService);
+  private dictionaryService = inject(DictionaryService);
   private metricService = inject(MetricService);
   private streakService = inject(StreakService);
   private fileService = inject(FileService);
@@ -260,7 +260,7 @@ export class BackupService {
       activityLibraryItems: await this.activityLibraryItemService.getAll(),
       activityMetrics: await this.activityMetricService.getAll(),
       libraryItems: await this.libraryItemService.getAll(),
-      libraries: await this.libraryService.getAll(),
+      libraries: await this.dictionaryService.getAll(),
       metrics: await this.metricService.getAll(),
       streaks: await this.streakService.getAll(),
 
@@ -356,7 +356,7 @@ export class BackupService {
     await this.activityLibraryItemService.bulkAdd(backup.activityLibraryItems);
     await this.activityMetricService.bulkAdd(backup.activityMetrics);
     await this.libraryItemService.bulkAdd(backup.libraryItems);
-    await this.libraryService.bulkAdd(backup.libraries);
+    await this.dictionaryService.bulkAdd(backup.libraries);
     await this.metricService.bulkAdd(backup.metrics);
     await this.streakService.bulkAdd(backup.streaks);
 
@@ -377,7 +377,7 @@ export class BackupService {
     await this.activityLibraryItemService.clear();
     await this.activityMetricService.clear();
     await this.libraryItemService.clear();
-    await this.libraryService.clear();
+    await this.dictionaryService.clear();
     await this.metricService.clear();
     await this.streakService.clear();
   }

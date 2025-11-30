@@ -1,13 +1,19 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>streak-list</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="lab-menu"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ 'TK_STREAKS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">streak-list</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    @for (streak of streaks; track streak.id) {
+      <ion-item class="streak">
+        <ion-label>
+          <div class="title">{{ streak.actionId }}</div>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
 </ion-content>

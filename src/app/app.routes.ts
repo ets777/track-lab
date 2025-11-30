@@ -109,6 +109,15 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'dictionary',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/dictionary-list/dictionary-list.page').then(m => m.DictionaryListPage)
+      },
+    ],
+  },
+  {
     path: 'database',
     loadComponent: () => import('./pages/database/database.page').then( m => m.DatabasePage)
   },

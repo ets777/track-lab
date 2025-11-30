@@ -18,11 +18,12 @@ import { BackupService } from './services/backup.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
+import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent],
 })
 export class AppComponent implements OnInit {
   private translate = inject(TranslateService);

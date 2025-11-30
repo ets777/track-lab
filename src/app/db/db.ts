@@ -12,7 +12,7 @@ import { IActionMetricCreateDto, IActionMetricDb } from './models/action-metric'
 import { IActivityLibraryItemCreateDto, IActivityLibraryItemDb } from './models/activity-library-item';
 import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-metric';
 import { ILibraryItemCreateDto, ILibraryItemDb } from './models/library-item';
-import { ILibraryCreateDto, ILibraryDb } from './models/library';
+import { IDictionaryCreateDto, IDictionaryDb } from './models/library';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
 
@@ -30,7 +30,7 @@ export class MyAppDatabase extends Dexie {
   activityLibraryItems!: Table<IActivityLibraryItemDb, number, IActivityLibraryItemCreateDto>;
   activityMetrics!: Table<IActivityMetricDb, number, IActivityMetricCreateDto>;
   libraryItems!: Table<ILibraryItemDb, number, ILibraryItemCreateDto>;
-  libraries!: Table<ILibraryDb, number, ILibraryCreateDto>;
+  libraries!: Table<IDictionaryDb, number, IDictionaryCreateDto>;
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
 
@@ -154,7 +154,7 @@ export class MyAppDatabase extends Dexie {
         });
 
       // 2. create 1 library - emotions
-      const emotionsLibraryId = await tx.table('libraries').add({ name: 'emotions' });
+      const emotionsLibraryId = await tx.table('libraries').add({ name: 'TK_EMOTIONS' });
 
       // 3. get all activities
       const allActivities = await tx.table('activities').toArray();

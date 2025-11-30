@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonButton } from '@ionic/angular/standalone';
+import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';

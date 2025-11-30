@@ -8,7 +8,7 @@ import { IActivityActionCreateDto, IActivityActionDb } from "src/app/db/models/a
 import { IActivityLibraryItemCreateDto, IActivityLibraryItemDb } from "src/app/db/models/activity-library-item";
 import { IActivityMetricCreateDto, IActivityMetricDb } from "src/app/db/models/activity-metric";
 import { IActivityTagCreateDto, IActivityTagDb } from "src/app/db/models/activity-tag";
-import { ILibraryCreateDto, ILibraryDb } from "src/app/db/models/library";
+import { IDictionaryCreateDto, IDictionaryDb } from "src/app/db/models/library";
 import { ILibraryItemCreateDto, ILibraryItemDb } from "src/app/db/models/library-item";
 import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
 import { IStreakCreateDto, IStreakDb } from "src/app/db/models/streak";
@@ -27,7 +27,7 @@ export interface ITable {
     activityLibraryItems: IActivityLibraryItemDb;
     activityMetrics: IActivityMetricDb;
     libraryItems: ILibraryItemDb;
-    libraries: ILibraryDb;
+    libraries: IDictionaryDb;
     metrics: IMetricDb;
     streaks: IStreakDb;
 }
@@ -45,7 +45,7 @@ export interface ICreateDto {
     activityLibraryItems: IActivityLibraryItemDb | IActivityLibraryItemCreateDto;
     activityMetrics: IActivityMetricDb | IActivityMetricCreateDto;
     libraryItems: ILibraryItemDb | ILibraryItemCreateDto;
-    libraries: ILibraryDb | ILibraryCreateDto;
+    libraries: IDictionaryDb | IDictionaryCreateDto;
     metrics: IMetricDb | IMetricCreateDto;
     streaks: IStreakDb | IStreakCreateDto;
 }

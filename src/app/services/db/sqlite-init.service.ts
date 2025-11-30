@@ -14,7 +14,7 @@ import { ActionMetricService } from '../action-metric.service';
 import { ActivityLibraryItemService } from '../activity-library-item.service';
 import { ActivityMetricService } from '../activity-metric.service';
 import { LibraryItemService } from '../library-item.service';
-import { LibraryService } from '../library.service';
+import { DictionaryService } from '../library.service';
 import { MetricService } from '../metric.service';
 import { databaseUpgrades } from './database.upgrade';
 
@@ -33,7 +33,7 @@ export class SQLiteInitService {
   private activityLibraryItemService = inject(ActivityLibraryItemService);
   private activityMetricService = inject(ActivityMetricService);
   private libraryItemService = inject(LibraryItemService);
-  private libraryService = inject(LibraryService);
+  private dictionaryService = inject(DictionaryService);
   private metricService = inject(MetricService);
   private databaseRouter = inject(DatabaseRouter);
 
@@ -114,7 +114,7 @@ export class SQLiteInitService {
     const activityLibraryItems = await this.activityLibraryItemService.getAll();
     const activityMetrics = await this.activityMetricService.getAll();
     const libraryItems = await this.libraryItemService.getAll();
-    const libraries = await this.libraryService.getAll();
+    const libraries = await this.dictionaryService.getAll();
     const metrics = await this.metricService.getAll();
 
     try {

@@ -1,46 +1,38 @@
 <ion-header>
-    <ion-toolbar>
-        <ion-buttons slot="start">
-            <ion-menu-button menuId="stats-menu"></ion-menu-button>
-        </ion-buttons>
-        <ion-title>{{ 'TK_METRICS' | translate }}</ion-title>
-    </ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="stats-menu"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ 'TK_METRICS' | translate }}</ion-title>
+  </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-    <form [formGroup]="filterForm">
-        <app-date-period-input
-            formControlName="datePeriod"
-        ></app-date-period-input>
-    </form>
-    
-    @if (filterForm.valid) {
-        <canvas
-            baseChart
-            [data]="chartData"
-            type="line"
-        ></canvas>
+  <form [formGroup]="filterForm">
+    <app-date-period-input formControlName="datePeriod"></app-date-period-input>
+  </form>
+  @if (filterForm.valid) {
+    <canvas baseChart [data]="chartData" type="line"></canvas>
+  }
+  <ion-list>
+    @if (activitiesGroupedByDate.length) {
+      <ion-item>
+        <ion-label>
+          <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
+          <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ getTotalAverageValue() | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
     }
-  
-    <ion-list>
-        @if (activitiesGroupedByDate.length) {
-            <ion-item>
-                <ion-label>
-                    <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-                    <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ getTotalAverageValue() | number:'1.1-1' }}</p>
-                </ion-label>
-            </ion-item>
-        }
-        @for (day of activitiesGroupedByDate; track day.date) {
-            <ion-item (click)="goToDay(day.date)">
-                <ion-label>
-                    <h2>{{ day.date }}</h2>
-                    <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ day.avgValue | number:'1.1-1' }}</p>
-                </ion-label>
-            </ion-item>
-        } @empty {
-            <ion-text>
-                {{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}
-            </ion-text>
-        }
-    </ion-list>
+    @for (day of activitiesGroupedByDate; track day.date) {
+      <ion-item (click)="goToDay(day.date)">
+        <ion-label>
+          <h2>{{ day.date }}</h2>
+          <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ day.avgValue | number:'1.1-1' }}</p>
+        </ion-label>
+      </ion-item>
+    } @empty {
+      <ion-text>
+        {{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}
+      </ion-text>
+    }
+  </ion-list>
 </ion-content>
