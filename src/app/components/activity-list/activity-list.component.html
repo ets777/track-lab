@@ -22,9 +22,9 @@
           }
         </p>
         <p>
-          @for (library of libraries; track library.id) {
-            @if (activityHasLibraryItems(activity, library)) {
-              {{ library.name | translate }}: {{ getLibraryItems(activity, library) }}
+          @for (dictionary of dictionaries; track dictionary.id) {
+            @if (activityhasTerms(activity, dictionary)) {
+              {{ dictionary.name | translate }}: {{ getTerms(activity, dictionary) }}
             }
           }
         </p>

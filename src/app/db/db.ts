@@ -7,12 +7,12 @@ import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
 import { IActivityTagCreateDto, IActivityTagDb } from './models/activity-tag';
 import { IActionTagCreateDto, IActionTagDb } from './models/action-tag';
 import { ITagCreateDto, ITagDb } from './models/tag';
-import { IActionLibraryCreateDto, IActionLibraryDb } from './models/action-library';
+import { IActionDictionaryCreateDto, IActionDictionaryDb } from './models/action-dictionary';
 import { IActionMetricCreateDto, IActionMetricDb } from './models/action-metric';
-import { IActivityLibraryItemCreateDto, IActivityLibraryItemDb } from './models/activity-library-item';
+import { IActivityTermCreateDto, IActivityTermDb } from './models/activity-term';
 import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-metric';
-import { ILibraryItemCreateDto, ILibraryItemDb } from './models/library-item';
-import { IDictionaryCreateDto, IDictionaryDb } from './models/library';
+import { ITermCreateDto, ITermDb } from './models/term';
+import { IDictionaryCreateDto, IDictionaryDb } from './models/dictionary';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
 
@@ -25,12 +25,12 @@ export class MyAppDatabase extends Dexie {
   actionTags!: Table<IActionTagDb, number, IActionTagCreateDto>;
   activityTags!: Table<IActivityTagDb, number, IActivityTagCreateDto>;
 
-  actionLibraries!: Table<IActionLibraryDb, number, IActionLibraryCreateDto>;
+  actionDictionaries!: Table<IActionDictionaryDb, number, IActionDictionaryCreateDto>;
   actionMetrics!: Table<IActionMetricDb, number, IActionMetricCreateDto>;
-  activityLibraryItems!: Table<IActivityLibraryItemDb, number, IActivityLibraryItemCreateDto>;
+  activityTerms!: Table<IActivityTermDb, number, IActivityTermCreateDto>;
   activityMetrics!: Table<IActivityMetricDb, number, IActivityMetricCreateDto>;
-  libraryItems!: Table<ILibraryItemDb, number, ILibraryItemCreateDto>;
-  libraries!: Table<IDictionaryDb, number, IDictionaryCreateDto>;
+  terms!: Table<ITermDb, number, ITermCreateDto>;
+  dictionaries!: Table<IDictionaryDb, number, IDictionaryCreateDto>;
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
 
@@ -115,14 +115,14 @@ export class MyAppDatabase extends Dexie {
       actionTags: '++id, actionId, tagId, [actionId+tagId]',
       activityTags: '++id, activityId, tagId, [activityId+tagId]',
 
-      actionLibraries: '++id, [actionId+libraryId]',
+      actionDictionaries: '++id, [actionId+dictionaryId]',
       actionMetrics: '++id, [actionId+metricId]',
-      activityLibraryItems: '++id, [activityId+libraryItemId]',
+      activityTerms: '++id, [activityId+termId]',
       activityMetrics: '++id, [activityId+metricId]',
-      libraryItems: '++id, name',
-      libraries: '++id, name',
+      terms: '++id, name',
+      dictionaries: '++id, name',
       metrics: '++id, name',
-      streaks: '++id, lastDate, actionId, tagId, libraryItemId',
+      streaks: '++id, lastDate, actionId, tagId, termId',
     }).upgrade(async (tx) => {
       // 1. create 3 metrics - mood, energy, satiety
       const moodMetricId = await tx.table('metrics')
@@ -153,8 +153,8 @@ export class MyAppDatabase extends Dexie {
           isBase: true,
         });
 
-      // 2. create 1 library - emotions
-      const emotionsLibraryId = await tx.table('libraries').add({ name: 'TK_EMOTIONS' });
+      // 2. create 1 dictionary - emotions
+      const emotionsDictionaryId = await tx.table('dictionaries').add({ name: 'TK_EMOTIONS' });
 
       // 3. get all activities
       const allActivities = await tx.table('activities').toArray();
@@ -186,31 +186,31 @@ export class MyAppDatabase extends Dexie {
           });
         }
 
-        // 5. save emotions as library items (check for existing ones)
+        // 5. save emotions as dictionary items (check for existing ones)
         if (activity.emotions && activity.emotions !== '') {
           const emotionNames = getEntitiesFromString(activity.emotions);
           for (const emotionDto of emotionNames) {
-            let libraryItem = await tx.table('libraryItems')
+            let term = await tx.table('terms')
               .where('name')
               .equalsIgnoreCase(emotionDto.name)
               .first();
 
-            if (!libraryItem) {
-              const itemId = await tx.table('libraryItems').add({
+            if (!term) {
+              const itemId = await tx.table('terms').add({
                 name: emotionDto.name,
-                libraryId: emotionsLibraryId,
+                dictionaryId: emotionsDictionaryId,
               });
-              libraryItem = {
+              term = {
                 id: itemId,
                 name: emotionDto.name,
-                libraryId: emotionsLibraryId,
+                dictionaryId: emotionsDictionaryId,
               };
             }
 
             // create relation
-            await tx.table('activityLibraryItems').add({
+            await tx.table('activityTerms').add({
               activityId: activity.id,
-              libraryItemId: libraryItem.id!,
+              termId: term.id!,
             });
           }
         }

@@ -6,13 +6,14 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IAction } from 'src/app/db/models/action';
-import { Selectable, SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
+import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { ActionService } from 'src/app/services/action.service';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { replacementValidator } from 'src/app/validators/replacement.validator';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { Selectable } from 'src/app/types/selectable';
 
 @Component({
   selector: 'app-action-replace',
@@ -91,8 +92,9 @@ export class ActionReplacePage implements OnInit {
       type: 'success',
     });
 
+    // TODO: navigate to action list
     await this.router.navigate(
-      ['/library'],
+      ['/dictionary'],
     );
   }
 

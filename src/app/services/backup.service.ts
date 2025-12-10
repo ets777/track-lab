@@ -24,20 +24,20 @@ import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { ActivityTagService } from './activity-tag.service';
 import { FileService } from './file.service';
-import { IActionLibraryDb } from '../db/models/action-library';
+import { IActionDictionaryDb } from '../db/models/action-dictionary';
 import { IActionMetricDb } from '../db/models/action-metric';
-import { IActivityLibraryItemDb } from '../db/models/activity-library-item';
+import { IActivityTermDb } from '../db/models/activity-term';
 import { IActivityMetricDb } from '../db/models/activity-metric';
-import { ILibraryItemDb } from '../db/models/library-item';
-import { IDictionaryDb } from '../db/models/library';
+import { ITermDb } from '../db/models/term';
+import { IDictionaryDb } from '../db/models/dictionary';
 import { IMetricDb } from '../db/models/metric';
 import { IStreakDb } from '../db/models/streak';
-import { ActionLibraryService } from './action-library.service';
+import { ActionDictionaryService } from './action-dictionary.service';
 import { ActionMetricService } from './action-metric.service';
-import { ActivityLibraryItemService } from './activity-library-item.service';
+import { ActivityTermService } from './activity-term.service';
 import { ActivityMetricService } from './activity-metric.service';
-import { LibraryItemService } from './library-item.service';
-import { DictionaryService } from './library.service';
+import { TermService } from './term.service';
+import { DictionaryService } from './dictionary.service';
 import { MetricService } from './metric.service';
 import { StreakService } from './streak.service';
 import { getEntitiesFromString } from '../functions/string';
@@ -50,12 +50,12 @@ type Backup = {
   tags: ITagDb[],
   actionTags: IActionTagDb[],
   activityTags: IActivityTagDb[],
-  actionLibraries: IActionLibraryDb[],
+  actionDictionaries: IActionDictionaryDb[],
   actionMetrics: IActionMetricDb[],
-  activityLibraryItems: IActivityLibraryItemDb[],
+  activityTerms: IActivityTermDb[],
   activityMetrics: IActivityMetricDb[],
-  libraryItems: ILibraryItemDb[],
-  libraries: IDictionaryDb[],
+  terms: ITermDb[],
+  dictionaries: IDictionaryDb[],
   metrics: IMetricDb[],
   streaks: IStreakDb[],
   version: string,
@@ -74,7 +74,7 @@ const helperRevision1 = {
     const moodMetricId = 1;
     const energyMetricId = 2;
     const satietyMetricId = 3;
-    const emotionLibraryId = 1;
+    const emotionDictionaryId = 1;
 
     backup.metrics = [
       {
@@ -106,16 +106,16 @@ const helperRevision1 = {
       },
     ];
 
-    backup.libraries = [{
-      id: emotionLibraryId,
+    backup.dictionaries = [{
+      id: emotionDictionaryId,
       name: 'TK_EMOTIONS',
     }];
 
     backup.activityMetrics = [];
-    backup.libraryItems = [];
-    backup.activityLibraryItems = [];
+    backup.terms = [];
+    backup.activityTerms = [];
 
-    let libraryItemId = 1;
+    let termId = 1;
 
     for (const activity of backup.activities) {
       if (activity.mood && activity.mood > 0) {
@@ -147,27 +147,27 @@ const helperRevision1 = {
           ?.map((emotion) => emotion.name))];
 
         for (const emotion of emotionNames) {
-          let libraryItem = backup.libraryItems.find(
+          let term = backup.terms.find(
             (item: any) => item.name == emotion,
           );
 
-          if (!libraryItem) {
-            backup.libraryItems.push({
-              id: libraryItemId,
+          if (!term) {
+            backup.terms.push({
+              id: termId,
               name: emotion,
-              libraryId: emotionLibraryId,
+              dictionaryId: emotionDictionaryId,
             });
 
-            backup.activityLibraryItems.push({
+            backup.activityTerms.push({
               activityId: activity.id,
-              libraryItemId: libraryItemId,
+              termId: termId,
             });
 
-            libraryItemId++;
+            termId++;
           } else {
-            backup.activityLibraryItems.push({
+            backup.activityTerms.push({
               activityId: activity.id,
-              libraryItemId: libraryItem.id,
+              termId: term.id,
             });
           }
         }
@@ -196,7 +196,7 @@ const helperRevision1 = {
       });
     });
 
-    backup.actionLibraries = [];
+    backup.actionDictionaries = [];
     backup.actionMetrics = [];
     backup.streaks = [];
 
@@ -223,11 +223,11 @@ export class BackupService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionLibraryService = inject(ActionLibraryService);
+  private actionDictionaryService = inject(ActionDictionaryService);
   private actionMetricService = inject(ActionMetricService);
-  private activityLibraryItemService = inject(ActivityLibraryItemService);
+  private activityTermService = inject(ActivityTermService);
   private activityMetricService = inject(ActivityMetricService);
-  private libraryItemService = inject(LibraryItemService);
+  private termService = inject(TermService);
   private dictionaryService = inject(DictionaryService);
   private metricService = inject(MetricService);
   private streakService = inject(StreakService);
@@ -255,12 +255,12 @@ export class BackupService {
       actionTags: await this.actionTagService.getAll(),
       activityTags: await this.activityTagService.getAll(),
 
-      actionLibraries: await this.actionLibraryService.getAll(),
+      actionDictionaries: await this.actionDictionaryService.getAll(),
       actionMetrics: await this.actionMetricService.getAll(),
-      activityLibraryItems: await this.activityLibraryItemService.getAll(),
+      activityTerms: await this.activityTermService.getAll(),
       activityMetrics: await this.activityMetricService.getAll(),
-      libraryItems: await this.libraryItemService.getAll(),
-      libraries: await this.dictionaryService.getAll(),
+      terms: await this.termService.getAll(),
+      dictionaries: await this.dictionaryService.getAll(),
       metrics: await this.metricService.getAll(),
       streaks: await this.streakService.getAll(),
 
@@ -343,43 +343,43 @@ export class BackupService {
 
     await this.clearDatabase();
 
-    await this.activityActionService.bulkAdd(backup.activityActions);
     await this.actionService.bulkAdd(backup.actions);
-    await this.activityService.bulkAdd(backup.activities);
-    await this.achievementService.bulkAdd(backup.achievements);
     await this.tagService.bulkAdd(backup.tags);
+    await this.activityService.bulkAdd(backup.activities);
+    await this.activityActionService.bulkAdd(backup.activityActions);
+    await this.achievementService.bulkAdd(backup.achievements);
     await this.actionTagService.bulkAdd(backup.actionTags);
     await this.activityTagService.bulkAdd(backup.activityTags);
 
-    await this.actionLibraryService.bulkAdd(backup.actionLibraries);
-    await this.actionMetricService.bulkAdd(backup.actionMetrics);
-    await this.activityLibraryItemService.bulkAdd(backup.activityLibraryItems);
-    await this.activityMetricService.bulkAdd(backup.activityMetrics);
-    await this.libraryItemService.bulkAdd(backup.libraryItems);
-    await this.dictionaryService.bulkAdd(backup.libraries);
+    await this.dictionaryService.bulkAdd(backup.dictionaries);
     await this.metricService.bulkAdd(backup.metrics);
+    await this.termService.bulkAdd(backup.terms);
     await this.streakService.bulkAdd(backup.streaks);
+    await this.actionDictionaryService.bulkAdd(backup.actionDictionaries);
+    await this.actionMetricService.bulkAdd(backup.actionMetrics);
+    await this.activityTermService.bulkAdd(backup.activityTerms);
+    await this.activityMetricService.bulkAdd(backup.activityMetrics);
 
     await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
   }
 
   async clearDatabase() {
-    await this.activityActionService.clear();
     await this.actionService.clear();
-    await this.activityService.clear();
-    await this.achievementService.clear();
     await this.tagService.clear();
+    await this.activityService.clear();
+    await this.activityActionService.clear();
+    await this.achievementService.clear();
     await this.actionTagService.clear();
     await this.activityTagService.clear();
 
-    await this.actionLibraryService.clear();
-    await this.actionMetricService.clear();
-    await this.activityLibraryItemService.clear();
-    await this.activityMetricService.clear();
-    await this.libraryItemService.clear();
     await this.dictionaryService.clear();
     await this.metricService.clear();
+    await this.termService.clear();
     await this.streakService.clear();
+    await this.actionDictionaryService.clear();
+    await this.actionMetricService.clear();
+    await this.activityTermService.clear();
+    await this.activityMetricService.clear();
   }
 
   getHelper(version: string) {

@@ -275,27 +275,27 @@ describe('Database Migration (v3 to v4)', () => {
       jasmine.objectContaining({ name: 'TK_SATIETY' }),
     ]));
 
-    // Check library was created for emotions
-    const libraries = await testDatabaseV4.libraries.toArray();
-    expect(libraries.length).toBe(1);
-    expect(libraries[0].name).toBe('TK_EMOTIONS');
+    // Check dictionary was created for emotions
+    const dictionaries = await testDatabaseV4.dictionaries.toArray();
+    expect(dictionaries.length).toBe(1);
+    expect(dictionaries[0].name).toBe('TK_EMOTIONS');
 
     // Check activity metrics were created
     const activityMetrics = await testDatabaseV4.activityMetrics.toArray();
     expect(activityMetrics.length).toBe(6); // 3 metrics for first activity + 3 for second
 
-    // Check library items were created for emotions
-    const libraryItems = await testDatabaseV4.libraryItems.toArray();
-    expect(libraryItems.length).toBe(3); // happy, confident, tired
-    expect(libraryItems).toEqual(jasmine.arrayContaining([
-      jasmine.objectContaining({ name: 'happy', libraryId: libraries[0].id }),
-      jasmine.objectContaining({ name: 'confident', libraryId: libraries[0].id }),
-      jasmine.objectContaining({ name: 'tired', libraryId: libraries[0].id }),
+    // Check dictionary items were created for emotions
+    const terms = await testDatabaseV4.terms.toArray();
+    expect(terms.length).toBe(3); // happy, confident, tired
+    expect(terms).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({ name: 'happy', dictionaryId: dictionaries[0].id }),
+      jasmine.objectContaining({ name: 'confident', dictionaryId: dictionaries[0].id }),
+      jasmine.objectContaining({ name: 'tired', dictionaryId: dictionaries[0].id }),
     ]));
 
-    // Check activity library items were created
-    const activityLibraryItems = await testDatabaseV4.activityLibraryItems.toArray();
-    expect(activityLibraryItems.length).toBe(3); // happy, confident, tired
+    // Check activity dictionary items were created
+    const activityTerms = await testDatabaseV4.activityTerms.toArray();
+    expect(activityTerms.length).toBe(3); // happy, confident, tired
 
     // Check activities no longer have mood, energy, satiety, emotions
     const activities = await testDatabaseV4.activities.toArray();

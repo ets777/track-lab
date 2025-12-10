@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="stats-menu"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <form [formGroup]="filterForm">
+    <app-date-period-input formControlName="datePeriod"></app-date-period-input>
+    <app-select-search
+      appValidationError
+      formControlName="term"
+      label="TK_LIBRARY_ITEM"
+      [suggestions]="suggestions"
+    ></app-select-search>
+  </form>
+  @if (filterForm.valid) {
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
+          <p>{{ 'TK_TOTAL_TIME' | translate }}:
+          {{ getTimeString(totalDuration) }}</p>
+          <p>{{ 'TK_TOTAL_AMOUNT' | translate }}: {{ totalAmount }}</p>
+          <p>{{ 'TK_AVG' | translate }}
+          {{ 'TK_AMOUNT_PER_DAY' | translate | lowercase }}:
+          {{ averageAmountPerDay | number:'1.1-1' }}
+          </p>
+          <p>{{ 'TK_AVG' | translate }}
+          {{ 'TK_TIME_AT_A_TIME' | translate | lowercase }}:
+          {{ getTimeString(averageTimePerTime) }}
+          </p>
+          <p>{{ 'TK_AVG' | translate }}
+          {{ 'TK_TIME_PER_DAY' | translate | lowercase }}:
+          {{ getTimeString(averageTimePerDay) }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    <canvas
+      baseChart
+      [data]="minutesChartData"
+      type="bar"
+    ></canvas>
+    <canvas
+      baseChart
+      [data]="amountChartData"
+      type="bar"
+    ></canvas>
+  }
+</ion-content>

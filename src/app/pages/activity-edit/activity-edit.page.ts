@@ -44,7 +44,7 @@ export class ActivityEditPage {
     }
 
     const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
-    await this.activityService.updateWithLibraryItems(
+    await this.activityService.updateWithTerms(
       this.activityId,
       activityFormValue,
     );

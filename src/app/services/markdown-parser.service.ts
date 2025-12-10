@@ -8,7 +8,7 @@ import { ActivityForm } from '../components/activity-form/activity-form.componen
 import { entitiesToString } from '../functions/string';
 import { FileService } from './file.service';
 import { MetricService } from './metric.service';
-import { DictionaryService } from './library.service';
+import { DictionaryService } from './dictionary.service';
 
 const helperRevision1 = {
   parseLine: (date: string) => {
@@ -226,7 +226,7 @@ export class MarkdownParserService {
       + `---\n\n`;
     const activities = await this.activityService.getByDate(date);
     const metrics = await this.metricService.getAll();
-    const libraries = await this.dictionaryService.getAll();
+    const dictionaries = await this.dictionaryService.getAll();
     const tableTitleTranslationKeys = [
       'TK_TIME',
       'TK_ACTIONS',
@@ -256,9 +256,9 @@ export class MarkdownParserService {
           const energyRecord = records.find((record) => record.metricId == energyMetric?.id);
           const satietyRecord = records.find((record) => record.metricId == satietyMetric?.id);
 
-          const libraryItems = activity.libraryItems;
-          const emotionsLibrary = libraries.find((library) => library.name == 'TK_EMOTIONS');
-          const emotionItems = libraryItems.filter((libraryItem) => libraryItem.libraryId == emotionsLibrary?.id);
+          const terms = activity.terms;
+          const emotionsLibrary = dictionaries.find((dictionary) => dictionary.name == 'TK_EMOTIONS');
+          const emotionItems = terms.filter((term) => term.dictionaryId == emotionsLibrary?.id);
 
           const emotionsString = entitiesToString(emotionItems);
           const tagsString = entitiesToString(activity.tags.map((tag) => ({ ...tag, name: '#' + tag.name })), ' ');

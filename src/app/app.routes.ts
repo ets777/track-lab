@@ -74,7 +74,7 @@ export const routes: Routes = [
       },
       {
         path: 'library-item',
-        loadComponent: () => import('./pages/library-item-stats/library-item-stats.page').then(m => m.LibraryItemStatsPage)
+        loadComponent: () => import('./pages/stats-term/stats-term.page').then(m => m.StatsTermPage)
       },
     ],
   },

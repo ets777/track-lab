@@ -11,8 +11,8 @@ import { IActivity } from 'src/app/db/models/activity';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { IMetric } from 'src/app/db/models/metric';
 import { MetricService } from 'src/app/services/metric.service';
-import { DictionaryService } from 'src/app/services/library.service';
-import { IDictionary } from 'src/app/db/models/library';
+import { DictionaryService } from 'src/app/services/dictionary.service';
+import { IDictionary } from 'src/app/db/models/dictionary';
 
 @Component({
   selector: 'app-activity-list-page',
@@ -31,7 +31,7 @@ export class ActivityListPage {
 
   activities: IActivity[] = [];
   metrics: IMetric[] = [];
-  libraries: IDictionary[] = [];
+  dictionaries: IDictionary[] = [];
   currentDate: string = '';
 
   public listActionSheetButtons = [
@@ -88,7 +88,7 @@ export class ActivityListPage {
   }
 
   async setLibraries() {
-    this.libraries = await this.dictionaryService.getAll();
+    this.dictionaries = await this.dictionaryService.getAll();
   }
 
   async doListAction(event: CustomEvent<OverlayEventDetail>) {

@@ -1,7 +1,8 @@
 <form [formGroup]="activityForm">
   <ion-item>
     <ion-label position="stacked">
-      {{ 'TK_ACTIONS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})
+      {{ 'TK_ACTIONS' | translate }}
+      ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})
     </ion-label>
     <ion-textarea
       #actionsInput
@@ -18,18 +19,21 @@
   </ion-item>
 
   @if (showActionSuggestions) {
-    <ion-list class="suggestions" lines="none">
-    @for (suggestion of filteredActionSuggestions; track suggestion) {
-      <ion-item
-        button
-        (click)="selectSuggestion(suggestion)"
-      >
-        {{ suggestion | translate }}
-      </ion-item>
-    }
+    <ion-list
+      class="suggestions"
+      lines="none"
+    >
+      @for (suggestion of filteredActionSuggestions; track suggestion) {
+        <ion-item
+          button
+          (click)="selectSuggestion(suggestion)"
+        >
+          {{ suggestion | translate }}
+        </ion-item>
+      }
     </ion-list>
   }
-  
+
   <ion-item>
     <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
     <ion-input
@@ -64,18 +68,18 @@
       [maskito]="timeMask"
       [maskitoElement]="maskPredicate"
     >
-    @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
-      <ion-icon
-        class="input-icon"
-        slot="end"
-        src="assets/icon/refresh.svg"
-        (click)="updateEndTime($event)"
-      ></ion-icon>
-    }
+      @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
+        <ion-icon
+          class="input-icon"
+          slot="end"
+          src="assets/icon/refresh.svg"
+          (click)="updateEndTime($event)"
+        ></ion-icon>
+      }
     </ion-input>
   </ion-item>
 
-  <app-tag-input 
+  <app-tag-input
     appValidationError
     formControlName="tags"
   ></app-tag-input>

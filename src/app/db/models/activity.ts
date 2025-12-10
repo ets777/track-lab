@@ -1,8 +1,7 @@
 import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 import { IAction } from "./action";
 import { ITag } from "./tag";
-import { IActivityLibraryItem } from "./activity-library-item";
-import { ILibraryItem } from "./library-item";
+import { ITerm } from "./term";
 import { IActivityMetric } from "./activity-metric";
 
 export interface IActivityDb {
@@ -18,6 +17,6 @@ export type IActivityCreateDto = WithOptionalKeys<IActivityDb, 'id'>;
 export interface IActivity extends IActivityDb {
     actions: IAction[];
     tags: ITag[];
-    libraryItems: ILibraryItem[],
+    terms: ITerm[],
     metricRecords: IActivityMetric[],
 }

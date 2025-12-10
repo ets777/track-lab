@@ -1,4 +1,4 @@
-import { Component, forwardRef, inject } from '@angular/core';
+import { AfterViewInit, Component, forwardRef, inject } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
 import { MaskitoDirective } from '@maskito/angular';
@@ -32,7 +32,7 @@ type PeriodName = 'week' | 'month';
     },
   ],
 })
-export class DatePeriodInputComponent implements ControlValueAccessor, Validator {
+export class DatePeriodInputComponent implements ControlValueAccessor, Validator, AfterViewInit {
   private formBuilder = inject(FormBuilder);
 
   public form: ModelFormGroup<DatePeriod>;

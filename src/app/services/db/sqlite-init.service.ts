@@ -9,12 +9,12 @@ import { ActionTagService } from '../action-tag.service';
 import { ActivityTagService } from '../activity-tag.service';
 import { Preferences } from '@capacitor/preferences';
 import { DatabaseRouter } from './database-router.service';
-import { ActionLibraryService } from '../action-library.service';
+import { ActionDictionaryService } from '../action-dictionary.service';
 import { ActionMetricService } from '../action-metric.service';
-import { ActivityLibraryItemService } from '../activity-library-item.service';
+import { ActivityTermService } from '../activity-term.service';
 import { ActivityMetricService } from '../activity-metric.service';
-import { LibraryItemService } from '../library-item.service';
-import { DictionaryService } from '../library.service';
+import { TermService } from '../term.service';
+import { DictionaryService } from '../dictionary.service';
 import { MetricService } from '../metric.service';
 import { databaseUpgrades } from './database.upgrade';
 
@@ -28,11 +28,11 @@ export class SQLiteInitService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionLibraryService = inject(ActionLibraryService);
+  private actionDictionaryService = inject(ActionDictionaryService);
   private actionMetricService = inject(ActionMetricService);
-  private activityLibraryItemService = inject(ActivityLibraryItemService);
+  private activityTermService = inject(ActivityTermService);
   private activityMetricService = inject(ActivityMetricService);
-  private libraryItemService = inject(LibraryItemService);
+  private termService = inject(TermService);
   private dictionaryService = inject(DictionaryService);
   private metricService = inject(MetricService);
   private databaseRouter = inject(DatabaseRouter);
@@ -109,12 +109,12 @@ export class SQLiteInitService {
     const actionTags = await this.actionTagService.getAll();
     const activityTags = await this.activityTagService.getAll();
 
-    const actionLibraries = await this.actionLibraryService.getAll();
+    const actionDictionaries = await this.actionDictionaryService.getAll();
     const actionMetrics = await this.actionMetricService.getAll();
-    const activityLibraryItems = await this.activityLibraryItemService.getAll();
+    const activityTerms = await this.activityTermService.getAll();
     const activityMetrics = await this.activityMetricService.getAll();
-    const libraryItems = await this.libraryItemService.getAll();
-    const libraries = await this.dictionaryService.getAll();
+    const terms = await this.termService.getAll();
+    const dictionaries = await this.dictionaryService.getAll();
     const metrics = await this.metricService.getAll();
 
     try {
@@ -210,39 +210,39 @@ export class SQLiteInitService {
         );
       }
 
-      if (libraries.length) {
-        await this.sqliteService.run('DELETE FROM libraries');
+      if (dictionaries.length) {
+        await this.sqliteService.run('DELETE FROM dictionaries');
         await this.insertArrayChunked(
-          'libraries',
-          libraries,
+          'dictionaries',
+          dictionaries,
           ['id', 'name'],
         );
       }
 
-      if (actionLibraries.length) {
-        await this.sqliteService.run('DELETE FROM actionLibraries');
+      if (actionDictionaries.length) {
+        await this.sqliteService.run('DELETE FROM actionDictionaries');
         await this.insertArrayChunked(
-          'actionLibraries',
-          actionLibraries,
-          ['id', 'actionId', 'libraryId'],
+          'actionDictionaries',
+          actionDictionaries,
+          ['id', 'actionId', 'dictionaryId'],
         );
       }
 
-      if (libraryItems.length) {
-        await this.sqliteService.run('DELETE FROM libraryItems');
+      if (terms.length) {
+        await this.sqliteService.run('DELETE FROM terms');
         await this.insertArrayChunked(
-          'libraryItems',
-          libraryItems,
-          ['id', 'name', 'libraryId'],
+          'terms',
+          terms,
+          ['id', 'name', 'dictionaryId'],
         );
       }
 
-      if (activityLibraryItems.length) {
-        await this.sqliteService.run('DELETE FROM activityLibraryItems');
+      if (activityTerms.length) {
+        await this.sqliteService.run('DELETE FROM activityTerms');
         await this.insertArrayChunked(
-          'activityLibraryItems',
-          activityLibraryItems,
-          ['id', 'activityId', 'libraryItemId'],
+          'activityTerms',
+          activityTerms,
+          ['id', 'activityId', 'termId'],
         );
       }
 

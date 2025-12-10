@@ -1,15 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, forwardRef, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms';
 import { IonItem, IonList, IonInput, IonLabel } from "@ionic/angular/standalone";
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-
-export type Selectable<T> = {
-  num: number;
-  title: string;
-  subtitle?: string;
-  item: T; 
-}
+import { TranslateModule } from '@ngx-translate/core';
+import { Selectable } from 'src/app/types/selectable';
 
 @Component({
   selector: 'app-select-search',
@@ -24,12 +18,12 @@ export type Selectable<T> = {
     },
     {
       provide: NG_VALIDATORS,
-      multi: true,
       useExisting: SelectSearchComponent,
+      multi: true,
     },
   ],
 })
-export class SelectSearchComponent implements ControlValueAccessor, Validator {
+export class SelectSearchComponent implements ControlValueAccessor, Validator, OnChanges {
   @Input() suggestions: Selectable<any>[] = [];
   @Input() label: string = '';
   
@@ -43,9 +37,6 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator {
   private onTouched = () => { };
 
   constructor() {}
-
-  async ngOnInit() {
-  }
 
   writeValue(value: any): void {
     this.value = value;

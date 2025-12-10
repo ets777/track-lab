@@ -12,8 +12,8 @@ import { ActivityTagService } from './activity-tag.service';
 import { DatabaseService } from './db/database.service';
 import { IActivityMetric } from '../db/models/activity-metric';
 import { ActivityMetricService } from './activity-metric.service';
-import { ILibraryItem } from '../db/models/library-item';
-import { LibraryItemService } from './library-item.service';
+import { ITerm } from '../db/models/term';
+import { TermService } from './term.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService extends DatabaseService<'activities'> {
@@ -23,7 +23,7 @@ export class ActivityService extends DatabaseService<'activities'> {
   private tagService = inject(TagService);
   private activityTagService = inject(ActivityTagService);
   private activityMetricService = inject(ActivityMetricService);
-  private libraryItemService = inject(LibraryItemService);
+  private termService = inject(TermService);
 
   tableName: 'activities' = 'activities' as const;
 
@@ -47,7 +47,7 @@ export class ActivityService extends DatabaseService<'activities'> {
     const lastActivity = await this.getLastEnriched(activity.date);
 
     if (lastActivity && !lastActivity.endTime && lastActivity.id) {
-      await this.updateWithLibraryItems(
+      await this.updateWithTerms(
         lastActivity.id,
         { endTime: activity.startTime },
         false,
@@ -127,7 +127,7 @@ export class ActivityService extends DatabaseService<'activities'> {
     return this.enrichAll(activities);
   }
 
-  async updateWithLibraryItems(
+  async updateWithTerms(
     id: number,
     changes: Partial<ActivityForm>,
     sendEvent: boolean = true,
@@ -195,14 +195,14 @@ export class ActivityService extends DatabaseService<'activities'> {
     const actions: IAction[] = await this.actionService.getByActivityId(activityDb.id);
     const tags: ITag[] = await this.tagService.getByActivityId(activityDb.id);
     const metricRecords: IActivityMetric[] = await this.activityMetricService.getByActivityId(activityDb.id);
-    const libraryItems: ILibraryItem[] = await this.libraryItemService.getByActivityId(activityDb.id);
+    const terms: ITerm[] = await this.termService.getByActivityId(activityDb.id);
 
     return {
       ...activityDb,
       actions,
       tags,
       metricRecords,
-      libraryItems,
+      terms,
     } as IActivity;
   }
 

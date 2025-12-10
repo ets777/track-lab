@@ -9,7 +9,7 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { TagsComponent } from "../tags/tags.component";
 import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
-import { IDictionary } from 'src/app/db/models/library';
+import { IDictionary } from 'src/app/db/models/dictionary';
 
 @Component({
   selector: 'app-activity-list',
@@ -27,7 +27,7 @@ export class ActivityListComponent {
   // TODO: this is very stupid, I know. Needs to be reworked during moving to signals
   @Input() activities: IActivity[] = [];
   @Input() metrics: IMetric[] = [];
-  @Input() libraries: IDictionary[] = [];
+  @Input() dictionaries: IDictionary[] = [];
 
   entitiesToString = entitiesToString;
 
@@ -116,16 +116,16 @@ export class ActivityListComponent {
     return record?.value;
   }
 
-  activityHasLibraryItems(activity: IActivity, library: IDictionary) {
-    const activityLibraryItems = activity.libraryItems;
+  activityhasTerms(activity: IActivity, dictionary: IDictionary) {
+    const activityTerms = activity.terms;
 
-    return activityLibraryItems.some((libraryItem) => libraryItem.libraryId == library.id);
+    return activityTerms.some((term) => term.dictionaryId == dictionary.id);
   }
 
-  getLibraryItems(activity: IActivity, library: IDictionary) {
-    const activityLibraryItems = activity.libraryItems;
-    const libraryItems = activityLibraryItems.filter((item) => item.libraryId == library.id);
+  getTerms(activity: IActivity, dictionary: IDictionary) {
+    const activityTerms = activity.terms;
+    const terms = activityTerms.filter((item) => item.dictionaryId == dictionary.id);
 
-    return entitiesToString(libraryItems);
+    return entitiesToString(terms);
   }
 }

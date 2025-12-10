@@ -50,7 +50,8 @@ export class ActionEditPage {
       type: 'success',
     });
 
-    await this.router.navigate(['/library']);
+    // TODO: navigate to action list
+    await this.router.navigate(['/dictionary']);
   }
 
   isFormValid() {

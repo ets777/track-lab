@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonButton, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from 'src/app/services/activity.service';
-import { Selectable, SelectSearchComponent } from "src/app/form-elements/select-search/select-search.component";
+import { SelectSearchComponent } from "src/app/form-elements/select-search/select-search.component";
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { DatePeriod } from 'src/app/types/date-period';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
@@ -14,32 +14,29 @@ import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
 import { addDays, format } from 'date-fns';
-
-type LibraryItem = {
-  name: string;
-  type: ('action' | 'tag');
-};
+import { Selectable, Term } from 'src/app/types/selectable';
+import { ModelFormGroup } from 'src/app/types/model-form-group';
+import { filterUniqueElements } from 'src/app/functions/term';
 
 export type FilterForm = {
-  libraryItem: LibraryItem;
+  term: Term;
   datePeriod: DatePeriod;
 };
 
 @Component({
-  selector: 'app-library-item-stats',
-  templateUrl: './library-item-stats.page.html',
-  styleUrls: ['./library-item-stats.page.scss'],
+  selector: 'app-stats-term',
+  templateUrl: './stats-term.page.html',
+  styleUrls: ['./stats-term.page.scss'],
   imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
 })
-export class LibraryItemStatsPage {
+export class StatsTermPage {
   private activityService = inject(ActivityService);
   private translate = inject(TranslateService);
   private formBuilder = inject(FormBuilder);
 
   activities: IActivity[] = [];
-  public libraryItems: LibraryItem[] = [];
-  public filterForm: FormGroup;
-  public suggestions: Selectable<LibraryItem>[] = [];
+  public filterForm: ModelFormGroup<FilterForm>;
+  public suggestions: Selectable<Term>[] = [];
   minutesChartData!: ChartConfiguration<'bar'>['data'];
   amountChartData!: ChartConfiguration<'bar'>['data'];
   totalAmount: number = 0;
@@ -50,8 +47,8 @@ export class LibraryItemStatsPage {
 
   constructor() {
     this.filterForm = this.formBuilder.group({
-      datePeriod: [null, Validators.required],
-      libraryItem: [null, Validators.required],
+      datePeriod: [null as DatePeriod | null, Validators.required],
+      term: [null as Term | null, Validators.required],
     });
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -71,6 +68,10 @@ export class LibraryItemStatsPage {
   }
 
   async loadSuggestions() {
+    if (!this.filterForm.value.datePeriod) {
+      return;
+    }
+
     const { startDate, endDate } = this.filterForm.value.datePeriod;
 
     if (!startDate || !endDate) {
@@ -85,7 +86,8 @@ export class LibraryItemStatsPage {
       .map((action) => ({
         name: action.name,
         type: 'action',
-      } as LibraryItem));
+        termId: action.id,
+      } as Term));
 
     const activityTags = this.activities
       .flatMap((activity) => activity.tags)
@@ -93,7 +95,8 @@ export class LibraryItemStatsPage {
       .map((tag) => ({
         name: tag.name,
         type: 'tag',
-      } as LibraryItem));
+        termId: tag.id,
+      } as Term));
 
     const actionTags = this.activities
       .flatMap((activity) => activity.actions)
@@ -102,24 +105,30 @@ export class LibraryItemStatsPage {
       .map((tag) => ({
         name: tag.name,
         type: 'tag',
-      } as LibraryItem));
+        termId: tag.id,
+      } as Term));
 
-    this.libraryItems = this.filterUniqueElements([
+    const allTerms = filterUniqueElements([
       ...actions,
       ...activityTags,
       ...actionTags,
     ]);
 
-    this.suggestions = this.libraryItems.map((item, index) => ({
+    this.suggestions = allTerms.map((term, index) => ({
       num: index,
-      title: item.name,
-      subtitle: this.translate.instant('TK_' + item.type.toUpperCase()),
-      item,
+      title: term.name,
+      subtitle: this.translate.instant('TK_' + term.type.toUpperCase()),
+      item: term,
     }));
   }
 
   setChartData() {
-    const libraryItem: LibraryItem = this.filterForm.value.libraryItem;
+    if (!this.filterForm.value.datePeriod || !this.filterForm.value.term) {
+      return;
+    }
+
+    const term: Term = this.filterForm.value.term;
+    
     const { startDate, endDate } = this.filterForm.value.datePeriod;
 
     const dates: string[] = [];
@@ -147,7 +156,7 @@ export class LibraryItemStatsPage {
         (activities) => {
           const filteredActivities = activities
             .filter(
-              (activity) => this.hasLibraryItem(activity, libraryItem),
+              (activity) => this.hasTerm(activity, term),
             );
 
           const totalMinutes = filteredActivities.reduce((sum, curr) => sum += getActivityDurationMinutes(curr), 0);
@@ -192,33 +201,24 @@ export class LibraryItemStatsPage {
     };
   }
 
-  hasLibraryItem(activity: IActivity, libraryItem: LibraryItem) {
-    if (libraryItem.type == 'action') {
+  hasTerm(activity: IActivity, term: Term) {
+    if (term.type == 'action') {
       return activity.actions.some(
-        (action) => action.name == libraryItem.name,
+        (action) => action.name == term.name,
       );
     }
 
-    if (libraryItem.type == 'tag') {
+    if (term.type == 'tag') {
       return activity.tags.some(
-        (tag) => tag.name == libraryItem.name,
+        (tag) => tag.name == term.name,
       ) || activity.actions.some(
         (action) => action.tags.some(
-          (tag) => tag.name == libraryItem.name,
+          (tag) => tag.name == term.name,
         ),
       );
     }
 
     return false;
-  }
-
-  filterUniqueElements(array: LibraryItem[]) {
-    return array.filter(
-      (item, index, self) =>
-        index === self.findIndex(
-          (t) => t.name === item.name && t.type === item.type
-        )
-    );
   }
 
   getTimeString(minutes: number) {

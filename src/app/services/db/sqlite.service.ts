@@ -590,11 +590,14 @@ export class SQLiteService {
     if (this.platform !== 'web') {
       return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
     }
-
+    
     const database = this.databaseName;
-
+    
     if (this.sqlite != null) {
       try {
+        // commit before saving to store, because saveToStore implicitly
+        // commit transaction, but isTransactionActive doesn't know that
+        await this.commitTransaction();
         await this.sqlite.saveToStore(database);
         return Promise.resolve();
       } catch (err) {
