@@ -117,6 +117,8 @@ export const databaseUpgrades = [
         tagId INTEGER,
         actionId INTEGER,
         termId INTEGER,
+        startDate TEXT NOT NULL,
+        lastDate TEXT,
         FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
         FOREIGN KEY(actionId) REFERENCES actions(id) ON DELETE CASCADE,
         FOREIGN KEY(termId) REFERENCES terms(id) ON DELETE CASCADE,

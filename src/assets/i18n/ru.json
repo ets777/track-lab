@@ -311,5 +311,8 @@
   "TK_HIDE_FROM_SEARCH": "Скрыть из поиска",
   "TK_LAB": "Лаба",
   "TK_DICTIONARIES": "Словари",
-  "TK_STREAKS": "Серии"
+  "TK_STREAKS": "Серии",
+  "TK_NEW_STREAK": "Новая серия",
+  "TK_START_DATE": "Дата начала",
+  "TK_TERM": "Термин"
 }

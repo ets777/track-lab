@@ -1,13 +1,16 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>streak-add</ion-title>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_NEW_STREAK' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="addStreak()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_ADD' | translate }}</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">streak-add</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <app-streak-form #addFormRef></app-streak-form>
 </ion-content>

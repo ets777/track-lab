@@ -25,9 +25,9 @@ export class TagAddPage {
       return;
     }
 
-    const activityFormValue = this.addFormRef.tagForm.value as TagForm;
+    const tagFormValue = this.addFormRef.tagForm.value as TagForm;
 
-    await this.tagService.add({ name: activityFormValue.name });
+    await this.tagService.add({ name: tagFormValue.name });
     this.resetForm();
 
     this.toastService.enqueue({

@@ -14,12 +14,12 @@ import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
 import { addDays, format } from 'date-fns';
-import { Selectable, Term } from 'src/app/types/selectable';
+import { Selectable, CommonTerm } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { filterUniqueElements } from 'src/app/functions/term';
 
 export type FilterForm = {
-  term: Term;
+  term: CommonTerm;
   datePeriod: DatePeriod;
 };
 
@@ -36,7 +36,7 @@ export class StatsTermPage {
 
   activities: IActivity[] = [];
   public filterForm: ModelFormGroup<FilterForm>;
-  public suggestions: Selectable<Term>[] = [];
+  public suggestions: Selectable<CommonTerm>[] = [];
   minutesChartData!: ChartConfiguration<'bar'>['data'];
   amountChartData!: ChartConfiguration<'bar'>['data'];
   totalAmount: number = 0;
@@ -48,7 +48,7 @@ export class StatsTermPage {
   constructor() {
     this.filterForm = this.formBuilder.group({
       datePeriod: [null as DatePeriod | null, Validators.required],
-      term: [null as Term | null, Validators.required],
+      term: [null as CommonTerm | null, Validators.required],
     });
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -87,7 +87,7 @@ export class StatsTermPage {
         name: action.name,
         type: 'action',
         termId: action.id,
-      } as Term));
+      } as CommonTerm));
 
     const activityTags = this.activities
       .flatMap((activity) => activity.tags)
@@ -96,7 +96,7 @@ export class StatsTermPage {
         name: tag.name,
         type: 'tag',
         termId: tag.id,
-      } as Term));
+      } as CommonTerm));
 
     const actionTags = this.activities
       .flatMap((activity) => activity.actions)
@@ -106,7 +106,7 @@ export class StatsTermPage {
         name: tag.name,
         type: 'tag',
         termId: tag.id,
-      } as Term));
+      } as CommonTerm));
 
     const allTerms = filterUniqueElements([
       ...actions,
@@ -127,7 +127,7 @@ export class StatsTermPage {
       return;
     }
 
-    const term: Term = this.filterForm.value.term;
+    const term: CommonTerm = this.filterForm.value.term;
     
     const { startDate, endDate } = this.filterForm.value.datePeriod;
 
@@ -201,7 +201,7 @@ export class StatsTermPage {
     };
   }
 
-  hasTerm(activity: IActivity, term: Term) {
+  hasTerm(activity: IActivity, term: CommonTerm) {
     if (term.type == 'action') {
       return activity.actions.some(
         (action) => action.name == term.name,

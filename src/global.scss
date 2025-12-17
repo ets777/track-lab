@@ -49,6 +49,7 @@
 ion-item.invalid {
     --highlight-color-focused: var(--ion-color-danger);
     --border-color: var(--ion-color-danger);
+    --color: var(--ion-color-danger);
 
     ion-input, ion-textarea {
         --color: var(--ion-color-danger);

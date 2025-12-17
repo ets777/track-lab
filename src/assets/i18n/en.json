@@ -311,5 +311,8 @@
   "TK_HIDE_FROM_SEARCH": "Hide from search",
   "TK_LAB": "Lab",
   "TK_DICTIONARIES": "Dictionaries",
-  "TK_STREAKS": "Streaks"
+  "TK_STREAKS": "Streaks",
+  "TK_NEW_STREAK": "New streak",
+  "TK_START_DATE": "Start date",
+  "TK_TERM": "Term"
 }

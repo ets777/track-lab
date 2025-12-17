@@ -7,11 +7,20 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    (click)="goToAddPage()"
+  >
+    <ion-fab-button>
+      <ion-icon src="assets/icon/plus.svg"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
   <ion-list>
     @for (streak of streaks; track streak.id) {
       <ion-item class="streak">
         <ion-label>
-          <div class="title">{{ streak.actionId }}</div>
+          <div class="title">{{ getTermName(streak) }}</div>
         </ion-label>
       </ion-item>
     }

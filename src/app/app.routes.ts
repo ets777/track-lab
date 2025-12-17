@@ -2,11 +2,6 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
-    path: 'activity-add',
-    loadComponent: () =>
-      import('./pages/activity-add/activity-add.page').then((m) => m.ActivityAddPage),
-  },
-  {
     path: 'activity',
     children: [
       {
@@ -20,6 +15,10 @@ export const routes: Routes = [
       {
         path: 'view',
         loadComponent: () => import('./pages/activity-view/activity-view.page').then(m => m.ActivityViewPage)
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/activity-add/activity-add.page').then((m) => m.ActivityAddPage),
       },
     ]
   },
@@ -73,7 +72,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/achievements/achievements.page').then(m => m.AchievementsPage)
       },
       {
-        path: 'library-item',
+        path: 'library',
         loadComponent: () => import('./pages/stats-term/stats-term.page').then(m => m.StatsTermPage)
       },
     ],
@@ -119,15 +118,15 @@ export const routes: Routes = [
   },
   {
     path: 'database',
-    loadComponent: () => import('./pages/database/database.page').then( m => m.DatabasePage)
+    loadComponent: () => import('./pages/database/database.page').then(m => m.DatabasePage)
   },
   {
     path: 'settings',
-    loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)
+    loadComponent: () => import('./pages/settings/settings.page').then(m => m.SettingsPage)
   },
   {
     path: 'library',
-    loadComponent: () => import('./pages/library/library.page').then( m => m.LibraryPage)
+    loadComponent: () => import('./pages/library/library.page').then(m => m.LibraryPage)
   },
   {
     path: '',

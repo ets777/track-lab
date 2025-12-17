@@ -18,7 +18,6 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  standalone: true,
   imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent, TagsComponent]
 })
 export class LibraryPage {

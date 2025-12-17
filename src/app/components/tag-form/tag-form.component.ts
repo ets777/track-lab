@@ -19,7 +19,7 @@ export type TagForm = {
   selector: 'app-tag-form',
   templateUrl: './tag-form.component.html',
   styleUrls: ['./tag-form.component.scss'],
-  imports: [IonCheckbox, IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule, ValidationErrorDirective],
+  imports: [IonCheckbox, IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, CommonModule],
 })
 export class TagFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);

@@ -75,3 +75,15 @@ function findAllIndexes(text: string, subString: string) {
 
   return result;
 }
+
+export function capitalize(text: string) {
+  if (typeof text != 'string') {
+    return;
+  }
+
+  if (text === '') {
+    return '';
+  }
+
+  return text[0].toUpperCase() + text.slice(1);
+}

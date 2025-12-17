@@ -5,8 +5,9 @@ export type Selectable<T> = {
   item: T;
 }
 
-export type Term = {
+// CommonTerm includes actions, tags and user terms
+export type CommonTerm = {
   name: string;
-  type: ('action' | 'tag' | 'custom');
+  type: string;
   termId: number;
 };
