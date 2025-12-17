@@ -3,5 +3,9 @@
   "html.format.templating": [
     "angular"
   ],
-  "html.format.indentHandlebars": true
+  "html.format.indentHandlebars": true,
+  "html.format.wrapAttributes": "force-expand-multiline",
+  "html.format.contentUnformatted": "pre,code,textarea, p, div",
+  "html.format.wrapLineLength": 80,
+  "html.format.preserveNewLines": true
 }
