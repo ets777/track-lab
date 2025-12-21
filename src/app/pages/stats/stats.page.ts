@@ -40,7 +40,7 @@ export class StatsPage {
   metric: IMetric = {
     id: 1,
     name: 'mood',
-    isInt: true,
+    step: 1,
     isHidden: false,
   };
 

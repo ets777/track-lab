@@ -3,10 +3,10 @@ import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 export interface IMetricDb {
     id: number;
     name: string;
-    isInt: boolean;
     isHidden: boolean;
     isBase?: boolean;
     unit?: string;
+    step: number;
     minValue?: number;
     maxValue?: number;
 }

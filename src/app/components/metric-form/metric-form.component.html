@@ -1,0 +1,57 @@
+<form [formGroup]="metricForm">
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+    <ion-input
+      appValidationError
+      formControlName="name"
+      name="name"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_UNIT' | translate }}</ion-label>
+    <ion-input
+      formControlName="unit"
+      name="unit"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_STEP' | translate }}</ion-label>
+    <ion-input
+      formControlName="step"
+      name="step"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_MIN_VALUE' | translate }}</ion-label>
+    <ion-input
+      formControlName="minValue"
+      name="minValue"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_MAX_VALUE' | translate }}</ion-label>
+    <ion-input
+      formControlName="maxValue"
+      name="maxValue"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-checkbox
+      labelPlacement="end"
+      formControlName="isHidden"
+      name="isHidden"
+    >{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
+  </ion-item>
+
+  <app-select-search
+    appValidationError
+    formControlName="term"
+    label="TK_TERM"
+    [suggestions]="suggestions"
+  ></app-select-search>
+</form>

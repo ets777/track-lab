@@ -1,90 +1,108 @@
 <ion-header>
-    <ion-toolbar>
-        <ion-title>{{ 'TK_SETTINGS' | translate }}</ion-title>
-    </ion-toolbar>
+  <ion-toolbar>
+    <ion-title>{{ 'TK_SETTINGS' | translate }}</ion-title>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
 
-    <h2>{{ 'TK_LANGUAGE' | translate }}</h2>
-    <ion-list>
-        <ion-item (click)="changeLanguage('en')">
-            {{ 'TK_ENGLISH' | translate }}
-            @if (getLanguage() == 'en') {
-                <ion-icon class="check" src="assets/icon/check.svg"></ion-icon>
-            }
-        </ion-item>
-        <ion-item (click)="changeLanguage('ru')">
-            {{ 'TK_RUSSIAN' | translate }}
-            @if (getLanguage() == 'ru') {
-                <ion-icon class="check" src="assets/icon/check.svg"></ion-icon>
-            }
-        </ion-item>
-    </ion-list>
+  <h2>{{ 'TK_LANGUAGE' | translate }}</h2>
+  <ion-list>
+    <ion-item (click)="changeLanguage('en')">
+      {{ 'TK_ENGLISH' | translate }}
+      @if (getLanguage() === 'en') {
+        <ion-icon
+          class="check"
+          src="assets/icon/check.svg"
+        ></ion-icon>
+      }
+    </ion-item>
+    <ion-item (click)="changeLanguage('ru')">
+      {{ 'TK_RUSSIAN' | translate }}
+      @if (getLanguage() === 'ru') {
+        <ion-icon
+          class="check"
+          src="assets/icon/check.svg"
+        ></ion-icon>
+      }
+    </ion-item>
+  </ion-list>
 
-    <h2>{{ 'TK_IMPORT_EXPORT' | translate }}</h2>
-    <ion-list>
-        <ion-item (click)="mdFileInput.click()">{{ 'TK_IMPORT_ACTIVITIES_FROM_MD' | translate }}</ion-item>
+  <h2>{{ 'TK_IMPORT_EXPORT' | translate }}</h2>
+  <ion-list>
+    <ion-item
+      (click)="mdFileInput.click()">{{ 'TK_IMPORT_ACTIVITIES_FROM_MD' | translate }}</ion-item>
 
-        <ion-item (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
+    <ion-item
+      (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
 
-        <ion-item (click)="txtFileInput.click()">{{ 'TK_RESTORE_DATABASE' | translate }}</ion-item>
+    <ion-item
+      (click)="txtFileInput.click()">{{ 'TK_RESTORE_DATABASE' | translate }}</ion-item>
 
-        <ion-item>
-        <ion-select 
-            label="{{ 'TK_AUTOBACKUP' | translate }}" 
-            label-placement="fixed" 
-            [(ngModel)]="autoBackupPeriod"
-            (ionChange)="setAutobackupPeriod($event)"
-        >
-            <ion-select-option [value]="autoBackupOption.none">{{ autoBackupOption.none | translate }}</ion-select-option>
-            <ion-select-option [value]="autoBackupOption.daily">{{ autoBackupOption.daily | translate }}</ion-select-option>
-            <ion-select-option [value]="autoBackupOption.weekly">{{ autoBackupOption.weekly | translate }}</ion-select-option>
-            <ion-select-option [value]="autoBackupOption.monthly">{{ autoBackupOption.monthly | translate}}</ion-select-option>
-        </ion-select>
-        </ion-item>
+    <ion-item>
+      <ion-select
+        label="{{ 'TK_AUTOBACKUP' | translate }}"
+        label-placement="fixed"
+        [(ngModel)]="autoBackupPeriod"
+        (ionChange)="setAutobackupPeriod($event)"
+      >
+        <ion-select-option
+          [value]="autoBackupOption.none">{{ autoBackupOption.none | translate }}</ion-select-option>
+        <ion-select-option
+          [value]="autoBackupOption.daily">{{ autoBackupOption.daily | translate }}</ion-select-option>
+        <ion-select-option
+          [value]="autoBackupOption.weekly">{{ autoBackupOption.weekly | translate }}</ion-select-option>
+        <ion-select-option
+          [value]="autoBackupOption.monthly">{{ autoBackupOption.monthly | translate}}</ion-select-option>
+      </ion-select>
+    </ion-item>
 
-        @if (password) {
-            <ion-item (click)="changePassword(false)">{{ 'TK_CHANGE_PASSWORD' | translate }}</ion-item>
-        } @else {
-            <ion-item (click)="changePassword(true)">{{ 'TK_SET_PASSWORD_INFINITIVE' | translate }}</ion-item>
-        }
+    @if (password) {
+      <ion-item
+        (click)="changePassword(false)">{{ 'TK_CHANGE_PASSWORD' | translate }}</ion-item>
+    } @else {
+      <ion-item
+        (click)="changePassword(true)">{{ 'TK_SET_PASSWORD_INFINITIVE' | translate }}</ion-item>
+    }
 
-        <ion-item>
-            {{ 'TK_LAST_BACKUP_DATE' | translate }}: 
-            @if (lastBackupDate) {
-                {{ lastBackupDate }}
-            } @else {
-                {{ 'TK_NEVER' | translate }}
-            }
-        </ion-item>
-    </ion-list>
+    <ion-item>
+      {{ 'TK_LAST_BACKUP_DATE' | translate }}:
+      @if (lastBackupDate) {
+        {{ lastBackupDate }}
+      } @else {
+        {{ 'TK_NEVER' | translate }}
+      }
+    </ion-item>
+  </ion-list>
 
-    <input
-        #mdFileInput
-        type="file"
-        accept=".md"
-        hidden
-        (change)="onMdFileSelected($event)"
-    >
-    <input
-        #txtFileInput
-        type="file"
-        accept=".txt"
-        hidden
-        (change)="onTxtFileSelected($event)"
-    >
+  <input
+    #mdFileInput
+    type="file"
+    accept=".md"
+    hidden
+    (change)="onMdFileSelected($event)"
+  >
+  <input
+    #txtFileInput
+    type="file"
+    accept=".txt"
+    hidden
+    (change)="onTxtFileSelected($event)"
+  >
 
-    <h2>{{ 'TK_APP_INFO' | translate}}</h2>
-    <ion-list>
-        <ion-item>
-            {{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}
-        </ion-item>
-        <ion-item>
-            <a href="https://etsbox.com/track-lab" (click)="visitHomePage($event)">
-                {{ 'TK_HOME_PAGE' | translate }}
-            </a>
-        </ion-item>
-    </ion-list>
+  <h2>{{ 'TK_APP_INFO' | translate}}</h2>
+  <ion-list>
+    <ion-item>
+      {{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}
+    </ion-item>
+    <ion-item>
+      <a
+        href="https://etsbox.com/track-lab"
+        (click)="visitHomePage($event)"
+      >
+        {{ 'TK_HOME_PAGE' | translate }}
+      </a>
+    </ion-item>
+  </ion-list>
 
 </ion-content>

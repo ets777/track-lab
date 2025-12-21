@@ -89,7 +89,7 @@ export const databaseUpgrades = [
         name TEXT NOT NULL UNIQUE,
         isBase INTEGER CHECK (isBase IN (0, 1)) DEFAULT 0,
         isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0,
-        isInt INTEGER CHECK (isInt IN (0, 1)) DEFAULT 0,
+        step REAL DEFAULT 1,
         unit TEXT,
         minValue REAL,
         maxValue REAL

@@ -80,7 +80,7 @@ const helperRevision1 = {
       {
         id: moodMetricId,
         name: 'TK_MOOD',
-        isInt: true,
+        step: 1,
         minValue: 1,
         maxValue: 10,
         isHidden: false,
@@ -89,7 +89,7 @@ const helperRevision1 = {
       {
         id: energyMetricId,
         name: 'TK_ENERGY',
-        isInt: true,
+        step: 1,
         minValue: 1,
         maxValue: 10,
         isHidden: false,
@@ -98,7 +98,7 @@ const helperRevision1 = {
       {
         id: 3,
         name: 'TK_SATIETY',
-        isInt: true,
+        step: 1,
         minValue: 1,
         maxValue: 10,
         isHidden: false,

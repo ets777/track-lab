@@ -128,7 +128,7 @@ export class MyAppDatabase extends Dexie {
       const moodMetricId = await tx.table('metrics')
         .add({
           name: 'TK_MOOD',
-          isInt: true,
+          step: 1,
           minValue: 1,
           maxValue: 10,
           isHidden: false,
@@ -137,7 +137,7 @@ export class MyAppDatabase extends Dexie {
       const energyMetricId = await tx.table('metrics')
         .add({
           name: 'TK_ENERGY',
-          isInt: true,
+          step: 1,
           minValue: 1,
           maxValue: 10,
           isHidden: false,
@@ -146,7 +146,7 @@ export class MyAppDatabase extends Dexie {
       const satietyMetricId = await tx.table('metrics')
         .add({
           name: 'TK_SATIETY',
-          isInt: true,
+          step: 1,
           minValue: 1,
           maxValue: 10,
           isHidden: false,

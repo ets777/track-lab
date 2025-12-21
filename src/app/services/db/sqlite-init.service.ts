@@ -188,7 +188,7 @@ export class SQLiteInitService {
         await this.insertArrayChunked(
           'metrics',
           metrics,
-          ['id', 'name', 'isInt', 'unit', 'minValue', 'maxValue'],
+          ['id', 'name', 'step', 'unit', 'minValue', 'maxValue'],
         );
       }
 

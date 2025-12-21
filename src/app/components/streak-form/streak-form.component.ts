@@ -65,6 +65,7 @@ export class StreakFormComponent implements OnInit {
     await this.loadSuggestions();
   }
 
+  // TODO: move this code to separate component for terms search
   async loadSuggestions() {
     this.dictionaries = await this.dictionaryService.getAll();
 
