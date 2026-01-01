@@ -25,9 +25,9 @@ export class ActionAddPage {
       return;
     }
 
-    const activityFormValue = this.addFormRef.actionForm.value as ActionForm;
+    const actionFormValue = this.addFormRef.actionForm.value as ActionForm;
 
-    await this.actionService.addFromForm(activityFormValue);
+    await this.actionService.addFromForm(actionFormValue);
     this.resetForm();
 
     this.toastService.enqueue({
