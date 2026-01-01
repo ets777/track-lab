@@ -321,5 +321,6 @@
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",
   "TK_YYYY_MM_DD": "yyyy-mm-dd",
-  "TK_NEW_DICTIONARY": "New dictionary"
+  "TK_NEW_DICTIONARY": "New dictionary",
+  "TK_DICTIONARY_LIST_IS_EMPTY": "Dictionary list is empty"
 }

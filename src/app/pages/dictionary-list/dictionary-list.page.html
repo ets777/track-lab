@@ -23,6 +23,8 @@
           <div class="title">{{ dictionary.name | translate }}</div>
         </ion-label>
       </ion-item>
+    } @empty {
+      <ion-text>{{ 'TK_DICTIONARY_LIST_IS_EMPTY' | translate }}</ion-text>
     }
   </ion-list>
 </ion-content>
