@@ -114,6 +114,10 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./pages/dictionary-list/dictionary-list.page').then(m => m.DictionaryListPage)
       },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then(m => m.DictionaryAddPage)
+      },
     ],
   },
   {
@@ -132,5 +136,13 @@ export const routes: Routes = [
     path: '',
     redirectTo: '/activity',
     pathMatch: 'full',
+  },
+  {
+    path: 'dictionary-add',
+    loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then( m => m.DictionaryAddPage)
+  },
+  {
+    path: 'dictionary-edit',
+    loadComponent: () => import('./pages/dictionary-edit/dictionary-edit.page').then( m => m.DictionaryEditPage)
   },
 ];

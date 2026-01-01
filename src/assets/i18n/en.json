@@ -320,5 +320,6 @@
   "TK_WRONG_PASSWORD": "Wrong password",
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",
-  "TK_YYYY_MM_DD": "yyyy-mm-dd"
+  "TK_YYYY_MM_DD": "yyyy-mm-dd",
+  "TK_NEW_DICTIONARY": "New dictionary"
 }
