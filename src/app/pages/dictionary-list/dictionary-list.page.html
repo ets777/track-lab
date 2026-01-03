@@ -22,6 +22,17 @@
         <ion-label>
           <div class="title">{{ dictionary.name | translate }}</div>
         </ion-label>
+        <ion-buttons class="item-buttons">
+          <ion-button id="open-action-sheet-dictionary-{{dictionary.id}}">
+            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-action-sheet
+          trigger="open-action-sheet-dictionary-{{dictionary.id}}"
+          header="{{ 'TK_ACTIONS' | translate }}"
+          [buttons]="dictionaryActionSheetButtons"
+          (didDismiss)="doDictionaryAction($event, dictionary.id)"
+        ></ion-action-sheet>
       </ion-item>
     } @empty {
       <ion-text>{{ 'TK_DICTIONARY_LIST_IS_EMPTY' | translate }}</ion-text>

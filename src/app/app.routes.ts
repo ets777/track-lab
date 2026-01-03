@@ -115,6 +115,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dictionary-list/dictionary-list.page').then(m => m.DictionaryListPage)
       },
       {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/dictionary-edit/dictionary-edit.page').then(m => m.DictionaryEditPage)
+      },
+      {
         path: 'add',
         loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then(m => m.DictionaryAddPage)
       },
