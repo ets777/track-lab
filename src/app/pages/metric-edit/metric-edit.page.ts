@@ -1,20 +1,107 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MetricForm, MetricFormComponent } from 'src/app/components/metric-form/metric-form.component';
+import { MetricService } from 'src/app/services/metric.service';
+import { IMetric } from 'src/app/db/models/metric';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { ToastService } from 'src/app/services/toast.service';
+import { ActivityMetricService } from 'src/app/services/activity-metric.service';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-metric-edit',
   templateUrl: './metric-edit.page.html',
   styleUrls: ['./metric-edit.page.scss'],
-  standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, MetricFormComponent],
 })
-export class MetricEditPage implements OnInit {
+export class MetricEditPage {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private metricService = inject(MetricService);
+  private toastService = inject(ToastService);
+  private activityMetricService = inject(ActivityMetricService);
+  private alertController = inject(AlertController);
+  private translate = inject(TranslateService);
+  private cdr = inject(ChangeDetectorRef);
 
-  constructor() { }
+  @ViewChild('editFormRef') editFormRef!: MetricFormComponent;
 
-  ngOnInit() {
+  metricId: number;
+  metric?: IMetric;
+
+  constructor() {
+    this.metricId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
+  async ionViewDidEnter() {
+    this.metric = await this.metricService.getById(this.metricId);
+    this.cdr.detectChanges();
+  }
+
+  isFormValid() {
+    return this.editFormRef?.metricForm?.valid;
+  }
+
+  async saveMetric() {
+    if (!this.isFormValid()) return;
+
+    const form = this.editFormRef.metricForm.value as MetricForm;
+    const newMin = form.minValue;
+    const newMax = form.maxValue;
+
+    if (newMax !== this.metric!.maxValue) {
+      const above = await this.activityMetricService.getAboveMaxByMetricId(this.metricId, newMax);
+      if (above.length > 0) {
+        const result = await this.confirmRangeChange('TK_RECORDS_EXCEED_NEW_MAX', 'TK_YES_AND_CUT_TO_MAX');
+        if (result === 'no') return;
+        if (result === 'cut') {
+          for (const r of above) await this.activityMetricService.update(r.id, { value: newMax });
+        }
+      }
+    }
+
+    if (newMin !== this.metric!.minValue) {
+      const below = await this.activityMetricService.getBelowMinByMetricId(this.metricId, newMin);
+      if (below.length > 0) {
+        const result = await this.confirmRangeChange('TK_RECORDS_BELOW_NEW_MIN', 'TK_YES_AND_CUT_TO_MIN');
+        if (result === 'no') return;
+        if (result === 'cut') {
+          for (const r of below) await this.activityMetricService.update(r.id, { value: newMin });
+        }
+      }
+    }
+
+    await this.metricService.update(this.metricId, {
+      name: this.metric!.isBase ? this.metric!.name : form.name,
+      isHidden: form.isHidden ?? false,
+      unit: form.unit || undefined,
+      step: form.step ?? 1,
+      minValue: newMin,
+      maxValue: newMax,
+      showPreviousValue: form.showPreviousValue ?? false,
+    });
+
+    this.toastService.enqueue({ title: 'TK_METRIC_UPDATED_SUCCESSFULLY', type: 'success' });
+    await this.router.navigate(['/metric']);
+  }
+
+  private async confirmRangeChange(messageKey: string, cutLabelKey: string): Promise<'yes' | 'cut' | 'no'> {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_ARE_YOU_SURE'),
+      message: this.translate.instant(messageKey),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant(cutLabelKey), role: 'cut' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    return (role as 'yes' | 'cut' | 'no') ?? 'no';
+  }
 }

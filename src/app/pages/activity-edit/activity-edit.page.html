@@ -13,9 +13,10 @@
 
 <ion-content class="ion-padding">
   @if (activity) {
-    <app-activity-form 
+    <app-activity-form
       #updateFormRef
       [activity]="activity"
+      [activityMetricValues]="activityMetricValues"
     ></app-activity-form>
   }
 </ion-content>

@@ -3,6 +3,7 @@ import { HookService } from './hook.service';
 import { IAchievement } from '../db/models/achievement';
 import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
+import { ActivityMetricService } from './activity-metric.service';
 import { Subject } from 'rxjs';
 import { format } from 'date-fns';
 import { DatabaseService } from './db/database.service';
@@ -12,6 +13,7 @@ import { MetricService } from './metric.service';
 export class AchievementService extends DatabaseService<'achievements'> {
   private hookService = inject(HookService);
   private activityService = inject(ActivityService);
+  private activityMetricService = inject(ActivityMetricService);
   private metricService = inject(MetricService);
 
   protected tableName: 'achievements' = 'achievements';
@@ -279,48 +281,52 @@ export class AchievementService extends DatabaseService<'achievements'> {
   }
 
   async checkMaxMoodAchievementInit() {
+    const metric = await this.metricService.getFirstWhereEquals('name', 'TK_MOOD');
+    if (!metric) return;
     await this.checkOneTimeAchievement(
       'max_mood',
       async () => {
-        const activities = await this.activityService
-          .getAllByRange('mood', [9, 10]);
-        return activities?.length > 0;
+        const records = await this.activityMetricService.getByMetricIdInValueRange(metric.id, [9, 10]);
+        return records.length > 0;
       },
       null,
     );
   }
 
   async checkMinMoodAchievementInit() {
+    const metric = await this.metricService.getFirstWhereEquals('name', 'TK_MOOD');
+    if (!metric) return;
     await this.checkOneTimeAchievement(
       'min_mood',
       async () => {
-        const activities = await this.activityService
-          .getAllByRange('mood', [1, 2]);
-        return activities?.length > 0;
+        const records = await this.activityMetricService.getByMetricIdInValueRange(metric.id, [1, 2]);
+        return records.length > 0;
       },
       null,
     );
   }
 
   async checkMaxEnergyAchievementInit() {
+    const metric = await this.metricService.getFirstWhereEquals('name', 'TK_ENERGY');
+    if (!metric) return;
     await this.checkOneTimeAchievement(
       'max_energy',
       async () => {
-        const activities = await this.activityService
-          .getAllByRange('energy', [9, 10]);
-        return activities?.length > 0;
+        const records = await this.activityMetricService.getByMetricIdInValueRange(metric.id, [9, 10]);
+        return records.length > 0;
       },
       null,
     );
   }
 
   async checkMinEnergyAchievementInit() {
+    const metric = await this.metricService.getFirstWhereEquals('name', 'TK_ENERGY');
+    if (!metric) return;
     await this.checkOneTimeAchievement(
       'min_energy',
       async () => {
-        const activities = await this.activityService
-          .getAllByRange('energy', [1, 2]);
-        return activities?.length > 0;
+        const records = await this.activityMetricService.getByMetricIdInValueRange(metric.id, [1, 2]);
+        return records.length > 0;
       },
       null,
     );

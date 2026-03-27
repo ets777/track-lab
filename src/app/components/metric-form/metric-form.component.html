@@ -1,12 +1,19 @@
 <form [formGroup]="metricForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      formControlName="name"
-      name="name"
-    ></ion-input>
-  </ion-item>
+  @if (metric?.isBase) {
+    <ion-item (click)="onNameClick()">
+      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+      <ion-input class="input-readonly" [value]="metricForm.get('name')?.value" [readonly]="true"></ion-input>
+    </ion-item>
+  } @else {
+    <ion-item>
+      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+      <ion-input
+        appValidationError
+        formControlName="name"
+        name="name"
+      ></ion-input>
+    </ion-item>
+  }
 
   <ion-item>
     <ion-label position="stacked">{{ 'TK_UNIT' | translate }}</ion-label>
@@ -17,16 +24,22 @@
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">{{ 'TK_STEP' | translate }}</ion-label>
-    <ion-input
+    <ion-select
+      appValidationError
+      label="{{ 'TK_STEP' | translate }}"
+      label-placement="stacked"
       formControlName="step"
-      name="step"
-    ></ion-input>
+    >
+      <ion-select-option [value]="1">1</ion-select-option>
+      <ion-select-option [value]="0.1">0.1</ion-select-option>
+      <ion-select-option [value]="0.01">0.01</ion-select-option>
+    </ion-select>
   </ion-item>
 
   <ion-item>
     <ion-label position="stacked">{{ 'TK_MIN_VALUE' | translate }}</ion-label>
     <ion-input
+      appValidationError
       formControlName="minValue"
       name="minValue"
     ></ion-input>
@@ -35,6 +48,7 @@
   <ion-item>
     <ion-label position="stacked">{{ 'TK_MAX_VALUE' | translate }}</ion-label>
     <ion-input
+      appValidationError
       formControlName="maxValue"
       name="maxValue"
     ></ion-input>
@@ -46,6 +60,14 @@
       formControlName="isHidden"
       name="isHidden"
     >{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
+  </ion-item>
+
+  <ion-item>
+    <ion-checkbox
+      labelPlacement="end"
+      formControlName="showPreviousValue"
+      name="showPreviousValue"
+    >{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</ion-checkbox>
   </ion-item>
 
   <app-select-search

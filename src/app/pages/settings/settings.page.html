@@ -90,6 +90,19 @@
     (change)="onTxtFileSelected($event)"
   >
 
+  @if (!environment.production) {
+    <h2>{{ 'TK_DEVELOPMENT' | translate }}</h2>
+    <ion-list>
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          [(ngModel)]="resetDatabaseOnReload"
+          (ionChange)="setResetDatabaseOnReload($event)"
+        >{{ 'TK_RESET_DATABASE_ON_RELOAD' | translate }}</ion-checkbox>
+      </ion-item>
+    </ion-list>
+  }
+
   <h2>{{ 'TK_APP_INFO' | translate}}</h2>
   <ion-list>
     <ion-item>

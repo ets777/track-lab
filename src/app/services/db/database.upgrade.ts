@@ -92,7 +92,8 @@ export const databaseUpgrades = [
         step REAL DEFAULT 1,
         unit TEXT,
         minValue REAL,
-        maxValue REAL
+        maxValue REAL,
+        showPreviousValue INTEGER CHECK (showPreviousValue IN (0, 1)) DEFAULT 0
       );`,
       `CREATE TABLE IF NOT EXISTS actionMetrics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -13,11 +13,10 @@
         <p>
           {{ activity.startTime }} @if (activity.endTime) { - {{ activity.endTime }} }
         </p>
-        <app-tags [tags]="activity.tags"></app-tags>
         <p>
           @for (metric of metrics; track metric.id) {
             @if (activityHasMetric(activity, metric)) {
-              {{ metric.name | translate }}: {{ getMetricValue(activity, metric) }}
+              {{ metric.name | translate }}: {{ getMetricValue(activity, metric) }}{{ metric.unit ? ' ' + metric.unit : '' }}
             }
           }
         </p>
@@ -28,6 +27,7 @@
             }
           }
         </p>
+        <app-tags [tags]="activity.tags"></app-tags>
         <ion-action-sheet trigger="open-action-sheet-{{activity.id}}" header="{{ 'TK_ACTIONS' | translate }}"
           [buttons]="activityActionSheetButtons"
           (didDismiss)="doActivityAction($event, activity.id)"></ion-action-sheet>

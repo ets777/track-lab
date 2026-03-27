@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel } from '@ionic/angular/standalone';
 import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
@@ -23,7 +23,7 @@ export enum autoBackupOption {
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption],
+  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption, IonCheckbox],
 })
 export class SettingsPage implements OnInit {
   private markdownParserService = inject(MarkdownParserService);
@@ -34,10 +34,12 @@ export class SettingsPage implements OnInit {
 
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
+  environment = environment;
   autoBackupOption = autoBackupOption;
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;
   password = '';
   lastBackupDate = '';
+  resetDatabaseOnReload = false;
 
   async ngOnInit() {
     const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
@@ -48,6 +50,7 @@ export class SettingsPage implements OnInit {
 
     this.password = (await SecureStoragePlugin.get({ key: 'backup-password' }).catch(() => null))?.value ?? '';
     this.lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value ?? '';
+    this.resetDatabaseOnReload = (await Preferences.get({ key: 'reset-database-on-reload' }))?.value === 'true';
   }
 
   async onMdFileSelected(event: Event) {
@@ -135,5 +138,10 @@ export class SettingsPage implements OnInit {
 
   getDefaultPassword() {
     return this.backupService.defaultPassword;
+  }
+
+  async setResetDatabaseOnReload(event: any) {
+    const value = event.detail.checked as boolean;
+    await Preferences.set({ key: 'reset-database-on-reload', value: String(value) });
   }
 }

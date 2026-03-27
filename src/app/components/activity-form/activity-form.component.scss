@@ -6,3 +6,20 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
+ion-range.range-inactive,
+ion-input.input-inactive {
+    opacity: 0.3;
+}
+
+ion-checkbox[slot="start"] {
+    align-self: center;
+    --size: 24px;
+}
+
+ion-range .range-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    min-width: 2.5rem;
+    text-align: right;
+}

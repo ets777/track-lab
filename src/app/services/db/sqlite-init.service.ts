@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { SQLiteService } from './sqlite.service';
 import { ActivityService } from '../activity.service';
 import { ActionService } from '../action.service';
@@ -17,6 +18,7 @@ import { TermService } from '../term.service';
 import { DictionaryService } from '../dictionary.service';
 import { MetricService } from '../metric.service';
 import { databaseUpgrades } from './database.upgrade';
+import { seedDatabase } from './database-seed';
 
 @Injectable()
 export class SQLiteInitService {
@@ -52,6 +54,16 @@ export class SQLiteInitService {
 
     await this.sqliteService.openDatabase(this.loadToVersion);
 
+    if (!environment.production) {
+      const shouldReset = (await Preferences.get({ key: 'reset-database-on-reload' }))?.value === 'true';
+      if (shouldReset) {
+        await this.resetDatabase();
+        await seedDatabase(this.sqliteService);
+        this.databaseRouter.setAdapterToSqlite();
+        return;
+      }
+    }
+
     const migratedToSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value === 'true';
 
     if (!migratedToSqlite) {
@@ -60,6 +72,34 @@ export class SQLiteInitService {
     }
 
     this.databaseRouter.setAdapterToSqlite();
+  }
+
+  async resetDatabase() {
+    await this.sqliteService.execute(`
+      PRAGMA foreign_keys = OFF;
+      DROP TABLE IF EXISTS activityMetrics;
+      DROP TABLE IF EXISTS activityTerms;
+      DROP TABLE IF EXISTS activityTags;
+      DROP TABLE IF EXISTS activityActions;
+      DROP TABLE IF EXISTS actionMetrics;
+      DROP TABLE IF EXISTS actionDictionaries;
+      DROP TABLE IF EXISTS actionTags;
+      DROP TABLE IF EXISTS streaks;
+      DROP TABLE IF EXISTS activities;
+      DROP TABLE IF EXISTS actions;
+      DROP TABLE IF EXISTS tags;
+      DROP TABLE IF EXISTS terms;
+      DROP TABLE IF EXISTS dictionaries;
+      DROP TABLE IF EXISTS metrics;
+      DROP TABLE IF EXISTS achievements;
+      PRAGMA foreign_keys = ON;
+    `);
+
+    for (const upgrade of databaseUpgrades) {
+      for (const statement of upgrade.statements) {
+        await this.sqliteService.execute(statement);
+      }
+    }
   }
 
   async insertArrayChunked(

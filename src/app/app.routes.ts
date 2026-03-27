@@ -92,6 +92,10 @@ export const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./pages/metric-add/metric-add.page').then(m => m.MetricAddPage)
       },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/metric-view/metric-view.page').then(m => m.MetricViewPage)
+      },
     ],
   },
   {

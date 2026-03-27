@@ -5,6 +5,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } fr
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityForm, ActivityFormComponent } from 'src/app/components/activity-form/activity-form.component';
 import { ActivityService } from 'src/app/services/activity.service';
+import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
@@ -20,6 +21,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class ActivityEditPage {
   private route = inject(ActivatedRoute);
   private activityService = inject(ActivityService);
+  private activityMetricService = inject(ActivityMetricService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -28,13 +30,19 @@ export class ActivityEditPage {
 
   activityId: number;
   activity?: IActivity;
+  activityMetricValues: Record<number, number> = {};
 
   constructor() {
     this.activityId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
   async ionViewDidEnter() {
-    this.activity = await this.activityService.getEnriched(this.activityId);
+    const [activity, metricRecords] = await Promise.all([
+      this.activityService.getEnriched(this.activityId),
+      this.activityMetricService.getByActivityId(this.activityId),
+    ]);
+    this.activity = activity;
+    this.activityMetricValues = Object.fromEntries(metricRecords.map(r => [r.metricId, r.value]));
     this.cdr.detectChanges();
   }
 
@@ -44,10 +52,12 @@ export class ActivityEditPage {
     }
 
     const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
-    await this.activityService.updateWithTerms(
-      this.activityId,
-      activityFormValue,
-    );
+    await this.activityService.updateWithTerms(this.activityId, activityFormValue);
+
+    await this.activityMetricService.delete({ activityId: this.activityId });
+    for (const record of this.updateFormRef.getMetricRecords()) {
+      await this.activityMetricService.add({ activityId: this.activityId, metricId: record.metricId, value: record.value });
+    }
 
     this.toastService.enqueue({
       title: 'TK_ACTIVITY_UPDATED_SUCCESSFULLY',
@@ -61,6 +71,6 @@ export class ActivityEditPage {
   }
 
   isFormValid() {
-    return this.updateFormRef?.activityForm?.valid;
+    return this.updateFormRef?.activityForm?.valid && this.updateFormRef?.isMetricsFormValid();
   }
 }

@@ -1,8 +1,9 @@
 import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon } from '@ionic/angular/standalone';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox } from '@ionic/angular/standalone';
 import { ActivityService } from 'src/app/services/activity.service';
+import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -17,10 +18,24 @@ import { IActivity } from 'src/app/db/models/activity';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
+import { MetricService } from 'src/app/services/metric.service';
+import { IMetric } from 'src/app/db/models/metric';
 import { tagsValidator } from 'src/app/validators/tags.validator';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
+
+function metricRangeValidator(min?: number, max?: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (value === null || value === '' || value === undefined) return null;
+    const num = Number(value);
+    if (isNaN(num)) return { pattern: true };
+    if (min !== undefined && num < min) return { minRange: { message: 'TK_VALUE_BELOW_MIN', params: { min } } };
+    if (max !== undefined && num > max) return { maxRange: { message: 'TK_VALUE_EXCEEDS_MAX', params: { max } } };
+    return null;
+  };
+}
 
 export type ActivityForm = {
   actions: string,
@@ -35,15 +50,18 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
+  imports: [IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
   private activityService = inject(ActivityService);
   private translate = inject(TranslateService);
   private actionService = inject(ActionService);
+  private metricService = inject(MetricService);
+  private activityMetricService = inject(ActivityMetricService);
 
   @Input() activity?: IActivity;
+  @Input() activityMetricValues?: Record<number, number>;
 
   @ViewChild('actionsInput') actionInput!: IonInput;
   actionInputCaretPosition = 0;
@@ -59,7 +77,9 @@ export class ActivityFormComponent implements OnInit {
   });
 
   public activityForm: ModelFormGroup<ActivityForm>;
-  private defaultValue: number = 5;
+  public metricsForm: FormGroup = this.formBuilder.group({});
+  public standaloneMetrics: IMetric[] = [];
+  public metricEnabled: Record<string, boolean> = {};
 
   filteredActionSuggestions: string[] = [];
   private allActionSuggestions = actionSuggestions;
@@ -85,12 +105,79 @@ export class ActivityFormComponent implements OnInit {
 
   async ngOnInit() {
     await this.fetchAllSuggestions();
+    await this.loadStandaloneMetrics();
 
     if (this.activity) {
       this.setActivityData(this.activity);
     } else {
       await this.setDefaultData();
     }
+  }
+
+  isRangeMetric(metric: IMetric): boolean {
+    if (metric.minValue == null || metric.maxValue == null || !metric.step) return false;
+    return (metric.maxValue - metric.minValue) / metric.step <= 100;
+  }
+
+  getRangeColor(metric: IMetric): string {
+    const value = this.metricsForm.get(`metric_${metric.id}`)?.value;
+    if (value == null || metric.minValue == null || metric.maxValue == null) return '';
+    const pct = (value - metric.minValue) / (metric.maxValue - metric.minValue) * 100;
+    if (pct < 20) return '#f44336';
+    if (pct < 40) return '#ff9800';
+    if (pct < 60) return '#e6c200';
+    if (pct < 80) return '#8bc34a';
+    return '#4caf50';
+  }
+
+  async loadStandaloneMetrics() {
+    this.standaloneMetrics = await this.metricService.getStandalone();
+
+    const prevValues = await Promise.all(
+      this.standaloneMetrics.map(m =>
+        m.showPreviousValue ? this.activityMetricService.getLastValue(m.id) : Promise.resolve(null)
+      )
+    );
+
+    this.metricsForm = this.formBuilder.group({});
+    this.metricEnabled = {};
+
+    for (let i = 0; i < this.standaloneMetrics.length; i++) {
+      const metric = this.standaloneMetrics[i];
+      const isRange = this.isRangeMetric(metric);
+      const mid = (metric.minValue! + metric.maxValue!) / 2;
+      const midRounded = isRange ? Math.round((mid - metric.minValue!) / metric.step!) * metric.step! + metric.minValue! : null;
+
+      const prev = prevValues[i];
+      const existingValue = this.activityMetricValues?.[metric.id] ?? null;
+      const defaultValue = existingValue !== null ? existingValue : (prev !== null ? prev : midRounded);
+
+      const validators = isRange ? [] : [metricRangeValidator(metric.minValue, metric.maxValue)];
+      this.metricsForm.addControl(`metric_${metric.id}`, this.formBuilder.control(defaultValue, validators));
+      this.metricEnabled[`metric_${metric.id}`] = existingValue !== null;
+    }
+  }
+
+  onRangeChange(metricId: number) {
+    this.metricEnabled[`metric_${metricId}`] = true;
+  }
+
+  onMetricCheckboxChange(metricId: number, event: any) {
+    this.metricEnabled[`metric_${metricId}`] = event.detail.checked;
+  }
+
+  getMetricRecords(): { metricId: number; value: number }[] {
+    return this.standaloneMetrics
+      .map((m) => ({
+        metricId: m.id,
+        value: this.metricsForm.get(`metric_${m.id}`)?.value,
+        enabled: this.metricEnabled[`metric_${m.id}`],
+      }))
+      .filter((r) => r.enabled && r.value !== null && r.value !== undefined && r.value !== '');
+  }
+
+  isMetricsFormValid(): boolean {
+    return this.metricsForm.valid;
   }
 
   async fetchAllSuggestions() {
@@ -127,6 +214,11 @@ export class ActivityFormComponent implements OnInit {
       ...defaultData,
       ...lastActivityData,
     });
+    for (const metric of this.standaloneMetrics) {
+      if (!this.isRangeMetric(metric) && !metric.showPreviousValue) {
+        this.metricsForm.get(`metric_${metric.id}`)?.reset();
+      }
+    }
   }
 
   async updateLastActivityData() {

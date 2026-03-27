@@ -1,7 +1,7 @@
 @if (tags.length) {
     <div class="tags">
         @for (tag of tags; track tag.id) {
-            <a [routerLink]="['/tag', tag.id]">#{{ tag.name }}</a>
+            <ion-chip [routerLink]="['/tag', tag.id]">{{ tag.name }}</ion-chip>
         }
     </div>
 }

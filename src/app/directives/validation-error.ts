@@ -16,6 +16,7 @@ export class ValidationErrorDirective implements OnInit {
 
   private subscription?: Subscription;
   private warningIcon?: HTMLElement;
+  private warningIconParent?: HTMLElement;
 
   ngOnInit() {
     const control = this.controlDir.control;
@@ -35,24 +36,26 @@ export class ValidationErrorDirective implements OnInit {
     // TODO: find elements instead of hardcode (sorry)
     const ionItem = this.el.nativeElement.closest('ion-item')
       || this.el.nativeElement.children[0];
-    const ionInput = ['ion-input', 'ion-textarea'].includes(this.el.nativeElement.tagName.toLowerCase())
+    const tag = this.el.nativeElement.tagName.toLowerCase();
+    const ionInput = ['ion-input', 'ion-textarea'].includes(tag)
       ? this.el.nativeElement
       : this.el.nativeElement.children[0].children[0];
+    const iconTarget = tag === 'ion-select' ? this.el.nativeElement : ionInput;
 
-    if (!ionItem || !ionInput) {
+    if (!ionItem || !iconTarget) {
       return;
     }
 
     if (control.invalid) {
       this.renderer.addClass(ionItem, 'invalid');
-      this.addWarningIcon(ionInput, control);
+      this.addWarningIcon(iconTarget, control);
     } else {
       this.renderer.removeClass(ionItem, 'invalid');
-      this.removeWarningIcon(ionInput, control);
+      this.removeWarningIcon(iconTarget);
     }
   }
 
-  private addWarningIcon(ionInput: any, control: AbstractControl) {
+  private addWarningIcon(iconTarget: any, control: AbstractControl) {
     if (this.warningIcon) {
       return;
     }
@@ -65,16 +68,18 @@ export class ValidationErrorDirective implements OnInit {
       event.preventDefault();
       this.tooltip.show(event, this.getErrorMessages(control));
     });
-    this.renderer.appendChild(ionInput, this.warningIcon);
+    this.warningIconParent = iconTarget;
+    this.renderer.appendChild(iconTarget, this.warningIcon);
   }
 
-  private removeWarningIcon(ionInput: any, control: AbstractControl) {
+  private removeWarningIcon(iconTarget: any) {
     if (!this.warningIcon) {
       return;
     }
 
-    this.renderer.removeChild(ionInput, this.warningIcon);
+    this.renderer.removeChild(this.warningIconParent ?? iconTarget, this.warningIcon);
     this.warningIcon = undefined;
+    this.warningIconParent = undefined;
   }
 
   private getErrorMessages(control: AbstractControl) {
@@ -92,6 +97,10 @@ export class ValidationErrorDirective implements OnInit {
         errorMessages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
       }
 
+      if (errorName == 'pattern') {
+        errorMessages.push(this.translate.instant('TK_VALUE_MUST_BE_A_NUMBER'));
+      }
+
       if (errorName == 'maxDateRange') {
         errorMessages.push(
           this.translate.instant(
@@ -101,8 +110,8 @@ export class ValidationErrorDirective implements OnInit {
         );
       }
 
-      if (errors[errorName].message) {
-        errorMessages.push(this.translate.instant(errors[errorName].message));
+      if (errors[errorName]?.message) {
+        errorMessages.push(this.translate.instant(errors[errorName].message, errors[errorName].params));
       }
     }
 

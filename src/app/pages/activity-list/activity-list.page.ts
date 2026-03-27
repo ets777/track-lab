@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonActionSheet } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addDays, format } from 'date-fns';
@@ -18,7 +18,7 @@ import { IDictionary } from 'src/app/db/models/dictionary';
   selector: 'app-activity-list-page',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent],
+  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton],
 })
 export class ActivityListPage {
   private activityService = inject(ActivityService);
@@ -101,6 +101,10 @@ export class ActivityListPage {
       default:
         break;
     }
+  }
+
+  async goToAddPage() {
+    await this.router.navigate(['/activity/add']);
   }
 
   async export() {

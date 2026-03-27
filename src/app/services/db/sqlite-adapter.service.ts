@@ -7,6 +7,10 @@ import { SQLiteService } from './sqlite.service';
 export abstract class SqliteAdapter implements IDatabaseAdapter {
   private sqlite = inject(SQLiteService);
 
+  protected query(sql: string, params?: any[]) {
+    return this.sqlite.query(sql, params);
+  }
+
   private toColsAndPlaceholders(obj: Record<string, any>) {
     const cols = Object.keys(obj);
     const vals = cols.map((key) => obj[key] === undefined ? null : obj[key]);
@@ -49,9 +53,32 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     return result.values?.[0];
   }
 
-  async getAll<K extends TableName>(table: K) {
-    const result = await this.sqlite.query(`SELECT * FROM ${table}`);
+  async getAll<K extends TableName>(table: K, where?: Where): Promise<RowFor<K>[]> {
+    if (!where) {
+      const result = await this.sqlite.query(`SELECT * FROM ${table}`);
+      return result.values ?? [];
+    }
 
+    if (where.OR) {
+      const conditions = where.OR.map(condition => {
+        const key = Object.keys(condition)[0];
+        return `${key} = ?`;
+      });
+      const values = where.OR.map(condition => Object.values(condition)[0]);
+      const result = await this.sqlite.query(
+        `SELECT * FROM ${table} WHERE ${conditions.join(' OR ')}`,
+        values,
+      );
+      return result.values ?? [];
+    }
+
+    const keys = Object.keys(where).filter(k => !['AND', 'OR', 'NOT'].includes(k));
+    const conditions = keys.map(k => `${k} = ?`);
+    const values = keys.map(k => where[k]);
+    const result = await this.sqlite.query(
+      `SELECT * FROM ${table} WHERE ${conditions.join(' AND ')}`,
+      values,
+    );
     return result.values ?? [];
   }
 
@@ -160,10 +187,10 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     table: K,
     columns: string[],
   ): Promise<RowFor<K> | undefined> {
-    const orderBy = columns.join(', ');
+    const orderBy = columns.map(c => `${c} DESC`).join(', ');
 
     const result = await this.sqlite.query(
-      `SELECT * FROM ${table} ORDER BY ${orderBy} DESC LIMIT 1`
+      `SELECT * FROM ${table} ORDER BY ${orderBy} LIMIT 1`
     );
 
     if (!result.values || result.values.length == 0) {
@@ -178,10 +205,10 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     columns: string[],
     date: string,
   ): Promise<RowFor<K> | undefined> {
-    const orderBy = columns.join(', ');
+    const orderBy = columns.map(c => `${c} DESC`).join(', ');
 
     const result = await this.sqlite.query(
-      `SELECT * FROM ${table} WHERE ${columns[0]} <= ? ORDER BY ${orderBy} DESC LIMIT 1`,
+      `SELECT * FROM ${table} WHERE ${columns[0]} <= ? ORDER BY ${orderBy} LIMIT 1`,
       [date]
     );
 

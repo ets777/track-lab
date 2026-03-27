@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ metric?.name | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (chartData) {
+    <canvas
+      baseChart
+      [data]="chartData"
+      [options]="chartOptions"
+      type="line"
+    ></canvas>
+  }
+</ion-content>

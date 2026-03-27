@@ -1,22 +1,25 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons } from "@ionic/angular/standalone";
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityForm, ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
 import { TranslateModule } from '@ngx-translate/core';
 import { App } from '@capacitor/app';
 import { ToastService } from 'src/app/services/toast.service';
+import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 
 @Component({
   selector: 'app-activity-add',
   templateUrl: './activity-add.page.html',
   styleUrl: './activity-add.page.scss',
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule, BackButtonComponent],
 })
 export class ActivityAddPage implements OnInit {
   private activityService = inject(ActivityService);
   private toastService = inject(ToastService);
+  private activityMetricService = inject(ActivityMetricService);
 
   @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
 
@@ -46,7 +49,14 @@ export class ActivityAddPage implements OnInit {
     }
 
     const activityFormValue = this.getForm().value as ActivityForm;
-    await this.activityService.addFromForm(activityFormValue);
+    const activityId = await this.activityService.addFromForm(activityFormValue);
+
+    if (activityId != null) {
+      for (const record of this.addFormRef.getMetricRecords()) {
+        await this.activityMetricService.add({ activityId, metricId: record.metricId, value: record.value });
+      }
+    }
+
     await this.resetForm();
 
     this.toastService.enqueue({
@@ -56,7 +66,7 @@ export class ActivityAddPage implements OnInit {
   }
 
   isFormValid() {
-    return this.getForm()?.valid;
+    return this.getForm()?.valid && this.addFormRef?.isMetricsFormValid();
   }
 
   async resetForm() {

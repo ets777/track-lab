@@ -11,3 +11,8 @@ export type CommonTerm = {
   type: string;
   termId: number;
 };
+
+export type Dictionary = {
+  name: string;
+  dictionaryId: number;
+}

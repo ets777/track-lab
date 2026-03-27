@@ -9,6 +9,7 @@ export interface IMetricDb {
     step: number;
     minValue?: number;
     maxValue?: number;
+    showPreviousValue?: boolean;
 }
 
 export type IMetricCreateDto = WithOptionalKeys<IMetricDb, 'id'>;
