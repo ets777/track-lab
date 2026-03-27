@@ -1,13 +1,6 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>{{ 'TK_HISTORY' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button id="open-action-sheet">
-        <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-action-sheet trigger="open-action-sheet" header="{{ 'TK_ACTIONS' | translate }}"
-      [buttons]="listActionSheetButtons" (didDismiss)="doListAction($event)"></ion-action-sheet>
   </ion-toolbar>
 </ion-header>
 

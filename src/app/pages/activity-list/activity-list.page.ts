@@ -4,9 +4,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonBu
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addDays, format } from 'date-fns';
-import { MarkdownParserService } from 'src/app/services/markdown-parser.service';
-import type { OverlayEventDetail } from '@ionic/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { IMetric } from 'src/app/db/models/metric';
@@ -18,7 +16,7 @@ import { IDictionary } from 'src/app/db/models/dictionary';
   selector: 'app-activity-list-page',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonActionSheet, IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton],
+  imports: [IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton],
 })
 export class ActivityListPage {
   private activityService = inject(ActivityService);
@@ -26,22 +24,13 @@ export class ActivityListPage {
   private dictionaryService = inject(DictionaryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private markdownParserService = inject(MarkdownParserService);
-  private translate = inject(TranslateService);
 
   activities: IActivity[] = [];
   metrics: IMetric[] = [];
   dictionaries: IDictionary[] = [];
   currentDate: string = '';
 
-  public listActionSheetButtons = [
-    {
-      text: this.translate.instant('TK_EXPORT_MD'),
-      data: {
-        action: 'export',
-      },
-    },
-  ];
+  public listActionSheetButtons = [];
 
   async ionViewDidEnter() {
     let date = this.route.snapshot.queryParamMap.get('date');
@@ -91,23 +80,7 @@ export class ActivityListPage {
     this.dictionaries = await this.dictionaryService.getAll();
   }
 
-  async doListAction(event: CustomEvent<OverlayEventDetail>) {
-    const action = event.detail.data?.action;
-
-    switch (action) {
-      case 'export':
-        await this.export();
-        break;
-      default:
-        break;
-    }
-  }
-
   async goToAddPage() {
     await this.router.navigate(['/activity/add']);
-  }
-
-  async export() {
-    await this.markdownParserService.exportMarkDownFile(this.currentDate);
   }
 }
