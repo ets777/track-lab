@@ -11,6 +11,7 @@ import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { TermService } from 'src/app/services/term.service';
 import { MetricService } from 'src/app/services/metric.service';
+import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { ITerm } from 'src/app/db/models/term';
 import { filterUniqueElements } from 'src/app/functions/term';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
@@ -76,6 +77,7 @@ export class MetricFormComponent implements OnInit {
   private tagService = inject(TagService);
   private termService = inject(TermService);
   private metricService = inject(MetricService);
+  private actionMetricService = inject(ActionMetricService);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
 
@@ -107,6 +109,15 @@ export class MetricFormComponent implements OnInit {
     await this.loadSuggestions();
 
     if (this.metric) {
+      const actionMetrics = await this.actionMetricService.getAllWhereEquals('metricId', this.metric.id);
+      let term: CommonTerm | null = null;
+      if (actionMetrics.length > 0) {
+        const linked = this.suggestions.find(
+          s => s.item.type === 'action' && s.item.termId === actionMetrics[0].actionId
+        );
+        term = linked?.item ?? null;
+      }
+
       this.metricForm.patchValue({
         name: this.metric.isBase
           ? this.translate.instant(this.metric.name)
@@ -117,8 +128,8 @@ export class MetricFormComponent implements OnInit {
         maxValue: this.metric.maxValue,
         isHidden: this.metric.isHidden,
         showPreviousValue: this.metric.showPreviousValue ?? false,
+        term,
       });
-
     }
   }
 

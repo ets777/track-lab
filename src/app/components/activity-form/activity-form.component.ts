@@ -15,6 +15,9 @@ import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { getPartIndex, lowerCaseFirstLetter } from 'src/app/functions/string';
 import { actionSuggestions } from './action-suggestions';
 import { IActivity } from 'src/app/db/models/activity';
+import { IActionDb } from 'src/app/db/models/action';
+import { IActionMetricDb } from 'src/app/db/models/action-metric';
+import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
@@ -76,6 +79,11 @@ export class ActivityFormComponent implements OnInit {
     mode: 'HH:MM',
   });
 
+  private actionMetricService2 = inject(ActionMetricService);
+  private allMetrics: IMetric[] = [];
+  private allActionMetrics: IActionMetricDb[] = [];
+  private allActions: IActionDb[] = [];
+
   public activityForm: ModelFormGroup<ActivityForm>;
   public metricsForm: FormGroup = this.formBuilder.group({});
   public standaloneMetrics: IMetric[] = [];
@@ -105,7 +113,11 @@ export class ActivityFormComponent implements OnInit {
 
   async ngOnInit() {
     await this.fetchAllSuggestions();
-    await this.loadStandaloneMetrics();
+    await this.loadMetrics();
+
+    this.activityForm.get('actions')!.valueChanges.subscribe(() => {
+      this.updateVisibleMetrics();
+    });
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -130,11 +142,12 @@ export class ActivityFormComponent implements OnInit {
     return '#4caf50';
   }
 
-  async loadStandaloneMetrics() {
-    this.standaloneMetrics = await this.metricService.getStandalone();
+  async loadMetrics() {
+    this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
+    this.allActionMetrics = await this.actionMetricService2.getAll();
 
     const prevValues = await Promise.all(
-      this.standaloneMetrics.map(m =>
+      this.allMetrics.map(m =>
         m.showPreviousValue ? this.activityMetricService.getLastValue(m.id) : Promise.resolve(null)
       )
     );
@@ -142,8 +155,8 @@ export class ActivityFormComponent implements OnInit {
     this.metricsForm = this.formBuilder.group({});
     this.metricEnabled = {};
 
-    for (let i = 0; i < this.standaloneMetrics.length; i++) {
-      const metric = this.standaloneMetrics[i];
+    for (let i = 0; i < this.allMetrics.length; i++) {
+      const metric = this.allMetrics[i];
       const isRange = this.isRangeMetric(metric);
       const mid = (metric.minValue! + metric.maxValue!) / 2;
       const midRounded = isRange ? Math.round((mid - metric.minValue!) / metric.step!) * metric.step! + metric.minValue! : null;
@@ -156,6 +169,24 @@ export class ActivityFormComponent implements OnInit {
       this.metricsForm.addControl(`metric_${metric.id}`, this.formBuilder.control(defaultValue, validators));
       this.metricEnabled[`metric_${metric.id}`] = existingValue !== null;
     }
+
+    this.updateVisibleMetrics();
+  }
+
+  updateVisibleMetrics() {
+    const actionsText = this.activityForm.get('actions')?.value ?? '';
+    const selectedNames = new Set(
+      actionsText.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)
+    );
+    const selectedActionIds = new Set(
+      this.allActions.filter(a => selectedNames.has(a.name.toLowerCase())).map(a => a.id)
+    );
+    const linkedMetricIds = new Set(this.allActionMetrics.map(am => am.metricId));
+
+    this.standaloneMetrics = this.allMetrics.filter(m => {
+      if (!linkedMetricIds.has(m.id)) return true;
+      return this.allActionMetrics.some(am => am.metricId === m.id && selectedActionIds.has(am.actionId));
+    });
   }
 
   onRangeChange(metricId: number) {
@@ -195,6 +226,7 @@ export class ActivityFormComponent implements OnInit {
 
   async fetchAllSuggestions() {
     const actions = await this.actionService.getAllUnhidden();
+    this.allActions = actions;
     this.allActionSuggestions = this.allActionSuggestions.map(
       (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
     );

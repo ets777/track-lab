@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MetricForm, MetricFormComponent } from 'src/app/components/metric-form/metric-form.component';
 import { MetricService } from 'src/app/services/metric.service';
+import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ToastService } from 'src/app/services/toast.service';
@@ -22,6 +23,7 @@ export class MetricEditPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private metricService = inject(MetricService);
+  private actionMetricService = inject(ActionMetricService);
   private toastService = inject(ToastService);
   private activityMetricService = inject(ActivityMetricService);
   private alertController = inject(AlertController);
@@ -84,6 +86,11 @@ export class MetricEditPage {
       maxValue: newMax,
       showPreviousValue: form.showPreviousValue ?? false,
     });
+
+    await this.actionMetricService.delete({ metricId: this.metricId });
+    if (form.term?.type === 'action' && form.term.termId) {
+      await this.actionMetricService.add({ actionId: form.term.termId, metricId: this.metricId });
+    }
 
     this.toastService.enqueue({ title: 'TK_METRIC_UPDATED_SUCCESSFULLY', type: 'success' });
     await this.router.navigate(['/metric']);
