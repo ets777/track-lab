@@ -58,7 +58,9 @@ export const databaseUpgrades = [
       );`,
       `CREATE TABLE IF NOT EXISTS dictionaries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE
+        name TEXT NOT NULL UNIQUE,
+        isBase INTEGER CHECK (isBase IN (0, 1)) DEFAULT 0,
+        isHidden INTEGER CHECK (isHidden IN (0, 1)) DEFAULT 0
       );`,
       `CREATE TABLE IF NOT EXISTS terms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
