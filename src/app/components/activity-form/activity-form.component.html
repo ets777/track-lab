@@ -122,13 +122,19 @@
                 <ion-label position="stacked">
                   {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
                 </ion-label>
-                <ion-input
-                  appValidationError
-                  type="number"
-                  [formControlName]="'metric_' + metric.id"
-                  [step]="metric.step"
-                  [class.input-inactive]="!metricEnabled['metric_' + metric.id]"
-                ></ion-input>
+                <div class="number-input" [class.number-input-inactive]="!metricEnabled['metric_' + metric.id]">
+                  <ion-input
+                    appValidationError
+                    type="number"
+                    [formControlName]="'metric_' + metric.id"
+                    [step]="metric.step"
+                    (ionFocus)="onRangeChange(metric.id)"
+                  ></ion-input>
+                  <div class="number-input-buttons">
+                    <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
+                    <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
+                  </div>
+                </div>
               </ion-item>
             }
           }

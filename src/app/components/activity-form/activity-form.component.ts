@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton } from '@ionic/angular/standalone';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
@@ -50,7 +50,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
+  imports: [IonButton, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -160,6 +160,19 @@ export class ActivityFormComponent implements OnInit {
 
   onRangeChange(metricId: number) {
     this.metricEnabled[`metric_${metricId}`] = true;
+  }
+
+  stepMetric(metric: IMetric, direction: 1 | -1) {
+    const key = `metric_${metric.id}`;
+    const control = this.metricsForm.get(key);
+    if (!control) return;
+    const current = Number(control.value) || 0;
+    const step = metric.step ?? 1;
+    let next = Math.round((current + direction * step) / step) * step;
+    if (metric.minValue != null) next = Math.max(metric.minValue, next);
+    if (metric.maxValue != null) next = Math.min(metric.maxValue, next);
+    control.setValue(parseFloat(next.toFixed(10)));
+    this.metricEnabled[key] = true;
   }
 
   onMetricCheckboxChange(metricId: number, event: any) {

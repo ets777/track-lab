@@ -1,25 +1,47 @@
 .suggestions {
-    position: absolute;
-    border: 1px solid #ccc;
-    z-index: 1000;
-    width: 90%;
-    max-height: 200px;
-    overflow-y: auto;
+  position: absolute;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  width: 90%;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 ion-range.range-inactive,
-ion-input.input-inactive {
-    opacity: 0.3;
+.number-input-inactive {
+  opacity: 0.3;
+}
+
+.number-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  ion-input {
+    flex: 1;
+  }
+
+  .number-input-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    ion-button {
+      font-size: 1.4rem;
+      --padding-start: 12px;
+      --padding-end: 12px;
+    }
+  }
 }
 
 ion-checkbox[slot="start"] {
-    align-self: center;
-    --size: 24px;
+  align-self: center;
+  --size: 24px;
 }
 
 ion-range .range-value {
-    font-size: 1.4rem;
-    font-weight: 600;
-    min-width: 2.5rem;
-    text-align: right;
+  font-size: 1.4rem;
+  font-weight: 600;
+  min-width: 2.5rem;
+  text-align: right;
 }
