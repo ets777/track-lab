@@ -115,6 +115,14 @@ export const databaseUpgrades = [
         FOREIGN KEY(metricId) REFERENCES metrics(id) ON DELETE CASCADE,
         UNIQUE(activityId, metricId)
       );`,
+      `CREATE TABLE IF NOT EXISTS tagMetrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tagId INTEGER NOT NULL,
+        metricId INTEGER NOT NULL,
+        FOREIGN KEY(tagId) REFERENCES tags(id) ON DELETE CASCADE,
+        FOREIGN KEY(metricId) REFERENCES metrics(id) ON DELETE CASCADE,
+        UNIQUE(tagId, metricId)
+      );`,
       `CREATE TABLE IF NOT EXISTS streaks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tagId INTEGER,

@@ -2,11 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { DatabaseService } from './db/database.service';
 import { MetricForm } from '../components/metric-form/metric-form.component';
 import { ActionMetricService } from './action-metric.service';
+import { TagMetricService } from './tag-metric.service';
 
 @Injectable({ providedIn: 'root' })
 export class MetricService extends DatabaseService<'metrics'> {
   protected tableName: 'metrics' = 'metrics';
   private actionMetricService = inject(ActionMetricService);
+  private tagMetricService = inject(TagMetricService);
 
   async getStandalone() {
     const all = await this.getAll();
@@ -27,10 +29,9 @@ export class MetricService extends DatabaseService<'metrics'> {
     });
 
     if (form.term?.type === 'action' && form.term.termId) {
-      await this.actionMetricService.add({
-        actionId: form.term.termId,
-        metricId,
-      });
+      await this.actionMetricService.add({ actionId: form.term.termId, metricId });
+    } else if (form.term?.type === 'tag' && form.term.termId) {
+      await this.tagMetricService.add({ tagId: form.term.termId, metricId });
     }
 
     return metricId;

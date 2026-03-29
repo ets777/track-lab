@@ -12,6 +12,7 @@ import { TagService } from 'src/app/services/tag.service';
 import { TermService } from 'src/app/services/term.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
+import { TagMetricService } from 'src/app/services/tag-metric.service';
 import { ITerm } from 'src/app/db/models/term';
 import { filterUniqueElements } from 'src/app/functions/term';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
@@ -78,6 +79,7 @@ export class MetricFormComponent implements OnInit {
   private termService = inject(TermService);
   private metricService = inject(MetricService);
   private actionMetricService = inject(ActionMetricService);
+  private tagMetricService = inject(TagMetricService);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
 
@@ -109,13 +111,15 @@ export class MetricFormComponent implements OnInit {
     await this.loadSuggestions();
 
     if (this.metric) {
-      const actionMetrics = await this.actionMetricService.getAllWhereEquals('metricId', this.metric.id);
+      const [actionMetrics, tagMetrics] = await Promise.all([
+        this.actionMetricService.getAllWhereEquals('metricId', this.metric.id),
+        this.tagMetricService.getAllWhereEquals('metricId', this.metric.id),
+      ]);
       let term: CommonTerm | null = null;
       if (actionMetrics.length > 0) {
-        const linked = this.suggestions.find(
-          s => s.item.type === 'action' && s.item.termId === actionMetrics[0].actionId
-        );
-        term = linked?.item ?? null;
+        term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === actionMetrics[0].actionId)?.item ?? null;
+      } else if (tagMetrics.length > 0) {
+        term = this.suggestions.find(s => s.item.type === 'tag' && s.item.termId === tagMetrics[0].tagId)?.item ?? null;
       }
 
       this.metricForm.patchValue({

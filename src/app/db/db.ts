@@ -15,6 +15,7 @@ import { ITermCreateDto, ITermDb } from './models/term';
 import { IDictionaryCreateDto, IDictionaryDb } from './models/dictionary';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
+import { ITagMetricCreateDto, ITagMetricDb } from './models/tag-metric';
 
 export class MyAppDatabase extends Dexie {
   activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -33,6 +34,7 @@ export class MyAppDatabase extends Dexie {
   dictionaries!: Table<IDictionaryDb, number, IDictionaryCreateDto>;
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
+  tagMetrics!: Table<ITagMetricDb, number, ITagMetricCreateDto>;
 
   constructor(databaseName: string) {
     super(databaseName);
@@ -224,6 +226,10 @@ export class MyAppDatabase extends Dexie {
         // 7. save activity
         await tx.table('activities').put(activity);
       }
+    });
+
+    this.version(5).stores({
+      tagMetrics: '++id, tagId, metricId, [tagId+metricId]',
     });
   }
 }

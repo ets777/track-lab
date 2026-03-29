@@ -17,7 +17,13 @@ import { actionSuggestions } from './action-suggestions';
 import { IActivity } from 'src/app/db/models/activity';
 import { IActionDb } from 'src/app/db/models/action';
 import { IActionMetricDb } from 'src/app/db/models/action-metric';
+import { IActionTagDb } from 'src/app/db/models/action-tag';
+import { ITagDb } from 'src/app/db/models/tag';
+import { ITagMetricDb } from 'src/app/db/models/tag-metric';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
+import { ActionTagService } from 'src/app/services/action-tag.service';
+import { TagService } from 'src/app/services/tag.service';
+import { TagMetricService } from 'src/app/services/tag-metric.service';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
@@ -80,8 +86,14 @@ export class ActivityFormComponent implements OnInit {
   });
 
   private actionMetricService2 = inject(ActionMetricService);
+  private actionTagService = inject(ActionTagService);
+  private tagService = inject(TagService);
+  private tagMetricService = inject(TagMetricService);
   private allMetrics: IMetric[] = [];
   private allActionMetrics: IActionMetricDb[] = [];
+  private allTagMetrics: ITagMetricDb[] = [];
+  private allActionTags: IActionTagDb[] = [];
+  private allTags: ITagDb[] = [];
   private allActions: IActionDb[] = [];
 
   public activityForm: ModelFormGroup<ActivityForm>;
@@ -115,9 +127,8 @@ export class ActivityFormComponent implements OnInit {
     await this.fetchAllSuggestions();
     await this.loadMetrics();
 
-    this.activityForm.get('actions')!.valueChanges.subscribe(() => {
-      this.updateVisibleMetrics();
-    });
+    this.activityForm.get('actions')!.valueChanges.subscribe(() => this.updateVisibleMetrics());
+    this.activityForm.get('tags')!.valueChanges.subscribe(() => this.updateVisibleMetrics());
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -144,7 +155,12 @@ export class ActivityFormComponent implements OnInit {
 
   async loadMetrics() {
     this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
-    this.allActionMetrics = await this.actionMetricService2.getAll();
+    [this.allActionMetrics, this.allTagMetrics, this.allActionTags, this.allTags] = await Promise.all([
+      this.actionMetricService2.getAll(),
+      this.tagMetricService.getAll(),
+      this.actionTagService.getAll(),
+      this.tagService.getAll(),
+    ]);
 
     const prevValues = await Promise.all(
       this.allMetrics.map(m =>
@@ -175,17 +191,33 @@ export class ActivityFormComponent implements OnInit {
 
   updateVisibleMetrics() {
     const actionsText = this.activityForm.get('actions')?.value ?? '';
-    const selectedNames = new Set(
+    const selectedActionNames = new Set(
       actionsText.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)
     );
     const selectedActionIds = new Set(
-      this.allActions.filter(a => selectedNames.has(a.name.toLowerCase())).map(a => a.id)
+      this.allActions.filter(a => selectedActionNames.has(a.name.toLowerCase())).map(a => a.id)
     );
-    const linkedMetricIds = new Set(this.allActionMetrics.map(am => am.metricId));
+
+    const tagsText = this.activityForm.get('tags')?.value ?? '';
+    const selectedTagNames = new Set(
+      tagsText.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)
+    );
+    const directTagIds = new Set(
+      this.allTags.filter(t => selectedTagNames.has(t.name.toLowerCase())).map(t => t.id)
+    );
+    const actionTagIds = new Set(
+      this.allActionTags.filter(at => selectedActionIds.has(at.actionId)).map(at => at.tagId)
+    );
+    const relevantTagIds = new Set([...directTagIds, ...actionTagIds]);
+
+    const actionLinkedIds = new Set(this.allActionMetrics.map(am => am.metricId));
+    const tagLinkedIds = new Set(this.allTagMetrics.map(tm => tm.metricId));
 
     this.standaloneMetrics = this.allMetrics.filter(m => {
-      if (!linkedMetricIds.has(m.id)) return true;
-      return this.allActionMetrics.some(am => am.metricId === m.id && selectedActionIds.has(am.actionId));
+      if (!actionLinkedIds.has(m.id) && !tagLinkedIds.has(m.id)) return true;
+      if (actionLinkedIds.has(m.id) && this.allActionMetrics.some(am => am.metricId === m.id && selectedActionIds.has(am.actionId))) return true;
+      if (tagLinkedIds.has(m.id) && this.allTagMetrics.some(tm => tm.metricId === m.id && relevantTagIds.has(tm.tagId))) return true;
+      return false;
     });
   }
 
@@ -227,11 +259,11 @@ export class ActivityFormComponent implements OnInit {
   async fetchAllSuggestions() {
     const actions = await this.actionService.getAllUnhidden();
     this.allActions = actions;
-    this.allActionSuggestions = this.allActionSuggestions.map(
-      (suggestion) => lowerCaseFirstLetter(this.translate.instant(suggestion))
-    );
-    this.allActionSuggestions.unshift(...actions.map((action) => action.name));
-    this.allActionSuggestions = [...new Set(this.allActionSuggestions)];
+    const dbActionNames = new Set(actions.map(a => a.name.toLowerCase()));
+    this.allActionSuggestions = this.allActionSuggestions
+      .map(s => lowerCaseFirstLetter(this.translate.instant(s)))
+      .filter(s => !dbActionNames.has(s.toLowerCase()));
+    this.allActionSuggestions.unshift(...actions.map(a => a.name));
   }
 
   setCurrentTime() {

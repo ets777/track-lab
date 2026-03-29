@@ -126,6 +126,8 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     columnName: string,
     values: (string | number)[],
   ): Promise<RowFor<K>[]> {
+    if (!values.length) return [];
+
     const placeholders = values.map(() => '?').join(',');
 
     const result = await this.sqlite.query(

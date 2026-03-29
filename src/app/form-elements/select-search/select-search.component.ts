@@ -40,6 +40,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
 
   writeValue(value: any): void {
     this.value = value;
+    this.restoreDisplay();
   }
 
   registerOnChange(fn: any): void {
@@ -136,6 +137,22 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
   ngOnChanges(changes: SimpleChanges) {
     if (changes['suggestions']) {
       this.onChange(this.value);
+      this.restoreDisplay();
+    }
+  }
+
+  private restoreDisplay() {
+    if (!this.value) {
+      this.selectedSuggestion = null;
+      this.enteredText = '';
+      return;
+    }
+    const suggestion = this.suggestions.find(
+      s => s.item?.type === this.value?.type && s.item?.termId === this.value?.termId
+    );
+    if (suggestion) {
+      this.selectedSuggestion = suggestion;
+      this.enteredText = suggestion.title;
     }
   }
 }

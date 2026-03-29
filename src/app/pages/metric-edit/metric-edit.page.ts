@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MetricForm, MetricFormComponent } from 'src/app/components/metric-form/metric-form.component';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
+import { TagMetricService } from 'src/app/services/tag-metric.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ToastService } from 'src/app/services/toast.service';
@@ -24,6 +25,7 @@ export class MetricEditPage {
   private router = inject(Router);
   private metricService = inject(MetricService);
   private actionMetricService = inject(ActionMetricService);
+  private tagMetricService = inject(TagMetricService);
   private toastService = inject(ToastService);
   private activityMetricService = inject(ActivityMetricService);
   private alertController = inject(AlertController);
@@ -88,8 +90,11 @@ export class MetricEditPage {
     });
 
     await this.actionMetricService.delete({ metricId: this.metricId });
+    await this.tagMetricService.delete({ metricId: this.metricId });
     if (form.term?.type === 'action' && form.term.termId) {
       await this.actionMetricService.add({ actionId: form.term.termId, metricId: this.metricId });
+    } else if (form.term?.type === 'tag' && form.term.termId) {
+      await this.tagMetricService.add({ tagId: form.term.termId, metricId: this.metricId });
     }
 
     this.toastService.enqueue({ title: 'TK_METRIC_UPDATED_SUCCESSFULLY', type: 'success' });

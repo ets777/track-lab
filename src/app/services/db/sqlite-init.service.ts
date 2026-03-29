@@ -81,6 +81,7 @@ export class SQLiteInitService {
       DROP TABLE IF EXISTS activityTerms;
       DROP TABLE IF EXISTS activityTags;
       DROP TABLE IF EXISTS activityActions;
+      DROP TABLE IF EXISTS tagMetrics;
       DROP TABLE IF EXISTS actionMetrics;
       DROP TABLE IF EXISTS actionDictionaries;
       DROP TABLE IF EXISTS actionTags;
