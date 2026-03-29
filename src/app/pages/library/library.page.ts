@@ -1,13 +1,11 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonSegmentButton, IonLabel, IonList, IonItem, IonSegment, IonSegmentView, IonSegmentContent, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonMenuButton } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
 import { OverlayEventDetail } from '@ionic/core';
 import { Router } from '@angular/router';
-import { TagService } from 'src/app/services/tag.service';
-import { ITag } from 'src/app/db/models/tag';
 import { IAction } from 'src/app/db/models/action';
 import { TagsComponent } from "src/app/components/tags/tags.component";
 import { AlertController } from '@ionic/angular';
@@ -18,84 +16,31 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonSegment, IonItem, IonList, IonLabel, IonSegmentButton, IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSegmentView, IonSegmentContent, TagsComponent]
+  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, IonMenuButton],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);
   private activityActionService = inject(ActivityActionService);
-  private tagService = inject(TagService);
   private translate = inject(TranslateService);
   private router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
-  @ViewChild(IonSegment) segment!: IonSegment;
-
-  tags: ITag[] = [];
   actions: IAction[] = [];
 
   public actionActionSheetButtons = [
-    {
-      text: this.translate.instant('TK_VIEW'),
-      data: {
-        action: 'view',
-      },
-    },
-    {
-      text: this.translate.instant('TK_EDIT'),
-      data: {
-        action: 'edit',
-      },
-    },
-    {
-      text: this.translate.instant('TK_REPLACE'),
-      data: {
-        action: 'replace',
-      },
-    },
-    {
-      text: this.translate.instant('TK_DELETE'),
-      role: 'destructive',
-      data: {
-        action: 'delete',
-      },
-    },
-  ];
-
-  public tagActionSheetButtons = [
-    {
-      text: this.translate.instant('TK_VIEW'),
-      data: {
-        action: 'view',
-      },
-    },
-    {
-      text: this.translate.instant('TK_EDIT'),
-      data: {
-        action: 'edit',
-      },
-    },
-    {
-      text: this.translate.instant('TK_DELETE'),
-      role: 'destructive',
-      data: {
-        action: 'delete',
-      },
-    },
+    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+    { text: this.translate.instant('TK_REPLACE'), data: { action: 'replace' } },
+    { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
 
   async ionViewDidEnter() {
     await this.fetchActions();
-    await this.fetchTags();
   }
 
   async fetchActions() {
     this.actions = (await this.actionService.getAllEnriched())
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  async fetchTags() {
-    this.tags = (await this.tagService.getAll())
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -115,26 +60,6 @@ export class LibraryPage {
       case 'edit':
         await this.router.navigate(['/action/edit', actionId]);
         break;
-      default:
-        break;
-    }
-  }
-
-  async doTagAction(event: CustomEvent<OverlayEventDetail>, tagId: number) {
-    const action = event.detail.data?.action;
-
-    switch (action) {
-      case 'view':
-        await this.router.navigate(['/tag', tagId]);
-        break;
-      case 'delete':
-        await this.deleteTag(tagId);
-        break;
-      case 'edit':
-        await this.router.navigate(['/tag/edit', tagId]);
-        break;
-      default:
-        break;
     }
   }
 
@@ -143,24 +68,13 @@ export class LibraryPage {
 
     if (relations.length) {
       const answer = await this.showDeletionError();
-
-      if (answer == 'replace') {
-        await this.goToReplacePage(actionId);
-      }
-
+      if (answer == 'replace') await this.goToReplacePage(actionId);
       return;
     }
 
-    const confirmation = await this.confirm();
-
-    if (confirmation) {
+    if (await this.confirm()) {
       await this.actionService.deleteWithRelations(actionId);
-
-      this.toastService.enqueue({
-        title: 'TK_ACTION_DELETED_SUCCESSFULLY',
-        type: 'success',
-      });
-
+      this.toastService.enqueue({ title: 'TK_ACTION_DELETED_SUCCESSFULLY', type: 'success' });
       await this.fetchActions();
     }
   }
@@ -170,31 +84,14 @@ export class LibraryPage {
 
     if (!relations.length) {
       const answer = await this.showReplacementError();
-
       if (answer == 'delete') {
         await this.actionService.deleteWithRelations(actionId);
         await this.fetchActions();
       }
-
       return;
     }
 
     this.goToReplacePage(actionId);
-  }
-
-  async deleteTag(tagId: number) {
-    const confirmation = await this.confirm();
-
-    if (confirmation) {
-      await this.tagService.deleteWithRelations(tagId);
-
-      this.toastService.enqueue({
-        title: 'TK_TAG_DELETED_SUCCESSFULLY',
-        type: 'success',
-      });
-
-      await this.fetchTags();
-    }
   }
 
   async goToReplacePage(actionId: number) {
@@ -210,11 +107,8 @@ export class LibraryPage {
         { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
       ],
     });
-
     await alert.present();
-
     const { role } = await alert.onDidDismiss();
-
     return role;
   }
 
@@ -227,11 +121,8 @@ export class LibraryPage {
         { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
       ],
     });
-
     await alert.present();
-
     const { role } = await alert.onDidDismiss();
-
     return role;
   }
 
@@ -243,23 +134,12 @@ export class LibraryPage {
         { text: this.translate.instant('TK_NO'), role: 'no' },
       ],
     });
-
     await alert.present();
-
     const { role } = await alert.onDidDismiss();
-
     return role === 'yes';
   }
 
   async goToAddPage() {
-    const selectedSegment = this.segment.value;
-
-    if (selectedSegment == 'actions') {
-      await this.router.navigate(['/action/add']);
-    }
-
-    if (selectedSegment == 'tags') {
-      await this.router.navigate(['/tag/add']);
-    }
+    await this.router.navigate(['/action/add']);
   }
 }

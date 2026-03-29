@@ -141,6 +141,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/library/library.page').then(m => m.LibraryPage)
   },
   {
+    path: 'tag-list',
+    loadComponent: () => import('./pages/tag-list/tag-list.page').then(m => m.TagListPage)
+  },
+  {
+    path: 'term-list',
+    loadComponent: () => import('./pages/term-list/term-list.page').then(m => m.TermListPage)
+  },
+  {
     path: '',
     redirectTo: '/activity',
     pathMatch: 'full',

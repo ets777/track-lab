@@ -19,11 +19,12 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
+import { LibraryMenuComponent } from './components/library-menu/library-menu.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LibraryMenuComponent],
 })
 export class AppComponent implements OnInit {
   private translate = inject(TranslateService);

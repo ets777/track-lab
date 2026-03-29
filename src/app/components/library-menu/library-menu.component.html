@@ -1,0 +1,18 @@
+<ion-menu
+  menuId="library-menu"
+  contentId="main-content"
+  side="start"
+>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>{{ 'TK_LIBRARY_SHORT' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <ion-list>
+      <ion-item (click)="goTo('/library')">{{ 'TK_ACTIONS' | translate }}</ion-item>
+      <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
+      <ion-item (click)="goTo('/term-list')">{{ 'TK_TERMS' | translate }}</ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>

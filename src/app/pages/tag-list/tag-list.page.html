@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-menu-button menu="library-menu"></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{ 'TK_ACTIONS' | translate }}</ion-title>
+    <ion-title>{{ 'TK_TAGS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
@@ -13,22 +13,19 @@
     </ion-fab-button>
   </ion-fab>
   <ion-list>
-    @for (action of actions; track action.id) {
-      <ion-item class="action">
-        <ion-label>
-          <div class="title">{{ action.name }}</div>
-          <app-tags [tags]="action.tags"></app-tags>
-        </ion-label>
+    @for (tag of tags; track tag.id) {
+      <ion-item>
+        <ion-label>{{ tag.name }}</ion-label>
         <ion-buttons class="item-buttons">
-          <ion-button id="open-action-sheet-action-{{action.id}}">
+          <ion-button id="open-action-sheet-tag-{{tag.id}}">
             <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-action-sheet
-          trigger="open-action-sheet-action-{{action.id}}"
-          header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="actionActionSheetButtons"
-          (didDismiss)="doActionAction($event, action.id)"
+          trigger="open-action-sheet-tag-{{tag.id}}"
+          header="{{ 'TK_TAGS' | translate }}"
+          [buttons]="tagActionSheetButtons"
+          (didDismiss)="doTagAction($event, tag.id)"
         ></ion-action-sheet>
       </ion-item>
     }
