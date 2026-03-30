@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel } from '@ionic/angular/standalone';
+import { AlertController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { appVersion } from '../../../environments/version';
@@ -27,6 +28,7 @@ export class SettingsPage implements OnInit {
   private translate = inject(TranslateService);
   private backupService = inject(BackupService);
   private hookService = inject(HookService);
+  private alertController = inject(AlertController);
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
   environment = environment;
@@ -114,5 +116,27 @@ export class SettingsPage implements OnInit {
   async setResetDatabaseOnReload(event: any) {
     const value = event.detail.checked as boolean;
     await Preferences.set({ key: 'reset-database-on-reload', value: String(value) });
+  }
+
+  async resetDatabase() {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_CONFIRMATION'),
+      subHeader: this.translate.instant('TK_RESET_DATABASE_CONFIRMATION'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+
+    if (role !== 'yes') {
+      return;
+    }
+
+    await this.backupService.clearDatabase();
+    await Preferences.remove({ key: 'last-backup-date' });
+    this.lastBackupDate = '';
   }
 }

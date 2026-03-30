@@ -364,22 +364,30 @@ export class BackupService {
   }
 
   async clearDatabase() {
-    await this.actionService.clear();
-    await this.tagService.clear();
     await this.activityService.clear();
     await this.activityActionService.clear();
-    await this.achievementService.clear();
-    await this.actionTagService.clear();
     await this.activityTagService.clear();
-
-    await this.dictionaryService.clear();
-    await this.metricService.clear();
-    await this.termService.clear();
-    await this.streakService.clear();
-    await this.actionDictionaryService.clear();
-    await this.actionMetricService.clear();
     await this.activityTermService.clear();
     await this.activityMetricService.clear();
+    await this.achievementService.clear();
+    await this.streakService.clear();
+
+    await this.actionService.clear();
+    await this.tagService.clear();
+    await this.actionTagService.clear();
+    await this.actionDictionaryService.clear();
+    await this.actionMetricService.clear();
+
+    const userMetrics = (await this.metricService.getAll()).filter(m => !m.isBase);
+    for (const metric of userMetrics) {
+      await this.metricService.delete({ id: metric.id });
+    }
+
+    const userDictionaries = (await this.dictionaryService.getAll()).filter(d => !d.isBase);
+    for (const dict of userDictionaries) {
+      await this.termService.delete({ dictionaryId: dict.id });
+      await this.dictionaryService.delete({ id: dict.id });
+    }
   }
 
   getHelper(version: string) {
@@ -487,10 +495,26 @@ export class BackupService {
     await alert.present();
   }
 
+  async askFreshStart(): Promise<boolean> {
+    const alert = await this.alertController.create({
+      message: this.translate.instant('TK_LONG_BREAK_MESSAGE'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+
+    await alert.present();
+
+    const { role } = await alert.onDidDismiss();
+
+    return role === 'yes';
+  }
+
   async askDatabaseToReset(): Promise<boolean> {
     const alert = await this.alertController.create({
       header: this.translate.instant('TK_CONFIRMATION'),
-      subHeader: this.translate.instant('TK_BEFORE_RESTORING_ALL_YOUR_CURRENT_DATA_WILL_BE_ERASED_DO_YOU_WANT_TO_CONTINUE'),
+      subHeader: this.translate.instant('TK_RESET_DATABASE_CONFIRMATION'),
       buttons: [
         { text: this.translate.instant('TK_YES'), role: 'yes' },
         { text: this.translate.instant('TK_NO'), role: 'no' },

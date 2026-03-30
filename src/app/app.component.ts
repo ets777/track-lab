@@ -54,6 +54,7 @@ export class AppComponent implements OnInit {
 
     await this.platform.ready();
     await this.achievementService.init();
+    await this.checkLongBreak();
     await this.autoBackup();
 
     this.platform.backButton.subscribeWithPriority(5, async () => {
@@ -136,11 +137,41 @@ export class AppComponent implements OnInit {
         }
       }
     } else {
-      needBackup = true;
+      const lastActivity = await this.activityService.getLast(['date', 'startTime']);
+      needBackup = !!lastActivity;
     }
 
     if (needBackup) {
       this.backupService.backup();
     }
+  }
+
+  async checkLongBreak() {
+    const lastActivity = await this.activityService.getLast(['date', 'startTime']);
+
+    if (!lastActivity) {
+      return;
+    }
+
+    const monthsDiff = differenceInMonths(new Date(), new Date(lastActivity.date));
+
+    if (monthsDiff < 1) {
+      return;
+    }
+
+    const wantsFreshStart = await this.backupService.askFreshStart();
+
+    if (!wantsFreshStart) {
+      return;
+    }
+
+    const confirmed = await this.backupService.askDatabaseToReset();
+
+    if (!confirmed) {
+      return;
+    }
+
+    await this.backupService.clearDatabase();
+    await Preferences.remove({ key: 'last-backup-date' });
   }
 }

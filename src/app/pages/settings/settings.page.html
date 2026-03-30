@@ -28,7 +28,7 @@
     </ion-item>
   </ion-list>
 
-  <h2>{{ 'TK_IMPORT_EXPORT' | translate }}</h2>
+  <h2>{{ 'TK_DATABASE' | translate }}</h2>
   <ion-list>
     <ion-item
       (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
@@ -70,6 +70,8 @@
         {{ 'TK_NEVER' | translate }}
       }
     </ion-item>
+
+    <ion-item class="danger-text" (click)="resetDatabase()">{{ 'TK_RESET_DATABASE' | translate }}</ion-item>
   </ion-list>
 
   <input
