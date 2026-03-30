@@ -12,9 +12,10 @@ import { AchievementToastComponent } from "./components/achievement-toast/achiev
 import { TooltipComponent } from "./components/tooltip/tooltip.component";
 import { StatsMenuComponent } from "./components/stats-menu/stats-menu.component";
 import { autoBackupOption } from './pages/settings/settings.page';
-import { differenceInDays, differenceInMonths } from 'date-fns';
+import { differenceInDays, differenceInMonths, format } from 'date-fns';
 import { ToastComponent } from './components/toast/toast.component';
 import { BackupService } from './services/backup.service';
+import { ActivityService } from './services/activity.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit {
   private achievementService = inject(AchievementService);
   private platform = inject(Platform);
   private backupService = inject(BackupService);
+  private activityService = inject(ActivityService);
   private router = inject(Router);
   private navigationService = inject(NavigationService);
 
@@ -125,6 +127,14 @@ export class AppComponent implements OnInit {
       needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
         || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
         || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0;
+
+      if (needBackup) {
+        const currentDateStr = format(new Date(), 'yyyy-MM-dd');
+        const recentActivities = await this.activityService.getByDate(lastBackupDate, currentDateStr);
+        if (recentActivities.length === 0) {
+          needBackup = false;
+        }
+      }
     } else {
       needBackup = true;
     }
