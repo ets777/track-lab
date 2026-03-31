@@ -139,4 +139,23 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 2,
+    statements: [
+      `UPDATE dictionaries SET isBase = 1 WHERE name = 'TK_EMOTIONS';`,
+    ],
+  },
+  {
+    toVersion: 3,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS termMetrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        termId INTEGER NOT NULL,
+        metricId INTEGER NOT NULL,
+        FOREIGN KEY(termId) REFERENCES terms(id) ON DELETE CASCADE,
+        FOREIGN KEY(metricId) REFERENCES metrics(id) ON DELETE CASCADE,
+        UNIQUE(termId, metricId)
+      );`,
+    ],
+  },
 ];

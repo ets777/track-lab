@@ -12,18 +12,20 @@ import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
-import { getPartIndex, lowerCaseFirstLetter } from 'src/app/functions/string';
-import { actionSuggestions } from './action-suggestions';
+import { getPartIndex } from 'src/app/functions/string';
 import { IActivity } from 'src/app/db/models/activity';
 import { IActionDb } from 'src/app/db/models/action';
 import { IActionMetricDb } from 'src/app/db/models/action-metric';
 import { IActionTagDb } from 'src/app/db/models/action-tag';
 import { ITagDb } from 'src/app/db/models/tag';
 import { ITagMetricDb } from 'src/app/db/models/tag-metric';
+import { ITermMetricDb } from 'src/app/db/models/term-metric';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { ActionTagService } from 'src/app/services/action-tag.service';
 import { TagService } from 'src/app/services/tag.service';
 import { TagMetricService } from 'src/app/services/tag-metric.service';
+import { TermMetricService } from 'src/app/services/term-metric.service';
+import { TermService } from 'src/app/services/term.service';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActionService } from 'src/app/services/action.service';
@@ -33,6 +35,11 @@ import { tagsValidator } from 'src/app/validators/tags.validator';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
+import { DictionaryService } from 'src/app/services/dictionary.service';
+import { ActionDictionaryService } from 'src/app/services/action-dictionary.service';
+import { IDictionary } from 'src/app/db/models/dictionary';
+import { IActionDictionaryDb } from 'src/app/db/models/action-dictionary';
+import { DictionaryInputComponent } from '../../form-elements/dictionary-input/dictionary-input.component';
 
 function metricRangeValidator(min?: number, max?: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -59,7 +66,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent],
+  imports: [IonButton, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, DictionaryInputComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -89,20 +96,33 @@ export class ActivityFormComponent implements OnInit {
   private actionTagService = inject(ActionTagService);
   private tagService = inject(TagService);
   private tagMetricService = inject(TagMetricService);
+  private termMetricService = inject(TermMetricService);
+  private termService = inject(TermService);
+  private dictionaryService = inject(DictionaryService);
+  private actionDictionaryService = inject(ActionDictionaryService);
   private allMetrics: IMetric[] = [];
   private allActionMetrics: IActionMetricDb[] = [];
   private allTagMetrics: ITagMetricDb[] = [];
+  private allTermMetrics: ITermMetricDb[] = [];
   private allActionTags: IActionTagDb[] = [];
   private allTags: ITagDb[] = [];
   private allActions: IActionDb[] = [];
+  private allDictionaries: IDictionary[] = [];
+  private allActionDictionaries: IActionDictionaryDb[] = [];
+  // dictionaryId -> (lowerCaseName -> termId)
+  private termLookup = new Map<number, Map<string, number>>();
+
+  @Input() activityTermValues: Record<number, string> = {};
 
   public activityForm: ModelFormGroup<ActivityForm>;
   public metricsForm: FormGroup = this.formBuilder.group({});
+  public dictionariesForm: FormGroup = this.formBuilder.group({});
   public standaloneMetrics: IMetric[] = [];
+  public standaloneDictionaries: IDictionary[] = [];
   public metricEnabled: Record<string, boolean> = {};
 
   filteredActionSuggestions: string[] = [];
-  private allActionSuggestions = actionSuggestions;
+  private allActionSuggestions: string[] = [];
   showActionSuggestions = false;
 
   private currentTime: string = '00:00';
@@ -123,11 +143,20 @@ export class ActivityFormComponent implements OnInit {
     }, 5000);
   }
 
+  async refreshMetricsAndDictionaries() {
+    await this.loadMetrics();
+    await this.loadDictionaries();
+  }
+
   async ngOnInit() {
     await this.fetchAllSuggestions();
     await this.loadMetrics();
+    await this.loadDictionaries();
 
-    this.activityForm.get('actions')!.valueChanges.subscribe(() => this.updateVisibleMetrics());
+    this.activityForm.get('actions')!.valueChanges.subscribe(() => {
+      this.updateVisibleMetrics();
+      this.updateVisibleDictionaries();
+    });
     this.activityForm.get('tags')!.valueChanges.subscribe(() => this.updateVisibleMetrics());
 
     if (this.activity) {
@@ -155,9 +184,10 @@ export class ActivityFormComponent implements OnInit {
 
   async loadMetrics() {
     this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
-    [this.allActionMetrics, this.allTagMetrics, this.allActionTags, this.allTags] = await Promise.all([
+    [this.allActionMetrics, this.allTagMetrics, this.allTermMetrics, this.allActionTags, this.allTags] = await Promise.all([
       this.actionMetricService2.getAll(),
       this.tagMetricService.getAll(),
+      this.termMetricService.getAll(),
       this.actionTagService.getAll(),
       this.tagService.getAll(),
     ]);
@@ -210,13 +240,26 @@ export class ActivityFormComponent implements OnInit {
     );
     const relevantTagIds = new Set([...directTagIds, ...actionTagIds]);
 
+    const enteredTermIds = new Set<number>();
+    for (const dictionary of this.allDictionaries.filter(d => !d.isHidden)) {
+      const value: string = this.dictionariesForm.get(`dictionary_${dictionary.id}`)?.value ?? '';
+      const lookup = this.termLookup.get(dictionary.id);
+      if (!lookup) continue;
+      for (const name of value.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)) {
+        const termId = lookup.get(name);
+        if (termId !== undefined) enteredTermIds.add(termId);
+      }
+    }
+
     const actionLinkedIds = new Set(this.allActionMetrics.map(am => am.metricId));
     const tagLinkedIds = new Set(this.allTagMetrics.map(tm => tm.metricId));
+    const termLinkedIds = new Set(this.allTermMetrics.map(tm => tm.metricId));
 
     this.standaloneMetrics = this.allMetrics.filter(m => {
-      if (!actionLinkedIds.has(m.id) && !tagLinkedIds.has(m.id)) return true;
+      if (!actionLinkedIds.has(m.id) && !tagLinkedIds.has(m.id) && !termLinkedIds.has(m.id)) return true;
       if (actionLinkedIds.has(m.id) && this.allActionMetrics.some(am => am.metricId === m.id && selectedActionIds.has(am.actionId))) return true;
       if (tagLinkedIds.has(m.id) && this.allTagMetrics.some(tm => tm.metricId === m.id && relevantTagIds.has(tm.tagId))) return true;
+      if (termLinkedIds.has(m.id) && this.allTermMetrics.some(tm => tm.metricId === m.id && enteredTermIds.has(tm.termId))) return true;
       return false;
     });
   }
@@ -256,14 +299,71 @@ export class ActivityFormComponent implements OnInit {
     return this.metricsForm.valid;
   }
 
+  async loadDictionaries() {
+    const [allTerms] = await Promise.all([
+      this.termService.getAll(),
+    ]);
+    [this.allDictionaries, this.allActionDictionaries] = await Promise.all([
+      this.dictionaryService.getAll(),
+      this.actionDictionaryService.getAll(),
+    ]);
+
+    this.termLookup = new Map();
+    for (const term of allTerms) {
+      if (!this.termLookup.has(term.dictionaryId)) {
+        this.termLookup.set(term.dictionaryId, new Map());
+      }
+      this.termLookup.get(term.dictionaryId)!.set(term.name.toLowerCase(), term.id);
+    }
+
+    this.dictionariesForm = this.formBuilder.group({});
+    for (const dictionary of this.allDictionaries.filter(d => !d.isHidden)) {
+      const initialValue = this.activityTermValues[dictionary.id] ?? '';
+      this.dictionariesForm.addControl(`dictionary_${dictionary.id}`, this.formBuilder.control(initialValue));
+    }
+
+    this.dictionariesForm.valueChanges.subscribe(() => this.updateVisibleMetrics());
+    this.updateVisibleDictionaries();
+  }
+
+  updateVisibleDictionaries() {
+    const actionsText = this.activityForm.get('actions')?.value ?? '';
+    const selectedActionNames = new Set(
+      actionsText.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)
+    );
+    const selectedActionIds = new Set(
+      this.allActions.filter(a => selectedActionNames.has(a.name.toLowerCase())).map(a => a.id)
+    );
+
+    const actionLinkedIds = new Set(this.allActionDictionaries.map(ad => ad.dictionaryId));
+
+    this.standaloneDictionaries = this.allDictionaries.filter(d => {
+      if (d.isHidden) return false;
+      if (!actionLinkedIds.has(d.id)) return true;
+      return this.allActionDictionaries.some(ad => ad.dictionaryId === d.id && selectedActionIds.has(ad.actionId));
+    });
+  }
+
+  getDictionaryTermRecords(): { dictionaryId: number; termNames: string[] }[] {
+    return this.standaloneDictionaries
+      .map(d => ({
+        dictionaryId: d.id,
+        termNames: (this.dictionariesForm.get(`dictionary_${d.id}`)?.value ?? '')
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter(Boolean),
+      }))
+      .filter(r => r.termNames.length > 0);
+  }
+
+  getDictionaryLabel(dictionary: IDictionary): string {
+    return this.translate.instant(dictionary.name);
+  }
+
   async fetchAllSuggestions() {
     const actions = await this.actionService.getAllUnhidden();
     this.allActions = actions;
-    const dbActionNames = new Set(actions.map(a => a.name.toLowerCase()));
-    this.allActionSuggestions = this.allActionSuggestions
-      .map(s => lowerCaseFirstLetter(this.translate.instant(s)))
-      .filter(s => !dbActionNames.has(s.toLowerCase()));
-    this.allActionSuggestions.unshift(...actions.map(a => a.name));
+    this.allActionSuggestions = actions.map(a => a.name);
   }
 
   setCurrentTime() {
@@ -295,6 +395,9 @@ export class ActivityFormComponent implements OnInit {
       if (!this.isRangeMetric(metric) && !metric.showPreviousValue) {
         this.metricsForm.get(`metric_${metric.id}`)?.reset();
       }
+    }
+    for (const dictionary of this.allDictionaries.filter(d => !d.isHidden)) {
+      this.dictionariesForm.get(`dictionary_${dictionary.id}`)?.reset('');
     }
   }
 

@@ -14,6 +14,7 @@ import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
 import { IStreakCreateDto, IStreakDb } from "src/app/db/models/streak";
 import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 import { ITagMetricCreateDto, ITagMetricDb } from "src/app/db/models/tag-metric";
+import { ITermMetricCreateDto, ITermMetricDb } from "src/app/db/models/term-metric";
 
 export interface ITable {
     actions: IActionDb;
@@ -32,6 +33,7 @@ export interface ITable {
     metrics: IMetricDb;
     streaks: IStreakDb;
     tagMetrics: ITagMetricDb;
+    termMetrics: ITermMetricDb;
 }
 
 export interface ICreateDto {
@@ -51,6 +53,7 @@ export interface ICreateDto {
     metrics: IMetricDb | IMetricCreateDto;
     streaks: IStreakDb | IStreakCreateDto;
     tagMetrics: ITagMetricDb | ITagMetricCreateDto;
+    termMetrics: ITermMetricDb | ITermMetricCreateDto;
 }
 
 export type TableName = keyof ITable;

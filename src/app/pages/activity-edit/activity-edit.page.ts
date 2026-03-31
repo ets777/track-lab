@@ -10,6 +10,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ToastService } from 'src/app/services/toast.service';
+import { TermService } from 'src/app/services/term.service';
+import { ActivityTermService } from 'src/app/services/activity-term.service';
 
 @Component({
   selector: 'app-activity-edit',
@@ -25,25 +27,42 @@ export class ActivityEditPage {
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private termService = inject(TermService);
+  private activityTermService = inject(ActivityTermService);
 
   @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
 
   activityId: number;
   activity?: IActivity;
   activityMetricValues: Record<number, number> = {};
+  activityTermValues: Record<number, string> = {};
 
   constructor() {
     this.activityId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
   async ionViewDidEnter() {
-    const [activity, metricRecords] = await Promise.all([
+    const [activity, metricRecords, terms] = await Promise.all([
       this.activityService.getEnriched(this.activityId),
       this.activityMetricService.getByActivityId(this.activityId),
+      this.termService.getByActivityId(this.activityId),
     ]);
     this.activity = activity;
     this.activityMetricValues = Object.fromEntries(metricRecords.map(r => [r.metricId, r.value]));
+
+    const termsByDictionary: Record<number, string[]> = {};
+    for (const term of terms) {
+      if (!termsByDictionary[term.dictionaryId]) {
+        termsByDictionary[term.dictionaryId] = [];
+      }
+      termsByDictionary[term.dictionaryId].push(term.name);
+    }
+    this.activityTermValues = Object.fromEntries(
+      Object.entries(termsByDictionary).map(([dId, names]) => [Number(dId), names.join(', ')])
+    );
+
     this.cdr.detectChanges();
+    await this.updateFormRef?.refreshMetricsAndDictionaries();
   }
 
   async updateActivity(): Promise<void> {
@@ -57,6 +76,16 @@ export class ActivityEditPage {
     await this.activityMetricService.delete({ activityId: this.activityId });
     for (const record of this.updateFormRef.getMetricRecords()) {
       await this.activityMetricService.add({ activityId: this.activityId, metricId: record.metricId, value: record.value });
+    }
+
+    await this.activityTermService.delete({ activityId: this.activityId });
+    for (const record of this.updateFormRef.getDictionaryTermRecords()) {
+      const existingTerms = await this.termService.getAllWhereEquals('dictionaryId', record.dictionaryId);
+      for (const termName of record.termNames) {
+        const existing = existingTerms.find(t => t.name.toLowerCase() === termName.toLowerCase());
+        const termId = existing ? existing.id : await this.termService.add({ name: termName, dictionaryId: record.dictionaryId });
+        await this.activityTermService.add({ activityId: this.activityId, termId });
+      }
     }
 
     this.toastService.enqueue({

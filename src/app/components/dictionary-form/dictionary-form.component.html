@@ -1,13 +1,26 @@
 <form [formGroup]="dictionaryForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      formControlName="name"
-      name="name"
-    ></ion-input>
-  </ion-item>
+  @if (dictionary?.isBase) {
+    <ion-item (click)="onNameClick()">
+      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+      <ion-input class="input-readonly" [value]="dictionaryForm.get('name')?.value" [readonly]="true"></ion-input>
+    </ion-item>
+  } @else {
+    <ion-item>
+      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+      <ion-input
+        appValidationError
+        formControlName="name"
+        name="name"
+      ></ion-input>
+    </ion-item>
+  }
   <ion-item>
     <ion-checkbox formControlName="isHidden" labelPlacement="end">{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
   </ion-item>
+
+  <app-select-search
+    formControlName="term"
+    label="TK_TERM"
+    [suggestions]="suggestions"
+  ></app-select-search>
 </form>

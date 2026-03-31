@@ -1,0 +1,24 @@
+<ion-item>
+    <ion-input
+        [label]="inputLabel"
+        labelPlacement="floating"
+        [value]="value"
+        (ionInput)="onInput($event)"
+        (ionBlur)="hideSuggestions()"
+    ></ion-input>
+</ion-item>
+
+@if (showSuggestions) {
+    <div class="suggestions">
+        <ion-list lines="none">
+        @for (suggestion of filteredSuggestions; track suggestion) {
+            <ion-item
+                button
+                (click)="selectSuggestion(suggestion)"
+            >
+                {{ suggestion }}
+            </ion-item>
+        }
+        </ion-list>
+    </div>
+}

@@ -9,6 +9,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { App } from '@capacitor/app';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
+import { TermService } from 'src/app/services/term.service';
+import { ActivityTermService } from 'src/app/services/activity-term.service';
 
 @Component({
   selector: 'app-activity-add',
@@ -20,6 +22,8 @@ export class ActivityAddPage implements OnInit {
   private activityService = inject(ActivityService);
   private toastService = inject(ToastService);
   private activityMetricService = inject(ActivityMetricService);
+  private termService = inject(TermService);
+  private activityTermService = inject(ActivityTermService);
 
   @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
 
@@ -36,6 +40,7 @@ export class ActivityAddPage implements OnInit {
   async updateForm() {
     this.updateEndTime();
     await this.addFormRef?.fetchAllSuggestions();
+    await this.addFormRef?.refreshMetricsAndDictionaries();
     await this.addFormRef?.updateLastActivityData();
   }
 
@@ -54,6 +59,15 @@ export class ActivityAddPage implements OnInit {
     if (activityId != null) {
       for (const record of this.addFormRef.getMetricRecords()) {
         await this.activityMetricService.add({ activityId, metricId: record.metricId, value: record.value });
+      }
+
+      for (const record of this.addFormRef.getDictionaryTermRecords()) {
+        const existingTerms = await this.termService.getAllWhereEquals('dictionaryId', record.dictionaryId);
+        for (const termName of record.termNames) {
+          const existing = existingTerms.find(t => t.name.toLowerCase() === termName.toLowerCase());
+          const termId = existing ? existing.id : await this.termService.add({ name: termName, dictionaryId: record.dictionaryId });
+          await this.activityTermService.add({ activityId, termId });
+        }
       }
     }
 

@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DictionaryForm, DictionaryFormComponent } from 'src/app/components/dictionary-form/dictionary-form.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { DictionaryService } from 'src/app/services/dictionary.service';
+import { ActionDictionaryService } from 'src/app/services/action-dictionary.service';
 
 @Component({
   selector: 'app-dictionary-add',
@@ -17,6 +18,7 @@ import { DictionaryService } from 'src/app/services/dictionary.service';
 export class DictionaryAddPage {
   private toastService = inject(ToastService);
   private dictionaryService = inject(DictionaryService);
+  private actionDictionaryService = inject(ActionDictionaryService);
 
   @ViewChild('addFormRef') addFormRef!: DictionaryFormComponent;
 
@@ -27,7 +29,10 @@ export class DictionaryAddPage {
 
     const dictionaryFormValue = this.addFormRef.dictionaryForm.value as DictionaryForm;
 
-    await this.dictionaryService.add(dictionaryFormValue);
+    const dictionaryId = await this.dictionaryService.add({ name: dictionaryFormValue.name, isHidden: dictionaryFormValue.isHidden ?? false });
+    if (dictionaryFormValue.term?.type === 'action' && dictionaryFormValue.term.termId) {
+      await this.actionDictionaryService.add({ actionId: dictionaryFormValue.term.termId, dictionaryId });
+    }
     this.resetForm();
 
     this.toastService.enqueue({

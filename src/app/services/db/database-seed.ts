@@ -17,9 +17,9 @@ export async function seedDatabase(sqlite: SQLiteService) {
 
   // id: 1=TK_EMOTIONS, 2=Places
   await sqlite.execute(`
-    INSERT OR REPLACE INTO dictionaries (id, name) VALUES
-      (1, 'TK_EMOTIONS'),
-      (2, 'Places');
+    INSERT OR REPLACE INTO dictionaries (id, name, isBase) VALUES
+      (1, 'TK_EMOTIONS', 1),
+      (2, 'Places',      0);
   `);
 
   // id: 1-5=emotions, 6-8=places

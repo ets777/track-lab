@@ -57,8 +57,9 @@ export class StreakFormComponent implements OnInit {
   public streakForm!: ModelFormGroup<StreakForm>;
 
   async ngOnInit() {
+    const today = new Date().toISOString().slice(0, 10);
     this.streakForm = this.formBuilder.group({
-      startDate: ['', [Validators.required, dateFormatValidator]],
+      startDate: [today, [Validators.required, dateFormatValidator]],
       term: [null as CommonTerm | null, Validators.required],
     });
 
@@ -121,7 +122,7 @@ export class StreakFormComponent implements OnInit {
 
   setDefaultData() {
     this.streakForm.patchValue({
-      startDate: '',
+      startDate: new Date().toISOString().slice(0, 10),
       term: null,
     });
   }

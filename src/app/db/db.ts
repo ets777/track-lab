@@ -16,6 +16,7 @@ import { IDictionaryCreateDto, IDictionaryDb } from './models/dictionary';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
 import { ITagMetricCreateDto, ITagMetricDb } from './models/tag-metric';
+import { ITermMetricCreateDto, ITermMetricDb } from './models/term-metric';
 
 export class MyAppDatabase extends Dexie {
   activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -35,6 +36,7 @@ export class MyAppDatabase extends Dexie {
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
   tagMetrics!: Table<ITagMetricDb, number, ITagMetricCreateDto>;
+  termMetrics!: Table<ITermMetricDb, number, ITermMetricCreateDto>;
 
   constructor(databaseName: string) {
     super(databaseName);
@@ -156,7 +158,7 @@ export class MyAppDatabase extends Dexie {
         });
 
       // 2. create 1 dictionary - emotions
-      const emotionsDictionaryId = await tx.table('dictionaries').add({ name: 'TK_EMOTIONS' });
+      const emotionsDictionaryId = await tx.table('dictionaries').add({ name: 'TK_EMOTIONS', isBase: true });
 
       // 3. get all activities
       const allActivities = await tx.table('activities').toArray();
@@ -230,6 +232,20 @@ export class MyAppDatabase extends Dexie {
 
     this.version(5).stores({
       tagMetrics: '++id, tagId, metricId, [tagId+metricId]',
+    });
+
+    this.version(6).stores({}).upgrade(async (tx) => {
+      await tx.table('dictionaries')
+        .where('name').equals('TK_EMOTIONS')
+        .modify({ isBase: true });
+    });
+
+    this.version(7).stores({
+      terms: '++id, name, dictionaryId',
+    });
+
+    this.version(8).stores({
+      termMetrics: '++id, termId, metricId, [termId+metricId]',
     });
   }
 }

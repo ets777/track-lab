@@ -20,7 +20,7 @@ interface ITermWithDictionary extends ITerm {
   selector: 'app-term-list',
   templateUrl: './term-list.page.html',
   styleUrls: ['./term-list.page.scss'],
-  imports: [IonNote, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton],
+  imports: [IonNote, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton],
 })
 export class TermListPage {
   private termService = inject(TermService);

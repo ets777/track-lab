@@ -9,6 +9,7 @@ import { DictionaryService } from 'src/app/services/dictionary.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IDictionary } from 'src/app/db/models/dictionary';
+import { ActionDictionaryService } from 'src/app/services/action-dictionary.service';
 
 @Component({
   selector: 'app-dictionary-edit',
@@ -19,6 +20,7 @@ import { IDictionary } from 'src/app/db/models/dictionary';
 export class DictionaryEditPage {
   private route = inject(ActivatedRoute);
   private dictionaryService = inject(DictionaryService);
+  private actionDictionaryService = inject(ActionDictionaryService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -35,6 +37,11 @@ export class DictionaryEditPage {
   async ionViewDidEnter() {
     this.dictionary = await this.dictionaryService.getById(this.dictionaryId);
     this.cdr.detectChanges();
+
+    const actionDictionaries = await this.actionDictionaryService.getAllWhereEquals('dictionaryId', this.dictionaryId);
+    if (actionDictionaries.length > 0) {
+      await this.updateFormRef.setTermByActionId(actionDictionaries[0].actionId);
+    }
   }
 
   async updateDictionary(): Promise<void> {
@@ -43,7 +50,15 @@ export class DictionaryEditPage {
     }
 
     const actionFormValue = this.updateFormRef.dictionaryForm.value as DictionaryForm;
-    await this.dictionaryService.update(this.dictionaryId, actionFormValue);
+    await this.dictionaryService.update(this.dictionaryId, {
+      name: this.dictionary?.isBase ? this.dictionary.name : actionFormValue.name,
+      isHidden: actionFormValue.isHidden,
+    });
+
+    await this.actionDictionaryService.delete({ dictionaryId: this.dictionaryId });
+    if (actionFormValue.term?.type === 'action' && actionFormValue.term.termId) {
+      await this.actionDictionaryService.add({ actionId: actionFormValue.term.termId, dictionaryId: this.dictionaryId });
+    }
 
     this.toastService.enqueue({
       title: 'TK_DICTIONARY_UPDATED_SUCCESSFULLY',

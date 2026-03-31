@@ -30,7 +30,7 @@
         <ion-action-sheet
           trigger="open-action-sheet-dictionary-{{dictionary.id}}"
           header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="dictionaryActionSheetButtons"
+          [buttons]="getDictionaryActionSheetButtons(dictionary)"
           (didDismiss)="doDictionaryAction($event, dictionary.id)"
         ></ion-action-sheet>
       </ion-item>

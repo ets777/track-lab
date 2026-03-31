@@ -85,63 +85,75 @@
         <ion-item slot="header">
           <ion-label>{{ 'TK_METRICS' | translate }}</ion-label>
         </ion-item>
-        <div slot="content" [formGroup]="metricsForm">
-          @for (metric of standaloneMetrics; track metric.id) {
-            @if (isRangeMetric(metric)) {
-              <ion-item>
-                <ion-checkbox
-                  slot="start"
-                  [checked]="metricEnabled['metric_' + metric.id]"
-                  (ionChange)="onMetricCheckboxChange(metric.id, $event)"
-                ></ion-checkbox>
-                <ion-label position="stacked">
-                  {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                </ion-label>
-                <ion-range
-                  [formControlName]="'metric_' + metric.id"
-                  [min]="metric.minValue"
-                  [max]="metric.maxValue"
-                  [step]="metric.step"
-                  [snaps]="true"
-                  [class.range-inactive]="!metricEnabled['metric_' + metric.id]"
-                  [style.--bar-background-active]="getRangeColor(metric)"
-                  [style.--knob-background]="getRangeColor(metric)"
-                  (ionChange)="onRangeChange(metric.id)"
-                  (pointerdown)="onRangeChange(metric.id)"
-                >
-                  <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
-                </ion-range>
-              </ion-item>
-            } @else {
-              <ion-item>
-                <ion-checkbox
-                  slot="start"
-                  [checked]="metricEnabled['metric_' + metric.id]"
-                  (ionChange)="onMetricCheckboxChange(metric.id, $event)"
-                ></ion-checkbox>
-                <ion-label position="stacked">
-                  {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                </ion-label>
-                <div class="number-input" [class.number-input-inactive]="!metricEnabled['metric_' + metric.id]">
-                  <ion-input
-                    appValidationError
-                    type="number"
+        <div slot="content">
+          <div [formGroup]="metricsForm">
+            @for (metric of standaloneMetrics; track metric.id) {
+              @if (isRangeMetric(metric)) {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="metricEnabled['metric_' + metric.id]"
+                    (ionChange)="onMetricCheckboxChange(metric.id, $event)"
+                  ></ion-checkbox>
+                  <ion-label position="stacked">
+                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
+                  </ion-label>
+                  <ion-range
                     [formControlName]="'metric_' + metric.id"
+                    [min]="metric.minValue"
+                    [max]="metric.maxValue"
                     [step]="metric.step"
-                    (ionFocus)="onRangeChange(metric.id)"
-                  ></ion-input>
-                  <div class="number-input-buttons">
-                    <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
-                    <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
+                    [snaps]="true"
+                    [class.range-inactive]="!metricEnabled['metric_' + metric.id]"
+                    [style.--bar-background-active]="getRangeColor(metric)"
+                    [style.--knob-background]="getRangeColor(metric)"
+                    (ionChange)="onRangeChange(metric.id)"
+                    (pointerdown)="onRangeChange(metric.id)"
+                  >
+                    <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
+                  </ion-range>
+                </ion-item>
+              } @else {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="metricEnabled['metric_' + metric.id]"
+                    (ionChange)="onMetricCheckboxChange(metric.id, $event)"
+                  ></ion-checkbox>
+                  <ion-label position="stacked">
+                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
+                  </ion-label>
+                  <div class="number-input" [class.number-input-inactive]="!metricEnabled['metric_' + metric.id]">
+                    <ion-input
+                      appValidationError
+                      type="number"
+                      [formControlName]="'metric_' + metric.id"
+                      [step]="metric.step"
+                      (ionFocus)="onRangeChange(metric.id)"
+                    ></ion-input>
+                    <div class="number-input-buttons">
+                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
+                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
+                    </div>
                   </div>
-                </div>
-              </ion-item>
+                </ion-item>
+              }
             }
-          }
+          </div>
         </div>
       </ion-accordion>
     </ion-accordion-group>
   }
+
+  <div [formGroup]="dictionariesForm">
+    @for (dictionary of standaloneDictionaries; track dictionary.id) {
+      <app-dictionary-input
+        [dictionaryId]="dictionary.id"
+        [label]="getDictionaryLabel(dictionary)"
+        [formControlName]="'dictionary_' + dictionary.id"
+      ></app-dictionary-input>
+    }
+  </div>
 
   <app-tag-input
     appValidationError

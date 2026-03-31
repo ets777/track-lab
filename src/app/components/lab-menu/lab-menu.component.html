@@ -10,20 +10,11 @@
   </ion-header>
   <ion-content class="ion-padding">
     <ion-list>
+      <ion-item (click)="goTo('/library')">{{ 'TK_ACTIONS' | translate }}</ion-item>
+      <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
       <ion-item (click)="goTo('/metric')">{{ 'TK_METRICS' | translate }}</ion-item>
+      <ion-item (click)="goTo('/dictionary')">{{ 'TK_DICTIONARIES' | translate }}</ion-item>
       <ion-item (click)="goTo('/streak')">{{ 'TK_STREAKS' | translate }}</ion-item>
     </ion-list>
-
-    <ion-accordion-group>
-      <ion-accordion>
-        <ion-item slot="header">{{ 'TK_LIBRARY' | translate }}</ion-item>
-        <ion-list slot="content">
-          <ion-item (click)="goTo('/library')">{{ 'TK_ACTIONS' | translate }}</ion-item>
-          <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-          <ion-item (click)="goTo('/dictionary')">{{ 'TK_DICTIONARIES' | translate }}</ion-item>
-          <ion-item (click)="goTo('/term-list')">{{ 'TK_TERMS' | translate }}</ion-item>
-        </ion-list>
-      </ion-accordion>
-    </ion-accordion-group>
   </ion-content>
 </ion-menu>

@@ -13,6 +13,7 @@ import { TermService } from 'src/app/services/term.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { TagMetricService } from 'src/app/services/tag-metric.service';
+import { TermMetricService } from 'src/app/services/term-metric.service';
 import { ITerm } from 'src/app/db/models/term';
 import { filterUniqueElements } from 'src/app/functions/term';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
@@ -80,6 +81,7 @@ export class MetricFormComponent implements OnInit {
   private metricService = inject(MetricService);
   private actionMetricService = inject(ActionMetricService);
   private tagMetricService = inject(TagMetricService);
+  private termMetricService = inject(TermMetricService);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
 
@@ -111,15 +113,18 @@ export class MetricFormComponent implements OnInit {
     await this.loadSuggestions();
 
     if (this.metric) {
-      const [actionMetrics, tagMetrics] = await Promise.all([
+      const [actionMetrics, tagMetrics, termMetrics] = await Promise.all([
         this.actionMetricService.getAllWhereEquals('metricId', this.metric.id),
         this.tagMetricService.getAllWhereEquals('metricId', this.metric.id),
+        this.termMetricService.getAllWhereEquals('metricId', this.metric.id),
       ]);
       let term: CommonTerm | null = null;
       if (actionMetrics.length > 0) {
         term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === actionMetrics[0].actionId)?.item ?? null;
       } else if (tagMetrics.length > 0) {
         term = this.suggestions.find(s => s.item.type === 'tag' && s.item.termId === tagMetrics[0].tagId)?.item ?? null;
+      } else if (termMetrics.length > 0) {
+        term = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.termId === termMetrics[0].termId)?.item ?? null;
       }
 
       this.metricForm.patchValue({
@@ -178,8 +183,9 @@ export class MetricFormComponent implements OnInit {
     this.suggestions = allTerms.map((term, index) => ({
       num: index,
       title: term.name,
-      // TODO: get dictionary name from dictionaries if type is custom
-      subtitle: this.translate.instant('TK_' + term.type.toUpperCase()),
+      subtitle: (term.type === 'action' || term.type === 'tag')
+        ? this.translate.instant('TK_' + term.type.toUpperCase())
+        : this.translate.instant(term.type),
       item: term,
     }));
   }

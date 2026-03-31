@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <app-back-button></app-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'TK_ADD_TERM' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="!isFormValid()" (click)="save()">
+        {{ 'TK_SAVE' | translate }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <form [formGroup]="form">
+    <ion-item>
+      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+      <ion-input formControlName="name" [placeholder]="'TK_NAME' | translate"></ion-input>
+    </ion-item>
+  </form>
+</ion-content>

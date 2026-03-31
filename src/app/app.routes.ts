@@ -126,6 +126,10 @@ export const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then(m => m.DictionaryAddPage)
       },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/dictionary-view/dictionary-view.page').then(m => m.DictionaryViewPage)
+      },
     ],
   },
   {
@@ -147,6 +151,14 @@ export const routes: Routes = [
   {
     path: 'term-list',
     loadComponent: () => import('./pages/term-list/term-list.page').then(m => m.TermListPage)
+  },
+  {
+    path: 'term/add',
+    loadComponent: () => import('./pages/term-add/term-add.page').then(m => m.TermAddPage)
+  },
+  {
+    path: 'term/edit/:id',
+    loadComponent: () => import('./pages/term-edit/term-edit.page').then(m => m.TermEditPage)
   },
   {
     path: '',

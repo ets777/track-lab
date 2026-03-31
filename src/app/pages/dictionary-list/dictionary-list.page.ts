@@ -7,6 +7,8 @@ import { IDictionary } from 'src/app/db/models/dictionary';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
+import { AlertController } from '@ionic/angular';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-dictionary-list',
@@ -18,17 +20,27 @@ export class DictionaryListPage {
   private dictionaryService = inject(DictionaryService);
   private router = inject(Router);
   private translate = inject(TranslateService);
+  private alertController = inject(AlertController);
+  private toastService = inject(ToastService);
 
   dictionaries: IDictionary[] = [];
 
-  public dictionaryActionSheetButtons = [
-    {
-      text: this.translate.instant('TK_EDIT'),
-      data: {
-        action: 'edit',
-      },
-    },
-  ];
+  getDictionaryActionSheetButtons(dictionary: IDictionary) {
+    const buttons: any[] = [
+      { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
+      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+    ];
+
+    if (!dictionary.isBase) {
+      buttons.push({
+        text: this.translate.instant('TK_DELETE'),
+        role: 'destructive',
+        data: { action: 'delete' },
+      });
+    }
+
+    return buttons;
+  }
 
   async ionViewDidEnter() {
     await this.fetchDictionaries();
@@ -46,11 +58,33 @@ export class DictionaryListPage {
     const action = event.detail.data?.action;
 
     switch (action) {
+      case 'view':
+        await this.router.navigate(['/dictionary', dictionaryId]);
+        break;
       case 'edit':
         await this.router.navigate(['/dictionary/edit', dictionaryId]);
         break;
-      default:
+      case 'delete':
+        await this.deleteDictionary(dictionaryId);
         break;
+    }
+  }
+
+  async deleteDictionary(dictionaryId: number) {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_ARE_YOU_SURE'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+
+    if (role === 'yes') {
+      await this.dictionaryService.delete({ id: dictionaryId });
+      this.toastService.enqueue({ title: 'TK_DICTIONARY_DELETED_SUCCESSFULLY', type: 'success' });
+      await this.fetchDictionaries();
     }
   }
 }
