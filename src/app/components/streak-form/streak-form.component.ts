@@ -64,6 +64,25 @@ export class StreakFormComponent implements OnInit {
     });
 
     await this.loadSuggestions();
+
+    if (this.streak) {
+      this.populateFromStreak();
+    }
+  }
+
+  private populateFromStreak() {
+    const streak = this.streak!;
+    let term = null;
+
+    if (streak.actionId) {
+      term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === streak.actionId)?.item ?? null;
+    } else if (streak.tagId) {
+      term = this.suggestions.find(s => s.item.type === 'tag' && s.item.termId === streak.tagId)?.item ?? null;
+    } else if (streak.termId) {
+      term = this.suggestions.find(s => !['action', 'tag'].includes(s.item.type) && s.item.termId === streak.termId)?.item ?? null;
+    }
+
+    this.streakForm.patchValue({ startDate: streak.startDate, term });
   }
 
   // TODO: move this code to separate component for terms search

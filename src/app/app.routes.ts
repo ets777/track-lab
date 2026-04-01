@@ -109,6 +109,14 @@ export const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./pages/streak-add/streak-add.page').then(m => m.StreakAddPage)
       },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/streak-edit/streak-edit.page').then(m => m.StreakEditPage)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/streak-view/streak-view.page').then(m => m.StreakViewPage)
+      },
     ],
   },
   {

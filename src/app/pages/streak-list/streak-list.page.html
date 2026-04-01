@@ -22,6 +22,16 @@
         <ion-label>
           <div class="title">{{ getTermName(streak) }}</div>
         </ion-label>
+        <ion-buttons slot="end">
+          <ion-button id="open-action-sheet-streak-{{streak.id}}">
+            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-action-sheet
+          trigger="open-action-sheet-streak-{{streak.id}}"
+          [buttons]="streakActionSheetButtons"
+          (didDismiss)="doStreakAction($event, streak.id)"
+        ></ion-action-sheet>
       </ion-item>
     }
   </ion-list>

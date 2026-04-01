@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_EDIT_STREAK' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="saveStreak()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_SAVE' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (streak) {
+    <app-streak-form #editFormRef [streak]="streak"></app-streak-form>
+  }
+</ion-content>
