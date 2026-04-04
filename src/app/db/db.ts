@@ -247,6 +247,10 @@ export class MyAppDatabase extends Dexie {
     this.version(8).stores({
       termMetrics: '++id, termId, metricId, [termId+metricId]',
     });
+
+    this.version(9).stores({
+      activityTerms: '++id, activityId, termId, [activityId+termId]',
+    });
   }
 }
 

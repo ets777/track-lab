@@ -1,9 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonButton, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from 'src/app/services/activity.service';
+import { ActionService } from 'src/app/services/action.service';
+import { TagService } from 'src/app/services/tag.service';
+import { DictionaryService } from 'src/app/services/dictionary.service';
+import { IDictionary } from 'src/app/db/models/dictionary';
+import { TermService } from 'src/app/services/term.service';
 import { SelectSearchComponent } from "src/app/form-elements/select-search/select-search.component";
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { DatePeriod } from 'src/app/types/date-period';
@@ -31,19 +36,27 @@ export type FilterForm = {
 })
 export class StatsTermPage {
   private activityService = inject(ActivityService);
+  private actionService = inject(ActionService);
+  private tagService = inject(TagService);
+  private dictionaryService = inject(DictionaryService);
+  private termService = inject(TermService);
   private translate = inject(TranslateService);
   private formBuilder = inject(FormBuilder);
+
+  private dictionaries: IDictionary[] = [];
 
   activities: IActivity[] = [];
   public filterForm: ModelFormGroup<FilterForm>;
   public suggestions: Selectable<CommonTerm>[] = [];
-  minutesChartData!: ChartConfiguration<'bar'>['data'];
-  amountChartData!: ChartConfiguration<'bar'>['data'];
+  minutesChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
+  amountChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
   totalAmount: number = 0;
   totalDuration: number = 0;
   averageAmountPerDay: number = 0;
   averageTimePerTime: number = 0;
   averageTimePerDay: number = 0;
+  private initialized = false;
+  private lastLoadedState: string | null = null;
 
   constructor() {
     this.filterForm = this.formBuilder.group({
@@ -67,6 +80,32 @@ export class StatsTermPage {
     });
   }
 
+  async ionViewDidEnter() {
+    this.lastLoadedState = null;
+    this.dictionaries = await this.dictionaryService.getAll();
+    const savedPeriod = localStorage.getItem('stats-term-date-period');
+    const savedTerm = localStorage.getItem('stats-term-term');
+
+    if (savedPeriod) {
+      this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) }, { emitEvent: false });
+      await this.loadSuggestions();
+    }
+
+    if (savedTerm) {
+      const term = JSON.parse(savedTerm) as CommonTerm;
+      const found = this.suggestions.find(s => s.item.termId === term.termId && s.item.type === term.type);
+      if (found) {
+        this.filterForm.patchValue({ term: found.item }, { emitEvent: false });
+      }
+    }
+
+    this.initialized = true;
+
+    if (this.filterForm.valid) {
+      this.setChartData();
+    }
+  }
+
   async loadSuggestions() {
     if (!this.filterForm.value.datePeriod) {
       return;
@@ -80,56 +119,67 @@ export class StatsTermPage {
 
     this.activities = await this.activityService.getByDate(startDate, endDate);
 
-    const actions = this.activities
-      .flatMap((activity) => activity.actions)
-      .filter((action) => !action.isHidden)
-      .map((action) => ({
-        name: action.name,
-        type: 'action',
-        termId: action.id,
-      } as CommonTerm));
+    const allDbActions = await this.actionService.getAllUnhidden();
+    const actions = allDbActions.map((action) => ({
+      name: action.name,
+      type: 'action',
+      termId: action.id,
+    } as CommonTerm));
 
-    const activityTags = this.activities
-      .flatMap((activity) => activity.tags)
-      .filter((tag) => !tag.isHidden)
-      .map((tag) => ({
-        name: tag.name,
-        type: 'tag',
-        termId: tag.id,
-      } as CommonTerm));
+    const allDbTags = await this.tagService.getAllUnhidden();
+    const tags = allDbTags.map((tag) => ({
+      name: tag.name,
+      type: 'tag',
+      termId: tag.id,
+    } as CommonTerm));
 
-    const actionTags = this.activities
-      .flatMap((activity) => activity.actions)
-      .flatMap((action) => action.tags)
-      .filter((tag) => !tag.isHidden)
-      .map((tag) => ({
-        name: tag.name,
-        type: 'tag',
-        termId: tag.id,
-      } as CommonTerm));
+    const allDbTerms = await this.termService.getAllUnhidden();
+    const activityTerms = allDbTerms.map((term) => ({
+      name: term.name,
+      type: 'term',
+      termId: term.id,
+    } as CommonTerm));
 
     const allTerms = filterUniqueElements([
       ...actions,
-      ...activityTags,
-      ...actionTags,
+      ...tags,
+      ...activityTerms,
     ]);
 
-    this.suggestions = allTerms.map((term, index) => ({
-      num: index,
-      title: term.name,
-      subtitle: this.translate.instant('TK_' + term.type.toUpperCase()),
-      item: term,
-    }));
+    const termDictionaryId: Record<number, number> = {};
+    allDbTerms.forEach(t => { termDictionaryId[t.id] = t.dictionaryId; });
+
+    this.suggestions = allTerms.map((term, index) => {
+      let subtitle: string;
+      if (term.type === 'term') {
+        const dictId = termDictionaryId[term.termId];
+        const dict = this.dictionaries.find(d => d.id === dictId);
+        subtitle = dict ? this.translate.instant(dict.name) : this.translate.instant('TK_TERM');
+      } else {
+        subtitle = this.translate.instant('TK_' + term.type.toUpperCase());
+      }
+      return { num: index, title: term.name, subtitle, item: term };
+    });
   }
 
   setChartData() {
-    if (!this.filterForm.value.datePeriod || !this.filterForm.value.term) {
+    if (!this.filterForm.valid || !this.filterForm.value.datePeriod || !this.filterForm.value.term) {
       return;
     }
 
     const term: CommonTerm = this.filterForm.value.term;
-    
     const { startDate, endDate } = this.filterForm.value.datePeriod;
+
+    const currentState = `${startDate}|${endDate}|${term.type}:${term.termId}`;
+    if (currentState === this.lastLoadedState) {
+      return;
+    }
+    this.lastLoadedState = currentState;
+
+    if (this.initialized) {
+      localStorage.setItem('stats-term-date-period', JSON.stringify(this.filterForm.value.datePeriod));
+      localStorage.setItem('stats-term-term', JSON.stringify(term));
+    }
 
     const dates: string[] = [];
     let i = 0;
@@ -216,6 +266,10 @@ export class StatsTermPage {
           (tag) => tag.name == term.name,
         ),
       );
+    }
+
+    if (term.type == 'term') {
+      return activity.terms.some((t) => t.id === term.termId);
     }
 
     return false;

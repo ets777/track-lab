@@ -8,27 +8,57 @@
 </ion-header>
 <ion-content class="ion-padding">
   <form [formGroup]="filterForm">
-    <app-date-period-input formControlName="datePeriod"></app-date-period-input>
+    <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
   </form>
-  @if (filterForm.valid) {
-    <canvas baseChart [data]="chartData" type="line"></canvas>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_METRICS' | translate }}</ion-label>
+    <ion-input
+      #metricInput
+      appValidationError
+      [formControl]="metricsControl"
+      (ionInput)="onMetricInput($event)"
+      (ionBlur)="hideMetricSuggestions()"
+      (click)="updateMetricCaretAndText($event)"
+      (keyup)="updateMetricCaretAndText($event)"
+    ></ion-input>
+  </ion-item>
+
+  @if (showMetricSuggestions) {
+    <ion-list class="suggestions" lines="none">
+      @for (suggestion of filteredMetricSuggestions; track suggestion) {
+        <ion-item button (click)="selectMetricSuggestion(suggestion)">
+          {{ suggestion | translate }}
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  @if (chartData && selectedMetrics.length) {
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
   }
   <ion-list>
-    @if (activitiesGroupedByDate.length) {
+    @if (activitiesGroupedByDate.length && selectedMetrics.length) {
       <ion-item>
         <ion-label>
           <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-          <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ getTotalAverageValue() | number:'1.1-1' }}</p>
+          @for (metric of selectedMetrics; track metric.id) {
+            <p>{{ 'TK_AVG' | translate }} {{ metric.name | translate }}: {{ getTotalAverageValue(metric) | number:'1.1-1' }}</p>
+          }
         </ion-label>
       </ion-item>
     }
     @for (day of activitiesGroupedByDate; track day.date) {
-      <ion-item (click)="goToDay(day.date)">
-        <ion-label>
-          <h2>{{ day.date }}</h2>
-          <p>{{ 'TK_AVG' | translate }} {{ metric.name }}: {{ day.avgValue | number:'1.1-1' }}</p>
-        </ion-label>
-      </ion-item>
+      @if (hasAnyValue(day)) {
+        <ion-item (click)="goToDay(day.date)">
+          <ion-label>
+            <h2>{{ day.date }}</h2>
+            @for (entry of day.avgValues; track entry.metric.id) {
+              <p>{{ 'TK_AVG' | translate }} {{ entry.metric.name | translate }}: {{ entry.value | number:'1.1-1' }}</p>
+            }
+          </ion-label>
+        </ion-item>
+      }
     } @empty {
       <ion-text>
         {{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}

@@ -1,4 +1,12 @@
+.date-row {
+  display: flex;
+
+  ion-item {
+    flex: 1;
+  }
+}
+
 .controls {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }

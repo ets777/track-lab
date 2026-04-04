@@ -1,17 +1,37 @@
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { IonHeader, IonContent, IonItem, IonLabel, IonList, IonText, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonInput } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ActivityService } from '../../services/activity.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
+import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { Router } from '@angular/router';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { IMetric } from 'src/app/db/models/metric';
+import { MetricService } from 'src/app/services/metric.service';
+import { getPartIndex } from 'src/app/functions/string';
+import { ValidationErrorDirective } from 'src/app/directives/validation-error';
+
+const MAX_METRICS = 5;
+
+const maxMetricsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const parts = (control.value || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+  return parts.length > MAX_METRICS
+    ? { maxMetrics: { message: 'TK_MAX_METRICS', params: { max: MAX_METRICS } } }
+    : null;
+};
+
+const duplicateMetricsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const parts = (control.value || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+  return parts.length !== new Set(parts).size
+    ? { duplicateMetrics: { message: 'TK_DUPLICATE_METRICS' } }
+    : null;
+};
 
 interface NormalizedPoint {
   time: string;
@@ -20,32 +40,43 @@ interface NormalizedPoint {
 
 @Component({
   selector: 'app-stats',
-  imports: [IonText, IonList, IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, FormsModule, ReactiveFormsModule, DatePeriodInputComponent],
+  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, DatePeriodInputComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })
 export class StatsPage {
   private activityService = inject(ActivityService);
+  private metricService = inject(MetricService);
   private toastCtrl = inject(ToastController);
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private translate = inject(TranslateService);
 
+  @ViewChild('metricInput') metricInput!: IonInput;
+  metricInputText = '';
+  metricInputCaretPosition = 0;
+  metricsControl = new FormControl('', [maxMetricsValidator, duplicateMetricsValidator]);
+  filteredMetricSuggestions: string[] = [];
+  showMetricSuggestions = false;
+  private allMetrics: IMetric[] = [];
+  private allMetricSuggestions: string[] = [];
+  selectedMetrics: IMetric[] = [];
+
   activities: IActivity[] = [];
   activitiesGroupedByDate: {
     date: string,
     activities: IActivity[],
-    avgValue: number,
+    avgValues: { metric: IMetric, value: number }[],
   }[] = [];
-  metric: IMetric = {
-    id: 1,
-    name: 'mood',
-    step: 1,
-    isHidden: false,
-  };
 
   chartData!: ChartConfiguration<'line'>['data'];
+  chartOptions: ChartConfiguration<'line'>['options'] = {
+    responsive: true,
+    scales: { y: { beginAtZero: false } },
+  };
   public filterForm: FormGroup;
+  private initialized = false;
+  private lastLoadedState: string | null = null;
 
   constructor() {
     this.filterForm = this.formBuilder.group({
@@ -59,6 +90,43 @@ export class StatsPage {
     });
   }
 
+  async ionViewDidEnter() {
+    this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
+    this.allMetricSuggestions = this.allMetrics.map(m => m.name);
+
+    const savedMetrics = localStorage.getItem('stats-metrics');
+    const savedPeriod = localStorage.getItem('stats-date-period');
+
+    const defaultMetrics = savedMetrics ?? this.allMetrics
+      .filter(m => m.isBase && !m.isHidden)
+      .slice(0, MAX_METRICS)
+      .map(m => this.translate.instant(m.name))
+      .join(', ');
+
+    this.metricInputText = defaultMetrics;
+    this.metricsControl.setValue(defaultMetrics, { emitEvent: false });
+
+    this.initialized = true;
+
+    if (savedPeriod) {
+      this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) });
+    } else if (this.filterForm.valid) {
+      await this.loadStats();
+    }
+  }
+
+  getSelectedMetrics(): IMetric[] {
+    const names = this.metricInputText
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    return names
+      .map(name => this.allMetrics.find(m => this.translate.instant(m.name).toLowerCase() === name))
+      .filter((m): m is IMetric => m !== undefined)
+      .slice(0, MAX_METRICS);
+  }
+
   async loadStats() {
     const { startDate, endDate } = this.filterForm.value.datePeriod;
 
@@ -66,45 +134,94 @@ export class StatsPage {
       return;
     }
 
-    const activities = await this.activityService.getByDate(startDate, endDate);
+    const currentState = `${startDate}|${endDate}|${this.metricInputText}`;
+    if (currentState === this.lastLoadedState) {
+      return;
+    }
+    this.lastLoadedState = currentState;
 
+    if (this.initialized && this.filterForm.valid && this.metricsControl.valid) {
+      localStorage.setItem('stats-date-period', JSON.stringify(this.filterForm.value.datePeriod));
+      localStorage.setItem('stats-metrics', this.metricInputText);
+    }
+
+    const activities = await this.activityService.getByDate(startDate, endDate);
     this.activities = activities;
-    const dates = [...new Set(activities.map((activity) => activity.date))]
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    this.activitiesGroupedByDate = dates
-      .map((date) => {
-        const activitiesAtDate = activities.filter((activity) => activity.date == date);
-        const normalizedData = this.normalizeWithInterpolation(activitiesAtDate);
+    this.selectedMetrics = this.getSelectedMetrics();
+
+    const minValues = this.selectedMetrics.map(m => m.minValue).filter((v): v is number => v != null);
+    const maxValues = this.selectedMetrics.map(m => m.maxValue).filter((v): v is number => v != null);
+    this.chartOptions = {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: false,
+          ...(minValues.length ? { min: Math.min(...minValues) } : {}),
+          ...(maxValues.length ? { max: Math.max(...maxValues) } : {}),
+        },
+      },
+    };
+
+    const dates = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
+      .map(d => format(d, 'yyyy-MM-dd'));
+
+
+    this.activitiesGroupedByDate = dates.map((date) => {
+      const activitiesAtDate = activities.filter((activity) => activity.date == date);
+      return {
+        date,
+        activities: activitiesAtDate,
+        avgValues: this.selectedMetrics.map(metric => ({
+          metric,
+          value: this.getAverageValue(this.normalizeWithInterpolation(activitiesAtDate, metric)),
+        })),
+      };
+    });
+
+    if (!this.selectedMetrics.length) {
+      this.chartData = { labels: [], datasets: [] };
+      return;
+    }
+
+    const avg = this.translate.instant('TK_AVG');
+
+    if (dates.length === 1) {
+      const datasets = this.selectedMetrics.map(metric => {
+        const normalizedData = this.normalizeWithInterpolation(this.activities, metric);
         return {
-          date: date,
-          activities: activitiesAtDate,
-          avgValue: this.getAverageValue(normalizedData),
+          data: normalizedData.map((data) => data.value || 0),
+          label: avg + ' ' + this.translate.instant(metric.name),
         };
       });
 
-    const avg = this.translate.instant('TK_AVG');
-    const label = avg + ' ' + this.metric.name;
-
-    if (dates.length === 1) {
-      const normalizedData = this.normalizeWithInterpolation(this.activities);
-
       this.chartData = {
-        labels: normalizedData.map((data) => data.time),
-        datasets: [
-          { data: normalizedData.map((data) => data.value || 0), label },
-        ]
+        labels: this.normalizeWithInterpolation(this.activities, this.selectedMetrics[0]).map(d => d.time),
+        datasets,
       };
     } else {
+      const datasets = this.selectedMetrics.map(metric => ({
+        data: this.interpolateZeros(this.activitiesGroupedByDate.map(day => {
+          const entry = day.avgValues.find(v => v.metric.id === metric.id);
+          return entry?.value ?? 0;
+        })),
+        label: avg + ' ' + this.translate.instant(metric.name),
+      }));
+
+      const lastNonNullIdx = datasets.reduce((max, ds) => {
+        const idx = ds.data.reduce<number>((last, v, i) => v !== null ? i : last, -1);
+        return Math.max(max, idx);
+      }, -1);
+
+      const cutoff = lastNonNullIdx >= 0 ? lastNonNullIdx + 1 : dates.length;
+
       this.chartData = {
-        labels: dates,
-        datasets: [
-          { data: this.activitiesGroupedByDate.map((activity) => activity.avgValue), label },
-        ]
+        labels: dates.slice(0, cutoff),
+        datasets: datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) })),
       };
     }
   }
 
-  normalizeWithInterpolation(activities: IActivity[]): NormalizedPoint[] {
+  normalizeWithInterpolation(activities: IActivity[], metric: IMetric): NormalizedPoint[] {
     const result: NormalizedPoint[] = [];
 
     const sorted = [...activities].sort(
@@ -112,10 +229,10 @@ export class StatsPage {
     );
 
     const first = [...activities].find((activity) =>
-      activity.metricRecords.some((record) => record.metricId == this.metric.id),
+      activity.metricRecords.some((record) => record.metricId == metric.id),
     );
     const last = [...activities].reverse().find((activity) =>
-      activity.metricRecords.some((record) => record.metricId == this.metric.id),
+      activity.metricRecords.some((record) => record.metricId == metric.id),
     );
 
     const startHour = new Time(first?.startTime).getHour();
@@ -128,7 +245,7 @@ export class StatsPage {
     for (let hour = startHour; hour <= lastHour + 1; hour++) {
       const currentTime = new Time(hour % 24, 0, 0);
       const label = currentTime.toString(false);
-      const value = this.getInterpolatedValue(sorted, hour);
+      const value = this.getInterpolatedValue(sorted, hour, metric);
 
       result.push({ time: label, value });
     }
@@ -136,21 +253,21 @@ export class StatsPage {
     return result;
   }
 
-  getInterpolatedValue(activities: IActivity[], hour: number) {
+  getInterpolatedValue(activities: IActivity[], hour: number, metric: IMetric) {
     const currentTime = new Time(hour % 24, 0, 0);
     const currentSeconds = currentTime.getSecond();
 
     const before = [...activities].reverse().find((activity) =>
       new Time(activity.endTime).getSecond() <= currentSeconds
-      && activity.metricRecords.some((record) => record.metricId == this.metric.id),
+      && activity.metricRecords.some((record) => record.metricId == metric.id),
     );
     const after = activities.find((activity) =>
       new Time(activity.endTime).getSecond() >= currentSeconds
-      && activity.metricRecords.some((record) => record.metricId == this.metric.id),
+      && activity.metricRecords.some((record) => record.metricId == metric.id),
     );
 
-    const recordBefore = before?.metricRecords.find((record) => record.metricId == this.metric.id);
-    const recordAfter = after?.metricRecords.find((record) => record.metricId == this.metric.id);
+    const recordBefore = before?.metricRecords.find((record) => record.metricId == metric.id);
+    const recordAfter = after?.metricRecords.find((record) => record.metricId == metric.id);
 
     let value: number = 0;
     if (
@@ -174,15 +291,21 @@ export class StatsPage {
     return value;
   }
 
-  getTotalAverageValue() {
-    if (!this.activitiesGroupedByDate.length) {
+  getTotalAverageValue(metric: IMetric) {
+    const daysWithValue = this.activitiesGroupedByDate.filter(day =>
+      day.avgValues.some(v => v.metric.id === metric.id && v.value !== 0)
+    );
+
+    if (!daysWithValue.length) {
       return 0;
     }
 
-    const sum = this.activitiesGroupedByDate
-      .reduce((previousValue, currentValue) => (currentValue.avgValue ?? 0) + previousValue, 0);
+    const sum = daysWithValue.reduce((prev, day) => {
+      const entry = day.avgValues.find(v => v.metric.id === metric.id);
+      return prev + (entry?.value ?? 0);
+    }, 0);
 
-    return sum / this.activitiesGroupedByDate.length;
+    return sum / daysWithValue.length;
   }
 
   getAverageValue(normalizedData: NormalizedPoint[]) {
@@ -194,6 +317,34 @@ export class StatsPage {
       .reduce((previousValue, currentValue) => (currentValue.value ?? 0) + previousValue, 0);
 
     return sum / normalizedData.length;
+  }
+
+  interpolateZeros(data: number[]): (number | null)[] {
+    const result: (number | null)[] = [...data];
+
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] !== 0) continue;
+
+      let leftIdx = -1;
+      for (let j = i - 1; j >= 0; j--) {
+        if (result[j] !== 0 && result[j] !== null) { leftIdx = j; break; }
+      }
+
+      let rightIdx = -1;
+      for (let j = i + 1; j < result.length; j++) {
+        if (result[j] !== 0 && result[j] !== null) { rightIdx = j; break; }
+      }
+
+      if (leftIdx !== -1 && rightIdx !== -1) {
+        const left = result[leftIdx] as number;
+        const right = result[rightIdx] as number;
+        result[i] = left + (right - left) * (i - leftIdx) / (rightIdx - leftIdx);
+      } else {
+        result[i] = null;
+      }
+    }
+
+    return result;
   }
 
   async showError(message: string) {
@@ -212,5 +363,83 @@ export class StatsPage {
       ['/activity'],
       { queryParams: { date } },
     );
+  }
+
+  async updateMetricCaretAndText(event: any) {
+    const indexBefore = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
+
+    this.metricInputText = event.target.value ?? '';
+    const nativeInput = await this.metricInput.getInputElement();
+    this.metricInputCaretPosition = nativeInput.selectionStart ?? 0;
+    const indexAfter = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
+
+    if (indexBefore !== indexAfter) {
+      this.hideMetricSuggestions();
+    }
+  }
+
+  async onMetricInput(event: any) {
+    await this.updateMetricCaretAndText(event);
+
+    const parts = this.metricInputText
+      .split(',')
+      .map((s: string) => s.toLowerCase().trim());
+
+    const nonEmpty = parts.filter(Boolean);
+
+    this.metricsControl.setValue(this.metricInputText, { emitEvent: false });
+
+    if (this.metricsControl.invalid) {
+      this.hideMetricSuggestions();
+      return;
+    }
+
+    const currentIndex = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
+    const current = parts[currentIndex];
+
+    const otherParts = [...parts];
+    otherParts.splice(currentIndex, 1);
+
+    if (current.length > 0) {
+      this.filteredMetricSuggestions = this.allMetricSuggestions
+        .filter(name => {
+          const translated = this.translate.instant(name).toLowerCase();
+          return translated.includes(current) && !otherParts.includes(translated);
+        })
+        .slice(0, 5);
+      this.showMetricSuggestions = this.filteredMetricSuggestions.length > 0;
+    } else {
+      this.hideMetricSuggestions();
+    }
+
+    const allPartsMatch = nonEmpty.length > 0
+      && nonEmpty.length === parts.length
+      && nonEmpty.every(part =>
+        this.allMetrics.some(m => this.translate.instant(m.name).toLowerCase() === part)
+      );
+
+    if (allPartsMatch) {
+      await this.loadStats();
+    }
+  }
+
+  selectMetricSuggestion(suggestion: string) {
+    const currentIndex = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
+    const parts = this.metricInputText.split(',');
+
+    parts[currentIndex] = ' ' + this.translate.instant(suggestion);
+    this.metricInputText = parts.join(',').trim();
+    this.metricsControl.setValue(this.metricInputText, { emitEvent: false });
+
+    this.hideMetricSuggestions();
+    this.loadStats();
+  }
+
+  hasAnyValue(day: { avgValues: { metric: IMetric, value: number }[] }): boolean {
+    return day.avgValues.some(entry => entry.value !== 0);
+  }
+
+  hideMetricSuggestions() {
+    setTimeout(() => (this.showMetricSuggestions = false), 200);
   }
 }

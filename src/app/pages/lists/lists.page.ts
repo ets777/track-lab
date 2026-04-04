@@ -50,6 +50,14 @@ export class DictionaryListPage {
     this.dictionaries = await this.dictionaryService.getAll();
   }
 
+  async viewDictionary(id: number) {
+    await this.router.navigate(['/dictionary', id]);
+  }
+
+  async goTo(path: string) {
+    await this.router.navigate([path]);
+  }
+
   async goToAddPage() {
     await this.router.navigate(['/dictionary/add']);
   }

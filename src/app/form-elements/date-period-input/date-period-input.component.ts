@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, forwardRef, inject } from '@angular/core';
+import { AfterViewInit, Component, Input, forwardRef, inject } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
 import { MaskitoDirective } from '@maskito/angular';
@@ -12,7 +12,7 @@ import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { dateRangeValidator } from 'src/app/validators/date-range.validator';
 import { maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
 
-type PeriodName = 'week' | 'month';
+export type PeriodName = 'week' | '2weeks' | 'month';
 
 @Component({
   selector: 'app-date-period-input',
@@ -35,8 +35,10 @@ type PeriodName = 'week' | 'month';
 export class DatePeriodInputComponent implements ControlValueAccessor, Validator, AfterViewInit {
   private formBuilder = inject(FormBuilder);
 
+  @Input() storageKey?: string;
+
   public form: ModelFormGroup<DatePeriod>;
-  selectedPeriod: PeriodName = 'week';
+  selectedPeriod: PeriodName | null = 'week';
 
   protected readonly dateMask: MaskitoOptions = {
     mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
@@ -60,6 +62,15 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   }
 
   ngAfterViewInit() {
+    if (this.storageKey) {
+      const saved = localStorage.getItem(`${this.storageKey}-period-type`);
+      if (saved === 'null') {
+        this.selectedPeriod = null;
+      } else if (saved) {
+        this.selectedPeriod = saved as PeriodName;
+      }
+    }
+
     this.setDefaultDates();
   }
 
@@ -84,33 +95,46 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
 
   shiftDates(shift: number) {
     const { startDate, endDate } = this.form.value;
-    let newStartDate;
-    let newEndDate;
 
     if (!startDate || !endDate) {
       return;
     }
 
-    if (this.selectedPeriod == 'week') {
+    let newStartDate: string;
+    let newEndDate: string;
+
+    if (this.selectedPeriod === 'week') {
       newStartDate = format(addDays(new Date(startDate), shift * 7), 'yyyy-MM-dd');
       newEndDate = format(addDays(new Date(endDate), shift * 7), 'yyyy-MM-dd');
+    } else if (this.selectedPeriod === '2weeks') {
+      newStartDate = format(addDays(new Date(startDate), shift * 14), 'yyyy-MM-dd');
+      newEndDate = format(addDays(new Date(endDate), shift * 14), 'yyyy-MM-dd');
+    } else if (this.selectedPeriod === 'month') {
+      newStartDate = format(addMonths(new Date(startDate), shift), 'yyyy-MM-dd');
+      newEndDate = format(addMonths(new Date(endDate), shift), 'yyyy-MM-dd');
     } else {
-      newStartDate = format(addMonths(new Date(startDate), shift * 1), 'yyyy-MM-dd');
-      newEndDate = format(addMonths(new Date(endDate), shift * 1), 'yyyy-MM-dd');
+      const diffDays = Math.round(
+        (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000
+      ) + 1;
+      newStartDate = format(addDays(new Date(startDate), shift * diffDays), 'yyyy-MM-dd');
+      newEndDate = format(addDays(new Date(endDate), shift * diffDays), 'yyyy-MM-dd');
     }
 
-    this.patchAndUpdate({
-      startDate: newStartDate,
-      endDate: newEndDate,
-    });
+    this.patchAndUpdate({ startDate: newStartDate, endDate: newEndDate });
   }
 
   setDefaultDates() {
-    const endDate = format(new Date(), 'yyyy-MM-dd');
-    let startDate;
+    if (this.selectedPeriod === null) {
+      return;
+    }
 
-    if (this.selectedPeriod == 'week') {
+    const endDate = format(new Date(), 'yyyy-MM-dd');
+    let startDate: string;
+
+    if (this.selectedPeriod === 'week') {
       startDate = format(addDays(new Date(), -6), 'yyyy-MM-dd');
+    } else if (this.selectedPeriod === '2weeks') {
+      startDate = format(addDays(new Date(), -13), 'yyyy-MM-dd');
     } else {
       startDate = format(addMonths(new Date(), -1), 'yyyy-MM-dd');
     }
@@ -120,8 +144,14 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
 
   selectPeriod(period: PeriodName) {
     this.selectedPeriod = period;
-
+    this.savePeriodType();
     this.setDefaultDates();
+  }
+
+  onUserInput() {
+    this.selectedPeriod = null;
+    this.savePeriodType();
+    this.updateValue();
   }
 
   updateValue() {
@@ -132,6 +162,12 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   patchAndUpdate(value: DatePeriod) {
     this.form.patchValue(value);
     this.updateValue();
+  }
+
+  private savePeriodType() {
+    if (this.storageKey) {
+      localStorage.setItem(`${this.storageKey}-period-type`, String(this.selectedPeriod));
+    }
   }
 
   validate(control: AbstractControl): ValidationErrors | null {

@@ -2,29 +2,31 @@
   class="filter-form"
   [formGroup]="form"
 >
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-      formControlName="startDate"
-      [maskito]="dateMask"
-      [maskitoElement]="maskPredicate"
-      (ionInput)="updateValue()"
-    ></ion-input>
-  </ion-item>
+  <div class="date-row">
+    <ion-item>
+      <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
+      <ion-input
+        appValidationError
+        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
+        formControlName="startDate"
+        [maskito]="dateMask"
+        [maskitoElement]="maskPredicate"
+        (ionInput)="onUserInput()"
+      ></ion-input>
+    </ion-item>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-      formControlName="endDate"
-      [maskito]="dateMask"
-      [maskitoElement]="maskPredicate"
-      (ionInput)="updateValue()"
-    ></ion-input>
-  </ion-item>
+    <ion-item>
+      <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
+      <ion-input
+        appValidationError
+        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
+        formControlName="endDate"
+        [maskito]="dateMask"
+        [maskitoElement]="maskPredicate"
+        (ionInput)="onUserInput()"
+      ></ion-input>
+    </ion-item>
+  </div>
 </form>
 
 <div class="controls">
@@ -38,6 +40,10 @@
     (click)="selectPeriod('week')"
   >{{ 'TK_WEEK' | translate }}</ion-chip>
   <ion-chip
+    [color]="selectedPeriod == '2weeks' ? 'primary' : 'medium'"
+    (click)="selectPeriod('2weeks')"
+  >{{ 'TK_2_WEEKS' | translate }}</ion-chip>
+  <ion-chip
     [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
     (click)="selectPeriod('month')"
   >{{ 'TK_MONTH' | translate }}</ion-chip>
@@ -47,4 +53,3 @@
     [disabled]="!form.valid"
   >{{ 'TK_NEXT' | translate }}</ion-button>
 </div>
-
