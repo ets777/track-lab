@@ -12,6 +12,7 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
 import { ToastService } from 'src/app/services/toast.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ActivityItemService } from 'src/app/services/activity-item.service';
+import { HookService } from 'src/app/services/hook.service';
 
 @Component({
   selector: 'app-activity-edit',
@@ -29,6 +30,7 @@ export class ActivityEditPage {
   private router = inject(Router);
   private itemService = inject(ItemService);
   private activityItemService = inject(ActivityItemService);
+  private hookService = inject(HookService);
 
   @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
 
@@ -74,18 +76,27 @@ export class ActivityEditPage {
     await this.activityService.updateWithItems(this.activityId, activityFormValue);
 
     await this.activityMetricService.delete({ activityId: this.activityId });
-    for (const record of this.updateFormRef.getMetricRecords()) {
+    const metricRecords = this.updateFormRef.getMetricRecords();
+    for (const record of metricRecords) {
       await this.activityMetricService.add({ activityId: this.activityId, metricId: record.metricId, value: record.value });
+    }
+    if (metricRecords.length > 0) {
+      this.hookService.emit({ type: 'activity.metricsAdded', payload: {} });
     }
 
     await this.activityItemService.delete({ activityId: this.activityId });
+    let newItemsAdded = false;
     for (const record of this.updateFormRef.getListItemRecords()) {
       const existingItems = await this.itemService.getAllWhereEquals('listId', record.listId);
       for (const itemName of record.itemNames) {
         const existing = existingItems.find(t => t.name.toLowerCase() === itemName.toLowerCase());
         const itemId = existing ? existing.id : await this.itemService.add({ name: itemName, listId: record.listId });
+        if (!existing) newItemsAdded = true;
         await this.activityItemService.add({ activityId: this.activityId, itemId });
       }
+    }
+    if (newItemsAdded) {
+      this.hookService.emit({ type: 'item.added', payload: {} });
     }
 
     this.toastService.enqueue({

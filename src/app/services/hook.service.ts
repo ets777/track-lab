@@ -5,8 +5,12 @@ export type HookEvent =
     | { type: 'achievement.init'; payload: { newAchievementCodes: string[] } }
     | { type: 'activity.added'; payload: { activityId: number } }
     | { type: 'activity.updated'; payload: { activityId: number } }
+    | { type: 'activity.metricsAdded'; payload: {} }
     | { type: 'backup.made'; payload: { isPasswordSet: boolean } }
-    | { type: 'homepage.visited'; payload: { } };
+    | { type: 'homepage.visited'; payload: {} }
+    | { type: 'item.added'; payload: {} }
+    | { type: 'list.added'; payload: {} }
+    | { type: 'metric.added'; payload: {} };
 
 @Injectable({ providedIn: 'root' })
 export class HookService {

@@ -2,11 +2,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-}
 
-::ng-deep ion-chip {
-    font-size: 12px;
-    height: 22px;
-    min-height: unset;
-    margin: 5px 0;
+    ::ng-deep ion-chip {
+        font-size: 12px;
+        height: 22px;
+        min-height: unset;
+        margin: 5px 0;
+    }
 }

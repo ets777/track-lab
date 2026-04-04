@@ -8,6 +8,7 @@ import { ListForm, ListFormComponent } from 'src/app/components/list-form/list-f
 import { ToastService } from 'src/app/services/toast.service';
 import { ListService } from 'src/app/services/list.service';
 import { ActionListService } from 'src/app/services/action-list.service';
+import { HookService } from 'src/app/services/hook.service';
 
 @Component({
   selector: 'app-list-add',
@@ -19,6 +20,7 @@ export class ListAddPage {
   private toastService = inject(ToastService);
   private listService = inject(ListService);
   private actionListService = inject(ActionListService);
+  private hookService = inject(HookService);
 
   @ViewChild('addFormRef') addFormRef!: ListFormComponent;
 
@@ -33,6 +35,7 @@ export class ListAddPage {
     if (listFormValue.item?.type === 'action' && listFormValue.item.itemId) {
       await this.actionListService.add({ actionId: listFormValue.item.itemId, listId });
     }
+    this.hookService.emit({ type: 'list.added', payload: {} });
     this.resetForm();
 
     this.toastService.enqueue({

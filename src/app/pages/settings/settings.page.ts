@@ -37,6 +37,7 @@ export class SettingsPage implements OnInit {
   password = '';
   lastBackupDate = '';
   resetDatabaseOnReload = false;
+  unlockAllAchievements = false;
 
   async ngOnInit() {
     const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
@@ -48,6 +49,7 @@ export class SettingsPage implements OnInit {
     this.password = (await SecureStoragePlugin.get({ key: 'backup-password' }).catch(() => null))?.value ?? '';
     this.lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value ?? '';
     this.resetDatabaseOnReload = (await Preferences.get({ key: 'reset-database-on-reload' }))?.value === 'true';
+    this.unlockAllAchievements = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
   }
 
   async onTxtFileSelected(event: Event) {
@@ -116,6 +118,11 @@ export class SettingsPage implements OnInit {
   async setResetDatabaseOnReload(event: any) {
     const value = event.detail.checked as boolean;
     await Preferences.set({ key: 'reset-database-on-reload', value: String(value) });
+  }
+
+  async setUnlockAllAchievements(event: any) {
+    const value = event.detail.checked as boolean;
+    await Preferences.set({ key: 'unlock-all-achievements', value: String(value) });
   }
 
   async resetDatabase() {

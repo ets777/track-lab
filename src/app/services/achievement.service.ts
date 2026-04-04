@@ -4,17 +4,23 @@ import { IAchievement } from '../db/models/achievement';
 import { defaultAchievements } from '../db/data/achievement';
 import { ActivityService } from './activity.service';
 import { ActivityMetricService } from './activity-metric.service';
+import { ActivityActionService } from './activity-action.service';
 import { Subject } from 'rxjs';
 import { format } from 'date-fns';
 import { DatabaseService } from './db/database.service';
 import { MetricService } from './metric.service';
+import { ListService } from './list.service';
+import { ItemService } from './item.service';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
   private hookService = inject(HookService);
   private activityService = inject(ActivityService);
   private activityMetricService = inject(ActivityMetricService);
+  private activityActionService = inject(ActivityActionService);
   private metricService = inject(MetricService);
+  private listService = inject(ListService);
+  private itemService = inject(ItemService);
 
   protected tableName: 'achievements' = 'achievements';
 
@@ -112,10 +118,16 @@ export class AchievementService extends DatabaseService<'achievements'> {
       await this.checkAchievement('10000_activities');
       await this.checkAchievement('100000_activities');
       await this.checkAchievement('new_year', event.payload);
+      await this.checkAchievement('100_action_executions');
+      await this.checkAchievement('1000_action_executions');
+      await this.checkAchievement('five_actions_in_activity', event.payload);
     }
 
     if (event.type === 'activity.updated') {
       await this.checkAchievement('first_activity_editing');
+      await this.checkAchievement('100_action_executions');
+      await this.checkAchievement('1000_action_executions');
+      await this.checkAchievement('five_actions_in_activity', event.payload);
     }
 
     if (['activity.added', 'activity.updated'].includes(event.type)) {
@@ -123,6 +135,27 @@ export class AchievementService extends DatabaseService<'achievements'> {
       await this.checkAchievement('min_mood', event.payload);
       await this.checkAchievement('max_energy', event.payload);
       await this.checkAchievement('min_energy', event.payload);
+    }
+
+    if (event.type === 'metric.added') {
+      await this.checkAchievement('first_metric');
+    }
+
+    if (event.type === 'activity.metricsAdded') {
+      await this.checkAchievement('10_metric_records');
+      await this.checkAchievement('100_metric_records');
+      await this.checkAchievement('1000_metric_records');
+      await this.checkAchievement('10000_metric_records');
+    }
+
+    if (event.type === 'list.added') {
+      await this.checkAchievement('first_list');
+      await this.checkAchievement('10_lists');
+    }
+
+    if (event.type === 'item.added') {
+      await this.checkAchievement('100_items');
+      await this.checkAchievement('1000_items');
     }
 
     if (event.type === 'backup.made') {
@@ -198,6 +231,40 @@ export class AchievementService extends DatabaseService<'achievements'> {
     if (achievementCode == 'new_year') {
       await this.checkNewYearAchievement(payload.activityId);
     }
+
+    if (achievementCode == 'first_metric') {
+      await this.checkFirstMetricAchievement();
+    }
+
+    const metricRecordAchievements = [
+      '10_metric_records',
+      '100_metric_records',
+      '1000_metric_records',
+      '10000_metric_records',
+    ];
+    if (metricRecordAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievement(achievementCode, await this.activityMetricService.count());
+    }
+
+    const actionExecutionAchievements = ['100_action_executions', '1000_action_executions'];
+    if (actionExecutionAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievement(achievementCode, await this.activityActionService.count());
+    }
+
+    if (achievementCode == 'five_actions_in_activity') {
+      await this.checkFiveActionsInActivityAchievement(payload?.activityId);
+    }
+
+    const listCountAchievements = ['first_list', '10_lists'];
+    if (listCountAchievements.includes(achievementCode)) {
+      const lists = await this.listService.getAll();
+      await this.checkAbsoluteCountAchievement(achievementCode, lists.filter(l => !l.isBase).length);
+    }
+
+    const itemCountAchievements = ['100_items', '1000_items'];
+    if (itemCountAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievement(achievementCode, await this.itemService.count());
+    }
   }
 
   async checkAchievementInit(achievementCode: string) {
@@ -212,6 +279,40 @@ export class AchievementService extends DatabaseService<'achievements'> {
 
     if (activityAchievements.includes(achievementCode)) {
       await this.checkActivityAchievementInit(achievementCode);
+    }
+
+    const metricRecordAchievements = [
+      '10_metric_records',
+      '100_metric_records',
+      '1000_metric_records',
+      '10000_metric_records',
+    ];
+    if (metricRecordAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievementInit(achievementCode, await this.activityMetricService.count());
+    }
+
+    if (achievementCode == 'first_metric') {
+      await this.checkFirstMetricAchievementInit();
+    }
+
+    const actionExecutionAchievements = ['100_action_executions', '1000_action_executions'];
+    if (actionExecutionAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievementInit(achievementCode, await this.activityActionService.count());
+    }
+
+    if (achievementCode == 'five_actions_in_activity') {
+      await this.checkFiveActionsInActivityAchievementInit();
+    }
+
+    const listCountAchievements = ['first_list', '10_lists'];
+    if (listCountAchievements.includes(achievementCode)) {
+      const lists = await this.listService.getAll();
+      await this.checkAbsoluteCountAchievementInit(achievementCode, lists.filter(l => !l.isBase).length);
+    }
+
+    const itemCountAchievements = ['100_items', '1000_items'];
+    if (itemCountAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievementInit(achievementCode, await this.itemService.count());
     }
 
     if (achievementCode == 'max_mood') {
@@ -414,5 +515,63 @@ export class AchievementService extends DatabaseService<'achievements'> {
       async (isPasswordSet) => !isPasswordSet,
       isPasswordSet,
     );
+  }
+
+  async checkFirstMetricAchievement() {
+    await this.checkOneTimeAchievement(
+      'first_metric',
+      async () => {
+        const metrics = await this.metricService.getAll();
+        return metrics.some((m) => !m.isBase);
+      },
+    );
+  }
+
+  async checkFirstMetricAchievementInit() {
+    await this.checkOneTimeAchievement(
+      'first_metric',
+      async () => {
+        const metrics = await this.metricService.getAll();
+        return metrics.some((m) => !m.isBase);
+      },
+    );
+  }
+
+  async checkAbsoluteCountAchievement(code: string, count: number) {
+    const achievement = await this.getByCode(code);
+    if (!achievement || achievement.unlocked) return;
+    if (count >= achievement.target) {
+      this.update(achievement.id, { unlocked: true, current: achievement.target });
+      this.enqueue(achievement);
+    } else {
+      this.update(achievement.id, { current: count });
+    }
+  }
+
+  async checkAbsoluteCountAchievementInit(code: string, count: number) {
+    return this.checkAbsoluteCountAchievement(code, count);
+  }
+
+  async checkFiveActionsInActivityAchievement(activityId?: number) {
+    if (!activityId) return;
+    await this.checkOneTimeAchievement(
+      'five_actions_in_activity',
+      async () => {
+        const actions = await this.activityActionService.getByActivityId(activityId);
+        return actions.length >= 5;
+      },
+    );
+  }
+
+  async checkFiveActionsInActivityAchievementInit() {
+    const all = await this.activityActionService.getAll();
+    const countByActivity = new Map<number, number>();
+    for (const aa of all) {
+      countByActivity.set(aa.activityId, (countByActivity.get(aa.activityId) ?? 0) + 1);
+    }
+    const hasActivity = [...countByActivity.values()].some(c => c >= 5);
+    if (hasActivity) {
+      await this.checkOneTimeAchievement('five_actions_in_activity', async () => true);
+    }
   }
 }

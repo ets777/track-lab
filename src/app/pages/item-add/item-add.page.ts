@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ItemService } from 'src/app/services/item.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { HookService } from 'src/app/services/hook.service';
 
 @Component({
   selector: 'app-item-add',
@@ -19,6 +20,7 @@ export class ItemAddPage {
   private router = inject(Router);
   private itemService = inject(ItemService);
   private toastService = inject(ToastService);
+  private hookService = inject(HookService);
   private fb = inject(FormBuilder);
 
   private listId = Number(this.route.snapshot.queryParamMap.get('listId'));
@@ -31,6 +33,7 @@ export class ItemAddPage {
     if (this.form.invalid) return;
 
     await this.itemService.add({ name: this.form.value.name!, listId: this.listId });
+    this.hookService.emit({ type: 'item.added', payload: {} });
     this.toastService.enqueue({ title: 'TK_ITEM_ADDED_SUCCESSFULLY', type: 'success' });
     await this.router.navigate(['/list', this.listId]);
   }

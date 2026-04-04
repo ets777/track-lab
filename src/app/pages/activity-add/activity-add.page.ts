@@ -11,6 +11,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ActivityItemService } from 'src/app/services/activity-item.service';
+import { HookService } from 'src/app/services/hook.service';
 
 @Component({
   selector: 'app-activity-add',
@@ -24,6 +25,7 @@ export class ActivityAddPage implements OnInit {
   private activityMetricService = inject(ActivityMetricService);
   private itemService = inject(ItemService);
   private activityItemService = inject(ActivityItemService);
+  private hookService = inject(HookService);
 
   @ViewChild('addFormRef') addFormRef!: ActivityFormComponent;
 
@@ -57,17 +59,26 @@ export class ActivityAddPage implements OnInit {
     const activityId = await this.activityService.addFromForm(activityFormValue);
 
     if (activityId != null) {
-      for (const record of this.addFormRef.getMetricRecords()) {
+      const metricRecords = this.addFormRef.getMetricRecords();
+      for (const record of metricRecords) {
         await this.activityMetricService.add({ activityId, metricId: record.metricId, value: record.value });
       }
+      if (metricRecords.length > 0) {
+        this.hookService.emit({ type: 'activity.metricsAdded', payload: {} });
+      }
 
+      let newItemsAdded = false;
       for (const record of this.addFormRef.getListItemRecords()) {
         const existingItems = await this.itemService.getAllWhereEquals('listId', record.listId);
         for (const itemName of record.itemNames) {
           const existing = existingItems.find(t => t.name.toLowerCase() === itemName.toLowerCase());
           const itemId = existing ? existing.id : await this.itemService.add({ name: itemName, listId: record.listId });
+          if (!existing) newItemsAdded = true;
           await this.activityItemService.add({ activityId, itemId });
         }
+      }
+      if (newItemsAdded) {
+        this.hookService.emit({ type: 'item.added', payload: {} });
       }
     }
 

@@ -4,6 +4,7 @@ import { MetricForm } from '../components/metric-form/metric-form.component';
 import { ActionMetricService } from './action-metric.service';
 import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
+import { HookService } from './hook.service';
 
 @Injectable({ providedIn: 'root' })
 export class MetricService extends DatabaseService<'metrics'> {
@@ -11,6 +12,7 @@ export class MetricService extends DatabaseService<'metrics'> {
   private actionMetricService = inject(ActionMetricService);
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
+  private hookService = inject(HookService);
 
   async getStandalone() {
     const all = await this.getAll();
@@ -37,6 +39,8 @@ export class MetricService extends DatabaseService<'metrics'> {
     } else if (form.term?.itemId) {
       await this.itemMetricService.add({ itemId: form.term.itemId, metricId });
     }
+
+    this.hookService.emit({ type: 'metric.added', payload: {} });
 
     return metricId;
   }

@@ -92,6 +92,13 @@
           (ionChange)="setResetDatabaseOnReload($event)"
         >{{ 'TK_RESET_DATABASE_ON_RELOAD' | translate }}</ion-checkbox>
       </ion-item>
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          [(ngModel)]="unlockAllAchievements"
+          (ionChange)="setUnlockAllAchievements($event)"
+        >{{ 'TK_UNLOCK_ALL_ACHIEVEMENTS' | translate }}</ion-checkbox>
+      </ion-item>
     </ion-list>
   }
 

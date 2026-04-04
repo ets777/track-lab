@@ -5,6 +5,7 @@ import { IonList, IonItem, IonContent, IonHeader, IonToolbar, IonButtons, IonTit
 import { IAchievement } from 'src/app/db/models/achievement';
 import { AchievementService } from 'src/app/services/achievement.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-achievements',
@@ -18,7 +19,10 @@ export class AchievementsPage {
   achievements: IAchievement[] = [];
 
   async ionViewDidEnter() {
-    this.achievements = await this.achievementService.getUnlocked();
+    const unlockAll = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
+    this.achievements = unlockAll
+      ? await this.achievementService.getAll()
+      : await this.achievementService.getUnlocked();
   }
 
 }
