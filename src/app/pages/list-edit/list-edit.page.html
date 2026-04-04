@@ -2,10 +2,10 @@
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
     <ion-title>{{ 'TK_EDIT' | translate }}
-      {{ 'TK_DICTIONARY' | translate | lowercase }}</ion-title>
+      {{ 'TK_LIST' | translate | lowercase }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
-        (click)="updateDictionary()"
+        (click)="updateList()"
         [disabled]="!isFormValid()"
       >{{ 'TK_SAVE' | translate }}</ion-button>
     </ion-buttons>
@@ -13,10 +13,10 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  @if (dictionary) {
-    <app-dictionary-form
+  @if (list) {
+    <app-list-form
       #updateFormRef
-      [dictionary]="dictionary"
-    ></app-dictionary-form>
+      [list]="list"
+    ></app-list-form>
   }
 </ion-content>

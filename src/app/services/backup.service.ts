@@ -24,20 +24,20 @@ import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { ActivityTagService } from './activity-tag.service';
 import { FileService } from './file.service';
-import { IActionDictionaryDb } from '../db/models/action-dictionary';
+import { IActionListDb } from '../db/models/action-list';
 import { IActionMetricDb } from '../db/models/action-metric';
-import { IActivityTermDb } from '../db/models/activity-term';
+import { IActivityItemDb } from '../db/models/activity-item';
 import { IActivityMetricDb } from '../db/models/activity-metric';
-import { ITermDb } from '../db/models/term';
-import { IDictionaryDb } from '../db/models/dictionary';
+import { IItemDb } from '../db/models/item';
+import { IListDb } from '../db/models/list';
 import { IMetricDb } from '../db/models/metric';
 import { IStreakDb } from '../db/models/streak';
-import { ActionDictionaryService } from './action-dictionary.service';
+import { ActionListService } from './action-list.service';
 import { ActionMetricService } from './action-metric.service';
-import { ActivityTermService } from './activity-term.service';
+import { ActivityItemService } from './activity-item.service';
 import { ActivityMetricService } from './activity-metric.service';
-import { TermService } from './term.service';
-import { DictionaryService } from './dictionary.service';
+import { ItemService } from './item.service';
+import { ListService } from './list.service';
 import { MetricService } from './metric.service';
 import { StreakService } from './streak.service';
 import { getEntitiesFromString } from '../functions/string';
@@ -50,12 +50,12 @@ type Backup = {
   tags: ITagDb[],
   actionTags: IActionTagDb[],
   activityTags: IActivityTagDb[],
-  actionDictionaries: IActionDictionaryDb[],
+  actionLists: IActionListDb[],
   actionMetrics: IActionMetricDb[],
-  activityTerms: IActivityTermDb[],
+  activityItems: IActivityItemDb[],
   activityMetrics: IActivityMetricDb[],
-  terms: ITermDb[],
-  dictionaries: IDictionaryDb[],
+  items: IItemDb[],
+  lists: IListDb[],
   metrics: IMetricDb[],
   streaks: IStreakDb[],
   version: string,
@@ -74,7 +74,7 @@ const helperRevision1 = {
     const moodMetricId = 1;
     const energyMetricId = 2;
     const satietyMetricId = 3;
-    const emotionDictionaryId = 1;
+    const emotionListId = 1;
 
     backup.metrics = [
       {
@@ -106,16 +106,16 @@ const helperRevision1 = {
       },
     ];
 
-    backup.dictionaries = [{
-      id: emotionDictionaryId,
+    backup.lists = [{
+      id: emotionListId,
       name: 'TK_EMOTIONS',
     }];
 
     backup.activityMetrics = [];
-    backup.terms = [];
-    backup.activityTerms = [];
+    backup.items = [];
+    backup.activityItems = [];
 
-    let termId = 1;
+    let itemId = 1;
 
     for (const activity of backup.activities) {
       if (activity.mood && activity.mood > 0) {
@@ -147,27 +147,27 @@ const helperRevision1 = {
           ?.map((emotion) => emotion.name))];
 
         for (const emotion of emotionNames) {
-          let term = backup.terms.find(
-            (item: any) => item.name == emotion,
+          let item = backup.items.find(
+            (i: any) => i.name == emotion,
           );
 
-          if (!term) {
-            backup.terms.push({
-              id: termId,
+          if (!item) {
+            backup.items.push({
+              id: itemId,
               name: emotion,
-              dictionaryId: emotionDictionaryId,
+              listId: emotionListId,
             });
 
-            backup.activityTerms.push({
+            backup.activityItems.push({
               activityId: activity.id,
-              termId: termId,
+              itemId: itemId,
             });
 
-            termId++;
+            itemId++;
           } else {
-            backup.activityTerms.push({
+            backup.activityItems.push({
               activityId: activity.id,
-              termId: term.id,
+              itemId: item.id,
             });
           }
         }
@@ -196,7 +196,7 @@ const helperRevision1 = {
       });
     });
 
-    backup.actionDictionaries = [];
+    backup.actionLists = [];
     backup.actionMetrics = [];
     backup.streaks = [];
 
@@ -223,12 +223,12 @@ export class BackupService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionDictionaryService = inject(ActionDictionaryService);
+  private actionListService = inject(ActionListService);
   private actionMetricService = inject(ActionMetricService);
-  private activityTermService = inject(ActivityTermService);
+  private activityItemService = inject(ActivityItemService);
   private activityMetricService = inject(ActivityMetricService);
-  private termService = inject(TermService);
-  private dictionaryService = inject(DictionaryService);
+  private itemService = inject(ItemService);
+  private listService = inject(ListService);
   private metricService = inject(MetricService);
   private streakService = inject(StreakService);
   private fileService = inject(FileService);
@@ -255,12 +255,12 @@ export class BackupService {
       actionTags: await this.actionTagService.getAll(),
       activityTags: await this.activityTagService.getAll(),
 
-      actionDictionaries: await this.actionDictionaryService.getAll(),
+      actionLists: await this.actionListService.getAll(),
       actionMetrics: await this.actionMetricService.getAll(),
-      activityTerms: await this.activityTermService.getAll(),
+      activityItems: await this.activityItemService.getAll(),
       activityMetrics: await this.activityMetricService.getAll(),
-      terms: await this.termService.getAll(),
-      dictionaries: await this.dictionaryService.getAll(),
+      items: await this.itemService.getAll(),
+      lists: await this.listService.getAll(),
       metrics: await this.metricService.getAll(),
       streaks: await this.streakService.getAll(),
 
@@ -351,13 +351,13 @@ export class BackupService {
     await this.actionTagService.bulkAdd(backup.actionTags);
     await this.activityTagService.bulkAdd(backup.activityTags);
 
-    await this.dictionaryService.bulkAdd(backup.dictionaries);
+    await this.listService.bulkAdd(backup.lists);
     await this.metricService.bulkAdd(backup.metrics);
-    await this.termService.bulkAdd(backup.terms);
+    await this.itemService.bulkAdd(backup.items);
     await this.streakService.bulkAdd(backup.streaks);
-    await this.actionDictionaryService.bulkAdd(backup.actionDictionaries);
+    await this.actionListService.bulkAdd(backup.actionLists);
     await this.actionMetricService.bulkAdd(backup.actionMetrics);
-    await this.activityTermService.bulkAdd(backup.activityTerms);
+    await this.activityItemService.bulkAdd(backup.activityItems);
     await this.activityMetricService.bulkAdd(backup.activityMetrics);
 
     await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
@@ -367,7 +367,7 @@ export class BackupService {
     await this.activityService.clear();
     await this.activityActionService.clear();
     await this.activityTagService.clear();
-    await this.activityTermService.clear();
+    await this.activityItemService.clear();
     await this.activityMetricService.clear();
     await this.achievementService.clear();
     await this.streakService.clear();
@@ -375,7 +375,7 @@ export class BackupService {
     await this.actionService.clear();
     await this.tagService.clear();
     await this.actionTagService.clear();
-    await this.actionDictionaryService.clear();
+    await this.actionListService.clear();
     await this.actionMetricService.clear();
 
     const userMetrics = (await this.metricService.getAll()).filter(m => !m.isBase);
@@ -383,10 +383,10 @@ export class BackupService {
       await this.metricService.delete({ id: metric.id });
     }
 
-    const userDictionaries = (await this.dictionaryService.getAll()).filter(d => !d.isBase);
-    for (const dict of userDictionaries) {
-      await this.termService.delete({ dictionaryId: dict.id });
-      await this.dictionaryService.delete({ id: dict.id });
+    const userLists = (await this.listService.getAll()).filter(d => !d.isBase);
+    for (const list of userLists) {
+      await this.itemService.delete({ listId: list.id });
+      await this.listService.delete({ id: list.id });
     }
   }
 

@@ -29,14 +29,14 @@ export async function seedDatabase(sqlite: SQLiteService) {
 
   // id: 1=TK_EMOTIONS, 2=Places
   await sqlite.execute(`
-    INSERT OR REPLACE INTO dictionaries (id, name, isBase) VALUES
+    INSERT OR REPLACE INTO lists (id, name, isBase) VALUES
       (1, 'TK_EMOTIONS', 1),
       (2, 'Places',      0);
   `);
 
   // id: 1-5=emotions, 6-8=places
   await sqlite.execute(`
-    INSERT OR REPLACE INTO terms (id, dictionaryId, name) VALUES
+    INSERT OR REPLACE INTO items (id, listId, name) VALUES
       (1, 1, 'Happy'),
       (2, 1, 'Sad'),
       (3, 1, 'Focused'),
@@ -89,9 +89,9 @@ export async function seedDatabase(sqlite: SQLiteService) {
       (2, 4);
   `);
 
-  // action 2 (Meditation) → dictionary 2 (Places)
+  // action 2 (Meditation) → list 2 (Places)
   await sqlite.execute(`
-    INSERT OR REPLACE INTO actionDictionaries (actionId, dictionaryId) VALUES
+    INSERT OR REPLACE INTO actionLists (actionId, listId) VALUES
       (2, 2);
   `);
 
@@ -174,7 +174,7 @@ export async function seedDatabase(sqlite: SQLiteService) {
   `);
 
   await sqlite.execute(`
-    INSERT OR REPLACE INTO activityTerms (activityId, termId) VALUES
+    INSERT OR REPLACE INTO activityItems (activityId, itemId) VALUES
       (1,  3),
       (2,  1),
       (3,  3),

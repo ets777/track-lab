@@ -1,4 +1,4 @@
-<form [formGroup]="termForm">
+<form [formGroup]="itemForm">
   <ion-item>
     <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
     <ion-input
@@ -18,8 +18,8 @@
 
   <app-select-search
     appValidationError
-    formControlName="term"
-    label="TK_TERM"
+    formControlName="item"
+    label="TK_ITEM"
     [suggestions]="suggestions"
   ></app-select-search>
 </form>

@@ -3,14 +3,14 @@ import { DatabaseService } from './db/database.service';
 import { MetricForm } from '../components/metric-form/metric-form.component';
 import { ActionMetricService } from './action-metric.service';
 import { TagMetricService } from './tag-metric.service';
-import { TermMetricService } from './term-metric.service';
+import { ItemMetricService } from './item-metric.service';
 
 @Injectable({ providedIn: 'root' })
 export class MetricService extends DatabaseService<'metrics'> {
   protected tableName: 'metrics' = 'metrics';
   private actionMetricService = inject(ActionMetricService);
   private tagMetricService = inject(TagMetricService);
-  private termMetricService = inject(TermMetricService);
+  private itemMetricService = inject(ItemMetricService);
 
   async getStandalone() {
     const all = await this.getAll();
@@ -30,12 +30,12 @@ export class MetricService extends DatabaseService<'metrics'> {
       showPreviousValue: form.showPreviousValue ?? false,
     });
 
-    if (form.term?.type === 'action' && form.term.termId) {
-      await this.actionMetricService.add({ actionId: form.term.termId, metricId });
-    } else if (form.term?.type === 'tag' && form.term.termId) {
-      await this.tagMetricService.add({ tagId: form.term.termId, metricId });
-    } else if (form.term?.termId) {
-      await this.termMetricService.add({ termId: form.term.termId, metricId });
+    if (form.term?.type === 'action' && form.term.itemId) {
+      await this.actionMetricService.add({ actionId: form.term.itemId, metricId });
+    } else if (form.term?.type === 'tag' && form.term.itemId) {
+      await this.tagMetricService.add({ tagId: form.term.itemId, metricId });
+    } else if (form.term?.itemId) {
+      await this.itemMetricService.add({ itemId: form.term.itemId, metricId });
     }
 
     return metricId;

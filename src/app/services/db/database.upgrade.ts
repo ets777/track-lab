@@ -158,4 +158,19 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 4,
+    statements: [
+      `ALTER TABLE dictionaries RENAME TO lists;`,
+      `ALTER TABLE terms RENAME TO items;`,
+      `ALTER TABLE items RENAME COLUMN dictionaryId TO listId;`,
+      `ALTER TABLE actionDictionaries RENAME TO actionLists;`,
+      `ALTER TABLE actionLists RENAME COLUMN dictionaryId TO listId;`,
+      `ALTER TABLE activityTerms RENAME TO activityItems;`,
+      `ALTER TABLE activityItems RENAME COLUMN termId TO itemId;`,
+      `ALTER TABLE termMetrics RENAME TO itemMetrics;`,
+      `ALTER TABLE itemMetrics RENAME COLUMN termId TO itemId;`,
+      `ALTER TABLE streaks RENAME COLUMN termId TO itemId;`,
+    ],
+  },
 ];

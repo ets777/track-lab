@@ -15,13 +15,13 @@ export class StreakService extends DatabaseService<'streaks'> {
 
     switch(formData.term.type) {
       case 'action':
-        streakCreateDto.actionId = formData.term.termId;
+        streakCreateDto.actionId = formData.term.itemId;
         break;
       case 'tag':
-        streakCreateDto.tagId = formData.term.termId;
+        streakCreateDto.tagId = formData.term.itemId;
         break;
       default:
-        streakCreateDto.termId = formData.term.termId;
+        streakCreateDto.itemId = formData.term.itemId;
         break;
     }
 
@@ -33,18 +33,18 @@ export class StreakService extends DatabaseService<'streaks'> {
       startDate: formData.startDate,
       actionId: null as number | null,
       tagId: null as number | null,
-      termId: null as number | null,
+      itemId: null as number | null,
     };
 
     switch (formData.term.type) {
       case 'action':
-        changes.actionId = formData.term.termId;
+        changes.actionId = formData.term.itemId;
         break;
       case 'tag':
-        changes.tagId = formData.term.termId;
+        changes.tagId = formData.term.itemId;
         break;
       default:
-        changes.termId = formData.term.termId;
+        changes.itemId = formData.term.itemId;
         break;
     }
 

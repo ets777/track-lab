@@ -145,13 +145,13 @@
     </ion-accordion-group>
   }
 
-  <div [formGroup]="dictionariesForm">
-    @for (dictionary of standaloneDictionaries; track dictionary.id) {
-      <app-dictionary-input
-        [dictionaryId]="dictionary.id"
-        [label]="getDictionaryLabel(dictionary)"
-        [formControlName]="'dictionary_' + dictionary.id"
-      ></app-dictionary-input>
+  <div [formGroup]="listsForm">
+    @for (list of standaloneLists; track list.id) {
+      <app-list-input
+        [listId]="list.id"
+        [label]="getListLabel(list)"
+        [formControlName]="'list_' + list.id"
+      ></app-list-input>
     }
   </div>
 

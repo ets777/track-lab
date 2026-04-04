@@ -51,7 +51,7 @@ export class ActionEditPage {
     });
 
     // TODO: navigate to action list
-    await this.router.navigate(['/dictionary']);
+    await this.router.navigate(['/list']);
   }
 
   isFormValid() {

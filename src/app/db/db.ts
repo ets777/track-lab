@@ -7,16 +7,16 @@ import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
 import { IActivityTagCreateDto, IActivityTagDb } from './models/activity-tag';
 import { IActionTagCreateDto, IActionTagDb } from './models/action-tag';
 import { ITagCreateDto, ITagDb } from './models/tag';
-import { IActionDictionaryCreateDto, IActionDictionaryDb } from './models/action-dictionary';
+import { IActionListCreateDto, IActionListDb } from './models/action-list';
 import { IActionMetricCreateDto, IActionMetricDb } from './models/action-metric';
-import { IActivityTermCreateDto, IActivityTermDb } from './models/activity-term';
+import { IActivityItemCreateDto, IActivityItemDb } from './models/activity-item';
 import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-metric';
-import { ITermCreateDto, ITermDb } from './models/term';
-import { IDictionaryCreateDto, IDictionaryDb } from './models/dictionary';
+import { IItemCreateDto, IItemDb } from './models/item';
+import { IListCreateDto, IListDb } from './models/list';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
 import { ITagMetricCreateDto, ITagMetricDb } from './models/tag-metric';
-import { ITermMetricCreateDto, ITermMetricDb } from './models/term-metric';
+import { IItemMetricCreateDto, IItemMetricDb } from './models/item-metric';
 
 export class MyAppDatabase extends Dexie {
   activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -27,16 +27,16 @@ export class MyAppDatabase extends Dexie {
   actionTags!: Table<IActionTagDb, number, IActionTagCreateDto>;
   activityTags!: Table<IActivityTagDb, number, IActivityTagCreateDto>;
 
-  actionDictionaries!: Table<IActionDictionaryDb, number, IActionDictionaryCreateDto>;
+  actionLists!: Table<IActionListDb, number, IActionListCreateDto>;
   actionMetrics!: Table<IActionMetricDb, number, IActionMetricCreateDto>;
-  activityTerms!: Table<IActivityTermDb, number, IActivityTermCreateDto>;
+  activityItems!: Table<IActivityItemDb, number, IActivityItemCreateDto>;
   activityMetrics!: Table<IActivityMetricDb, number, IActivityMetricCreateDto>;
-  terms!: Table<ITermDb, number, ITermCreateDto>;
-  dictionaries!: Table<IDictionaryDb, number, IDictionaryCreateDto>;
+  items!: Table<IItemDb, number, IItemCreateDto>;
+  lists!: Table<IListDb, number, IListCreateDto>;
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
   tagMetrics!: Table<ITagMetricDb, number, ITagMetricCreateDto>;
-  termMetrics!: Table<ITermMetricDb, number, ITermMetricCreateDto>;
+  itemMetrics!: Table<IItemMetricDb, number, IItemMetricCreateDto>;
 
   constructor(databaseName: string) {
     super(databaseName);
@@ -250,6 +250,54 @@ export class MyAppDatabase extends Dexie {
 
     this.version(9).stores({
       activityTerms: '++id, activityId, termId, [activityId+termId]',
+    });
+
+    this.version(10).stores({
+      actionDictionaries: null,
+      activityTerms: null,
+      terms: null,
+      dictionaries: null,
+      termMetrics: null,
+      actionLists: '++id, [actionId+listId]',
+      activityItems: '++id, activityId, itemId, [activityId+itemId]',
+      items: '++id, name, listId',
+      lists: '++id, name',
+      itemMetrics: '++id, itemId, metricId, [itemId+metricId]',
+      streaks: '++id, lastDate, actionId, tagId, itemId',
+    }).upgrade(async (tx) => {
+      const dicts = await tx.table('dictionaries').toArray();
+      for (const d of dicts) {
+        await tx.table('lists').add(d);
+      }
+
+      const terms = await tx.table('terms').toArray();
+      for (const t of terms) {
+        await tx.table('items').add({ id: t.id, name: t.name, listId: t.dictionaryId, isHidden: t.isHidden ?? false });
+      }
+
+      const activityTerms = await tx.table('activityTerms').toArray();
+      for (const at of activityTerms) {
+        await tx.table('activityItems').add({ id: at.id, activityId: at.activityId, itemId: at.termId });
+      }
+
+      const termMetrics = await tx.table('termMetrics').toArray();
+      for (const tm of termMetrics) {
+        await tx.table('itemMetrics').add({ id: tm.id, itemId: tm.termId, metricId: tm.metricId });
+      }
+
+      const actionDicts = await tx.table('actionDictionaries').toArray();
+      for (const ad of actionDicts) {
+        await tx.table('actionLists').add({ id: ad.id, actionId: ad.actionId, listId: ad.dictionaryId });
+      }
+
+      const streaks = await tx.table('streaks').toArray();
+      for (const s of streaks) {
+        if (s.termId !== undefined) {
+          const updated = { ...s, itemId: s.termId };
+          delete updated.termId;
+          await tx.table('streaks').put(updated);
+        }
+      }
     });
   }
 }

@@ -7,10 +7,10 @@ import { IStreak } from 'src/app/db/models/streak';
 import { StreakService } from 'src/app/services/streak.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
-import { TermService } from 'src/app/services/term.service';
+import { ItemService } from 'src/app/services/item.service';
 import { IActionDb } from 'src/app/db/models/action';
 import { ITag } from 'src/app/db/models/tag';
-import { ITerm } from 'src/app/db/models/term';
+import { IItem } from 'src/app/db/models/item';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 
 @Component({
@@ -24,30 +24,30 @@ export class StreakViewPage {
   private streakService = inject(StreakService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
-  private termService = inject(TermService);
+  private itemService = inject(ItemService);
 
   streakId: number;
   streak?: IStreak;
   actions: IActionDb[] = [];
   tags: ITag[] = [];
-  terms: ITerm[] = [];
+  items: IItem[] = [];
 
   constructor() {
     this.streakId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
   async ionViewDidEnter() {
-    const [streak, actions, tags, terms] = await Promise.all([
+    const [streak, actions, tags, items] = await Promise.all([
       this.streakService.getById(this.streakId),
       this.actionService.getAll(),
       this.tagService.getAll(),
-      this.termService.getAll(),
+      this.itemService.getAll(),
     ]);
 
     this.streak = streak;
     this.actions = actions;
     this.tags = tags;
-    this.terms = terms;
+    this.items = items;
   }
 
   getTermName() {
@@ -59,8 +59,8 @@ export class StreakViewPage {
     if (this.streak.tagId) {
       return this.tags.find(t => t.id === this.streak!.tagId)?.name ?? '';
     }
-    if (this.streak.termId) {
-      return this.terms.find(t => t.id === this.streak!.termId)?.name ?? '';
+    if (this.streak.itemId) {
+      return this.items.find(t => t.id === this.streak!.itemId)?.name ?? '';
     }
 
     return '';

@@ -10,8 +10,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ToastService } from 'src/app/services/toast.service';
-import { TermService } from 'src/app/services/term.service';
-import { ActivityTermService } from 'src/app/services/activity-term.service';
+import { ItemService } from 'src/app/services/item.service';
+import { ActivityItemService } from 'src/app/services/activity-item.service';
 
 @Component({
   selector: 'app-activity-edit',
@@ -27,42 +27,42 @@ export class ActivityEditPage {
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private termService = inject(TermService);
-  private activityTermService = inject(ActivityTermService);
+  private itemService = inject(ItemService);
+  private activityItemService = inject(ActivityItemService);
 
   @ViewChild('updateFormRef') updateFormRef!: ActivityFormComponent;
 
   activityId: number;
   activity?: IActivity;
   activityMetricValues: Record<number, number> = {};
-  activityTermValues: Record<number, string> = {};
+  activityItemValues: Record<number, string> = {};
 
   constructor() {
     this.activityId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
   async ionViewDidEnter() {
-    const [activity, metricRecords, terms] = await Promise.all([
+    const [activity, metricRecords, items] = await Promise.all([
       this.activityService.getEnriched(this.activityId),
       this.activityMetricService.getByActivityId(this.activityId),
-      this.termService.getByActivityId(this.activityId),
+      this.itemService.getByActivityId(this.activityId),
     ]);
     this.activity = activity;
     this.activityMetricValues = Object.fromEntries(metricRecords.map(r => [r.metricId, r.value]));
 
-    const termsByDictionary: Record<number, string[]> = {};
-    for (const term of terms) {
-      if (!termsByDictionary[term.dictionaryId]) {
-        termsByDictionary[term.dictionaryId] = [];
+    const itemsByList: Record<number, string[]> = {};
+    for (const item of items) {
+      if (!itemsByList[item.listId]) {
+        itemsByList[item.listId] = [];
       }
-      termsByDictionary[term.dictionaryId].push(term.name);
+      itemsByList[item.listId].push(item.name);
     }
-    this.activityTermValues = Object.fromEntries(
-      Object.entries(termsByDictionary).map(([dId, names]) => [Number(dId), names.join(', ')])
+    this.activityItemValues = Object.fromEntries(
+      Object.entries(itemsByList).map(([lId, names]) => [Number(lId), names.join(', ')])
     );
 
     this.cdr.detectChanges();
-    await this.updateFormRef?.refreshMetricsAndDictionaries();
+    await this.updateFormRef?.refreshMetricsAndLists();
   }
 
   async updateActivity(): Promise<void> {
@@ -71,20 +71,20 @@ export class ActivityEditPage {
     }
 
     const activityFormValue = this.updateFormRef.activityForm.value as ActivityForm;
-    await this.activityService.updateWithTerms(this.activityId, activityFormValue);
+    await this.activityService.updateWithItems(this.activityId, activityFormValue);
 
     await this.activityMetricService.delete({ activityId: this.activityId });
     for (const record of this.updateFormRef.getMetricRecords()) {
       await this.activityMetricService.add({ activityId: this.activityId, metricId: record.metricId, value: record.value });
     }
 
-    await this.activityTermService.delete({ activityId: this.activityId });
-    for (const record of this.updateFormRef.getDictionaryTermRecords()) {
-      const existingTerms = await this.termService.getAllWhereEquals('dictionaryId', record.dictionaryId);
-      for (const termName of record.termNames) {
-        const existing = existingTerms.find(t => t.name.toLowerCase() === termName.toLowerCase());
-        const termId = existing ? existing.id : await this.termService.add({ name: termName, dictionaryId: record.dictionaryId });
-        await this.activityTermService.add({ activityId: this.activityId, termId });
+    await this.activityItemService.delete({ activityId: this.activityId });
+    for (const record of this.updateFormRef.getListItemRecords()) {
+      const existingItems = await this.itemService.getAllWhereEquals('listId', record.listId);
+      for (const itemName of record.itemNames) {
+        const existing = existingItems.find(t => t.name.toLowerCase() === itemName.toLowerCase());
+        const itemId = existing ? existing.id : await this.itemService.add({ name: itemName, listId: record.listId });
+        await this.activityItemService.add({ activityId: this.activityId, itemId });
       }
     }
 

@@ -1,11 +1,11 @@
 import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
-export interface ITermMetricDb {
+export interface IItemMetricDb {
     id: number;
-    termId: number;
+    itemId: number;
     metricId: number;
 }
 
-export type ITermMetricCreateDto = WithOptionalKeys<ITermMetricDb, 'id'>;
+export type IItemMetricCreateDto = WithOptionalKeys<IItemMetricDb, 'id'>;
 
-export interface ITermMetric extends ITermMetricDb {}
+export interface IItemMetric extends IItemMetricDb {}

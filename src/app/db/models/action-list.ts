@@ -1,11 +1,11 @@
 import { WithOptionalKeys } from "src/app/types/with-optional-keys";
 
-export interface IActionDictionaryDb {
+export interface IActionListDb {
   id: number;
   actionId: number;
-  dictionaryId: number;
+  listId: number;
 }
 
-export type IActionDictionaryCreateDto = WithOptionalKeys<IActionDictionaryDb, 'id'>;
+export type IActionListCreateDto = WithOptionalKeys<IActionListDb, 'id'>;
 
-export interface IActionDictionary extends IActionDictionaryDb { }
+export interface IActionList extends IActionListDb { }

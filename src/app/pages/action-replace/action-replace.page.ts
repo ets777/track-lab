@@ -94,7 +94,7 @@ export class ActionReplacePage implements OnInit {
 
     // TODO: navigate to action list
     await this.router.navigate(
-      ['/dictionary'],
+      ['/list'],
     );
   }
 

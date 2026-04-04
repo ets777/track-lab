@@ -51,7 +51,7 @@ export class TagEditPage {
     });
 
     // TODO: navigate to tag list
-    await this.router.navigate(['/dictionary']);
+    await this.router.navigate(['/list']);
   }
 
   isFormValid() {

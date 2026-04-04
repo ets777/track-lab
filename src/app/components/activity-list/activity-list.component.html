@@ -21,9 +21,9 @@
           }
         </p>
         <p>
-          @for (dictionary of dictionaries; track dictionary.id) {
-            @if (activityhasTerms(activity, dictionary)) {
-              {{ dictionary.name | translate }}: {{ getTerms(activity, dictionary) }}
+          @for (list of lists; track list.id) {
+            @if (activityHasItems(activity, list)) {
+              {{ list.name | translate }}: {{ getItems(activity, list) }}
             }
           }
         </p>

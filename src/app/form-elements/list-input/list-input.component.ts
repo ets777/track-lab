@@ -3,26 +3,26 @@ import { Component, forwardRef, Input, OnInit, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonInput, IonItem, IonList } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TermService } from 'src/app/services/term.service';
+import { ItemService } from 'src/app/services/item.service';
 
 @Component({
   imports: [IonList, IonItem, IonInput, TranslateModule, CommonModule],
-  selector: 'app-dictionary-input',
-  templateUrl: './dictionary-input.component.html',
-  styleUrl: './dictionary-input.component.scss',
+  selector: 'app-list-input',
+  templateUrl: './list-input.component.html',
+  styleUrl: './list-input.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DictionaryInputComponent),
+      useExisting: forwardRef(() => ListInputComponent),
       multi: true,
     },
   ],
 })
-export class DictionaryInputComponent implements ControlValueAccessor, OnInit {
-  private termService = inject(TermService);
+export class ListInputComponent implements ControlValueAccessor, OnInit {
+  private itemService = inject(ItemService);
   private translate = inject(TranslateService);
 
-  @Input() dictionaryId!: number;
+  @Input() listId!: number;
   @Input() label: string = '';
 
   filteredSuggestions: string[] = [];
@@ -31,8 +31,8 @@ export class DictionaryInputComponent implements ControlValueAccessor, OnInit {
   value: string = '';
 
   async ngOnInit() {
-    const terms = await this.termService.getAllWhereEquals('dictionaryId', this.dictionaryId);
-    this.allSuggestions = terms.map((term) => term.name);
+    const items = await this.itemService.getAllWhereEquals('listId', this.listId);
+    this.allSuggestions = items.map((item) => item.name);
   }
 
   private onChange = (_: any) => { };

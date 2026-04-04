@@ -2,50 +2,50 @@ import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonItem, IonLabel, IonInput, IonCheckbox } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IDictionary } from 'src/app/db/models/dictionary';
+import { IList } from 'src/app/db/models/list';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActionService } from 'src/app/services/action.service';
-import { CommonTerm, Selectable } from 'src/app/types/selectable';
+import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 
-export type DictionaryForm = {
+export type ListForm = {
   name: string;
   isHidden: boolean;
-  term: CommonTerm | null;
+  item: CommonItem | null;
 };
 
 @Component({
-  selector: 'app-dictionary-form',
-  templateUrl: './dictionary-form.component.html',
-  styleUrls: ['./dictionary-form.component.scss'],
+  selector: 'app-list-form',
+  templateUrl: './list-form.component.html',
+  styleUrls: ['./list-form.component.scss'],
   imports: [IonCheckbox, IonInput, TranslateModule, IonLabel, IonItem, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective],
 })
-export class DictionaryFormComponent implements OnInit {
+export class ListFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
   private actionService = inject(ActionService);
 
-  public dictionaryForm!: ModelFormGroup<DictionaryForm>;
-  public suggestions: Selectable<CommonTerm>[] = [];
+  public listForm!: ModelFormGroup<ListForm>;
+  public suggestions: Selectable<CommonItem>[] = [];
 
-  @Input() dictionary?: IDictionary;
+  @Input() list?: IList;
 
   constructor() { }
 
   async ngOnInit() {
-    this.dictionaryForm = this.formBuilder.group({
+    this.listForm = this.formBuilder.group({
       name: ['', Validators.required],
       isHidden: [false],
-      term: [null as CommonTerm | null],
+      item: [null as CommonItem | null],
     });
 
     await this.loadSuggestions();
 
-    if (this.dictionary) {
-      this.setDictionaryData(this.dictionary);
+    if (this.list) {
+      this.setListData(this.list);
     } else {
       this.setDefaultData();
     }
@@ -57,40 +57,40 @@ export class DictionaryFormComponent implements OnInit {
       num: index,
       title: action.name,
       subtitle: this.translate.instant('TK_ACTION'),
-      item: { name: action.name, type: 'action', termId: action.id } as CommonTerm,
+      item: { name: action.name, type: 'action', itemId: action.id } as CommonItem,
     }));
   }
 
-  async setTermByActionId(actionId: number) {
+  async setItemByActionId(actionId: number) {
     if (!this.suggestions.length) {
       await this.loadSuggestions();
     }
-    const term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === actionId)?.item ?? null;
-    this.dictionaryForm.patchValue({ term });
+    const item = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === actionId)?.item ?? null;
+    this.listForm.patchValue({ item });
   }
 
   setDefaultData() {
-    this.dictionaryForm.patchValue({
+    this.listForm.patchValue({
       name: '',
       isHidden: false,
-      term: null,
+      item: null,
     });
   }
 
-  setDictionaryData(dictionary: IDictionary) {
-    this.dictionaryForm.patchValue({
-      name: dictionary.isBase
-        ? this.translate.instant(dictionary.name)
-        : dictionary.name,
-      isHidden: dictionary.isHidden ?? false,
+  setListData(list: IList) {
+    this.listForm.patchValue({
+      name: list.isBase
+        ? this.translate.instant(list.name)
+        : list.name,
+      isHidden: list.isHidden ?? false,
     });
   }
 
   onNameClick() {
-    if (!this.dictionary?.isBase) return;
+    if (!this.list?.isBase) return;
 
     this.toastService.enqueue({
-      title: 'TK_DICTIONARY_NAME_CANNOT_BE_CHANGED',
+      title: 'TK_LIST_NAME_CANNOT_BE_CHANGED',
       type: 'error',
     });
   }

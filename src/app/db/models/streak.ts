@@ -4,7 +4,7 @@ export interface IStreakDb {
   id: number;
   tagId?: number;
   actionId?: number;
-  termId?: number;
+  itemId?: number;
   startDate: string;
   lastDate?: string;
 }

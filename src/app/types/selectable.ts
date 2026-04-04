@@ -5,14 +5,14 @@ export type Selectable<T> = {
   item: T;
 }
 
-// CommonTerm includes actions, tags and user terms
-export type CommonTerm = {
+// CommonItem includes actions, tags and user items
+export type CommonItem = {
   name: string;
   type: string;
-  termId: number;
+  itemId: number;
 };
 
-export type Dictionary = {
+export type ListRef = {
   name: string;
-  dictionaryId: number;
+  listId: number;
 }

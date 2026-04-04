@@ -9,8 +9,8 @@ import { IActivity } from 'src/app/db/models/activity';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { IMetric } from 'src/app/db/models/metric';
 import { MetricService } from 'src/app/services/metric.service';
-import { DictionaryService } from 'src/app/services/dictionary.service';
-import { IDictionary } from 'src/app/db/models/dictionary';
+import { ListService } from 'src/app/services/list.service';
+import { IList } from 'src/app/db/models/list';
 
 @Component({
   selector: 'app-activity-list-page',
@@ -21,16 +21,16 @@ import { IDictionary } from 'src/app/db/models/dictionary';
 export class ActivityListPage {
   private activityService = inject(ActivityService);
   private metricService = inject(MetricService);
-  private dictionaryService = inject(DictionaryService);
+  private listService = inject(ListService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   activities: IActivity[] = [];
   metrics: IMetric[] = [];
-  dictionaries: IDictionary[] = [];
+  lists: IList[] = [];
   currentDate: string = '';
 
-  public listActionSheetButtons = [];
+  public listActionSheetButtons: any[] = [];
 
   async ionViewDidEnter() {
     let date = this.route.snapshot.queryParamMap.get('date');
@@ -44,11 +44,11 @@ export class ActivityListPage {
 
     await this.setActivities();
     await this.setMetrics();
-    await this.setLibraries();
+    await this.setLists();
   }
 
   async goToPreviousDay() {
-    const previousDate = addDays(new Date(this.currentDate), -1); 
+    const previousDate = addDays(new Date(this.currentDate), -1);
     this.currentDate = format(previousDate, 'yyyy-MM-dd');
     this.setQueryParams(this.currentDate);
     await this.setActivities();
@@ -76,8 +76,8 @@ export class ActivityListPage {
     this.metrics = await this.metricService.getAll();
   }
 
-  async setLibraries() {
-    this.dictionaries = await this.dictionaryService.getAll();
+  async setLists() {
+    this.lists = await this.listService.getAll();
   }
 
   async goToAddPage() {

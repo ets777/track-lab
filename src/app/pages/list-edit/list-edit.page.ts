@@ -4,71 +4,71 @@ import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule } from '@ngx-translate/core';
-import { DictionaryForm, DictionaryFormComponent } from 'src/app/components/dictionary-form/dictionary-form.component';
-import { DictionaryService } from 'src/app/services/dictionary.service';
+import { ListForm, ListFormComponent } from 'src/app/components/list-form/list-form.component';
+import { ListService } from 'src/app/services/list.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IDictionary } from 'src/app/db/models/dictionary';
-import { ActionDictionaryService } from 'src/app/services/action-dictionary.service';
+import { IList } from 'src/app/db/models/list';
+import { ActionListService } from 'src/app/services/action-list.service';
 
 @Component({
-  selector: 'app-dictionary-edit',
-  templateUrl: './dictionary-edit.page.html',
-  styleUrls: ['./dictionary-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, DictionaryFormComponent],
+  selector: 'app-list-edit',
+  templateUrl: './list-edit.page.html',
+  styleUrls: ['./list-edit.page.scss'],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, ListFormComponent],
 })
-export class DictionaryEditPage {
+export class ListEditPage {
   private route = inject(ActivatedRoute);
-  private dictionaryService = inject(DictionaryService);
-  private actionDictionaryService = inject(ActionDictionaryService);
+  private listService = inject(ListService);
+  private actionListService = inject(ActionListService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
 
-  @ViewChild('updateFormRef') updateFormRef!: DictionaryFormComponent;
+  @ViewChild('updateFormRef') updateFormRef!: ListFormComponent;
 
-  dictionaryId: number;
-  dictionary?: IDictionary;
+  listId: number;
+  list?: IList;
 
   constructor() {
-    this.dictionaryId = Number(this.route.snapshot.paramMap.get('id'));
+    this.listId = Number(this.route.snapshot.paramMap.get('id'));
   }
 
   async ionViewDidEnter() {
-    this.dictionary = await this.dictionaryService.getById(this.dictionaryId);
+    this.list = await this.listService.getById(this.listId);
     this.cdr.detectChanges();
 
-    const actionDictionaries = await this.actionDictionaryService.getAllWhereEquals('dictionaryId', this.dictionaryId);
-    if (actionDictionaries.length > 0) {
-      await this.updateFormRef.setTermByActionId(actionDictionaries[0].actionId);
+    const actionLists = await this.actionListService.getAllWhereEquals('listId', this.listId);
+    if (actionLists.length > 0) {
+      await this.updateFormRef.setItemByActionId(actionLists[0].actionId);
     }
   }
 
-  async updateDictionary(): Promise<void> {
+  async updateList(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
 
-    const actionFormValue = this.updateFormRef.dictionaryForm.value as DictionaryForm;
-    await this.dictionaryService.update(this.dictionaryId, {
-      name: this.dictionary?.isBase ? this.dictionary.name : actionFormValue.name,
-      isHidden: actionFormValue.isHidden,
+    const listFormValue = this.updateFormRef.listForm.value as ListForm;
+    await this.listService.update(this.listId, {
+      name: this.list?.isBase ? this.list.name : listFormValue.name,
+      isHidden: listFormValue.isHidden,
     });
 
-    await this.actionDictionaryService.delete({ dictionaryId: this.dictionaryId });
-    if (actionFormValue.term?.type === 'action' && actionFormValue.term.termId) {
-      await this.actionDictionaryService.add({ actionId: actionFormValue.term.termId, dictionaryId: this.dictionaryId });
+    await this.actionListService.delete({ listId: this.listId });
+    if (listFormValue.item?.type === 'action' && listFormValue.item.itemId) {
+      await this.actionListService.add({ actionId: listFormValue.item.itemId, listId: this.listId });
     }
 
     this.toastService.enqueue({
-      title: 'TK_DICTIONARY_UPDATED_SUCCESSFULLY',
+      title: 'TK_LIST_UPDATED_SUCCESSFULLY',
       type: 'success',
     });
 
-    await this.router.navigate(['/dictionary']);
+    await this.router.navigate(['/list']);
   }
 
   isFormValid() {
-    return this.updateFormRef?.dictionaryForm?.valid;
+    return this.updateFormRef?.listForm?.valid;
   }
 }

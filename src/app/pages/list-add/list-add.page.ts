@@ -4,34 +4,34 @@ import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule } from '@ngx-translate/core';
-import { DictionaryForm, DictionaryFormComponent } from 'src/app/components/dictionary-form/dictionary-form.component';
+import { ListForm, ListFormComponent } from 'src/app/components/list-form/list-form.component';
 import { ToastService } from 'src/app/services/toast.service';
-import { DictionaryService } from 'src/app/services/dictionary.service';
-import { ActionDictionaryService } from 'src/app/services/action-dictionary.service';
+import { ListService } from 'src/app/services/list.service';
+import { ActionListService } from 'src/app/services/action-list.service';
 
 @Component({
-  selector: 'app-dictionary-add',
-  templateUrl: './dictionary-add.page.html',
-  styleUrls: ['./dictionary-add.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, DictionaryFormComponent],
+  selector: 'app-list-add',
+  templateUrl: './list-add.page.html',
+  styleUrls: ['./list-add.page.scss'],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, ListFormComponent],
 })
-export class DictionaryAddPage {
+export class ListAddPage {
   private toastService = inject(ToastService);
-  private dictionaryService = inject(DictionaryService);
-  private actionDictionaryService = inject(ActionDictionaryService);
+  private listService = inject(ListService);
+  private actionListService = inject(ActionListService);
 
-  @ViewChild('addFormRef') addFormRef!: DictionaryFormComponent;
+  @ViewChild('addFormRef') addFormRef!: ListFormComponent;
 
-  async addDictionary(): Promise<void> {
+  async addList(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
 
-    const dictionaryFormValue = this.addFormRef.dictionaryForm.value as DictionaryForm;
+    const listFormValue = this.addFormRef.listForm.value as ListForm;
 
-    const dictionaryId = await this.dictionaryService.add({ name: dictionaryFormValue.name, isHidden: dictionaryFormValue.isHidden ?? false });
-    if (dictionaryFormValue.term?.type === 'action' && dictionaryFormValue.term.termId) {
-      await this.actionDictionaryService.add({ actionId: dictionaryFormValue.term.termId, dictionaryId });
+    const listId = await this.listService.add({ name: listFormValue.name, isHidden: listFormValue.isHidden ?? false });
+    if (listFormValue.item?.type === 'action' && listFormValue.item.itemId) {
+      await this.actionListService.add({ actionId: listFormValue.item.itemId, listId });
     }
     this.resetForm();
 
@@ -42,7 +42,7 @@ export class DictionaryAddPage {
   }
 
   isFormValid() {
-    return this.addFormRef?.dictionaryForm?.valid;
+    return this.addFormRef?.listForm?.valid;
   }
 
   resetForm() {

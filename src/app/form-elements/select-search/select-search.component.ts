@@ -148,7 +148,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
       return;
     }
     const suggestion = this.suggestions.find(
-      s => s.item?.type === this.value?.type && s.item?.termId === this.value?.termId
+      s => s.item?.type === this.value?.type && s.item?.itemId === this.value?.itemId
     );
     if (suggestion) {
       this.selectedSuggestion = suggestion;

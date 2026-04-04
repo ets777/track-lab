@@ -19,25 +19,25 @@
   <ion-list>
     <ion-item (click)="goTo('/library')">{{ 'TK_ACTIONS' | translate }}</ion-item>
     <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-    @for (dictionary of dictionaries; track dictionary.id) {
-      <ion-item class="dictionary" (click)="viewDictionary(dictionary.id)">
+    @for (list of lists; track list.id) {
+      <ion-item class="list" (click)="viewList(list.id)">
         <ion-label>
-          <div class="title">{{ dictionary.name | translate }}</div>
+          <div class="title">{{ list.name | translate }}</div>
         </ion-label>
         <ion-buttons class="item-buttons">
-          <ion-button id="open-action-sheet-dictionary-{{dictionary.id}}" (click)="$event.stopPropagation()">
+          <ion-button id="open-action-sheet-list-{{list.id}}" (click)="$event.stopPropagation()">
             <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-action-sheet
-          trigger="open-action-sheet-dictionary-{{dictionary.id}}"
+          trigger="open-action-sheet-list-{{list.id}}"
           header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="getDictionaryActionSheetButtons(dictionary)"
-          (didDismiss)="doDictionaryAction($event, dictionary.id)"
+          [buttons]="getListActionSheetButtons(list)"
+          (didDismiss)="doListAction($event, list.id)"
         ></ion-action-sheet>
       </ion-item>
     } @empty {
-      <ion-text>{{ 'TK_DICTIONARY_LIST_IS_EMPTY' | translate }}</ion-text>
+      <ion-text>{{ 'TK_LISTS_ARE_EMPTY' | translate }}</ion-text>
     }
   </ion-list>
 </ion-content>

@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonMenuButton, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet } from '@ionic/angular/standalone';
-import { DictionaryService } from 'src/app/services/dictionary.service';
-import { IDictionary } from 'src/app/db/models/dictionary';
+import { ListService } from 'src/app/services/list.service';
+import { IList } from 'src/app/db/models/list';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
@@ -11,27 +11,27 @@ import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-  selector: 'app-dictionary-list',
-  templateUrl: './dictionary-list.page.html',
-  styleUrls: ['./dictionary-list.page.scss'],
+  selector: 'app-lists',
+  templateUrl: './lists.page.html',
+  styleUrls: ['./lists.page.scss'],
   imports: [IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule],
 })
-export class DictionaryListPage {
-  private dictionaryService = inject(DictionaryService);
+export class ListsPage {
+  private listService = inject(ListService);
   private router = inject(Router);
   private translate = inject(TranslateService);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
-  dictionaries: IDictionary[] = [];
+  lists: IList[] = [];
 
-  getDictionaryActionSheetButtons(dictionary: IDictionary) {
+  getListActionSheetButtons(list: IList) {
     const buttons: any[] = [
       { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
       { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
     ];
 
-    if (!dictionary.isBase) {
+    if (!list.isBase) {
       buttons.push({
         text: this.translate.instant('TK_DELETE'),
         role: 'destructive',
@@ -43,15 +43,15 @@ export class DictionaryListPage {
   }
 
   async ionViewDidEnter() {
-    await this.fetchDictionaries();
+    await this.fetchLists();
   }
 
-  async fetchDictionaries() {
-    this.dictionaries = await this.dictionaryService.getAll();
+  async fetchLists() {
+    this.lists = await this.listService.getAll();
   }
 
-  async viewDictionary(id: number) {
-    await this.router.navigate(['/dictionary', id]);
+  async viewList(id: number) {
+    await this.router.navigate(['/list', id]);
   }
 
   async goTo(path: string) {
@@ -59,26 +59,26 @@ export class DictionaryListPage {
   }
 
   async goToAddPage() {
-    await this.router.navigate(['/dictionary/add']);
+    await this.router.navigate(['/list/add']);
   }
 
-  async doDictionaryAction(event: CustomEvent<OverlayEventDetail>, dictionaryId: number) {
+  async doListAction(event: CustomEvent<OverlayEventDetail>, listId: number) {
     const action = event.detail.data?.action;
 
     switch (action) {
       case 'view':
-        await this.router.navigate(['/dictionary', dictionaryId]);
+        await this.router.navigate(['/list', listId]);
         break;
       case 'edit':
-        await this.router.navigate(['/dictionary/edit', dictionaryId]);
+        await this.router.navigate(['/list/edit', listId]);
         break;
       case 'delete':
-        await this.deleteDictionary(dictionaryId);
+        await this.deleteList(listId);
         break;
     }
   }
 
-  async deleteDictionary(dictionaryId: number) {
+  async deleteList(listId: number) {
     const alert = await this.alertController.create({
       header: this.translate.instant('TK_ARE_YOU_SURE'),
       buttons: [
@@ -90,9 +90,9 @@ export class DictionaryListPage {
     const { role } = await alert.onDidDismiss();
 
     if (role === 'yes') {
-      await this.dictionaryService.delete({ id: dictionaryId });
-      this.toastService.enqueue({ title: 'TK_DICTIONARY_DELETED_SUCCESSFULLY', type: 'success' });
-      await this.fetchDictionaries();
+      await this.listService.delete({ id: listId });
+      this.toastService.enqueue({ title: 'TK_LIST_DELETED_SUCCESSFULLY', type: 'success' });
+      await this.fetchLists();
     }
   }
 }

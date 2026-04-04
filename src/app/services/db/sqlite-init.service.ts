@@ -10,12 +10,12 @@ import { ActionTagService } from '../action-tag.service';
 import { ActivityTagService } from '../activity-tag.service';
 import { Preferences } from '@capacitor/preferences';
 import { DatabaseRouter } from './database-router.service';
-import { ActionDictionaryService } from '../action-dictionary.service';
+import { ActionListService } from '../action-list.service';
 import { ActionMetricService } from '../action-metric.service';
-import { ActivityTermService } from '../activity-term.service';
+import { ActivityItemService } from '../activity-item.service';
 import { ActivityMetricService } from '../activity-metric.service';
-import { TermService } from '../term.service';
-import { DictionaryService } from '../dictionary.service';
+import { ItemService } from '../item.service';
+import { ListService } from '../list.service';
 import { MetricService } from '../metric.service';
 import { databaseUpgrades } from './database.upgrade';
 import { seedDatabase } from './database-seed';
@@ -30,12 +30,12 @@ export class SQLiteInitService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionDictionaryService = inject(ActionDictionaryService);
+  private actionListService = inject(ActionListService);
   private actionMetricService = inject(ActionMetricService);
-  private activityTermService = inject(ActivityTermService);
+  private activityItemService = inject(ActivityItemService);
   private activityMetricService = inject(ActivityMetricService);
-  private termService = inject(TermService);
-  private dictionaryService = inject(DictionaryService);
+  private itemService = inject(ItemService);
+  private listService = inject(ListService);
   private metricService = inject(MetricService);
   private databaseRouter = inject(DatabaseRouter);
 
@@ -78,19 +78,19 @@ export class SQLiteInitService {
     await this.sqliteService.execute(`
       PRAGMA foreign_keys = OFF;
       DROP TABLE IF EXISTS activityMetrics;
-      DROP TABLE IF EXISTS activityTerms;
+      DROP TABLE IF EXISTS activityItems;
       DROP TABLE IF EXISTS activityTags;
       DROP TABLE IF EXISTS activityActions;
       DROP TABLE IF EXISTS tagMetrics;
       DROP TABLE IF EXISTS actionMetrics;
-      DROP TABLE IF EXISTS actionDictionaries;
+      DROP TABLE IF EXISTS actionLists;
       DROP TABLE IF EXISTS actionTags;
       DROP TABLE IF EXISTS streaks;
       DROP TABLE IF EXISTS activities;
       DROP TABLE IF EXISTS actions;
       DROP TABLE IF EXISTS tags;
-      DROP TABLE IF EXISTS terms;
-      DROP TABLE IF EXISTS dictionaries;
+      DROP TABLE IF EXISTS items;
+      DROP TABLE IF EXISTS lists;
       DROP TABLE IF EXISTS metrics;
       DROP TABLE IF EXISTS achievements;
       PRAGMA foreign_keys = ON;
@@ -150,12 +150,12 @@ export class SQLiteInitService {
     const actionTags = await this.actionTagService.getAll();
     const activityTags = await this.activityTagService.getAll();
 
-    const actionDictionaries = await this.actionDictionaryService.getAll();
+    const actionLists = await this.actionListService.getAll();
     const actionMetrics = await this.actionMetricService.getAll();
-    const activityTerms = await this.activityTermService.getAll();
+    const activityItems = await this.activityItemService.getAll();
     const activityMetrics = await this.activityMetricService.getAll();
-    const terms = await this.termService.getAll();
-    const dictionaries = await this.dictionaryService.getAll();
+    const items = await this.itemService.getAll();
+    const lists = await this.listService.getAll();
     const metrics = await this.metricService.getAll();
 
     try {
@@ -251,39 +251,39 @@ export class SQLiteInitService {
         );
       }
 
-      if (dictionaries.length) {
-        await this.sqliteService.run('DELETE FROM dictionaries');
+      if (lists.length) {
+        await this.sqliteService.run('DELETE FROM lists');
         await this.insertArrayChunked(
-          'dictionaries',
-          dictionaries,
+          'lists',
+          lists,
           ['id', 'name'],
         );
       }
 
-      if (actionDictionaries.length) {
-        await this.sqliteService.run('DELETE FROM actionDictionaries');
+      if (actionLists.length) {
+        await this.sqliteService.run('DELETE FROM actionLists');
         await this.insertArrayChunked(
-          'actionDictionaries',
-          actionDictionaries,
-          ['id', 'actionId', 'dictionaryId'],
+          'actionLists',
+          actionLists,
+          ['id', 'actionId', 'listId'],
         );
       }
 
-      if (terms.length) {
-        await this.sqliteService.run('DELETE FROM terms');
+      if (items.length) {
+        await this.sqliteService.run('DELETE FROM items');
         await this.insertArrayChunked(
-          'terms',
-          terms,
-          ['id', 'name', 'dictionaryId'],
+          'items',
+          items,
+          ['id', 'name', 'listId'],
         );
       }
 
-      if (activityTerms.length) {
-        await this.sqliteService.run('DELETE FROM activityTerms');
+      if (activityItems.length) {
+        await this.sqliteService.run('DELETE FROM activityItems');
         await this.insertArrayChunked(
-          'activityTerms',
-          activityTerms,
-          ['id', 'activityId', 'termId'],
+          'activityItems',
+          activityItems,
+          ['id', 'activityId', 'itemId'],
         );
       }
 

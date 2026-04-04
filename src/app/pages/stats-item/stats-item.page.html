@@ -8,11 +8,11 @@
 </ion-header>
 <ion-content class="ion-padding">
   <form [formGroup]="filterForm">
-    <app-date-period-input formControlName="datePeriod" storageKey="stats-term"></app-date-period-input>
+    <app-date-period-input formControlName="datePeriod" storageKey="stats-item"></app-date-period-input>
     <app-select-search
       appValidationError
-      formControlName="term"
-      label="TK_TERM"
+      formControlName="item"
+      label="TK_ITEM"
       [suggestions]="suggestions"
     ></app-select-search>
   </form>

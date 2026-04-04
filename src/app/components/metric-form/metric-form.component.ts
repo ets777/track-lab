@@ -1,21 +1,21 @@
 import { Component, Input, inject, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { CommonTerm, Selectable } from 'src/app/types/selectable';
+import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { IonItem, IonLabel, IonInput, IonCheckbox, IonSelect, IonSelectOption } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IDictionary } from 'src/app/db/models/dictionary';
+import { IList } from 'src/app/db/models/list';
 import { IMetric } from 'src/app/db/models/metric';
-import { DictionaryService } from 'src/app/services/dictionary.service';
+import { ListService } from 'src/app/services/list.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
-import { TermService } from 'src/app/services/term.service';
+import { ItemService } from 'src/app/services/item.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { TagMetricService } from 'src/app/services/tag-metric.service';
-import { TermMetricService } from 'src/app/services/term-metric.service';
-import { ITerm } from 'src/app/db/models/term';
-import { filterUniqueElements } from 'src/app/functions/term';
+import { ItemMetricService } from 'src/app/services/item-metric.service';
+import { IItem } from 'src/app/db/models/item';
+import { filterUniqueElements } from 'src/app/functions/item';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { reservedMetricNameValidator } from 'src/app/validators-async/reserved-metric-name.validator';
@@ -62,7 +62,7 @@ export type MetricForm = {
   minValue: number;
   maxValue: number;
   showPreviousValue: boolean;
-  term: CommonTerm;
+  term: CommonItem;
 };
 
 @Component({
@@ -73,21 +73,21 @@ export type MetricForm = {
 })
 export class MetricFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
-  private dictionaries: IDictionary[] = [];
-  private dictionaryService = inject(DictionaryService);
+  private lists: IList[] = [];
+  private listService = inject(ListService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
-  private termService = inject(TermService);
+  private itemService = inject(ItemService);
   private metricService = inject(MetricService);
   private actionMetricService = inject(ActionMetricService);
   private tagMetricService = inject(TagMetricService);
-  private termMetricService = inject(TermMetricService);
+  private itemMetricService = inject(ItemMetricService);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
 
   @Input() metric?: IMetric;
 
-  public suggestions: Selectable<CommonTerm>[] = [];
+  public suggestions: Selectable<CommonItem>[] = [];
   public metricForm!: ModelFormGroup<MetricForm>;
 
   constructor() { }
@@ -107,24 +107,24 @@ export class MetricFormComponent implements OnInit {
       maxValue: [5, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
       isHidden: [false],
       showPreviousValue: [false],
-      term: [null as CommonTerm | null],
+      term: [null as CommonItem | null],
     }, { validators: minMaxValidator() });
 
     await this.loadSuggestions();
 
     if (this.metric) {
-      const [actionMetrics, tagMetrics, termMetrics] = await Promise.all([
+      const [actionMetrics, tagMetrics, itemMetrics] = await Promise.all([
         this.actionMetricService.getAllWhereEquals('metricId', this.metric.id),
         this.tagMetricService.getAllWhereEquals('metricId', this.metric.id),
-        this.termMetricService.getAllWhereEquals('metricId', this.metric.id),
+        this.itemMetricService.getAllWhereEquals('metricId', this.metric.id),
       ]);
-      let term: CommonTerm | null = null;
+      let term: CommonItem | null = null;
       if (actionMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === actionMetrics[0].actionId)?.item ?? null;
+        term = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === actionMetrics[0].actionId)?.item ?? null;
       } else if (tagMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type === 'tag' && s.item.termId === tagMetrics[0].tagId)?.item ?? null;
-      } else if (termMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.termId === termMetrics[0].termId)?.item ?? null;
+        term = this.suggestions.find(s => s.item.type === 'tag' && s.item.itemId === tagMetrics[0].tagId)?.item ?? null;
+      } else if (itemMetrics.length > 0) {
+        term = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.itemId === itemMetrics[0].itemId)?.item ?? null;
       }
 
       this.metricForm.patchValue({
@@ -151,42 +151,41 @@ export class MetricFormComponent implements OnInit {
     });
   }
 
-  // TODO: move this code to separate component for terms search
   async loadSuggestions() {
-    this.dictionaries = await this.dictionaryService.getAll();
+    this.lists = await this.listService.getAll();
 
     const actions = (await this.actionService.getAllUnhidden())
       .map((action) => ({
         name: action.name,
         type: 'action',
-        termId: action.id,
-      } as CommonTerm));
+        itemId: action.id,
+      } as CommonItem));
     const tags = (await this.tagService.getAllUnhidden())
       .map((tag) => ({
         name: tag.name,
         type: 'tag',
-        termId: tag.id,
-      } as CommonTerm));
-    const terms = (await this.termService.getAllUnhidden())
-      .map((term) => ({
-        name: term.name,
-        type: this.getTermType(term),
-        termId: term.id,
-      } as CommonTerm));
+        itemId: tag.id,
+      } as CommonItem));
+    const items = (await this.itemService.getAllUnhidden())
+      .map((item) => ({
+        name: item.name,
+        type: this.getItemType(item),
+        itemId: item.id,
+      } as CommonItem));
 
-    const allTerms = filterUniqueElements([
+    const allItems = filterUniqueElements([
       ...actions,
       ...tags,
-      ...terms,
+      ...items,
     ]);
 
-    this.suggestions = allTerms.map((term, index) => ({
+    this.suggestions = allItems.map((item, index) => ({
       num: index,
-      title: term.name,
-      subtitle: (term.type === 'action' || term.type === 'tag')
-        ? this.translate.instant('TK_' + term.type.toUpperCase())
-        : this.translate.instant(term.type),
-      item: term,
+      title: item.name,
+      subtitle: (item.type === 'action' || item.type === 'tag')
+        ? this.translate.instant('TK_' + item.type.toUpperCase())
+        : this.translate.instant(item.type),
+      item,
     }));
   }
 
@@ -202,11 +201,11 @@ export class MetricFormComponent implements OnInit {
     });
   }
 
-  getTermType(term: ITerm) {
-    const termDictionary = this.dictionaries.find(
-      (dictionary) => dictionary.id == term.dictionaryId,
+  getItemType(item: IItem) {
+    const itemList = this.lists.find(
+      (list) => list.id == item.listId,
     );
 
-    return termDictionary?.name ?? '';
+    return itemList?.name ?? '';
   }
 }

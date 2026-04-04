@@ -73,7 +73,7 @@ export const routes: Routes = [
       },
       {
         path: 'library',
-        loadComponent: () => import('./pages/stats-term/stats-term.page').then(m => m.StatsTermPage)
+        loadComponent: () => import('./pages/stats-item/stats-item.page').then(m => m.StatsItemPage)
       },
     ],
   },
@@ -120,23 +120,23 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'dictionary',
+    path: 'list',
     children: [
       {
         path: '',
-        loadComponent: () => import('./pages/dictionary-list/dictionary-list.page').then(m => m.DictionaryListPage)
+        loadComponent: () => import('./pages/lists/lists.page').then(m => m.ListsPage)
       },
       {
         path: 'edit/:id',
-        loadComponent: () => import('./pages/dictionary-edit/dictionary-edit.page').then(m => m.DictionaryEditPage)
+        loadComponent: () => import('./pages/list-edit/list-edit.page').then(m => m.ListEditPage)
       },
       {
         path: 'add',
-        loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then(m => m.DictionaryAddPage)
+        loadComponent: () => import('./pages/list-add/list-add.page').then(m => m.ListAddPage)
       },
       {
         path: ':id',
-        loadComponent: () => import('./pages/dictionary-view/dictionary-view.page').then(m => m.DictionaryViewPage)
+        loadComponent: () => import('./pages/list-view/list-view.page').then(m => m.ListViewPage)
       },
     ],
   },
@@ -157,28 +157,20 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/tag-list/tag-list.page').then(m => m.TagListPage)
   },
   {
-    path: 'term-list',
-    loadComponent: () => import('./pages/term-list/term-list.page').then(m => m.TermListPage)
+    path: 'item-list',
+    loadComponent: () => import('./pages/item-list/item-list.page').then(m => m.ItemListPage)
   },
   {
-    path: 'term/add',
-    loadComponent: () => import('./pages/term-add/term-add.page').then(m => m.TermAddPage)
+    path: 'item/add',
+    loadComponent: () => import('./pages/item-add/item-add.page').then(m => m.ItemAddPage)
   },
   {
-    path: 'term/edit/:id',
-    loadComponent: () => import('./pages/term-edit/term-edit.page').then(m => m.TermEditPage)
+    path: 'item/edit/:id',
+    loadComponent: () => import('./pages/item-edit/item-edit.page').then(m => m.ItemEditPage)
   },
   {
     path: '',
     redirectTo: '/activity',
     pathMatch: 'full',
-  },
-  {
-    path: 'dictionary-add',
-    loadComponent: () => import('./pages/dictionary-add/dictionary-add.page').then( m => m.DictionaryAddPage)
-  },
-  {
-    path: 'dictionary-edit',
-    loadComponent: () => import('./pages/dictionary-edit/dictionary-edit.page').then( m => m.DictionaryEditPage)
   },
 ];

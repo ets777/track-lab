@@ -1,20 +1,20 @@
 import { IAchievementCreateDto, IAchievementDb } from "src/app/db/models/achievement";
 import { IActionCreateDto, IActionDb } from "src/app/db/models/action";
-import { IActionDictionaryCreateDto, IActionDictionaryDb } from "src/app/db/models/action-dictionary";
+import { IActionListCreateDto, IActionListDb } from "src/app/db/models/action-list";
 import { IActionMetricCreateDto, IActionMetricDb } from "src/app/db/models/action-metric";
 import { IActionTagCreateDto, IActionTagDb } from "src/app/db/models/action-tag";
 import { IActivityCreateDto, IActivityDb } from "src/app/db/models/activity";
 import { IActivityActionCreateDto, IActivityActionDb } from "src/app/db/models/activity-action";
-import { IActivityTermCreateDto, IActivityTermDb } from "src/app/db/models/activity-term";
+import { IActivityItemCreateDto, IActivityItemDb } from "src/app/db/models/activity-item";
 import { IActivityMetricCreateDto, IActivityMetricDb } from "src/app/db/models/activity-metric";
 import { IActivityTagCreateDto, IActivityTagDb } from "src/app/db/models/activity-tag";
-import { IDictionaryCreateDto, IDictionaryDb } from "src/app/db/models/dictionary";
-import { ITermCreateDto, ITermDb } from "src/app/db/models/term";
+import { IListCreateDto, IListDb } from "src/app/db/models/list";
+import { IItemCreateDto, IItemDb } from "src/app/db/models/item";
 import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
 import { IStreakCreateDto, IStreakDb } from "src/app/db/models/streak";
 import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 import { ITagMetricCreateDto, ITagMetricDb } from "src/app/db/models/tag-metric";
-import { ITermMetricCreateDto, ITermMetricDb } from "src/app/db/models/term-metric";
+import { IItemMetricCreateDto, IItemMetricDb } from "src/app/db/models/item-metric";
 
 export interface ITable {
     actions: IActionDb;
@@ -24,16 +24,16 @@ export interface ITable {
     activityTags: IActivityTagDb;
     activityActions: IActivityActionDb;
     actionTags: IActionTagDb;
-    actionDictionaries: IActionDictionaryDb;
+    actionLists: IActionListDb;
     actionMetrics: IActionMetricDb;
-    activityTerms: IActivityTermDb;
+    activityItems: IActivityItemDb;
     activityMetrics: IActivityMetricDb;
-    terms: ITermDb;
-    dictionaries: IDictionaryDb;
+    items: IItemDb;
+    lists: IListDb;
     metrics: IMetricDb;
     streaks: IStreakDb;
     tagMetrics: ITagMetricDb;
-    termMetrics: ITermMetricDb;
+    itemMetrics: IItemMetricDb;
 }
 
 export interface ICreateDto {
@@ -44,16 +44,16 @@ export interface ICreateDto {
     activityTags: IActivityTagCreateDto | IActivityTagDb;
     activityActions: IActivityActionCreateDto | IActivityActionDb;
     actionTags: IActionTagCreateDto | IActionTagDb;
-    actionDictionaries: IActionDictionaryDb | IActionDictionaryCreateDto;
+    actionLists: IActionListDb | IActionListCreateDto;
     actionMetrics: IActionMetricDb | IActionMetricCreateDto;
-    activityTerms: IActivityTermDb | IActivityTermCreateDto;
+    activityItems: IActivityItemDb | IActivityItemCreateDto;
     activityMetrics: IActivityMetricDb | IActivityMetricCreateDto;
-    terms: ITermDb | ITermCreateDto;
-    dictionaries: IDictionaryDb | IDictionaryCreateDto;
+    items: IItemDb | IItemCreateDto;
+    lists: IListDb | IListCreateDto;
     metrics: IMetricDb | IMetricCreateDto;
     streaks: IStreakDb | IStreakCreateDto;
     tagMetrics: ITagMetricDb | ITagMetricCreateDto;
-    termMetrics: ITermMetricDb | ITermMetricCreateDto;
+    itemMetrics: IItemMetricDb | IItemMetricCreateDto;
 }
 
 export type TableName = keyof ITable;

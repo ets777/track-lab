@@ -5,15 +5,15 @@ import { IStreak } from 'src/app/db/models/streak';
 import { StreakService } from 'src/app/services/streak.service';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { IonItem, IonLabel, IonInput } from "@ionic/angular/standalone";
-import { Selectable, CommonTerm } from 'src/app/types/selectable';
+import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { TagService } from 'src/app/services/tag.service';
 import { ActionService } from 'src/app/services/action.service';
-import { TermService } from 'src/app/services/term.service';
+import { ItemService } from 'src/app/services/item.service';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
-import { DictionaryService } from 'src/app/services/dictionary.service';
-import { filterUniqueElements } from 'src/app/functions/term';
-import { IDictionary } from 'src/app/db/models/dictionary';
-import { ITerm } from 'src/app/db/models/term';
+import { ListService } from 'src/app/services/list.service';
+import { filterUniqueElements } from 'src/app/functions/item';
+import { IList } from 'src/app/db/models/list';
+import { IItem } from 'src/app/db/models/item';
 import { capitalize } from 'src/app/functions/string';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
@@ -22,7 +22,7 @@ import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { MaskitoDirective } from '@maskito/angular';
 
 export type StreakForm = {
-  term: CommonTerm;
+  term: CommonItem;
   startDate: string;
 };
 
@@ -37,11 +37,11 @@ export class StreakFormComponent implements OnInit {
   private streakService = inject(StreakService);
   private tagService = inject(TagService);
   private translate = inject(TranslateService);
-  private dictionaryService = inject(DictionaryService);
+  private listService = inject(ListService);
   private actionService = inject(ActionService);
-  private termService = inject(TermService);
-  private dictionaries: IDictionary[] = [];
-  public suggestions: Selectable<CommonTerm>[] = [];
+  private itemService = inject(ItemService);
+  private lists: IList[] = [];
+  public suggestions: Selectable<CommonItem>[] = [];
 
   @Input() streak?: IStreak;
 
@@ -60,7 +60,7 @@ export class StreakFormComponent implements OnInit {
     const today = new Date().toISOString().slice(0, 10);
     this.streakForm = this.formBuilder.group({
       startDate: [today, [Validators.required, dateFormatValidator]],
-      term: [null as CommonTerm | null, Validators.required],
+      term: [null as CommonItem | null, Validators.required],
     });
 
     await this.loadSuggestions();
@@ -75,68 +75,66 @@ export class StreakFormComponent implements OnInit {
     let term = null;
 
     if (streak.actionId) {
-      term = this.suggestions.find(s => s.item.type === 'action' && s.item.termId === streak.actionId)?.item ?? null;
+      term = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === streak.actionId)?.item ?? null;
     } else if (streak.tagId) {
-      term = this.suggestions.find(s => s.item.type === 'tag' && s.item.termId === streak.tagId)?.item ?? null;
-    } else if (streak.termId) {
-      term = this.suggestions.find(s => !['action', 'tag'].includes(s.item.type) && s.item.termId === streak.termId)?.item ?? null;
+      term = this.suggestions.find(s => s.item.type === 'tag' && s.item.itemId === streak.tagId)?.item ?? null;
+    } else if (streak.itemId) {
+      term = this.suggestions.find(s => !['action', 'tag'].includes(s.item.type) && s.item.itemId === streak.itemId)?.item ?? null;
     }
 
     this.streakForm.patchValue({ startDate: streak.startDate, term });
   }
 
-  // TODO: move this code to separate component for terms search
   async loadSuggestions() {
-    this.dictionaries = await this.dictionaryService.getAll();
+    this.lists = await this.listService.getAll();
 
     const actions = (await this.actionService.getAllUnhidden())
       .map((action) => ({
         name: action.name,
         type: 'action',
-        termId: action.id,
-      } as CommonTerm));
+        itemId: action.id,
+      } as CommonItem));
     const tags = (await this.tagService.getAllUnhidden())
       .map((tag) => ({
         name: tag.name,
         type: 'tag',
-        termId: tag.id,
-      } as CommonTerm));
-    const terms = (await this.termService.getAllUnhidden())
-      .map((term) => ({
-        name: term.name,
-        type: this.getTermType(term),
-        termId: term.id,
-      } as CommonTerm));
+        itemId: tag.id,
+      } as CommonItem));
+    const items = (await this.itemService.getAllUnhidden())
+      .map((item) => ({
+        name: item.name,
+        type: this.getItemType(item),
+        itemId: item.id,
+      } as CommonItem));
 
-    const allTerms = filterUniqueElements([
+    const allItems = filterUniqueElements([
       ...actions,
       ...tags,
-      ...terms,
+      ...items,
     ]);
 
-    this.suggestions = allTerms.map((term, index) => ({
+    this.suggestions = allItems.map((item, index) => ({
       num: index,
-      title: term.name,
-      // TODO: get dictionary name from dictionaries if type is custom
-      subtitle: this.translate.instant('TK_' + term.type.toUpperCase()),
-      item: term,
+      title: item.name,
+      subtitle: this.translate.instant('TK_' + item.type.toUpperCase()),
+      item,
     }));
   }
 
-  getTermType(term: ITerm) {
-    const termDictionary = this.dictionaries.find(
-      (dictionary) => dictionary.id == term.dictionaryId,
+  getItemType(item: IItem) {
+    const itemList = this.lists.find(
+      (list) => list.id == item.listId,
     );
 
-    return termDictionary?.name ?? '';
+    return itemList?.name ?? '';
   }
 
-  getSuggestionSubtitle(term: CommonTerm) {
-    if (['action', 'tag'].includes(term.type)) {
-      return this.translate.instant('TK_' + term.type.toUpperCase())
+  getSuggestionSubtitle(item: CommonItem) {
+    if (['action', 'tag'].includes(item.type)) {
+      return this.translate.instant('TK_' + item.type.toUpperCase())
     }
 
-    return capitalize(term.type);
+    return capitalize(item.type);
   }
 
   setDefaultData() {

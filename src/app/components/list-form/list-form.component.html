@@ -1,8 +1,8 @@
-<form [formGroup]="dictionaryForm">
-  @if (dictionary?.isBase) {
+<form [formGroup]="listForm">
+  @if (list?.isBase) {
     <ion-item (click)="onNameClick()">
       <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-      <ion-input class="input-readonly" [value]="dictionaryForm.get('name')?.value" [readonly]="true"></ion-input>
+      <ion-input class="input-readonly" [value]="listForm.get('name')?.value" [readonly]="true"></ion-input>
     </ion-item>
   } @else {
     <ion-item>
@@ -19,8 +19,8 @@
   </ion-item>
 
   <app-select-search
-    formControlName="term"
-    label="TK_TERM"
+    formControlName="item"
+    label="TK_ITEM"
     [suggestions]="suggestions"
   ></app-select-search>
 </form>

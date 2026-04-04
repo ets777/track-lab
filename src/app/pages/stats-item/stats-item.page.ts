@@ -6,9 +6,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
-import { DictionaryService } from 'src/app/services/dictionary.service';
-import { IDictionary } from 'src/app/db/models/dictionary';
-import { TermService } from 'src/app/services/term.service';
+import { ListService } from 'src/app/services/list.service';
+import { IList } from 'src/app/db/models/list';
+import { ItemService } from 'src/app/services/item.service';
 import { SelectSearchComponent } from "src/app/form-elements/select-search/select-search.component";
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { DatePeriod } from 'src/app/types/date-period';
@@ -19,35 +19,35 @@ import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
 import { addDays, format } from 'date-fns';
-import { Selectable, CommonTerm } from 'src/app/types/selectable';
+import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { filterUniqueElements } from 'src/app/functions/term';
+import { filterUniqueElements } from 'src/app/functions/item';
 
 export type FilterForm = {
-  term: CommonTerm;
+  item: CommonItem;
   datePeriod: DatePeriod;
 };
 
 @Component({
-  selector: 'app-stats-term',
-  templateUrl: './stats-term.page.html',
-  styleUrls: ['./stats-term.page.scss'],
+  selector: 'app-stats-item',
+  templateUrl: './stats-item.page.html',
+  styleUrls: ['./stats-item.page.scss'],
   imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
 })
-export class StatsTermPage {
+export class StatsItemPage {
   private activityService = inject(ActivityService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
-  private dictionaryService = inject(DictionaryService);
-  private termService = inject(TermService);
+  private listService = inject(ListService);
+  private itemService = inject(ItemService);
   private translate = inject(TranslateService);
   private formBuilder = inject(FormBuilder);
 
-  private dictionaries: IDictionary[] = [];
+  private lists: IList[] = [];
 
   activities: IActivity[] = [];
   public filterForm: ModelFormGroup<FilterForm>;
-  public suggestions: Selectable<CommonTerm>[] = [];
+  public suggestions: Selectable<CommonItem>[] = [];
   minutesChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
   amountChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
   totalAmount: number = 0;
@@ -61,7 +61,7 @@ export class StatsTermPage {
   constructor() {
     this.filterForm = this.formBuilder.group({
       datePeriod: [null as DatePeriod | null, Validators.required],
-      term: [null as CommonTerm | null, Validators.required],
+      item: [null as CommonItem | null, Validators.required],
     });
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -82,20 +82,20 @@ export class StatsTermPage {
 
   async ionViewDidEnter() {
     this.lastLoadedState = null;
-    this.dictionaries = await this.dictionaryService.getAll();
-    const savedPeriod = localStorage.getItem('stats-term-date-period');
-    const savedTerm = localStorage.getItem('stats-term-term');
+    this.lists = await this.listService.getAll();
+    const savedPeriod = localStorage.getItem('stats-item-date-period');
+    const savedItem = localStorage.getItem('stats-item-item');
 
     if (savedPeriod) {
       this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) }, { emitEvent: false });
       await this.loadSuggestions();
     }
 
-    if (savedTerm) {
-      const term = JSON.parse(savedTerm) as CommonTerm;
-      const found = this.suggestions.find(s => s.item.termId === term.termId && s.item.type === term.type);
+    if (savedItem) {
+      const item = JSON.parse(savedItem) as CommonItem;
+      const found = this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
       if (found) {
-        this.filterForm.patchValue({ term: found.item }, { emitEvent: false });
+        this.filterForm.patchValue({ item: found.item }, { emitEvent: false });
       }
     }
 
@@ -123,62 +123,62 @@ export class StatsTermPage {
     const actions = allDbActions.map((action) => ({
       name: action.name,
       type: 'action',
-      termId: action.id,
-    } as CommonTerm));
+      itemId: action.id,
+    } as CommonItem));
 
     const allDbTags = await this.tagService.getAllUnhidden();
     const tags = allDbTags.map((tag) => ({
       name: tag.name,
       type: 'tag',
-      termId: tag.id,
-    } as CommonTerm));
+      itemId: tag.id,
+    } as CommonItem));
 
-    const allDbTerms = await this.termService.getAllUnhidden();
-    const activityTerms = allDbTerms.map((term) => ({
-      name: term.name,
-      type: 'term',
-      termId: term.id,
-    } as CommonTerm));
+    const allDbItems = await this.itemService.getAllUnhidden();
+    const activityItems = allDbItems.map((item) => ({
+      name: item.name,
+      type: 'item',
+      itemId: item.id,
+    } as CommonItem));
 
-    const allTerms = filterUniqueElements([
+    const allItems = filterUniqueElements([
       ...actions,
       ...tags,
-      ...activityTerms,
+      ...activityItems,
     ]);
 
-    const termDictionaryId: Record<number, number> = {};
-    allDbTerms.forEach(t => { termDictionaryId[t.id] = t.dictionaryId; });
+    const itemListId: Record<number, number> = {};
+    allDbItems.forEach(t => { itemListId[t.id] = t.listId; });
 
-    this.suggestions = allTerms.map((term, index) => {
+    this.suggestions = allItems.map((item, index) => {
       let subtitle: string;
-      if (term.type === 'term') {
-        const dictId = termDictionaryId[term.termId];
-        const dict = this.dictionaries.find(d => d.id === dictId);
-        subtitle = dict ? this.translate.instant(dict.name) : this.translate.instant('TK_TERM');
+      if (item.type === 'item') {
+        const listId = itemListId[item.itemId];
+        const list = this.lists.find(l => l.id === listId);
+        subtitle = list ? this.translate.instant(list.name) : this.translate.instant('TK_ITEM');
       } else {
-        subtitle = this.translate.instant('TK_' + term.type.toUpperCase());
+        subtitle = this.translate.instant('TK_' + item.type.toUpperCase());
       }
-      return { num: index, title: term.name, subtitle, item: term };
+      return { num: index, title: item.name, subtitle, item };
     });
   }
 
   setChartData() {
-    if (!this.filterForm.valid || !this.filterForm.value.datePeriod || !this.filterForm.value.term) {
+    if (!this.filterForm.valid || !this.filterForm.value.datePeriod || !this.filterForm.value.item) {
       return;
     }
 
-    const term: CommonTerm = this.filterForm.value.term;
+    const item: CommonItem = this.filterForm.value.item;
     const { startDate, endDate } = this.filterForm.value.datePeriod;
 
-    const currentState = `${startDate}|${endDate}|${term.type}:${term.termId}`;
+    const currentState = `${startDate}|${endDate}|${item.type}:${item.itemId}`;
     if (currentState === this.lastLoadedState) {
       return;
     }
     this.lastLoadedState = currentState;
 
     if (this.initialized) {
-      localStorage.setItem('stats-term-date-period', JSON.stringify(this.filterForm.value.datePeriod));
-      localStorage.setItem('stats-term-term', JSON.stringify(term));
+      localStorage.setItem('stats-item-date-period', JSON.stringify(this.filterForm.value.datePeriod));
+      localStorage.setItem('stats-item-item', JSON.stringify(item));
     }
 
     const dates: string[] = [];
@@ -206,7 +206,7 @@ export class StatsTermPage {
         (activities) => {
           const filteredActivities = activities
             .filter(
-              (activity) => this.hasTerm(activity, term),
+              (activity) => this.hasItem(activity, item),
             );
 
           const totalMinutes = filteredActivities.reduce((sum, curr) => sum += getActivityDurationMinutes(curr), 0);
@@ -251,25 +251,25 @@ export class StatsTermPage {
     };
   }
 
-  hasTerm(activity: IActivity, term: CommonTerm) {
-    if (term.type == 'action') {
+  hasItem(activity: IActivity, item: CommonItem) {
+    if (item.type == 'action') {
       return activity.actions.some(
-        (action) => action.name == term.name,
+        (action) => action.name == item.name,
       );
     }
 
-    if (term.type == 'tag') {
+    if (item.type == 'tag') {
       return activity.tags.some(
-        (tag) => tag.name == term.name,
+        (tag) => tag.name == item.name,
       ) || activity.actions.some(
         (action) => action.tags.some(
-          (tag) => tag.name == term.name,
+          (tag) => tag.name == item.name,
         ),
       );
     }
 
-    if (term.type == 'term') {
-      return activity.terms.some((t) => t.id === term.termId);
+    if (item.type == 'item') {
+      return activity.items.some((t) => t.id === item.itemId);
     }
 
     return false;

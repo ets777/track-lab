@@ -3,33 +3,33 @@
     <ion-buttons slot="start">
       <app-back-button></app-back-button>
     </ion-buttons>
-    <ion-title>{{ dictionary?.name | translate }}</ion-title>
+    <ion-title>{{ list?.name | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddTerm()">
+  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddItem()">
     <ion-fab-button>
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
   <ion-list>
-    @for (term of terms; track term.id) {
+    @for (item of items; track item.id) {
       <ion-item>
-        <ion-label>{{ term.name }}</ion-label>
+        <ion-label>{{ item.name }}</ion-label>
         <ion-buttons slot="end">
-          <ion-button id="open-action-sheet-term-{{term.id}}">
+          <ion-button id="open-action-sheet-item-{{item.id}}">
             <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-action-sheet
-          trigger="open-action-sheet-term-{{term.id}}"
-          [buttons]="termActionSheetButtons"
-          (didDismiss)="doTermAction($event, term.id)"
+          trigger="open-action-sheet-item-{{item.id}}"
+          [buttons]="itemActionSheetButtons"
+          (didDismiss)="doItemAction($event, item.id)"
         ></ion-action-sheet>
       </ion-item>
     } @empty {
       <ion-item>
-        <ion-label>{{ 'TK_DICTIONARY_IS_EMPTY' | translate }}</ion-label>
+        <ion-label>{{ 'TK_LIST_IS_EMPTY' | translate }}</ion-label>
       </ion-item>
     }
   </ion-list>

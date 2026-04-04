@@ -1,26 +1,21 @@
 import { Injectable, inject } from '@angular/core';
 import { DatabaseService } from './db/database.service';
-import { ActivityTermService } from './activity-term.service';
+import { ActivityItemService } from './activity-item.service';
 
 @Injectable({ providedIn: 'root' })
-export class TermService extends DatabaseService<'terms'> {
-  private activityTermService = inject(ActivityTermService);
+export class ItemService extends DatabaseService<'items'> {
+  private activityItemService = inject(ActivityItemService);
 
-  protected tableName: 'terms' = 'terms';
+  protected tableName: 'items' = 'items';
 
   async getByActivityId(activityId: number) {
-    const activityTerms = await this.activityTermService.getByActivityId(
-      activityId,
-    );
-
-    const termIds = activityTerms.map((activityTerm) => activityTerm.termId);
-    const terms = await this.getAnyOf('id', termIds);
-
-    return terms;
+    const activityItems = await this.activityItemService.getByActivityId(activityId);
+    const itemIds = activityItems.map((activityItem) => activityItem.itemId);
+    return this.getAnyOf('id', itemIds);
   }
 
   async getAllUnhidden() {
-    const allTerms = await this.getAll();
-    return allTerms.filter((term) => !term.isHidden);
+    const allItems = await this.getAll();
+    return allItems.filter((item) => !item.isHidden);
   }
 }

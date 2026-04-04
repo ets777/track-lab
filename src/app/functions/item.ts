@@ -1,6 +1,6 @@
-import { CommonTerm } from "../types/selectable";
+import { CommonItem } from "../types/selectable";
 
-export function filterUniqueElements(array: CommonTerm[]) {
+export function filterUniqueElements(array: CommonItem[]) {
   return array.filter(
     (item, index, self) =>
       index === self.findIndex(

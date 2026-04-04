@@ -8,10 +8,10 @@ import { StreakService } from 'src/app/services/streak.service';
 import { Router } from '@angular/router';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
-import { TermService } from 'src/app/services/term.service';
+import { ItemService } from 'src/app/services/item.service';
 import { IActionDb } from 'src/app/db/models/action';
 import { ITag } from 'src/app/db/models/tag';
-import { ITerm } from 'src/app/db/models/term';
+import { IItem } from 'src/app/db/models/item';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -26,7 +26,7 @@ export class StreakListPage {
   private streakService = inject(StreakService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
-  private termService = inject(TermService);
+  private itemService = inject(ItemService);
   private router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
@@ -35,7 +35,7 @@ export class StreakListPage {
   streaks: IStreak[] = [];
   actions: IActionDb[] = [];
   tags: ITag[] = [];
-  terms: ITerm[] = [];
+  items: IItem[] = [];
 
   streakActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
@@ -47,7 +47,7 @@ export class StreakListPage {
     await this.fetchStreaks();
     await this.fetchActions();
     await this.fetchTags();
-    await this.fetchTerms();
+    await this.fetchItems();
   }
 
   async fetchStreaks() {
@@ -62,8 +62,8 @@ export class StreakListPage {
     this.tags = await this.tagService.getAll();
   }
 
-  async fetchTerms() {
-    this.terms = await this.termService.getAll();
+  async fetchItems() {
+    this.items = await this.itemService.getAll();
   }
 
   getTermName(streak: IStreak) {
@@ -77,9 +77,9 @@ export class StreakListPage {
       return tag?.name;
     }
 
-    if (streak.termId) {
-      const term = this.terms.find((term) => term.id == streak.termId)
-      return term?.name;
+    if (streak.itemId) {
+      const item = this.items.find((item) => item.id == streak.itemId)
+      return item?.name;
     }
 
     return '';
