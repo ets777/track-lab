@@ -111,6 +111,29 @@ class TestDatabaseV2 extends Dexie {
   }
 }
 
+class TestDatabaseV3 extends Dexie {
+  activities!: Table<any, number, any>;
+  actions!: Table<any, number, any>;
+  activityActions!: Table<any, number, any>;
+  achievements!: Table<any, number, any>;
+  tags!: Table<any, number, any>;
+  actionTags!: Table<any, number, any>;
+  activityTags!: Table<any, number, any>;
+
+  constructor() {
+    super('TestDatabaseV3');
+    this.version(3).stores({
+      activities: '++id, date, [date+startTime], mood, energy, satiety',
+      actions: '++id, name',
+      activityActions: '++id, activityId, actionId, [activityId+actionId]',
+      achievements: '++id, code, unlocked',
+      tags: '++id, name',
+      actionTags: '++id, actionId, tagId, [actionId+tagId]',
+      activityTags: '++id, activityId, tagId, [activityId+tagId]',
+    });
+  }
+}
+
 describe('Database Migration (v1 to v2)', () => {
 
   beforeEach(async () => {
@@ -201,119 +224,177 @@ describe('Database Migration (v3 to v4)', () => {
     await Dexie.delete('TestDatabaseV3');
   });
 
-  it('should correctly migrate metrics and emotions from v3 to v4', async () => {
-    // Create a v3 database with activities containing mood, energy, satiety, and emotions
-    class TestDatabaseV3 extends Dexie {
-      activities!: Table<any, number>;
-      actions!: Table<any, number>;
-      activityActions!: Table<any, number>;
-      achievements!: Table<any, number>;
-      tags!: Table<any, number>;
-      actionTags!: Table<any, number>;
-      activityTags!: Table<any, number>;
+  it('should create the three base metrics and the emotions list', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    v3.close();
 
-      constructor() {
-        super('TestDatabaseV3');
-        this.version(3).stores({
-          activities: '++id, date, [date+startTime], mood, energy, satiety',
-          actions: '++id, name',
-          activityActions: '++id, activityId, actionId, [activityId+actionId]',
-          achievements: '++id, code, unlocked',
-          tags: '++id, name',
-          actionTags: '++id, actionId, tagId, [actionId+tagId]',
-          activityTags: '++id, activityId, tagId, [activityId+tagId]',
-        });
-      }
-    }
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
 
-    const testDatabaseV3 = new TestDatabaseV3();
-    await testDatabaseV3.open();
-
-    // Add test data with mood, energy, satiety, and emotions
-    await testDatabaseV3.activities.bulkAdd([
-      {
-        date: '2025-11-10',
-        startTime: '08:00',
-        mood: 7,
-        energy: 8,
-        satiety: 6,
-        emotions: 'happy, confident',
-        comment: 'great morning'
-      },
-      {
-        date: '2025-11-10',
-        startTime: '14:00',
-        mood: 5,
-        energy: 4,
-        satiety: 3,
-        emotions: 'tired',
-        comment: 'afternoon slump'
-      },
-      {
-        date: '2025-11-10',
-        startTime: '20:00',
-        mood: 0,
-        energy: 0,
-        satiety: 0,
-        emotions: '',
-        comment: ''
-      },
-    ]);
-
-    testDatabaseV3.close();
-
-    // Open with v4 database
-    const testDatabaseV4 = new MyAppDatabase('TestDatabaseV3');
-    await testDatabaseV4.open();
-
-    // Check metrics were created
-    const metrics = await testDatabaseV4.metrics.toArray();
+    const metrics = await v4.metrics.toArray();
     expect(metrics.length).toBe(3);
     expect(metrics).toEqual(jasmine.arrayContaining([
-      jasmine.objectContaining({ name: 'TK_MOOD' }),
-      jasmine.objectContaining({ name: 'TK_ENERGY' }),
-      jasmine.objectContaining({ name: 'TK_SATIETY' }),
+      jasmine.objectContaining({ name: 'TK_MOOD', isBase: true }),
+      jasmine.objectContaining({ name: 'TK_ENERGY', isBase: true }),
+      jasmine.objectContaining({ name: 'TK_SATIETY', isBase: true }),
     ]));
 
-    // Check list was created for emotions
-    const lists = await testDatabaseV4.lists.toArray();
+    const lists = await v4.lists.toArray();
     expect(lists.length).toBe(1);
-    expect(lists[0].name).toBe('TK_EMOTIONS');
+    expect(lists[0]).toEqual(jasmine.objectContaining({ name: 'TK_EMOTIONS', isBase: true }));
 
-    // Check activity metrics were created
-    const activityMetrics = await testDatabaseV4.activityMetrics.toArray();
-    expect(activityMetrics.length).toBe(6); // 3 metrics for first activity + 3 for second
+    v4.close();
+  });
 
-    // Check list items were created for emotions
-    const items = await testDatabaseV4.items.toArray();
-    expect(items.length).toBe(3); // happy, confident, tired
-    expect(items).toEqual(jasmine.arrayContaining([
-      jasmine.objectContaining({ name: 'happy', listId: lists[0].id }),
-      jasmine.objectContaining({ name: 'confident', listId: lists[0].id }),
-      jasmine.objectContaining({ name: 'tired', listId: lists[0].id }),
+  it('should migrate metric values into activityMetrics with correct values and links', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    const [activityId] = await v3.activities.bulkAdd([
+      { date: '2025-11-10', startTime: '08:00', mood: 7, energy: 8, satiety: 6, emotions: '', comment: '' },
+    ], { allKeys: true });
+    v3.close();
+
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    const metrics = await v4.metrics.toArray();
+    const moodMetric = metrics.find(m => m.name === 'TK_MOOD')!;
+    const energyMetric = metrics.find(m => m.name === 'TK_ENERGY')!;
+    const satietyMetric = metrics.find(m => m.name === 'TK_SATIETY')!;
+
+    const activityMetrics = await v4.activityMetrics.toArray();
+    expect(activityMetrics.length).toBe(3);
+    expect(activityMetrics).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({ activityId, metricId: moodMetric.id, value: 7 }),
+      jasmine.objectContaining({ activityId, metricId: energyMetric.id, value: 8 }),
+      jasmine.objectContaining({ activityId, metricId: satietyMetric.id, value: 6 }),
     ]));
 
-    // Check activity list items were created
-    const activityItems = await testDatabaseV4.activityItems.toArray();
-    expect(activityItems.length).toBe(3); // happy, confident, tired
+    v4.close();
+  });
 
-    // Check activities no longer have mood, energy, satiety, emotions
-    const activities = await testDatabaseV4.activities.toArray();
+  it('should not create activityMetrics for zero-value metrics', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    await v3.activities.bulkAdd([
+      { date: '2025-11-10', startTime: '08:00', mood: 5, energy: 0, satiety: 0, emotions: '', comment: '' },
+      { date: '2025-11-10', startTime: '14:00', mood: 0, energy: 0, satiety: 0, emotions: '', comment: '' },
+    ]);
+    v3.close();
+
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    const activityMetrics = await v4.activityMetrics.toArray();
+    expect(activityMetrics.length).toBe(1);
+    expect(activityMetrics[0]).toEqual(jasmine.objectContaining({ value: 5 }));
+
+    v4.close();
+  });
+
+  it('should migrate emotions into items and activityItems with correct links', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    const [activity1Id, activity2Id] = await v3.activities.bulkAdd([
+      { date: '2025-11-10', startTime: '08:00', mood: 0, energy: 0, satiety: 0, emotions: 'happy, confident', comment: '' },
+      { date: '2025-11-10', startTime: '14:00', mood: 0, energy: 0, satiety: 0, emotions: 'tired', comment: '' },
+    ], { allKeys: true });
+    v3.close();
+
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    const lists = await v4.lists.toArray();
+    const emotionsList = lists.find(l => l.name === 'TK_EMOTIONS')!;
+
+    const items = await v4.items.toArray();
+    expect(items.length).toBe(3);
+    const happyItem = items.find(i => i.name === 'happy')!;
+    const confidentItem = items.find(i => i.name === 'confident')!;
+    const tiredItem = items.find(i => i.name === 'tired')!;
+    expect(happyItem.listId).toBe(emotionsList.id);
+    expect(confidentItem.listId).toBe(emotionsList.id);
+    expect(tiredItem.listId).toBe(emotionsList.id);
+
+    const activityItems = await v4.activityItems.toArray();
+    expect(activityItems.length).toBe(3);
+    expect(activityItems).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({ activityId: activity1Id, itemId: happyItem.id }),
+      jasmine.objectContaining({ activityId: activity1Id, itemId: confidentItem.id }),
+      jasmine.objectContaining({ activityId: activity2Id, itemId: tiredItem.id }),
+    ]));
+
+    v4.close();
+  });
+
+  it('should deduplicate emotion items shared across activities', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    await v3.activities.bulkAdd([
+      { date: '2025-11-10', startTime: '08:00', mood: 0, energy: 0, satiety: 0, emotions: 'happy', comment: '' },
+      { date: '2025-11-10', startTime: '14:00', mood: 0, energy: 0, satiety: 0, emotions: 'happy, tired', comment: '' },
+    ]);
+    v3.close();
+
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    const items = await v4.items.toArray();
+    expect(items.length).toBe(2); // happy appears once, tired once
+
+    const activityItems = await v4.activityItems.toArray();
+    expect(activityItems.length).toBe(3); // activity1→happy, activity2→happy, activity2→tired
+
+    v4.close();
+  });
+
+  it('should preserve activity fields after migration', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    await v3.activities.add({
+      date: '2025-11-10',
+      startTime: '09:00',
+      endTime: '10:00',
+      mood: 6,
+      energy: 7,
+      satiety: 5,
+      emotions: 'calm',
+      comment: 'morning walk',
+    });
+    v3.close();
+
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    const activities = await v4.activities.toArray();
+    expect(activities.length).toBe(1);
+    expect(activities[0].date).toBe('2025-11-10');
+    expect(activities[0].startTime).toBe('09:00');
+    expect(activities[0].endTime).toBe('10:00');
+    expect(activities[0].comment).toBe('morning walk');
     expect(activities[0].hasOwnProperty('mood')).toBeFalse();
     expect(activities[0].hasOwnProperty('energy')).toBeFalse();
     expect(activities[0].hasOwnProperty('satiety')).toBeFalse();
     expect(activities[0].hasOwnProperty('emotions')).toBeFalse();
 
-    expect(activities[1].hasOwnProperty('mood')).toBeFalse();
-    expect(activities[1].hasOwnProperty('energy')).toBeFalse();
-    expect(activities[1].hasOwnProperty('satiety')).toBeFalse();
-    expect(activities[1].hasOwnProperty('emotions')).toBeFalse();
+    v4.close();
+  });
 
-    expect(activities[2].hasOwnProperty('mood')).toBeFalse();
-    expect(activities[2].hasOwnProperty('energy')).toBeFalse();
-    expect(activities[2].hasOwnProperty('satiety')).toBeFalse();
-    expect(activities[2].hasOwnProperty('emotions')).toBeFalse();
+  it('should handle an empty v3 database', async () => {
+    const v3 = new TestDatabaseV3();
+    await v3.open();
+    v3.close();
 
-    testDatabaseV4.close();
+    const v4 = new MyAppDatabase('TestDatabaseV3');
+    await v4.open();
+
+    expect((await v4.metrics.count())).toBe(3);
+    expect((await v4.lists.count())).toBe(1);
+    expect((await v4.activityMetrics.count())).toBe(0);
+    expect((await v4.items.count())).toBe(0);
+    expect((await v4.activityItems.count())).toBe(0);
+
+    v4.close();
   });
 });

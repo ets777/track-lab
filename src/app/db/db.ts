@@ -118,185 +118,55 @@ export class MyAppDatabase extends Dexie {
       tags: '++id, name, isHidden',
       actionTags: '++id, actionId, tagId, [actionId+tagId]',
       activityTags: '++id, activityId, tagId, [activityId+tagId]',
-
-      actionDictionaries: '++id, [actionId+dictionaryId]',
+      actionLists: '++id, [actionId+listId]',
       actionMetrics: '++id, [actionId+metricId]',
-      activityTerms: '++id, [activityId+termId]',
+      activityItems: '++id, activityId, itemId, [activityId+itemId]',
       activityMetrics: '++id, [activityId+metricId]',
-      terms: '++id, name',
-      dictionaries: '++id, name',
+      items: '++id, name, listId',
+      lists: '++id, name',
       metrics: '++id, name',
-      streaks: '++id, lastDate, actionId, tagId, termId',
+      streaks: '++id, lastDate, actionId, tagId, itemId',
+      tagMetrics: '++id, tagId, metricId, [tagId+metricId]',
+      itemMetrics: '++id, itemId, metricId, [itemId+metricId]',
     }).upgrade(async (tx) => {
       // 1. create 3 metrics - mood, energy, satiety
-      const moodMetricId = await tx.table('metrics')
-        .add({
-          name: 'TK_MOOD',
-          step: 1,
-          minValue: 1,
-          maxValue: 10,
-          isHidden: false,
-          isBase: true,
-        });
-      const energyMetricId = await tx.table('metrics')
-        .add({
-          name: 'TK_ENERGY',
-          step: 1,
-          minValue: 1,
-          maxValue: 10,
-          isHidden: false,
-          isBase: true,
-        });
-      const satietyMetricId = await tx.table('metrics')
-        .add({
-          name: 'TK_SATIETY',
-          step: 1,
-          minValue: 1,
-          maxValue: 10,
-          isHidden: false,
-          isBase: true,
-        });
+      const moodMetricId = await tx.table('metrics').add({ name: 'TK_MOOD', step: 1, minValue: 1, maxValue: 10, isHidden: false, isBase: true });
+      const energyMetricId = await tx.table('metrics').add({ name: 'TK_ENERGY', step: 1, minValue: 1, maxValue: 10, isHidden: false, isBase: true });
+      const satietyMetricId = await tx.table('metrics').add({ name: 'TK_SATIETY', step: 1, minValue: 1, maxValue: 10, isHidden: false, isBase: true });
 
-      // 2. create 1 dictionary - emotions
-      const emotionsDictionaryId = await tx.table('dictionaries').add({ name: 'TK_EMOTIONS', isBase: true });
+      // 2. create emotions list
+      const emotionsListId = await tx.table('lists').add({ name: 'TK_EMOTIONS', isBase: true });
 
-      // 3. get all activities
+      // 3. process each activity
       const allActivities = await tx.table('activities').toArray();
-
-      // 4, 5, 6, 7. process each activity
       for (const activity of allActivities) {
-        // 4. save mood, energy, satiety to activity-metric
         if (activity.mood && activity.mood > 0) {
-          await tx.table('activityMetrics').add({
-            activityId: activity.id,
-            metricId: moodMetricId,
-            value: activity.mood,
-          });
+          await tx.table('activityMetrics').add({ activityId: activity.id, metricId: moodMetricId, value: activity.mood });
         }
-
         if (activity.energy && activity.energy > 0) {
-          await tx.table('activityMetrics').add({
-            activityId: activity.id,
-            metricId: energyMetricId,
-            value: activity.energy,
-          });
+          await tx.table('activityMetrics').add({ activityId: activity.id, metricId: energyMetricId, value: activity.energy });
         }
-
         if (activity.satiety && activity.satiety > 0) {
-          await tx.table('activityMetrics').add({
-            activityId: activity.id,
-            metricId: satietyMetricId,
-            value: activity.satiety,
-          });
+          await tx.table('activityMetrics').add({ activityId: activity.id, metricId: satietyMetricId, value: activity.satiety });
         }
 
-        // 5. save emotions as dictionary items (check for existing ones)
         if (activity.emotions && activity.emotions !== '') {
           const emotionNames = getEntitiesFromString(activity.emotions);
           for (const emotionDto of emotionNames) {
-            let term = await tx.table('terms')
-              .where('name')
-              .equalsIgnoreCase(emotionDto.name)
-              .first();
-
-            if (!term) {
-              const itemId = await tx.table('terms').add({
-                name: emotionDto.name,
-                dictionaryId: emotionsDictionaryId,
-              });
-              term = {
-                id: itemId,
-                name: emotionDto.name,
-                dictionaryId: emotionsDictionaryId,
-              };
+            let item = await tx.table('items').where('name').equalsIgnoreCase(emotionDto.name).first();
+            if (!item) {
+              const itemId = await tx.table('items').add({ name: emotionDto.name, listId: emotionsListId, isHidden: false });
+              item = { id: itemId, name: emotionDto.name, listId: emotionsListId };
             }
-
-            // create relation
-            await tx.table('activityTerms').add({
-              activityId: activity.id,
-              termId: term.id!,
-            });
+            await tx.table('activityItems').add({ activityId: activity.id, itemId: item.id });
           }
         }
 
-        // 6. delete mood, energy, satiety, emotions values
         delete activity.mood;
         delete activity.energy;
         delete activity.satiety;
         delete activity.emotions;
-
-        // 7. save activity
         await tx.table('activities').put(activity);
-      }
-    });
-
-    this.version(5).stores({
-      tagMetrics: '++id, tagId, metricId, [tagId+metricId]',
-    });
-
-    this.version(6).stores({}).upgrade(async (tx) => {
-      await tx.table('dictionaries')
-        .where('name').equals('TK_EMOTIONS')
-        .modify({ isBase: true });
-    });
-
-    this.version(7).stores({
-      terms: '++id, name, dictionaryId',
-    });
-
-    this.version(8).stores({
-      termMetrics: '++id, termId, metricId, [termId+metricId]',
-    });
-
-    this.version(9).stores({
-      activityTerms: '++id, activityId, termId, [activityId+termId]',
-    });
-
-    this.version(10).stores({
-      actionDictionaries: null,
-      activityTerms: null,
-      terms: null,
-      dictionaries: null,
-      termMetrics: null,
-      actionLists: '++id, [actionId+listId]',
-      activityItems: '++id, activityId, itemId, [activityId+itemId]',
-      items: '++id, name, listId',
-      lists: '++id, name',
-      itemMetrics: '++id, itemId, metricId, [itemId+metricId]',
-      streaks: '++id, lastDate, actionId, tagId, itemId',
-    }).upgrade(async (tx) => {
-      const dicts = await tx.table('dictionaries').toArray();
-      for (const d of dicts) {
-        await tx.table('lists').add(d);
-      }
-
-      const terms = await tx.table('terms').toArray();
-      for (const t of terms) {
-        await tx.table('items').add({ id: t.id, name: t.name, listId: t.dictionaryId, isHidden: t.isHidden ?? false });
-      }
-
-      const activityTerms = await tx.table('activityTerms').toArray();
-      for (const at of activityTerms) {
-        await tx.table('activityItems').add({ id: at.id, activityId: at.activityId, itemId: at.termId });
-      }
-
-      const termMetrics = await tx.table('termMetrics').toArray();
-      for (const tm of termMetrics) {
-        await tx.table('itemMetrics').add({ id: tm.id, itemId: tm.termId, metricId: tm.metricId });
-      }
-
-      const actionDicts = await tx.table('actionDictionaries').toArray();
-      for (const ad of actionDicts) {
-        await tx.table('actionLists').add({ id: ad.id, actionId: ad.actionId, listId: ad.dictionaryId });
-      }
-
-      const streaks = await tx.table('streaks').toArray();
-      for (const s of streaks) {
-        if (s.termId !== undefined) {
-          const updated = { ...s, itemId: s.termId };
-          delete updated.termId;
-          await tx.table('streaks').put(updated);
-        }
       }
     });
   }

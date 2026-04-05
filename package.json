@@ -9,6 +9,7 @@
     "prebuild": "node tools/version-updater/index.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
+    "test-migration": "ng test --watch=false --include=\"src/app/db/tests/migration.spec.ts\"",
     "test-watch": "ng test",
     "lint": "ng lint",
     "prepare": "husky",
