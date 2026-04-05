@@ -32,6 +32,8 @@ import { IItemDb } from '../db/models/item';
 import { IListDb } from '../db/models/list';
 import { IMetricDb } from '../db/models/metric';
 import { IStreakDb } from '../db/models/streak';
+import { ITagMetricDb } from '../db/models/tag-metric';
+import { IItemMetricDb } from '../db/models/item-metric';
 import { ActionListService } from './action-list.service';
 import { ActionMetricService } from './action-metric.service';
 import { ActivityItemService } from './activity-item.service';
@@ -40,6 +42,8 @@ import { ItemService } from './item.service';
 import { ListService } from './list.service';
 import { MetricService } from './metric.service';
 import { StreakService } from './streak.service';
+import { TagMetricService } from './tag-metric.service';
+import { ItemMetricService } from './item-metric.service';
 import { getEntitiesFromString } from '../functions/string';
 
 type Backup = {
@@ -58,6 +62,8 @@ type Backup = {
   lists: IListDb[],
   metrics: IMetricDb[],
   streaks: IStreakDb[],
+  tagMetrics: ITagMetricDb[],
+  itemMetrics: IItemMetricDb[],
   version: string,
 };
 
@@ -231,6 +237,8 @@ export class BackupService {
   private listService = inject(ListService);
   private metricService = inject(MetricService);
   private streakService = inject(StreakService);
+  private tagMetricService = inject(TagMetricService);
+  private itemMetricService = inject(ItemMetricService);
   private fileService = inject(FileService);
 
   defaultPassword = 'etsbox.com';
@@ -263,6 +271,8 @@ export class BackupService {
       lists: await this.listService.getAll(),
       metrics: await this.metricService.getAll(),
       streaks: await this.streakService.getAll(),
+      tagMetrics: await this.tagMetricService.getAll(),
+      itemMetrics: await this.itemMetricService.getAll(),
 
       version: appVersion,
     };
@@ -359,6 +369,8 @@ export class BackupService {
     await this.actionMetricService.bulkAdd(backup.actionMetrics);
     await this.activityItemService.bulkAdd(backup.activityItems);
     await this.activityMetricService.bulkAdd(backup.activityMetrics);
+    await this.tagMetricService.bulkAdd(backup.tagMetrics ?? []);
+    await this.itemMetricService.bulkAdd(backup.itemMetrics ?? []);
 
     await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
   }
@@ -372,22 +384,16 @@ export class BackupService {
     await this.achievementService.clear();
     await this.streakService.clear();
 
+    await this.tagMetricService.clear();
+    await this.itemMetricService.clear();
+    await this.actionMetricService.clear();
+    await this.actionListService.clear();
+    await this.actionTagService.clear();
+    await this.itemService.clear();
+    await this.listService.clear();
+    await this.metricService.clear();
     await this.actionService.clear();
     await this.tagService.clear();
-    await this.actionTagService.clear();
-    await this.actionListService.clear();
-    await this.actionMetricService.clear();
-
-    const userMetrics = (await this.metricService.getAll()).filter(m => !m.isBase);
-    for (const metric of userMetrics) {
-      await this.metricService.delete({ id: metric.id });
-    }
-
-    const userLists = (await this.listService.getAll()).filter(d => !d.isBase);
-    for (const list of userLists) {
-      await this.itemService.delete({ listId: list.id });
-      await this.listService.delete({ id: list.id });
-    }
   }
 
   getHelper(version: string) {
