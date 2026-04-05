@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.0] - 2026-04-05
+
+### Added
+
+- Custom metrics for tracking numeric values
+- Custom lists for tracking various things
+- New achievements for metrics and lists
+- Reset database button
+
+### Improved
+
+- Database migrated from IndexedDB to SQLite
+- Minor design changes
+
+### Removed
+
+- Markdown export
+
 ## [0.4.2] - 2025-11-03
 
 ### Fixed
