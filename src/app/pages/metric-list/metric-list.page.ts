@@ -50,6 +50,10 @@ export class MetricListPage {
     this.metrics = await this.metricService.getAll();
   }
 
+  async goToViewPage(metricId: number) {
+    await this.router.navigate(['/metric', metricId]);
+  }
+
   async goToAddPage() {
     await this.router.navigate(['/metric/add']);
   }

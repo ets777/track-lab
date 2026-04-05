@@ -27,7 +27,7 @@
             }
           }
         </p>
-        <app-tags [tags]="activity.tags"></app-tags>
+        <app-tags [tags]="getAllTags(activity)"></app-tags>
         <ion-action-sheet trigger="open-action-sheet-{{activity.id}}" header="{{ 'TK_ACTIONS' | translate }}"
           [buttons]="activityActionSheetButtons"
           (didDismiss)="doActivityAction($event, activity.id)"></ion-action-sheet>

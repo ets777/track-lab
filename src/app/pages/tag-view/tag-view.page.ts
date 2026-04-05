@@ -61,7 +61,9 @@ export class TagViewPage {
       .reverse();
 
     this.activities = activities.filter(
-      (activity) => activity.tags.find((tag) => tag.id == this.tagId),
+      (activity) =>
+        activity.tags.some((tag) => tag.id == this.tagId) ||
+        activity.actions.some((action) => action.tags.some((tag) => tag.id == this.tagId)),
     );
 
     this.activitiesGroupedByDate = dates

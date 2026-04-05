@@ -383,7 +383,12 @@ export class ActivityFormComponent implements OnInit {
 
   async setDefaultData() {
     const defaultData = this.getDefaultData();
-    const lastActivityData = await this.getLastActivityData();
+    let lastActivityData = {};
+    try {
+      lastActivityData = await this.getLastActivityData();
+    } catch {
+      // use defaults
+    }
 
     this.activityForm.patchValue({
       ...defaultData,

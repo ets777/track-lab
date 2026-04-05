@@ -173,4 +173,19 @@ export const databaseUpgrades = [
       `ALTER TABLE streaks RENAME COLUMN termId TO itemId;`,
     ],
   },
+  {
+    toVersion: 5,
+    statements: [
+      `INSERT OR IGNORE INTO metrics (name, isBase, isHidden, step, minValue, maxValue, showPreviousValue) VALUES ('TK_MOOD', 1, 0, 1, 1, 10, 1);`,
+      `INSERT OR IGNORE INTO metrics (name, isBase, isHidden, step, minValue, maxValue, showPreviousValue) VALUES ('TK_ENERGY', 1, 0, 1, 1, 10, 1);`,
+      `INSERT OR IGNORE INTO metrics (name, isBase, isHidden, step, minValue, maxValue, showPreviousValue) VALUES ('TK_SATIETY', 1, 0, 1, 1, 10, 1);`,
+      `INSERT OR IGNORE INTO lists (name, isBase) VALUES ('TK_EMOTIONS', 1);`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Happiness' FROM lists WHERE name = 'TK_EMOTIONS';`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Sadness' FROM lists WHERE name = 'TK_EMOTIONS';`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Fear' FROM lists WHERE name = 'TK_EMOTIONS';`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Anger' FROM lists WHERE name = 'TK_EMOTIONS';`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Disgust' FROM lists WHERE name = 'TK_EMOTIONS';`,
+      `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Surprise' FROM lists WHERE name = 'TK_EMOTIONS';`,
+    ],
+  },
 ];

@@ -19,7 +19,7 @@
   <ion-list>
     @for (metric of metrics; track metric.id) {
       <ion-item class="metric">
-        <ion-label>
+        <ion-label style="cursor: pointer" (click)="goToViewPage(metric.id)">
           <div class="title">{{ metric.name | translate }}</div>
         </ion-label>
         <ion-buttons class="item-buttons">

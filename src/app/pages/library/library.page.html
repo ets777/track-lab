@@ -13,7 +13,7 @@
   <ion-list>
     @for (action of actions; track action.id) {
       <ion-item class="action">
-        <ion-label>
+        <ion-label style="cursor: pointer" (click)="goToViewPage(action.id)">
           <div class="title">{{ action.name }}</div>
           <app-tags [tags]="action.tags"></app-tags>
         </ion-label>

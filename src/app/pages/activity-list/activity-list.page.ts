@@ -36,8 +36,12 @@ export class ActivityListPage {
     let date = this.route.snapshot.queryParamMap.get('date');
 
     if (!date) {
-      const lastActivity = await this.activityService.getLastEnriched();
-      date = lastActivity?.date ?? format(new Date(), 'yyyy-MM-dd');
+      try {
+        const lastActivity = await this.activityService.getLastEnriched();
+        date = lastActivity?.date ?? format(new Date(), 'yyyy-MM-dd');
+      } catch {
+        date = format(new Date(), 'yyyy-MM-dd');
+      }
     }
 
     this.currentDate = date;

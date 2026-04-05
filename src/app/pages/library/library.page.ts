@@ -140,6 +140,10 @@ export class LibraryPage {
     return role === 'yes';
   }
 
+  async goToViewPage(actionId: number) {
+    await this.router.navigate(['/action', actionId]);
+  }
+
   async goToAddPage() {
     await this.router.navigate(['/action/add']);
   }

@@ -78,6 +78,10 @@ export class TagListPage {
     return role === 'yes';
   }
 
+  async goToViewPage(tagId: number) {
+    await this.router.navigate(['/tag', tagId]);
+  }
+
   async goToAddPage() {
     await this.router.navigate(['/tag/add']);
   }

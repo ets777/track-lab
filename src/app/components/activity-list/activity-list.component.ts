@@ -10,6 +10,7 @@ import { TagsComponent } from "../tags/tags.component";
 import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { IList } from 'src/app/db/models/list';
+import { ITag } from 'src/app/db/models/tag';
 
 @Component({
   selector: 'app-activity-list',
@@ -123,5 +124,17 @@ export class ActivityListComponent {
   getItems(activity: IActivity, list: IList) {
     const items = activity.items.filter((item) => item.listId == list.id);
     return entitiesToString(items);
+  }
+
+  getAllTags(activity: IActivity): ITag[] {
+    const seen = new Set<number>();
+    const all: ITag[] = [];
+    for (const tag of [...activity.tags, ...activity.actions.flatMap(a => a.tags)]) {
+      if (!seen.has(tag.id)) {
+        seen.add(tag.id);
+        all.push(tag);
+      }
+    }
+    return all;
   }
 }
