@@ -17,6 +17,9 @@ import { ActivityMetricService } from '../activity-metric.service';
 import { ItemService } from '../item.service';
 import { ListService } from '../list.service';
 import { MetricService } from '../metric.service';
+import { StreakService } from '../streak.service';
+import { TagMetricService } from '../tag-metric.service';
+import { ItemMetricService } from '../item-metric.service';
 import { databaseUpgrades } from './database.upgrade';
 import { seedDatabase } from './database-seed';
 
@@ -37,6 +40,9 @@ export class SQLiteInitService {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
   private metricService = inject(MetricService);
+  private streakService = inject(StreakService);
+  private tagMetricService = inject(TagMetricService);
+  private itemMetricService = inject(ItemMetricService);
   private databaseRouter = inject(DatabaseRouter);
 
   private versionUpgrades;
@@ -163,6 +169,9 @@ export class SQLiteInitService {
     const items = await this.itemService.getAll();
     const lists = await this.listService.getAll();
     const metrics = await this.metricService.getAll();
+    const streaks = await this.streakService.getAll();
+    const tagMetrics = await this.tagMetricService.getAll();
+    const itemMetrics = await this.itemMetricService.getAll();
 
     try {
       await this.sqliteService.beginTransaction();
@@ -181,7 +190,7 @@ export class SQLiteInitService {
         await this.insertArrayChunked(
           'actions',
           actions,
-          ['name', 'id'],
+          ['name', 'isHidden', 'id'],
         );
       }
 
@@ -190,7 +199,7 @@ export class SQLiteInitService {
         await this.insertArrayChunked(
           'tags',
           tags,
-          ['name', 'id'],
+          ['name', 'isHidden', 'id'],
         );
       }
 
@@ -235,7 +244,7 @@ export class SQLiteInitService {
         await this.insertArrayChunked(
           'metrics',
           metrics,
-          ['id', 'name', 'step', 'unit', 'minValue', 'maxValue'],
+          ['id', 'name', 'isBase', 'isHidden', 'step', 'unit', 'minValue', 'maxValue', 'showPreviousValue'],
         );
       }
 
@@ -262,7 +271,7 @@ export class SQLiteInitService {
         await this.insertArrayChunked(
           'lists',
           lists,
-          ['id', 'name'],
+          ['id', 'name', 'isBase', 'isHidden'],
         );
       }
 
@@ -290,6 +299,33 @@ export class SQLiteInitService {
           'activityItems',
           activityItems,
           ['id', 'activityId', 'itemId'],
+        );
+      }
+
+      if (streaks.length) {
+        await this.sqliteService.run('DELETE FROM streaks');
+        await this.insertArrayChunked(
+          'streaks',
+          streaks,
+          ['id', 'tagId', 'actionId', 'itemId', 'startDate', 'lastDate'],
+        );
+      }
+
+      if (tagMetrics.length) {
+        await this.sqliteService.run('DELETE FROM tagMetrics');
+        await this.insertArrayChunked(
+          'tagMetrics',
+          tagMetrics,
+          ['id', 'tagId', 'metricId'],
+        );
+      }
+
+      if (itemMetrics.length) {
+        await this.sqliteService.run('DELETE FROM itemMetrics');
+        await this.insertArrayChunked(
+          'itemMetrics',
+          itemMetrics,
+          ['id', 'itemId', 'metricId'],
         );
       }
 
