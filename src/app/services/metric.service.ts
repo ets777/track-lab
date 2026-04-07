@@ -26,9 +26,9 @@ export class MetricService extends DatabaseService<'metrics'> {
       name: form.name,
       isHidden: form.isHidden ?? false,
       unit: form.unit || undefined,
-      step: form.step ?? 1,
-      minValue: form.minValue,
-      maxValue: form.maxValue,
+      step: Number(form.step ?? 1),
+      minValue: Number(form.minValue),
+      maxValue: Number(form.maxValue),
       showPreviousValue: form.showPreviousValue ?? false,
     });
 

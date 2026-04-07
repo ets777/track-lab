@@ -56,8 +56,8 @@ export class MetricEditPage {
     if (!this.isFormValid()) return;
 
     const form = this.editFormRef.metricForm.value as MetricForm;
-    const newMin = form.minValue;
-    const newMax = form.maxValue;
+    const newMin = Number(form.minValue);
+    const newMax = Number(form.maxValue);
 
     if (newMax !== this.metric!.maxValue) {
       const above = await this.activityMetricService.getAboveMaxByMetricId(this.metricId, newMax);
@@ -85,7 +85,7 @@ export class MetricEditPage {
       name: this.metric!.isBase ? this.metric!.name : form.name,
       isHidden: form.isHidden ?? false,
       unit: form.unit || undefined,
-      step: form.step ?? 1,
+      step: Number(form.step ?? 1),
       minValue: newMin,
       maxValue: newMax,
       showPreviousValue: form.showPreviousValue ?? false,

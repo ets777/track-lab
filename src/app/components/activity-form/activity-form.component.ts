@@ -204,8 +204,11 @@ export class ActivityFormComponent implements OnInit {
     for (let i = 0; i < this.allMetrics.length; i++) {
       const metric = this.allMetrics[i];
       const isRange = this.isRangeMetric(metric);
-      const mid = (metric.minValue! + metric.maxValue!) / 2;
-      const midRounded = isRange ? Math.round((mid - metric.minValue!) / metric.step!) * metric.step! + metric.minValue! : null;
+      const minVal = Number(metric.minValue);
+      const maxVal = Number(metric.maxValue);
+      const stepVal = Number(metric.step);
+      const mid = (minVal + maxVal) / 2;
+      const midRounded = isRange ? Math.round((mid - minVal) / stepVal) * stepVal + minVal : null;
 
       const prev = prevValues[i];
       const existingValue = this.activityMetricValues?.[metric.id] ?? null;
