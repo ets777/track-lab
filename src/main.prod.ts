@@ -9,16 +9,11 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
-import { defineCustomElements as pwaElements } from '@ionic/pwa-elements/loader';
 import { SQLiteService } from './app/services/db/sqlite.service';
 import { SQLiteInitService } from './app/services/db/sqlite-init.service';
-import { Capacitor } from '@capacitor/core';
 import { InitializeAppService } from './app/services/initialize-app.service';
 
-const platform = Capacitor.getPlatform();
-
-const bootstrapApp = () => bootstrapApplication(AppComponent, {
+bootstrapApplication(AppComponent, {
   providers: [
     SQLiteService,
     SQLiteInitService,
@@ -42,25 +37,3 @@ const bootstrapApp = () => bootstrapApplication(AppComponent, {
     }),
   ],
 });
-
-if (platform === 'web') {
-  pwaElements(window);
-  jeepSqlite(window);
-
-  const initWeb = async () => {
-    const jeepEl = document.createElement('jeep-sqlite');
-    document.body.appendChild(jeepEl);
-    await customElements.whenDefined('jeep-sqlite');
-    jeepEl.autoSave = true;
-    await (jeepEl as any).componentOnReady();
-    bootstrapApp();
-  };
-
-  if (document.readyState === 'loading') {
-    window.addEventListener('DOMContentLoaded', initWeb);
-  } else {
-    initWeb();
-  }
-} else {
-  bootstrapApp();
-}
