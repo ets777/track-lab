@@ -1,6 +1,6 @@
 # Activities
 
-Activity is a main tracking unit with date, start time, end time, actions and metrics.
+Activity is a main tracking unit with date, start time, end time, actions, tags, custom lists and metrics.
 
 ## History
 
