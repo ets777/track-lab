@@ -169,6 +169,11 @@ export class MyAppDatabase extends Dexie {
         await tx.table('activities').put(activity);
       }
     });
+
+    this.version(5).stores({
+      actionMetrics: '++id, actionId, metricId, [actionId+metricId]',
+      activityMetrics: '++id, activityId, metricId, [activityId+metricId]',
+    });
   }
 }
 

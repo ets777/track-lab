@@ -10,6 +10,7 @@ import { ActionTagService } from '../action-tag.service';
 import { ActivityTagService } from '../activity-tag.service';
 import { Preferences } from '@capacitor/preferences';
 import { DatabaseRouter } from './database-router.service';
+import { ToastService } from '../toast.service';
 import { ActionListService } from '../action-list.service';
 import { ActionMetricService } from '../action-metric.service';
 import { ActivityItemService } from '../activity-item.service';
@@ -44,6 +45,7 @@ export class SQLiteInitService {
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private databaseRouter = inject(DatabaseRouter);
+  private toastService = inject(ToastService);
 
   private versionUpgrades;
   private loadToVersion;
@@ -74,7 +76,13 @@ export class SQLiteInitService {
 
     if (!migratedToSqlite) {
       this.databaseRouter.setAdapterToDexie();
-      await this.migrateFromDexie();
+      try {
+        await this.migrateFromDexie();
+        this.toastService.enqueue({ title: 'Data migrated successfully', type: 'success' });
+      } catch (err) {
+        this.toastService.enqueue({ title: 'Migration failed', type: 'error', duration: 5000 });
+        throw err;
+      }
     }
 
     this.databaseRouter.setAdapterToSqlite();
@@ -134,6 +142,10 @@ export class SQLiteInitService {
 
           if (value === null || value === undefined) {
             return 'NULL';
+          }
+
+          if (typeof value === 'boolean') {
+            return value ? 1 : 0;
           }
 
           if (typeof value === 'string') {
