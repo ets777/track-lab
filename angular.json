@@ -53,6 +53,14 @@
                                     "maximumError": "4kb"
                                 }
                             ],
+                            "assets": [
+                                {
+                                    "glob": "**/*",
+                                    "input": "src/assets",
+                                    "output": "assets",
+                                    "ignore": ["sql-wasm.wasm"]
+                                }
+                            ],
                             "fileReplacements": [
                                 {
                                     "replace": "src/environments/environment.ts",

@@ -332,6 +332,7 @@
   "TK_VALUE_MUST_BE_A_NUMBER": "Value must be a number",
   "TK_VALUE_BELOW_MIN": "Value must be at least {{ min }}",
   "TK_VALUE_EXCEEDS_MAX": "Value must be at most {{ max }}",
+  "TK_STORAGE": "Storage",
   "TK_VERSION": "Version",
   "TK_VIEW": "View",
   "TK_VISIT_THE_HOME_PAGE": "Visit the home page",

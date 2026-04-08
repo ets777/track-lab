@@ -19,6 +19,12 @@ export class DatabaseRouter implements IDatabaseAdapter {
     this.adapter = this.dexie;
   }
 
+  getCurrentAdapterName(): 'SQLite' | 'IndexedDB' | 'unknown' {
+    if (this.adapter === this.sqlite) return 'SQLite';
+    if (this.adapter === this.dexie) return 'IndexedDB';
+    return 'unknown';
+  }
+
   add = <K extends TableName>(table: K, row: CreateDtoFor<K>) => this.adapter.add(table, row);
   bulkAdd = <K extends TableName>(table: K, rows: CreateDtoFor<K>[]) => this.adapter.bulkAdd(table, rows);
   getById = <K extends TableName>(table: K, id: number) => this.adapter.getById(table, id);

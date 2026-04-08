@@ -10,6 +10,7 @@ import { BackupService } from 'src/app/services/backup.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
+import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 
 export enum autoBackupOption {
   'none' = 'TK_NONE',
@@ -29,8 +30,10 @@ export class SettingsPage implements OnInit {
   private backupService = inject(BackupService);
   private hookService = inject(HookService);
   private alertController = inject(AlertController);
+  private databaseRouter = inject(DatabaseRouter);
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
+  get currentDatabase() { return this.databaseRouter.getCurrentAdapterName(); }
   environment = environment;
   autoBackupOption = autoBackupOption;
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;

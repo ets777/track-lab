@@ -108,6 +108,9 @@
       {{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}
     </ion-item>
     <ion-item>
+      {{ 'TK_STORAGE' | translate }}: {{ currentDatabase }}
+    </ion-item>
+    <ion-item>
       <a
         href="https://etsbox.com/track-lab"
         (click)="visitHomePage($event)"

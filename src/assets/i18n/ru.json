@@ -332,6 +332,7 @@
   "TK_VALUE_MUST_BE_A_NUMBER": "Значение должно быть числом",
   "TK_VALUE_BELOW_MIN": "Значение должно быть не менее {{ min }}",
   "TK_VALUE_EXCEEDS_MAX": "Значение должно быть не более {{ max }}",
+  "TK_STORAGE": "Хранилище",
   "TK_VERSION": "Версия",
   "TK_VIEW": "Открыть",
   "TK_VISIT_THE_HOME_PAGE": "Посетить домашнюю страницу",
