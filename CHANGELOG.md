@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.1] - 2026-04-08
+
+### Added
+
+- Page for viewing activity
+
+### Fixed
+
+- Bug with new metrics fixed
+- Adding button position fixed
+- Database errors fixed
+
 ## [0.5.0] - 2026-04-05
 
 ### Added
