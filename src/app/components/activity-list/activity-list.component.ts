@@ -21,7 +21,7 @@ import { ITag } from 'src/app/db/models/tag';
 export class ActivityListComponent {
   private translate = inject(TranslateService);
   private actionSheetCtrl = inject(ActionSheetController);
-  private router = inject(Router);
+  router = inject(Router);
   private activityService = inject(ActivityService);
   private toastService = inject(ToastService);
 
@@ -33,6 +33,12 @@ export class ActivityListComponent {
   entitiesToString = entitiesToString;
 
   public activityActionSheetButtons = [
+    {
+      text: this.translate.instant('TK_VIEW'),
+      data: {
+        action: 'view',
+      },
+    },
     {
       text: this.translate.instant('TK_EDIT'),
       data: {
@@ -52,6 +58,9 @@ export class ActivityListComponent {
     const action = event.detail.data?.action;
 
     switch (action) {
+      case 'view':
+        await this.router.navigate(['/activity/view', activityId]);
+        break;
       case 'delete':
         await this.deleteActivity(activityId);
         break;

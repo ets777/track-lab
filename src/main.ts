@@ -44,8 +44,8 @@ const bootstrapApp = () => bootstrapApplication(AppComponent, {
 });
 
 if (platform === 'web') {
-  pwaElements(window);
   jeepSqlite(window);
+  pwaElements(window);
 
   const initWeb = async () => {
     const jeepEl = document.createElement('jeep-sqlite');

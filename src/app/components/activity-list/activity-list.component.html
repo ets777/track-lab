@@ -1,11 +1,11 @@
 <ion-list>
   @for (activity of activities; track activity.id) {
-    <ion-item>
+    <ion-item button (click)="router.navigate(['/activity/view', activity.id])">
       <ion-label>
         <div class="activity-header">
           <h2>{{ entitiesToString(activity.actions) }}</h2>
           <ion-buttons class="activity-item-buttons">
-            <ion-button id="open-action-sheet-{{activity.id}}">
+            <ion-button id="open-action-sheet-{{activity.id}}" (click)="$event.stopPropagation()">
               <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
             </ion-button>
           </ion-buttons>

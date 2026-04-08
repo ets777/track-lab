@@ -13,7 +13,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/activity-edit/activity-edit.page').then(m => m.ActivityEditPage)
       },
       {
-        path: 'view',
+        path: 'view/:id',
         loadComponent: () => import('./pages/activity-view/activity-view.page').then(m => m.ActivityViewPage)
       },
       {

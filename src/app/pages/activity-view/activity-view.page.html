@@ -1,12 +1,33 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>activity-view</ion-title>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ entitiesToString(activity?.actions ?? []) }}</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">activity-view</ion-title>
-    </ion-toolbar>
-  </ion-header>
+
+<ion-content class="ion-padding">
+  @if (activity) {
+    <p>
+      {{ activity.startTime }}
+      @if (activity.endTime) { — {{ activity.endTime }} }
+    </p>
+
+    @if (activity.comment) {
+      <p>{{ activity.comment }}</p>
+    }
+
+    @if (activity.metricRecords.length) {
+      <h2>{{ 'TK_METRICS' | translate }}</h2>
+      @for (record of activity.metricRecords; track record.metricId) {
+        <p>
+          {{ getMetricName(record.metricId) | translate }}: {{ record.value }}{{ getMetricUnit(record.metricId) ? ' ' + getMetricUnit(record.metricId) : '' }}
+        </p>
+      }
+    }
+
+    @if (getAllTags().length) {
+      <h2>{{ 'TK_TAGS' | translate }}</h2>
+      <app-tags [tags]="getAllTags()"></app-tags>
+    }
+  }
 </ion-content>
