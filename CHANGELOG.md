@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.2] - 2026-04-09
+
+### Fixed
+
+- Database migration to SQLite error fixed
+
 ## [0.5.1] - 2026-04-08
 
 ### Added
