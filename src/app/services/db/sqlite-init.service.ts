@@ -225,10 +225,17 @@ export class SQLiteInitService {
       }
 
       if (activityActions.length) {
+        const seen = new Set<string>();
+        const deduped = activityActions.filter((row) => {
+          const key = `${row.activityId}:${row.actionId}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
         await this.sqliteService.run('DELETE FROM activityActions');
         await this.insertArrayChunked(
           'activityActions',
-          activityActions,
+          deduped,
           ['activityId', 'actionId', 'id'],
         );
       }
