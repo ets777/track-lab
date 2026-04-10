@@ -1,0 +1,16 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_NEW_RULE' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="addRule()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_ADD' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <app-rule-form #addFormRef></app-rule-form>
+</ion-content>

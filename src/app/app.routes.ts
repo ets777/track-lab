@@ -101,6 +101,19 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'rule',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/rule-list/rule-list.page').then(m => m.RuleListPage),
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/rule-add/rule-add.page').then(m => m.RuleAddPage),
+      },
+    ],
+  },
+  {
     path: 'streak',
     children: [
       {

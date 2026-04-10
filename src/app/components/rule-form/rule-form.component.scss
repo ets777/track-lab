@@ -1,0 +1,42 @@
+.rule-preview {
+  padding: 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  &__placeholder {
+    color: var(--ion-color-medium);
+    font-style: italic;
+  }
+}
+
+.value-item {
+  .value-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+  }
+
+  ion-input.value-input {
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-align: center;
+    --padding-top: 0;
+    --padding-bottom: 0;
+  }
+
+  .value-unit {
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+    margin-top: 4px;
+  }
+}

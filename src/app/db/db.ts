@@ -17,6 +17,7 @@ import { IMetricCreateDto, IMetricDb } from './models/metric';
 import { IStreakCreateDto, IStreakDb } from './models/streak';
 import { ITagMetricCreateDto, ITagMetricDb } from './models/tag-metric';
 import { IItemMetricCreateDto, IItemMetricDb } from './models/item-metric';
+import { IRuleCreateDto, IRuleDb } from './models/rule';
 
 export class MyAppDatabase extends Dexie {
   activities!: Table<IActivityDb, number, IActivityCreateDto>;
@@ -37,6 +38,7 @@ export class MyAppDatabase extends Dexie {
   streaks!: Table<IStreakDb, number, IStreakCreateDto>;
   tagMetrics!: Table<ITagMetricDb, number, ITagMetricCreateDto>;
   itemMetrics!: Table<IItemMetricDb, number, IItemMetricCreateDto>;
+  rules!: Table<IRuleDb, number, IRuleCreateDto>;
 
   constructor(databaseName: string) {
     super(databaseName);
@@ -173,6 +175,10 @@ export class MyAppDatabase extends Dexie {
     this.version(5).stores({
       actionMetrics: '++id, actionId, metricId, [actionId+metricId]',
       activityMetrics: '++id, activityId, metricId, [activityId+metricId]',
+    });
+
+    this.version(6).stores({
+      rules: '++id, startDate',
     });
   }
 }

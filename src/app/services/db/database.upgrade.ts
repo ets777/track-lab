@@ -197,4 +197,20 @@ export const databaseUpgrades = [
       `UPDATE metrics SET isBase = 1 WHERE isBase != 1 AND name IN ('TK_SATIETY', 'Satiety', 'Сытость');`,
     ],
   },
+  {
+    toVersion: 7,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS rules (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        subjectType TEXT NOT NULL,
+        subjectId INTEGER NOT NULL,
+        metric TEXT NOT NULL,
+        operator TEXT NOT NULL,
+        value REAL NOT NULL,
+        period TEXT NOT NULL,
+        startDate TEXT NOT NULL
+      );`,
+    ],
+  },
 ];
