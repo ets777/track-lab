@@ -389,9 +389,15 @@ export class BackupService {
     await this.actionMetricService.clear();
     await this.actionListService.clear();
     await this.actionTagService.clear();
-    await this.itemService.clear();
-    await this.listService.clear();
-    await this.metricService.clear();
+
+    const lists = await this.listService.getAll();
+    for (const list of lists) {
+      if (!list.isBase) {
+        await this.itemService.delete({ listId: list.id });
+      }
+    }
+    await this.listService.clearNonBase();
+    await this.metricService.clearNonBase();
     await this.actionService.clear();
     await this.tagService.clear();
   }

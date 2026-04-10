@@ -27,7 +27,7 @@ export class ListViewPage {
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
 
-  listId = Number(this.route.snapshot.paramMap.get('id'));
+  listId = 0;
   list?: IList;
   items: IItem[] = [];
 
@@ -37,6 +37,8 @@ export class ListViewPage {
   ];
 
   async ionViewDidEnter() {
+    this.listId = Number(this.route.snapshot.paramMap.get('id'));
+
     const [list, items] = await Promise.all([
       this.listService.getById(this.listId),
       this.itemService.getAllWhereEquals('listId', this.listId),

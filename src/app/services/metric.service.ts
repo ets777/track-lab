@@ -14,6 +14,15 @@ export class MetricService extends DatabaseService<'metrics'> {
   private itemMetricService = inject(ItemMetricService);
   private hookService = inject(HookService);
 
+  async clearNonBase() {
+    const metrics = await this.getAll();
+    for (const metric of metrics) {
+      if (!metric.isBase) {
+        await this.delete({ id: metric.id });
+      }
+    }
+  }
+
   async getStandalone() {
     const all = await this.getAll();
     const allActionMetrics = await this.actionMetricService.getAll();
