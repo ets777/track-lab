@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.3] - 2026-04-11
+
+### Added
+
+- Choosing a date on history page
+- Loading indicators for stats and backup restoring
+
+### Fixed
+
+- Removing basic metrics and list after restoring a backup
+- Several issues on stats pages
+- Database errors
+
+### Improved
+
+- Restoring time for big backups
+
 ## [0.5.2] - 2026-04-09
 
 ### Fixed
