@@ -20,11 +20,12 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
+import { LoadingComponent } from './components/loading/loading.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LoadingComponent],
 })
 export class AppComponent implements OnInit {
   private translate = inject(TranslateService);
@@ -147,6 +148,11 @@ export class AppComponent implements OnInit {
   }
 
   async checkLongBreak() {
+    const snoozedUntil = (await Preferences.get({ key: 'fresh-start-snoozed-until' }))?.value;
+    if (snoozedUntil && new Date() < new Date(snoozedUntil)) {
+      return;
+    }
+
     const lastActivity = await this.activityService.getLast(['date', 'startTime']);
 
     if (!lastActivity) {
@@ -162,6 +168,8 @@ export class AppComponent implements OnInit {
     const wantsFreshStart = await this.backupService.askFreshStart();
 
     if (!wantsFreshStart) {
+      const snoozeUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await Preferences.set({ key: 'fresh-start-snoozed-until', value: snoozeUntil });
       return;
     }
 

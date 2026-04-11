@@ -1,28 +1,32 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonList, IonItem, IonContent, IonHeader, IonToolbar, IonButtons, IonTitle, IonMenuButton, IonText } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonToolbar, IonButtons, IonTitle, IonMenuButton } from '@ionic/angular/standalone';
 import { IAchievement } from 'src/app/db/models/achievement';
 import { AchievementService } from 'src/app/services/achievement.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
+import { AchievementsListComponent } from 'src/app/components/achievements-list/achievements-list.component';
+import { DefaultSkeletonComponent } from 'src/app/skeleton/default/default-skeleton.component';
 
 @Component({
   selector: 'app-achievements',
   templateUrl: './achievements.page.html',
   styleUrls: ['./achievements.page.scss'],
-  imports: [IonTitle, IonButtons, IonToolbar, IonHeader, IonContent, IonItem, IonList, IonText, CommonModule, FormsModule, TranslateModule, IonMenuButton],
+  imports: [IonTitle, IonButtons, IonToolbar, IonHeader, IonContent, TranslateModule, IonMenuButton, AchievementsListComponent, DefaultSkeletonComponent],
 })
 export class AchievementsPage {
   private achievementService = inject(AchievementService);
 
   achievements: IAchievement[] = [];
+  loading = true;
 
   async ionViewDidEnter() {
-    const unlockAll = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
-    this.achievements = unlockAll
-      ? await this.achievementService.getAll()
-      : await this.achievementService.getUnlocked();
+    try {
+      const unlockAll = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
+      this.achievements = unlockAll
+        ? await this.achievementService.getAll()
+        : await this.achievementService.getUnlocked();
+    } finally {
+      this.loading = false;
+    }
   }
-
 }

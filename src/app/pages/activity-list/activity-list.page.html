@@ -12,7 +12,19 @@
   </ion-fab>
   <ion-buttons>
     <ion-button (click)="goToPreviousDay()">{{ 'TK_PREV' | translate }}</ion-button>
-    <ion-text>{{ currentDate }}</ion-text>
+    @if (editingDate) {
+      <input
+        #dateInput
+        class="date-input"
+        type="text"
+        [value]="currentDate"
+        placeholder="YYYY-MM-DD"
+        (blur)="onDateInputBlur($event)"
+        (keydown.enter)="dateInput.blur()"
+      />
+    } @else {
+      <ion-text class="date-text" (click)="startEditingDate()">{{ currentDate }}</ion-text>
+    }
     <ion-button (click)="goToNextDay()">{{ 'TK_NEXT' | translate }}</ion-button>
   </ion-buttons>
   <app-activity-list [activities]="activities" [metrics]="metrics" [lists]="lists"></app-activity-list>

@@ -1,0 +1,13 @@
+<ion-list>
+  @for (achievement of achievements; track achievement.id) {
+    <ion-item class="achievement">
+      <div class="icon">{{ achievement.icon }}</div>
+      <div class="body">
+        <div class="title">{{ achievement.title | translate }}</div>
+        <div class="description">{{ achievement.description | translate }}</div>
+      </div>
+    </ion-item>
+  } @empty {
+    <ion-text>{{ 'TK_NO_ACHIEVEMENTS_UNLOCKED_YET' | translate }}</ion-text>
+  }
+</ion-list>

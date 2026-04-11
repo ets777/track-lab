@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonActionSheet, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
@@ -25,10 +25,13 @@ export class ActivityListPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  @ViewChild('dateInput') dateInputRef?: ElementRef<HTMLInputElement>;
+
   activities: IActivity[] = [];
   metrics: IMetric[] = [];
   lists: IList[] = [];
   currentDate: string = '';
+  editingDate = false;
 
   public listActionSheetButtons: any[] = [];
 
@@ -82,6 +85,22 @@ export class ActivityListPage {
 
   async setLists() {
     this.lists = await this.listService.getAll();
+  }
+
+  startEditingDate() {
+    this.editingDate = true;
+    setTimeout(() => this.dateInputRef?.nativeElement.focus(), 0);
+  }
+
+  async onDateInputBlur(event: Event) {
+    if (!this.editingDate) return;
+    const value = (event.target as HTMLInputElement).value;
+    this.editingDate = false;
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value) && value !== this.currentDate) {
+      this.currentDate = value;
+      this.setQueryParams(this.currentDate);
+      await this.setActivities();
+    }
   }
 
   async goToAddPage() {

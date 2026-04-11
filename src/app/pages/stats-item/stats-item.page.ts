@@ -22,6 +22,8 @@ import { addDays, format } from 'date-fns';
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { filterUniqueElements } from 'src/app/functions/item';
+import { LoadingService } from 'src/app/services/loading.service';
+import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.component';
 
 export type FilterForm = {
   item: CommonItem;
@@ -32,7 +34,7 @@ export type FilterForm = {
   selector: 'app-stats-item',
   templateUrl: './stats-item.page.html',
   styleUrls: ['./stats-item.page.scss'],
-  imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
+  imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective, StatsSkeletonComponent],
 })
 export class StatsItemPage {
   private activityService = inject(ActivityService);
@@ -42,7 +44,7 @@ export class StatsItemPage {
   private itemService = inject(ItemService);
   private translate = inject(TranslateService);
   private formBuilder = inject(FormBuilder);
-
+  private loadingService = inject(LoadingService);
   private lists: IList[] = [];
 
   activities: IActivity[] = [];
@@ -56,7 +58,7 @@ export class StatsItemPage {
   averageTimePerTime: number = 0;
   averageTimePerDay: number = 0;
   private initialized = false;
-  private lastLoadedState: string | null = null;
+  isLoading = true;
 
   constructor() {
     this.filterForm = this.formBuilder.group({
@@ -64,45 +66,51 @@ export class StatsItemPage {
       item: [null as CommonItem | null, Validators.required],
     });
 
-    this.filterForm.valueChanges.subscribe(() => {
-      if (this.filterForm.valid) {
-        this.setChartData();
-      }
-    });
-
     this.filterForm.get('datePeriod')?.valueChanges.subscribe(async () => {
-      // wait until Angular syncs parent form
-      await Promise.resolve();
+      if (!this.filterForm.controls['datePeriod'].valid) return;
+      if (!this.loadingService.tryLock()) return;
 
-      if (this.filterForm.controls['datePeriod'].valid) {
+      this.loadingService.show('TK_LOADING');
+      await new Promise(resolve => setTimeout(resolve));
+      try {
         await this.loadSuggestions();
+        if (this.filterForm.valid) {
+          this.setChartData();
+        }
+      } finally {
+        this.loadingService.hide();
       }
     });
   }
 
   async ionViewDidEnter() {
-    this.lastLoadedState = null;
-    this.lists = await this.listService.getAll();
-    const savedPeriod = localStorage.getItem('stats-item-date-period');
-    const savedItem = localStorage.getItem('stats-item-item');
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
+    try {
+      this.lists = await this.listService.getAll();
+      const savedPeriod = localStorage.getItem('stats-item-date-period');
+      const savedItem = localStorage.getItem('stats-item-item');
 
-    if (savedPeriod) {
-      this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) }, { emitEvent: false });
-      await this.loadSuggestions();
-    }
-
-    if (savedItem) {
-      const item = JSON.parse(savedItem) as CommonItem;
-      const found = this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
-      if (found) {
-        this.filterForm.patchValue({ item: found.item }, { emitEvent: false });
+      if (savedPeriod) {
+        this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) }, { emitEvent: false });
+        await this.loadSuggestions();
       }
-    }
 
-    this.initialized = true;
+      if (savedItem) {
+        const item = JSON.parse(savedItem) as CommonItem;
+        const found = this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
+        if (found) {
+          this.filterForm.patchValue({ item: found.item }, { emitEvent: false });
+        }
+      }
 
-    if (this.filterForm.valid) {
-      this.setChartData();
+      this.initialized = true;
+
+      if (this.filterForm.valid) {
+        this.setChartData();
+      }
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -162,6 +170,13 @@ export class StatsItemPage {
     });
   }
 
+  onItemSelected() {
+    if (this.filterForm.controls['item'].valid) {
+      this.setChartData();
+    }
+  }
+
+
   setChartData() {
     if (!this.filterForm.valid || !this.filterForm.value.datePeriod || !this.filterForm.value.item) {
       return;
@@ -169,12 +184,6 @@ export class StatsItemPage {
 
     const item: CommonItem = this.filterForm.value.item;
     const { startDate, endDate } = this.filterForm.value.datePeriod;
-
-    const currentState = `${startDate}|${endDate}|${item.type}:${item.itemId}`;
-    if (currentState === this.lastLoadedState) {
-      return;
-    }
-    this.lastLoadedState = currentState;
 
     if (this.initialized) {
       localStorage.setItem('stats-item-date-period', JSON.stringify(this.filterForm.value.datePeriod));

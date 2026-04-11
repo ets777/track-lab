@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Output, forwardRef, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms';
 import { IonItem, IonList, IonInput, IonLabel } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,6 +26,7 @@ import { Selectable } from 'src/app/types/selectable';
 export class SelectSearchComponent implements ControlValueAccessor, Validator, OnChanges {
   @Input() suggestions: Selectable<any>[] = [];
   @Input() label: string = '';
+  @Output() selected = new EventEmitter<any>();
   
   filteredSuggestions: Selectable<any>[] = [];
   showSuggestions = false;
@@ -76,6 +77,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     this.selectedSuggestion = suggestion;
     this.enteredText = suggestion.title;
     this.updateValue(suggestion.item);
+    this.selected.emit(suggestion.item);
 
     this.showSuggestions = false;
   }

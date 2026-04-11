@@ -7,11 +7,15 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <form [formGroup]="filterForm">
+  @if (isLoading) {
+    <app-stats-skeleton></app-stats-skeleton>
+  }
+
+  <form [formGroup]="filterForm" [hidden]="isLoading">
     <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
   </form>
 
-  <ion-item>
+  <ion-item [hidden]="isLoading">
     <ion-label position="stacked">{{ 'TK_METRICS' | translate }}</ion-label>
     <ion-input
       #metricInput

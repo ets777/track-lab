@@ -45,6 +45,7 @@ import { StreakService } from './streak.service';
 import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
 import { getEntitiesFromString } from '../functions/string';
+import { LoadingService } from './loading.service';
 
 type Backup = {
   activities: IActivityDb[],
@@ -240,6 +241,7 @@ export class BackupService {
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private fileService = inject(FileService);
+  private loadingService = inject(LoadingService);
 
   defaultPassword = 'etsbox.com';
 
@@ -351,26 +353,45 @@ export class BackupService {
 
     backup = helper.prepareBackup(backup);
 
-    await this.clearDatabase();
+    try {
+      this.loadingService.show('TK_CLEARING_DATABASE');
+      await this.clearDatabase();
 
-    await this.actionService.bulkAdd(backup.actions);
-    await this.tagService.bulkAdd(backup.tags);
-    await this.activityService.bulkAdd(backup.activities);
-    await this.activityActionService.bulkAdd(backup.activityActions);
-    await this.achievementService.bulkAdd(backup.achievements);
-    await this.actionTagService.bulkAdd(backup.actionTags);
-    await this.activityTagService.bulkAdd(backup.activityTags);
+      this.loadingService.show('TK_RESTORING_ACTIONS');
+      await this.actionService.bulkAdd(backup.actions);
 
-    await this.listService.bulkAdd(backup.lists);
-    await this.metricService.bulkAdd(backup.metrics);
-    await this.itemService.bulkAdd(backup.items);
-    await this.streakService.bulkAdd(backup.streaks);
-    await this.actionListService.bulkAdd(backup.actionLists);
-    await this.actionMetricService.bulkAdd(backup.actionMetrics);
-    await this.activityItemService.bulkAdd(backup.activityItems);
-    await this.activityMetricService.bulkAdd(backup.activityMetrics);
-    await this.tagMetricService.bulkAdd(backup.tagMetrics ?? []);
-    await this.itemMetricService.bulkAdd(backup.itemMetrics ?? []);
+      this.loadingService.show('TK_RESTORING_TAGS');
+      await this.tagService.bulkAdd(backup.tags);
+
+      this.loadingService.show('TK_RESTORING_ACTIVITIES');
+      await this.activityService.bulkAdd(backup.activities);
+      await this.activityActionService.bulkAdd(backup.activityActions);
+      await this.activityTagService.bulkAdd(backup.activityTags);
+
+      this.loadingService.show('TK_RESTORING_ACHIEVEMENTS');
+      await this.achievementService.bulkAdd(backup.achievements);
+
+      this.loadingService.show('TK_RESTORING_LISTS');
+      await this.listService.bulkAdd(backup.lists);
+      await this.actionTagService.bulkAdd(backup.actionTags);
+      await this.actionListService.bulkAdd(backup.actionLists);
+
+      this.loadingService.show('TK_RESTORING_METRICS');
+      await this.metricService.bulkAdd(backup.metrics);
+      await this.actionMetricService.bulkAdd(backup.actionMetrics);
+      await this.tagMetricService.bulkAdd(backup.tagMetrics ?? []);
+      await this.itemMetricService.bulkAdd(backup.itemMetrics ?? []);
+
+      this.loadingService.show('TK_RESTORING_ITEMS');
+      await this.itemService.bulkAdd(backup.items);
+      await this.activityItemService.bulkAdd(backup.activityItems);
+      await this.activityMetricService.bulkAdd(backup.activityMetrics);
+
+      this.loadingService.show('TK_RESTORING_STREAKS');
+      await this.streakService.bulkAdd(backup.streaks);
+    } finally {
+      this.loadingService.hide();
+    }
 
     await this.showMessage('TK_DATABASE_HAS_BEEN_RESTORED_SUCCESSFULLY');
   }
@@ -404,7 +425,7 @@ export class BackupService {
 
   getHelper(version: string) {
     if (!version) {
-      return helperRevision2;
+      return helperRevision1;
     }
 
     const [fileMajor, fileMinor, filePatch] = version.split('.').map(Number);

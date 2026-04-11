@@ -1,0 +1,14 @@
+.date-row {
+  display: flex;
+  gap: 8px;
+
+  ion-item {
+    flex: 1;
+  }
+}
+
+.skeleton-chips {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+}

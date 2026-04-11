@@ -1,0 +1,18 @@
+.date-text {
+  cursor: pointer;
+  padding: 0 8px;
+  min-width: 100px;
+  text-align: center;
+}
+
+.date-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--ion-color-primary);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  padding: 2px 4px;
+  text-align: center;
+  min-width: 120px;
+  outline: none;
+}

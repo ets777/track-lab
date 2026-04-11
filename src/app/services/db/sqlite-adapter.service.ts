@@ -26,13 +26,28 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     return res.changes?.lastId ?? 0;
   }
 
-  async bulkAdd<K extends TableName>(table: K, rows: CreateDtoFor<K>[]) {
-    const ids: number[] = [];
+  async bulkAdd<K extends TableName>(table: K, rows: CreateDtoFor<K>[]): Promise<number[]> {
+    if (!rows.length) return [];
+
+    const cols = Object.keys(rows[0] as object);
+    const chunkSize = 200;
+
+    const escape = (value: any): string => {
+      if (value === null || value === undefined) return 'NULL';
+      if (typeof value === 'boolean') return value ? '1' : '0';
+      if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
+      return String(value);
+    };
+
     try {
       await this.sqlite.beginTransaction();
 
-      for (const r of rows) {
-        ids.push(await this.add(table, r));
+      for (let i = 0; i < rows.length; i += chunkSize) {
+        const chunk = (rows as any[]).slice(i, i + chunkSize);
+        const values = chunk
+          .map(row => `(${cols.map(col => escape(row[col])).join(',')})`)
+          .join(',');
+        await this.sqlite.execute(`INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES ${values}`);
       }
 
       await this.sqlite.commitTransaction();
@@ -41,7 +56,7 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
       throw e;
     }
 
-    return ids;
+    return [];
   }
 
   async getById<K extends TableName>(table: K, id: number): Promise<RowFor<K> | undefined> {

@@ -1,0 +1,94 @@
+# TrackLab
+
+An Android-first activity tracking app built with Ionic + Angular (standalone components) and Capacitor.
+
+## Tech Stack
+
+- **Framework**: Ionic + Angular (standalone components)
+- **Native**: Capacitor (Android primary target)
+- **Database**: SQLite (via `@capacitor-community/sqlite`); Dexie (IndexedDB) is deprecated (will be removed completely in v1.0.0)
+- **Language**: TypeScript
+
+## Project Structure
+
+All application code lives under `src/app/`. Follow this structure strictly — every piece of code belongs in a specific folder by its role:
+
+### `components/`
+
+Reusable UI components shared across pages. Each component has its own subfolder (`.html`, `.scss`, `.ts`). Put a component here if it is used in more than one place or represents a standalone UI element.
+
+Examples: `loading/`, `toast/`, `tooltip/`, `tabs/`, `back-button/`
+
+### `form-elements/`
+
+Custom Angular form controls (implement `ControlValueAccessor`). These are reusable inputs that integrate with Angular's reactive forms. Each element has its own subfolder.
+
+Examples: `date-period-input/`, `select-search/`, `tag-input/`, `list-input/`
+
+### `functions/`
+
+Pure, reusable utility functions — no side effects, no Angular DI. One file per domain.
+
+Examples: `date.ts`, `string.ts`, `activity.ts`, `item.ts`, `crypto.ts`
+
+### `types/`
+
+Shared TypeScript type and interface definitions. No logic — types only. One file per concept.
+
+Examples: `date-period.ts`, `selectable.ts`, `model-form-group.ts`, `with-optional-keys.ts`
+
+### `validators/`
+
+Synchronous Angular `ValidatorFn` functions for reactive forms.
+
+Examples: `date-format.validator.ts`, `tags.validator.ts`, `time-format.validator.ts`
+
+### `validators-async/`
+
+Asynchronous Angular `AsyncValidatorFn` functions (e.g. DB lookups).
+
+Examples: `existing-entity.validator.ts`, `reserved-metric-name.validator.ts`
+
+### `directives/`
+
+Angular attribute directives applied to existing elements.
+
+### `services/`
+
+Angular injectable services (DI). Business logic, data access, and cross-component state. Keep services focused on a single domain entity or concern.
+
+### `services/db/`
+
+Database layer: adapters, migrations, and the router that selects SQLite vs Dexie at runtime.
+
+### `db/`
+
+Raw database schema: models, data seed, and query helpers independent of Angular DI.
+
+### `pages/`
+
+Route-level page components. Each page has its own subfolder. Pages orchestrate services and components — keep heavy logic out of page components.
+
+**Pages must open immediately.** Never block navigation with async work. The pattern in `ionViewDidEnter` is:
+
+1. Set loading state (`isLoading = true`)
+2. `await new Promise(resolve => setTimeout(resolve))` — yields to the renderer so the skeleton paints before any heavy work starts
+3. Fetch data
+4. Set `isLoading = false`
+
+### `skeletons/`
+
+Loading placeholder components shown by pages while data is being fetched. Each skeleton mirrors the layout of its target page/component using `ion-skeleton-text`. The `default/` subfolder contains a generic list skeleton used by most pages. Before creating a page-specific skeleton, consider extending `DefaultSkeletonComponent` with additional inputs (e.g. `count`, `lines`, `showIcon`) to cover the case. Only create a new skeleton component when the layout is distinct enough that parametrizing the default would make it overly complex.
+
+Examples: `default/`
+
+## Code Rules
+
+- **Android first**: all features must work on Android via Capacitor/SQLite. Browser support is secondary (dev only).
+- **Standalone components**: use Angular standalone APIs throughout — no NgModules.
+- **Folder discipline**: before creating a file, pick the right folder from the list above. Do not place utilities in pages, do not place types in services, etc.
+- **One concern per file**: services handle one entity/domain, validators handle one rule, functions files group one domain.
+- **Prefer small components**: if component is too big (more than 300 lines of HTML) it should be broken into smaller components, even if they won't be reusable
+- **Stick to the DRY principle**: don't repeat yourself. Create reusable components and actively use it, write reusable functions into functions folder and use it.
+- **Database backups and migrations**: it's important to support backup feature throughout entire development process. Any changes in database should be reflected in backup feature, taking into account compability (old backups should be 100% compatible with a new version). Also migrations should be supported when there is any change in database.
+- **Pages**: All pages are located in pages folder and should have only one root component inside `ion-content` and its skeleton. All logic should be incapsulated into that component. Pages handle loading process - showing a skeleton while loading. By default a page should use default skeleton. If a special skeleton is required it should be created into skeleton folder and used on the page.

@@ -16,6 +16,8 @@ import { IMetric } from 'src/app/db/models/metric';
 import { MetricService } from 'src/app/services/metric.service';
 import { getPartIndex } from 'src/app/functions/string';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
+import { LoadingService } from 'src/app/services/loading.service';
+import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.component';
 
 const MAX_METRICS = 5;
 
@@ -40,7 +42,7 @@ interface NormalizedPoint {
 
 @Component({
   selector: 'app-stats',
-  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, DatePeriodInputComponent],
+  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, DatePeriodInputComponent, StatsSkeletonComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })
@@ -51,6 +53,7 @@ export class StatsPage {
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private translate = inject(TranslateService);
+  private loadingService = inject(LoadingService);
 
   @ViewChild('metricInput') metricInput!: IonInput;
   metricInputText = '';
@@ -77,13 +80,14 @@ export class StatsPage {
   public filterForm: FormGroup;
   private initialized = false;
   private lastLoadedState: string | null = null;
+  isLoading = true;
 
   constructor() {
     this.filterForm = this.formBuilder.group({
       datePeriod: [],
     });
 
-    this.filterForm.valueChanges.subscribe(async (value) => {
+    this.filterForm.valueChanges.subscribe(async () => {
       if (this.filterForm.valid) {
         await this.loadStats();
       }
@@ -91,6 +95,8 @@ export class StatsPage {
   }
 
   async ionViewDidEnter() {
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
     this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
     this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
@@ -109,10 +115,11 @@ export class StatsPage {
     this.initialized = true;
 
     if (savedPeriod) {
-      this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) });
-    } else if (this.filterForm.valid) {
-      await this.loadStats();
+      this.filterForm.patchValue({ datePeriod: JSON.parse(savedPeriod) }, { emitEvent: false });
     }
+
+    await this.loadStats();
+    this.isLoading = false;
   }
 
   getSelectedMetrics(): IMetric[] {
@@ -140,84 +147,96 @@ export class StatsPage {
     }
     this.lastLoadedState = currentState;
 
-    if (this.initialized && this.filterForm.valid && this.metricsControl.valid) {
-      localStorage.setItem('stats-date-period', JSON.stringify(this.filterForm.value.datePeriod));
-      localStorage.setItem('stats-metrics', this.metricInputText);
+    if (!this.isLoading) {
+      if (!this.loadingService.tryLock()) return;
+      this.loadingService.show('TK_LOADING');
+      await new Promise(resolve => setTimeout(resolve));
     }
 
-    const activities = await this.activityService.getByDate(startDate, endDate);
-    this.activities = activities;
-    this.selectedMetrics = this.getSelectedMetrics();
+    try {
+      if (this.initialized && this.filterForm.valid && this.metricsControl.valid) {
+        localStorage.setItem('stats-date-period', JSON.stringify(this.filterForm.value.datePeriod));
+        localStorage.setItem('stats-metrics', this.metricInputText);
+      }
 
-    const minValues = this.selectedMetrics.map(m => m.minValue).filter((v): v is number => v != null);
-    const maxValues = this.selectedMetrics.map(m => m.maxValue).filter((v): v is number => v != null);
-    this.chartOptions = {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: false,
-          ...(minValues.length ? { min: Math.min(...minValues) } : {}),
-          ...(maxValues.length ? { max: Math.max(...maxValues) } : {}),
+      const activities = await this.activityService.getByDate(startDate, endDate);
+      this.activities = activities;
+      this.selectedMetrics = this.getSelectedMetrics();
+
+      const minValues = this.selectedMetrics.map(m => m.minValue).filter((v): v is number => v != null);
+      const maxValues = this.selectedMetrics.map(m => m.maxValue).filter((v): v is number => v != null);
+      this.chartOptions = {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false,
+            ...(minValues.length ? { min: Math.min(...minValues) } : {}),
+            ...(maxValues.length ? { max: Math.max(...maxValues) } : {}),
+          },
         },
-      },
-    };
-
-    const dates = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
-      .map(d => format(d, 'yyyy-MM-dd'));
-
-
-    this.activitiesGroupedByDate = dates.map((date) => {
-      const activitiesAtDate = activities.filter((activity) => activity.date == date);
-      return {
-        date,
-        activities: activitiesAtDate,
-        avgValues: this.selectedMetrics.map(metric => ({
-          metric,
-          value: this.getAverageValue(this.normalizeWithInterpolation(activitiesAtDate, metric)),
-        })),
       };
-    });
 
-    if (!this.selectedMetrics.length) {
-      this.chartData = { labels: [], datasets: [] };
-      return;
-    }
+      const dates = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
+        .map(d => format(d, 'yyyy-MM-dd'));
 
-    const avg = this.translate.instant('TK_AVG');
 
-    if (dates.length === 1) {
-      const datasets = this.selectedMetrics.map(metric => {
-        const normalizedData = this.normalizeWithInterpolation(this.activities, metric);
+      this.activitiesGroupedByDate = dates.map((date) => {
+        const activitiesAtDate = activities.filter((activity) => activity.date == date);
         return {
-          data: normalizedData.map((data) => data.value || 0),
-          label: avg + ' ' + this.translate.instant(metric.name),
+          date,
+          activities: activitiesAtDate,
+          avgValues: this.selectedMetrics.map(metric => ({
+            metric,
+            value: this.getAverageValue(this.normalizeWithInterpolation(activitiesAtDate, metric)),
+          })),
         };
       });
 
-      this.chartData = {
-        labels: this.normalizeWithInterpolation(this.activities, this.selectedMetrics[0]).map(d => d.time),
-        datasets,
-      };
-    } else {
-      const datasets = this.selectedMetrics.map(metric => ({
-        data: this.interpolateZeros(this.activitiesGroupedByDate.map(day => {
-          const entry = day.avgValues.find(v => v.metric.id === metric.id);
-          return entry?.value ?? 0;
-        })),
-        label: avg + ' ' + this.translate.instant(metric.name),
-      }));
+      if (!this.selectedMetrics.length) {
+        this.chartData = { labels: [], datasets: [] };
+        return;
+      }
 
-      const lastNonNullIdx = datasets.reduce((max, ds) => {
-        const idx = ds.data.reduce<number>((last, v, i) => v !== null ? i : last, -1);
-        return Math.max(max, idx);
-      }, -1);
+      const avg = this.translate.instant('TK_AVG');
 
-      const cutoff = lastNonNullIdx >= 0 ? lastNonNullIdx + 1 : dates.length;
+      if (dates.length === 1) {
+        const datasets = this.selectedMetrics.map(metric => {
+          const normalizedData = this.normalizeWithInterpolation(this.activities, metric);
+          return {
+            data: normalizedData.map((data) => data.value || 0),
+            label: avg + ' ' + this.translate.instant(metric.name),
+          };
+        });
 
-      this.chartData = {
-        labels: dates.slice(0, cutoff),
-        datasets: datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) })),
-      };
+        this.chartData = {
+          labels: this.normalizeWithInterpolation(this.activities, this.selectedMetrics[0]).map(d => d.time),
+          datasets,
+        };
+      } else {
+        const datasets = this.selectedMetrics.map(metric => ({
+          data: this.interpolateZeros(this.activitiesGroupedByDate.map(day => {
+            const entry = day.avgValues.find(v => v.metric.id === metric.id);
+            return entry?.value ?? 0;
+          })),
+          label: avg + ' ' + this.translate.instant(metric.name),
+        }));
+
+        const lastNonNullIdx = datasets.reduce((max, ds) => {
+          const idx = ds.data.reduce<number>((last, v, i) => v !== null ? i : last, -1);
+          return Math.max(max, idx);
+        }, -1);
+
+        const cutoff = lastNonNullIdx >= 0 ? lastNonNullIdx + 1 : dates.length;
+
+        this.chartData = {
+          labels: dates.slice(0, cutoff),
+          datasets: datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) })),
+        };
+      }
+    } finally {
+      if (!this.isLoading) {
+        this.loadingService.hide();
+      }
     }
   }
 

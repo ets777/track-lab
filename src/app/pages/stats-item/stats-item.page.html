@@ -7,13 +7,17 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <form [formGroup]="filterForm">
+  @if (isLoading) {
+    <app-stats-skeleton></app-stats-skeleton>
+  }
+  <form [formGroup]="filterForm" [hidden]="isLoading">
     <app-date-period-input formControlName="datePeriod" storageKey="stats-item"></app-date-period-input>
     <app-select-search
       appValidationError
       formControlName="item"
       label="TK_ITEM"
       [suggestions]="suggestions"
+      (selected)="onItemSelected()"
     ></app-select-search>
   </form>
   @if (minutesChartData !== undefined) {
