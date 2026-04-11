@@ -5,7 +5,7 @@ import { AchievementService } from 'src/app/services/achievement.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { AchievementsListComponent } from 'src/app/components/achievements-list/achievements-list.component';
-import { DefaultSkeletonComponent } from 'src/app/skeleton/default/default-skeleton.component';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
   selector: 'app-achievements',

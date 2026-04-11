@@ -32,6 +32,8 @@ export class ActivityListPage {
   lists: IList[] = [];
   currentDate: string = '';
   editingDate = false;
+  checkmarkVisible = false;
+  private checkmarkTimer: ReturnType<typeof setTimeout> | null = null;
 
   public listActionSheetButtons: any[] = [];
 
@@ -89,13 +91,16 @@ export class ActivityListPage {
 
   startEditingDate() {
     this.editingDate = true;
+    this.checkmarkVisible = true;
+    if (this.checkmarkTimer) clearTimeout(this.checkmarkTimer);
     setTimeout(() => this.dateInputRef?.nativeElement.focus(), 0);
   }
 
   async onDateInputBlur(event: Event) {
     if (!this.editingDate) return;
     const value = (event.target as HTMLInputElement).value;
-    this.editingDate = false;
+    this.checkmarkVisible = false;
+    this.checkmarkTimer = setTimeout(() => { this.editingDate = false; }, 180);
     if (value && /^\d{4}-\d{2}-\d{2}$/.test(value) && value !== this.currentDate) {
       this.currentDate = value;
       this.setQueryParams(this.currentDate);

@@ -9,53 +9,14 @@
 <ion-content class="ion-padding">
   @if (isLoading) {
     <app-stats-skeleton></app-stats-skeleton>
-  }
-  <form [formGroup]="filterForm" [hidden]="isLoading">
-    <app-date-period-input formControlName="datePeriod" storageKey="stats-item"></app-date-period-input>
-    <app-select-search
-      appValidationError
-      formControlName="item"
-      label="TK_ITEM"
-      [suggestions]="suggestions"
-      (selected)="onItemSelected()"
-    ></app-select-search>
-  </form>
-  @if (minutesChartData !== undefined) {
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-          @if (totalAmount === 0) {
-            <p>{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</p>
-          } @else {
-            <p>{{ 'TK_TOTAL_TIME' | translate }}:
-            {{ getTimeString(totalDuration) }}</p>
-            <p>{{ 'TK_TOTAL_AMOUNT' | translate }}: {{ totalAmount }}</p>
-            <p>{{ 'TK_AVG' | translate }}
-            {{ 'TK_AMOUNT_PER_DAY' | translate | lowercase }}:
-            {{ averageAmountPerDay | number:'1.1-1' }}
-            </p>
-            <p>{{ 'TK_AVG' | translate }}
-            {{ 'TK_TIME_AT_A_TIME' | translate | lowercase }}:
-            {{ getTimeString(averageTimePerTime) }}
-            </p>
-            <p>{{ 'TK_AVG' | translate }}
-            {{ 'TK_TIME_PER_DAY' | translate | lowercase }}:
-            {{ getTimeString(averageTimePerDay) }}
-            </p>
-          }
-        </ion-label>
-      </ion-item>
-    </ion-list>
-    <canvas
-      baseChart
-      [data]="minutesChartData"
-      type="bar"
-    ></canvas>
-    <canvas
-      baseChart
-      [data]="amountChartData"
-      type="bar"
-    ></canvas>
+  } @else {
+    <app-stats-item-content
+      [lists]="lists"
+      [initialActivities]="initialActivities"
+      [initialSuggestions]="initialSuggestions"
+      [initialPeriod]="initialPeriod"
+      [savedPeriod]="savedPeriod"
+      [savedItem]="savedItem"
+    ></app-stats-item-content>
   }
 </ion-content>

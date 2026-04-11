@@ -128,15 +128,15 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
       return;
     }
 
-    const endDate = format(new Date(), 'yyyy-MM-dd');
+    const endDate = this.form.value.endDate || format(new Date(), 'yyyy-MM-dd');
     let startDate: string;
 
     if (this.selectedPeriod === 'week') {
-      startDate = format(addDays(new Date(), -6), 'yyyy-MM-dd');
+      startDate = format(addDays(new Date(endDate), -6), 'yyyy-MM-dd');
     } else if (this.selectedPeriod === '2weeks') {
-      startDate = format(addDays(new Date(), -13), 'yyyy-MM-dd');
+      startDate = format(addDays(new Date(endDate), -13), 'yyyy-MM-dd');
     } else {
-      startDate = format(addMonths(new Date(), -1), 'yyyy-MM-dd');
+      startDate = format(addMonths(new Date(endDate), -1), 'yyyy-MM-dd');
     }
 
     this.patchAndUpdate({ startDate, endDate });
