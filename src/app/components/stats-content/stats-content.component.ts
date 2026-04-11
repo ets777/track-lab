@@ -155,9 +155,9 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     if (currentState === this.lastLoadedState) {
       return;
     }
-    this.lastLoadedState = currentState;
 
     if (this.loadingData) return;
+    this.lastLoadedState = currentState;
     this.loadingData = true;
     this.loadingService.show('TK_LOADING');
     await new Promise(resolve => setTimeout(resolve));
@@ -176,6 +176,8 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
       this.loadingData = false;
       this.loadingService.hide();
     }
+
+    await this.loadStats();
   }
 
   private buildChartData(activities: IActivity[], startDate: string, endDate: string) {

@@ -72,12 +72,15 @@ export class StatsItemContentComponent implements OnInit {
 
     this.filterForm.get('datePeriod')?.valueChanges.subscribe(async () => {
       if (!this.filterForm.controls['datePeriod'].valid) return;
-
-      const currentPeriod = JSON.stringify(this.filterForm.value.datePeriod);
+      
+      const currentPeriod = JSON.stringify(this.filterForm.controls['datePeriod'].value);
+      
       if (currentPeriod === this.lastLoadedPeriod) return;
       this.lastLoadedPeriod = currentPeriod;
 
-      if (!this.loadingService.tryLock()) return;
+      if (!this.loadingService.tryLock()) {
+        return;
+      }
 
       this.loadingService.show('TK_LOADING');
       await new Promise(resolve => setTimeout(resolve));
@@ -120,7 +123,7 @@ export class StatsItemContentComponent implements OnInit {
   }
 
   async loadSuggestions() {
-    const period = this.filterForm.value.datePeriod;
+    const period = this.filterForm.controls['datePeriod'].value;
     const { startDate, endDate } = period ?? {};
     if (!startDate || !endDate) return;
 
@@ -172,15 +175,15 @@ export class StatsItemContentComponent implements OnInit {
   }
 
   setChartData() {
-    if (!this.filterForm.valid || !this.filterForm.value.datePeriod || !this.filterForm.value.item) {
+    if (!this.filterForm.valid || !this.filterForm.controls['datePeriod'].value || !this.filterForm.value.item) {
       return;
     }
 
     const item: CommonItem = this.filterForm.value.item;
-    const { startDate, endDate } = this.filterForm.value.datePeriod;
+    const { startDate, endDate } = this.filterForm.controls['datePeriod'].value;
 
     if (this.initialized) {
-      localStorage.setItem('stats-item-date-period', JSON.stringify(this.filterForm.value.datePeriod));
+      localStorage.setItem('stats-item-date-period', JSON.stringify(this.filterForm.controls['datePeriod'].value));
       localStorage.setItem('stats-item-item', JSON.stringify(item));
     }
 
