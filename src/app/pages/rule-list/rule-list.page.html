@@ -18,12 +18,12 @@
   </ion-fab>
   <ion-list>
     @for (rule of rules; track rule.id) {
-      <ion-item>
+      <ion-item (click)="goToViewPage(rule.id)" button>
         <ion-label>
-          <div class="title">{{ rule.name }}</div>
+          <div class="title">{{ getRuleName(rule) }}</div>
         </ion-label>
         <ion-buttons slot="end">
-          <ion-button id="open-action-sheet-rule-{{rule.id}}">
+          <ion-button id="open-action-sheet-rule-{{rule.id}}" (click)="$event.stopPropagation()">
             <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
           </ion-button>
         </ion-buttons>

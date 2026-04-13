@@ -409,6 +409,7 @@
   "TK_SEARCH": "Search",
   "TK_RULES": "Rules",
   "TK_NEW_RULE": "New rule",
+  "TK_EDIT_RULE": "Edit rule",
   "TK_RULE_ADDED_SUCCESSFULLY": "Rule added successfully",
   "TK_RULE_DELETED_SUCCESSFULLY": "Rule deleted successfully",
   "TK_RULE_UPDATED_SUCCESSFULLY": "Rule updated successfully",

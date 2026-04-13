@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_EDIT_RULE' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="saveRule()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_SAVE' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (rule) {
+    <app-rule-form
+      #editFormRef
+      [rule]="rule"
+    ></app-rule-form>
+  }
+</ion-content>

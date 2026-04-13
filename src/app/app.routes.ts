@@ -111,6 +111,14 @@ export const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./pages/rule-add/rule-add.page').then(m => m.RuleAddPage),
       },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/rule-edit/rule-edit.page').then(m => m.RuleEditPage),
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/rule-view/rule-view.page').then(m => m.RuleViewPage),
+      },
     ],
   },
   {

@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ ruleName }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (rule) {
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <p>{{ 'TK_START_DATE' | translate }}</p>
+          <h2>{{ rule.startDate }}</h2>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <p>{{ 'TK_MEASURE' | translate }}</p>
+          <h2>{{ metricLabel }}</h2>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <p>{{ 'TK_CONDITION' | translate }}</p>
+          <h2>{{ conditionLabel }}</h2>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <p>{{ 'TK_PERIOD' | translate }}</p>
+          <h2>{{ periodLabel }}</h2>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  }
+</ion-content>

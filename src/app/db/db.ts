@@ -180,6 +180,10 @@ export class MyAppDatabase extends Dexie {
     this.version(6).stores({
       rules: '++id, startDate',
     });
+
+    this.version(7).stores({
+      rules: '++id, startDate',
+    });
   }
 }
 

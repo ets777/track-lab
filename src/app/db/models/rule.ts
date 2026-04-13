@@ -7,7 +7,6 @@ export type RulePeriod = 'day' | 'week' | 'month';
 
 export interface IRuleDb {
   id: number;
-  name: string;
   subjectType: RuleSubjectType;
   subjectId: number;
   metric: RuleMetric;

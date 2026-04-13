@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText } from '@ionic/angular/standalone';
@@ -17,7 +17,7 @@ import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
-import { RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
+import { IRule, RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
 
 export type RuleFormMetric = 'count' | 'duration';
 
@@ -48,6 +48,8 @@ export class RuleFormComponent implements OnInit {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
 
+  @Input() rule?: IRule;
+
   private lists: IList[] = [];
   public suggestions: Selectable<CommonItem>[] = [];
 
@@ -71,6 +73,28 @@ export class RuleFormComponent implements OnInit {
     });
 
     await this.loadSuggestions();
+
+    if (this.rule) {
+      this.populateFromRule();
+    }
+  }
+
+  private populateFromRule() {
+    const rule = this.rule!;
+    const subject = this.suggestions.find(
+      s => s.item.type === rule.subjectType && s.item.itemId === rule.subjectId
+    )?.item ?? null;
+
+    const metric: RuleFormMetric = rule.metric === 'totalDuration' ? 'duration' : 'count';
+
+    this.ruleForm.patchValue({
+      startDate: rule.startDate,
+      subject,
+      metric,
+      operator: rule.operator,
+      value: rule.value,
+      period: rule.period,
+    });
   }
 
   async loadSuggestions() {
@@ -136,9 +160,10 @@ export class RuleFormComponent implements OnInit {
     const period = this.ruleForm.get('period')?.value;
 
     const operatorLabel = this.translate.instant(operator === '>=' ? 'TK_AT_LEAST' : 'TK_AT_MOST').toLowerCase();
+    const singular = Number(value) === 1;
     const unit = metric === 'duration'
-      ? this.translate.instant('TK_MINUTES')
-      : this.translate.instant('TK_RULE_TIMES');
+      ? this.translate.instant(singular ? 'TK_RULE_MINUTE' : 'TK_RULE_MINUTES')
+      : this.translate.instant(singular ? 'TK_RULE_TIME' : 'TK_RULE_TIMES');
     const periodLabel = this.translate.instant(`TK_RULE_PER_${period?.toUpperCase()}`);
     return `${subject.name} ${operatorLabel} ${value} ${unit} ${periodLabel}`;
   }

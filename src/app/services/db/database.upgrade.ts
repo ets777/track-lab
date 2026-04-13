@@ -213,4 +213,10 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 7,
+    statements: [
+      `ALTER TABLE rules DROP COLUMN name;`,
+    ],
+  },
 ];

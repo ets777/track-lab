@@ -9,6 +9,12 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
+import { ActionService } from 'src/app/services/action.service';
+import { TagService } from 'src/app/services/tag.service';
+import { ItemService } from 'src/app/services/item.service';
+import { IActionDb } from 'src/app/db/models/action';
+import { ITag } from 'src/app/db/models/tag';
+import { IItem } from 'src/app/db/models/item';
 
 @Component({
   selector: 'app-rule-list',
@@ -18,26 +24,62 @@ import { OverlayEventDetail } from '@ionic/core';
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);
+  private actionService = inject(ActionService);
+  private tagService = inject(TagService);
+  private itemService = inject(ItemService);
   private router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
 
   rules: IRule[] = [];
+  private actions: IActionDb[] = [];
+  private tags: ITag[] = [];
+  private items: IItem[] = [];
 
   ruleActionSheetButtons = [
+    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
 
   async ionViewDidEnter() {
-    this.rules = await this.ruleService.getAll();
+    [this.rules, this.actions, this.tags, this.items] = await Promise.all([
+      this.ruleService.getAll(),
+      this.actionService.getAll(),
+      this.tagService.getAll(),
+      this.itemService.getAll(),
+    ]);
+  }
+
+  getRuleName(rule: IRule): string {
+    const subjectName = this.resolveSubjectName(rule);
+    return this.ruleService.buildName(rule, subjectName);
+  }
+
+  private resolveSubjectName(rule: IRule): string {
+    if (rule.subjectType === 'action') {
+      return this.actions.find(a => a.id === rule.subjectId)?.name ?? '';
+    }
+    if (rule.subjectType === 'tag') {
+      return this.tags.find(t => t.id === rule.subjectId)?.name ?? '';
+    }
+    return this.items.find(i => i.id === rule.subjectId)?.name ?? '';
   }
 
   async doRuleAction(event: CustomEvent<OverlayEventDetail>, ruleId: number) {
     const action = event.detail.data?.action;
 
-    if (action === 'delete') {
-      await this.deleteRule(ruleId);
+    switch (action) {
+      case 'view':
+        await this.router.navigate(['/rule', ruleId]);
+        break;
+      case 'edit':
+        await this.router.navigate(['/rule/edit', ruleId]);
+        break;
+      case 'delete':
+        await this.deleteRule(ruleId);
+        break;
     }
   }
 
@@ -57,6 +99,10 @@ export class RuleListPage {
       this.toastService.enqueue({ title: 'TK_RULE_DELETED_SUCCESSFULLY', type: 'success' });
       this.rules = this.rules.filter((r) => r.id !== ruleId);
     }
+  }
+
+  async goToViewPage(ruleId: number) {
+    await this.router.navigate(['/rule', ruleId]);
   }
 
   async goToAddPage() {
