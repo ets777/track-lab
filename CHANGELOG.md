@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.4] - 2026-04-13
+
+### Added
+
+- More info on metric view page
+- Dates selecting for metric graph on view page
+
+### Fixed
+
+- The same activities appearing on previous date
+- Editing actions in activity form
+
 ## [0.5.3] - 2026-04-11
 
 ### Added
