@@ -6,6 +6,10 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <form [formGroup]="filterForm">
+    <app-date-period-input formControlName="datePeriod" storageKey="metric-view"></app-date-period-input>
+  </form>
+
   @if (chartData) {
     <canvas
       baseChart
@@ -13,5 +17,56 @@
       [options]="chartOptions"
       type="line"
     ></canvas>
+  }
+
+  @if (metric) {
+    <ion-list>
+      @if (linkedItem) {
+        <ion-item>
+          <ion-label>{{ 'TK_ITEM' | translate }}</ion-label>
+          <ion-note slot="end">{{ linkedItem.name }}</ion-note>
+        </ion-item>
+      }
+
+      @if (metric.unit) {
+        <ion-item>
+          <ion-label>{{ 'TK_UNIT' | translate }}</ion-label>
+          <ion-note slot="end">{{ metric.unit }}</ion-note>
+        </ion-item>
+      }
+
+      <ion-item>
+        <ion-label>{{ 'TK_STEP' | translate }}</ion-label>
+        <ion-note slot="end">{{ metric.step }}</ion-note>
+      </ion-item>
+
+      @if (metric.minValue != null) {
+        <ion-item>
+          <ion-label>{{ 'TK_MIN_VALUE' | translate }}</ion-label>
+          <ion-note slot="end">{{ metric.minValue }}</ion-note>
+        </ion-item>
+      }
+
+      @if (metric.maxValue != null) {
+        <ion-item>
+          <ion-label>{{ 'TK_MAX_VALUE' | translate }}</ion-label>
+          <ion-note slot="end">{{ metric.maxValue }}</ion-note>
+        </ion-item>
+      }
+
+      @if (metric.isHidden) {
+        <ion-item>
+          <ion-label>{{ 'TK_HIDDEN' | translate }}</ion-label>
+          <ion-note slot="end">{{ 'TK_YES' | translate }}</ion-note>
+        </ion-item>
+      }
+
+      @if (metric.showPreviousValue) {
+        <ion-item>
+          <ion-label>{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</ion-label>
+          <ion-note slot="end">{{ 'TK_YES' | translate }}</ion-note>
+        </ion-item>
+      }
+    </ion-list>
   }
 </ion-content>
