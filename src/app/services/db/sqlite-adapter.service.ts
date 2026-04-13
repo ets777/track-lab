@@ -174,8 +174,8 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     endValue: string | number,
   ): Promise<RowFor<K>[]> {
     const result = await this.sqlite.query(
-      `SELECT * FROM ${table} 
-             WHERE ${columnName} BETWEEN ? AND ? 
+      `SELECT * FROM ${table}
+             WHERE ${columnName} >= ? AND ${columnName} < ?
              ORDER BY ${orderByColumn}`,
       [startValue, endValue],
     );
@@ -195,7 +195,7 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     table: K,
     where: Where,
   ) {
-    const whereClause = Object.keys(where).map((key) => `${key} = ?`).join(', ');
+    const whereClause = Object.keys(where).map((key) => `${key} = ?`).join(' AND ');
     const values = Object.values(where);
     await this.sqlite.run(`DELETE FROM ${table} WHERE ${whereClause}`, [...values]);
   }

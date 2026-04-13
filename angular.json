@@ -58,7 +58,7 @@
                                     "glob": "**/*",
                                     "input": "src/assets",
                                     "output": "assets",
-                                    "ignore": ["sql-wasm.wasm"]
+                                    "ignore": [ "sql-wasm.wasm" ]
                                 }
                             ],
                             "fileReplacements": [
@@ -93,6 +93,9 @@
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
+                    "options": {
+                        "prebundle": false
+                    },
                     "configurations": {
                         "production": {
                             "buildTarget": "app:build:production"

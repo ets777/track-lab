@@ -104,3 +104,128 @@ describe('SqliteAdapter.getAll', () => {
     expect(sql).not.toContain('WHERE');
   });
 });
+
+describe('SqliteAdapter.getAllBetweenOrderedBy', () => {
+  let adapter: IDatabaseAdapter;
+  let sqliteService: jasmine.SpyObj<SQLiteService>;
+
+  beforeEach(() => {
+    const spy = jasmine.createSpyObj<SQLiteService>('SQLiteService', ['query', 'run']);
+    spy.query.and.returnValue(Promise.resolve({ values: [] }));
+
+    TestBed.configureTestingModule({
+      providers: [
+        TestSqliteAdapter,
+        { provide: SQLiteService, useValue: spy },
+      ],
+    });
+
+    adapter = TestBed.inject(TestSqliteAdapter) as IDatabaseAdapter;
+    sqliteService = TestBed.inject(SQLiteService) as jasmine.SpyObj<SQLiteService>;
+  });
+
+  it('should use >= start and < end (exclusive end) so activities on the end date are excluded', async () => {
+    sqliteService.query.and.returnValue(Promise.resolve({ values: [] }));
+
+    await adapter.getAllBetweenOrderedBy('activities', 'date', 'startTime', '2026-04-12', '2026-04-13');
+
+    const [sql, params] = sqliteService.query.calls.mostRecent().args;
+    expect(sql).toContain('>=');
+    expect(sql).toContain('<');
+    expect(sql).not.toContain('BETWEEN');
+    expect(params).toEqual(['2026-04-12', '2026-04-13']);
+  });
+
+  it('should return only activities whose date falls within [startDate, endDate)', async () => {
+    const activityOnTargetDate = { id: 1, date: '2026-04-12', startTime: '10:00' };
+    const activityOnNextDate = { id: 2, date: '2026-04-13', startTime: '08:00' };
+
+    // Simulate the DB returning only the activity within range (exclusive end)
+    sqliteService.query.and.callFake((_sql: string, params: any[]) => {
+      const [start, end] = params as string[];
+      const filtered = [activityOnTargetDate, activityOnNextDate].filter(
+        a => a.date >= start && a.date < end,
+      );
+      return Promise.resolve({ values: filtered });
+    });
+
+    const result = await adapter.getAllBetweenOrderedBy(
+      'activities', 'date', 'startTime', '2026-04-12', '2026-04-13',
+    );
+
+    expect(result.length).toBe(1);
+    expect((result[0] as any).date).toBe('2026-04-12');
+  });
+
+  it('should NOT return an activity added for the next date when querying a single date', async () => {
+    const activityOnNextDate = { id: 3, date: '2026-04-13', startTime: '09:00' };
+
+    sqliteService.query.and.callFake((_sql: string, params: any[]) => {
+      const [start, end] = params as string[];
+      const filtered = [activityOnNextDate].filter(
+        a => a.date >= start && a.date < end,
+      );
+      return Promise.resolve({ values: filtered });
+    });
+
+    // Query for 04/12 with end = 04/13 (exclusive)
+    const result = await adapter.getAllBetweenOrderedBy(
+      'activities', 'date', 'startTime', '2026-04-12', '2026-04-13',
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it('should pass startValue and endValue as bound parameters', async () => {
+    await adapter.getAllBetweenOrderedBy('activities', 'date', 'startTime', '2026-01-01', '2026-02-01');
+
+    const [, params] = sqliteService.query.calls.mostRecent().args;
+    expect(params).toContain('2026-01-01');
+    expect(params).toContain('2026-02-01');
+  });
+});
+
+describe('SqliteAdapter.delete', () => {
+  let adapter: IDatabaseAdapter;
+  let sqliteService: jasmine.SpyObj<SQLiteService>;
+
+  beforeEach(() => {
+    const spy = jasmine.createSpyObj<SQLiteService>('SQLiteService', ['query', 'run']);
+    spy.run.and.returnValue(Promise.resolve({ changes: { changes: 1 } }));
+
+    TestBed.configureTestingModule({
+      providers: [
+        TestSqliteAdapter,
+        { provide: SQLiteService, useValue: spy },
+      ],
+    });
+
+    adapter = TestBed.inject(TestSqliteAdapter) as IDatabaseAdapter;
+    sqliteService = TestBed.inject(SQLiteService) as jasmine.SpyObj<SQLiteService>;
+  });
+
+  it('should use AND (not comma) to separate multiple WHERE conditions', async () => {
+    await adapter.delete('activityActions', { activityId: 1, actionId: 2 });
+
+    const [sql] = sqliteService.run.calls.mostRecent().args;
+    expect(sql).toContain('AND');
+    expect(sql).not.toMatch(/=\s*\?,\s*\w/);
+  });
+
+  it('should bind both values as parameters when deleting by composite key', async () => {
+    await adapter.delete('activityActions', { activityId: 5, actionId: 9 });
+
+    const [, params] = sqliteService.run.calls.mostRecent().args;
+    expect(params).toContain(5);
+    expect(params).toContain(9);
+  });
+
+  it('should generate valid SQL for a single-column WHERE clause', async () => {
+    await adapter.delete('activityActions', { activityId: 3 });
+
+    const [sql, params] = sqliteService.run.calls.mostRecent().args;
+    expect(sql).toContain('WHERE');
+    expect(sql).toContain('activityId');
+    expect(params).toContain(3);
+  });
+});
