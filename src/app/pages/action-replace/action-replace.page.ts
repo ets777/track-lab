@@ -14,6 +14,8 @@ import { ActivityActionService } from 'src/app/services/activity-action.service'
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { Selectable } from 'src/app/types/selectable';
+import { LoadingService } from 'src/app/services/loading.service';
+import { LogService } from 'src/app/services/log.service';
 
 @Component({
   selector: 'app-action-replace',
@@ -30,6 +32,8 @@ export class ActionReplacePage implements OnInit {
   private translate = inject(TranslateService);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private loadingService = inject(LoadingService);
+  private logService = inject(LogService);
 
   public replaceForm!: FormGroup;
   public suggestions: Selectable<IAction>[] = [];
@@ -78,13 +82,23 @@ export class ActionReplacePage implements OnInit {
       return;
     }
 
-    await this.activityActionService.replaceAction(
-      this.currentActionId,
-      newActionId,
-    );
+    this.loadingService.show('TK_LOADING');
 
-    if (this.replaceForm.value.deleteOldAction) {
-      await this.actionService.deleteWithRelations(this.currentActionId);
+    try {
+      await this.activityActionService.replaceAction(
+        this.currentActionId,
+        newActionId,
+      );
+
+      if (this.replaceForm.value.deleteOldAction) {
+        await this.actionService.deleteWithRelations(this.currentActionId);
+      }
+    } catch (error) {
+      await this.logService.error('ActionReplacePage.replaceAction', error);
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      return;
+    } finally {
+      this.loadingService.hide();
     }
 
     this.toastService.enqueue({
@@ -92,10 +106,7 @@ export class ActionReplacePage implements OnInit {
       type: 'success',
     });
 
-    // TODO: navigate to action list
-    await this.router.navigate(
-      ['/list'],
-    );
+    await this.router.navigate(['/actions']);
   }
 
   async askConfirmation(): Promise<boolean> {

@@ -41,7 +41,7 @@ export class ItemEditPage {
 
     await this.itemService.update(this.itemId, { name: this.form.value.name! });
     this.toastService.enqueue({ title: 'TK_ITEM_UPDATED_SUCCESSFULLY', type: 'success' });
-    await this.router.navigate(['/list', this.listId]);
+    await this.router.navigate(['/library', this.listId]);
   }
 
   isFormValid() {

@@ -398,8 +398,18 @@ export class ActivityFormComponent implements OnInit {
       ...lastActivityData,
     });
     for (const metric of this.standaloneMetrics) {
-      if (!this.isRangeMetric(metric) && !metric.showPreviousValue) {
-        this.metricsForm.get(`metric_${metric.id}`)?.reset();
+      if (!metric.showPreviousValue) {
+        if (this.isRangeMetric(metric)) {
+          const minVal = Number(metric.minValue);
+          const maxVal = Number(metric.maxValue);
+          const stepVal = Number(metric.step);
+          const mid = (minVal + maxVal) / 2;
+          const midRounded = Math.round((mid - minVal) / stepVal) * stepVal + minVal;
+          this.metricsForm.get(`metric_${metric.id}`)?.setValue(midRounded);
+        } else {
+          this.metricsForm.get(`metric_${metric.id}`)?.reset();
+        }
+        this.metricEnabled[`metric_${metric.id}`] = false;
       }
     }
     for (const list of this.allLists.filter(l => !l.isHidden)) {

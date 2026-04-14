@@ -65,7 +65,7 @@ export class ListEditPage {
       type: 'success',
     });
 
-    await this.router.navigate(['/list']);
+    await this.router.navigate(['/library']);
   }
 
   isFormValid() {

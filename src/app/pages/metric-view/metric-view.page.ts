@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
+import { ToastService } from 'src/app/services/toast.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
@@ -24,10 +26,13 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
   selector: 'app-metric-view',
   templateUrl: './metric-view.page.html',
   styleUrls: ['./metric-view.page.scss'],
-  imports: [IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, BackButtonComponent, DatePeriodInputComponent],
+  imports: [IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, BackButtonComponent, DatePeriodInputComponent],
 })
 export class MetricViewPage {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private alertController = inject(AlertController);
+  private toastService = inject(ToastService);
   private formBuilder = inject(FormBuilder);
   private metricService = inject(MetricService);
   private activityService = inject(ActivityService);
@@ -38,6 +43,7 @@ export class MetricViewPage {
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
   private translate = inject(TranslateService);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   metricId: number;
   metric?: IMetric;
@@ -87,6 +93,51 @@ export class MetricViewPage {
       }
     } else {
       this.linkedItem = undefined;
+    }
+  }
+
+  getActionSheetButtons() {
+    const buttons: any[] = [
+      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+    ];
+    if (!this.metric?.isBase) {
+      buttons.push({ text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } });
+    }
+    return buttons;
+  }
+
+  async openMenu() {
+    const actionSheet = await this.actionSheetCtrl.create({ buttons: this.getActionSheetButtons() });
+    await actionSheet.present();
+    const { data } = await actionSheet.onWillDismiss();
+    if (data?.action) await this.doAction(data.action);
+  }
+
+  async doAction(action: string) {
+    switch (action) {
+      case 'edit':
+        await this.router.navigate(['/metric/edit', this.metricId]);
+        break;
+      case 'delete':
+        await this.deleteMetric();
+        break;
+    }
+  }
+
+  async deleteMetric() {
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TK_ARE_YOU_SURE'),
+      buttons: [
+        { text: this.translate.instant('TK_YES'), role: 'yes' },
+        { text: this.translate.instant('TK_NO'), role: 'no' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role === 'yes') {
+      await this.metricService.delete({ id: this.metricId });
+      this.toastService.enqueue({ title: 'TK_METRIC_DELETED_SUCCESSFULLY', type: 'success' });
+      await this.router.navigate(['/metric']);
     }
   }
 

@@ -9,7 +9,7 @@ export function existingEntityValidator(
     return async (control: AbstractControl): Promise<ValidationErrors | null> => {
         const value = control.value?.trim();
 
-        if (!value || currentName && value == currentName) {
+        if (!value || currentName && value.toLowerCase() === currentName.toLowerCase()) {
             return null;
         }
 

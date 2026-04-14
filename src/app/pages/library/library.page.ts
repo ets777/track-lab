@@ -12,12 +12,13 @@ import { TagsComponent } from "src/app/components/tags/tags.component";
 import { AlertController } from '@ionic/angular';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent],
+  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);
@@ -28,6 +29,7 @@ export class LibraryPage {
   private toastService = inject(ToastService);
 
   actions: IAction[] = [];
+  isLoading = true;
 
   public actionActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
@@ -36,8 +38,15 @@ export class LibraryPage {
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
 
+  ionViewWillEnter() {
+    this.isLoading = true;
+  }
+
   async ionViewDidEnter() {
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
     await this.fetchActions();
+    this.isLoading = false;
   }
 
   async fetchActions() {

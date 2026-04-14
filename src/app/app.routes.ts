@@ -120,7 +120,7 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'list',
+    path: 'library',
     children: [
       {
         path: '',
@@ -149,7 +149,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.page').then(m => m.SettingsPage)
   },
   {
-    path: 'library',
+    path: 'actions',
     loadComponent: () => import('./pages/library/library.page').then(m => m.LibraryPage)
   },
   {

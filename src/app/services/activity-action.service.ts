@@ -25,9 +25,13 @@ export class ActivityActionService extends DatabaseService<'activityActions'> {
         const relations = await this.getByActionId(oldActionId);
 
         for (const relation of relations) {
-            await this.update(relation.id, {
-                actionId: newActionId,
-            });
+            const conflict = await this.getAll({ activityId: relation.activityId, actionId: newActionId });
+
+            if (conflict.length) {
+                await this.delete({ id: relation.id });
+            } else {
+                await this.update(relation.id, { actionId: newActionId });
+            }
         }
     }
 }

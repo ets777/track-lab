@@ -2,6 +2,11 @@
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
     <ion-title>{{ 'TK_TAG' | translate }} "{{ tag?.name }}"</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openMenu()">
+        <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

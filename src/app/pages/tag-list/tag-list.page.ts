@@ -10,12 +10,13 @@ import { Router } from '@angular/router';
 import { ITag } from 'src/app/db/models/tag';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
   selector: 'app-tag-list',
   templateUrl: './tag-list.page.html',
   styleUrls: ['./tag-list.page.scss'],
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent],
+  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class TagListPage {
   private tagService = inject(TagService);
@@ -25,6 +26,7 @@ export class TagListPage {
   private toastService = inject(ToastService);
 
   tags: ITag[] = [];
+  isLoading = true;
 
   public tagActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
@@ -32,8 +34,15 @@ export class TagListPage {
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
 
+  ionViewWillEnter() {
+    this.isLoading = true;
+  }
+
   async ionViewDidEnter() {
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
     await this.fetchTags();
+    this.isLoading = false;
   }
 
   async fetchTags() {

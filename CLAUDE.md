@@ -82,6 +82,15 @@ Loading placeholder components shown by pages while data is being fetched. Each 
 
 Examples: `default/`
 
+## Domain Entities
+
+- **Actions** — a system list of activity templates (e.g. "Running", "Reading"). Used to log activities.
+- **Tags** — a system list of labels attached to actions for filtering/grouping.
+- **Lists** (a.k.a. custom lists or user lists) — user-created lists of items (e.g. Emotions, Food, Books, Places). Each list contains **items**.
+- **Items** — entries inside a list (e.g. "Happy" in Emotions, "Pizza" in Food).
+
+When the user writes "actions, tags, and lists" they mean all lists — both system (actions, tags) and custom (any user-created list). Custom lists vary per user so they are referred to collectively as "lists".
+
 ## Code Rules
 
 - **Android first**: all features must work on Android via Capacitor/SQLite. Browser support is secondary (dev only).
@@ -93,3 +102,5 @@ Examples: `default/`
 - **Database backups and migrations**: it's important to support backup feature throughout entire development process. Any changes in database should be reflected in backup feature, taking into account compability (old backups should be 100% compatible with a new version). Also migrations should be supported when there is any change in database.
 - **Pages**: All pages are located in pages folder and should have only one root component inside `ion-content` and its skeleton. All logic should be incapsulated into that component. Pages handle loading process - showing a skeleton while loading. By default a page should use default skeleton. If a special skeleton is required it should be created into skeleton folder and used on the page.
 - **Reserved name prefix**: Entity names (actions, tags, metrics, and any future entities) must never start with `TK_`. `TK_` is reserved for translation keys. All entity name form controls must include `reservedPrefixValidator` from `src/app/validators/reserved-prefix.validator.ts` in their `validators` array.
+- **Error handling**: Errors must never be swallowed silently. Whenever an async operation can fail, catch the error, show the user a `TK_AN_ERROR_OCCURRED` error toast via `ToastService`, and log the full error to `Documents/TrackLab/logs/` via `LogService` (native only). Use a `try/catch` with the context string `'ClassName.methodName'` passed to `logService.error()`.
+- **Filter loading**: Any page that has filters (e.g. a date period selector) must show a loading modal via `LoadingService` while the filtered data is being fetched. Wrap the fetch in `try/catch/finally` — call `loadingService.show('TK_LOADING')` before the fetch, `loadingService.hide()` in `finally`, and handle errors per the error handling rule above.

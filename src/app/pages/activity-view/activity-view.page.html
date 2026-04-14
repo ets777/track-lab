@@ -1,7 +1,12 @@
 <ion-header>
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
-    <ion-title>{{ entitiesToString(activity?.actions ?? []) }}</ion-title>
+    <ion-title>{{ 'TK_ACTIVITY' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openMenu()">
+        <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -11,6 +16,17 @@
       {{ activity.date }}, {{ activity.startTime }}
       @if (activity.endTime) { — {{ activity.endTime }} }
     </p>
+
+    @if (activity.actions.length) {
+      <h2>{{ 'TK_ACTIONS' | translate }}</h2>
+      <ion-list>
+        @for (action of activity.actions; track action.id) {
+          <ion-item button (click)="router.navigate(['/action', action.id])">
+            <ion-label>{{ action.name }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
 
     @if (activity.comment) {
       <p>{{ activity.comment }}</p>

@@ -9,12 +9,13 @@ import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
   selector: 'app-lists',
   templateUrl: './lists.page.html',
   styleUrls: ['./lists.page.scss'],
-  imports: [IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule],
+  imports: [IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, DefaultSkeletonComponent],
 })
 export class ListsPage {
   private listService = inject(ListService);
@@ -23,7 +24,7 @@ export class ListsPage {
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
-  lists: IList[] = [];
+  lists: IList[] | null = null;
 
   getListActionSheetButtons(list: IList) {
     const buttons: any[] = [
@@ -42,8 +43,14 @@ export class ListsPage {
     return buttons;
   }
 
+  ionViewWillEnter() {
+    this.lists = null;
+  }
+
   async ionViewDidEnter() {
-    await this.fetchLists();
+    this.lists = null;
+    await new Promise(resolve => setTimeout(resolve));
+    this.lists = await this.listService.getAll();
   }
 
   async fetchLists() {
@@ -51,7 +58,7 @@ export class ListsPage {
   }
 
   async viewList(id: number) {
-    await this.router.navigate(['/list', id]);
+    await this.router.navigate(['/library', id]);
   }
 
   async goTo(path: string) {
@@ -59,7 +66,7 @@ export class ListsPage {
   }
 
   async goToAddPage() {
-    await this.router.navigate(['/list/add']);
+    await this.router.navigate(['/library/add']);
   }
 
   async doListAction(event: CustomEvent<OverlayEventDetail>, listId: number) {
@@ -67,10 +74,10 @@ export class ListsPage {
 
     switch (action) {
       case 'view':
-        await this.router.navigate(['/list', listId]);
+        await this.router.navigate(['/library', listId]);
         break;
       case 'edit':
-        await this.router.navigate(['/list/edit', listId]);
+        await this.router.navigate(['/library/edit', listId]);
         break;
       case 'delete':
         await this.deleteList(listId);

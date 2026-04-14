@@ -25,6 +25,7 @@ export class ToastComponent implements OnInit {
 
   show(toast: IToast) {
     this.title = toast.title;
+    this.icon = '';
     if (toast.icon) {
       this.icon = toast.icon;
     } else if (toast.type) {

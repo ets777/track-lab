@@ -35,7 +35,7 @@ export class ItemAddPage {
     await this.itemService.add({ name: this.form.value.name!, listId: this.listId });
     this.hookService.emit({ type: 'item.added', payload: {} });
     this.toastService.enqueue({ title: 'TK_ITEM_ADDED_SUCCESSFULLY', type: 'success' });
-    await this.router.navigate(['/list', this.listId]);
+    await this.router.navigate(['/library', this.listId]);
   }
 
   isFormValid() {

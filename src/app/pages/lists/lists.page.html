@@ -16,28 +16,32 @@
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  <ion-list>
-    <ion-item (click)="goTo('/library')">{{ 'TK_ACTIONS' | translate }}</ion-item>
-    <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-    @for (list of lists; track list.id) {
-      <ion-item class="list" (click)="viewList(list.id)">
-        <ion-label>
-          <div class="title">{{ list.name | translate }}</div>
-        </ion-label>
-        <ion-buttons class="item-buttons">
-          <ion-button id="open-action-sheet-list-{{list.id}}" (click)="$event.stopPropagation()">
-            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-action-sheet
-          trigger="open-action-sheet-list-{{list.id}}"
-          header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="getListActionSheetButtons(list)"
-          (didDismiss)="doListAction($event, list.id)"
-        ></ion-action-sheet>
-      </ion-item>
-    } @empty {
-      <ion-text style="display: block; padding: 16px">{{ 'TK_LISTS_ARE_EMPTY' | translate }}</ion-text>
-    }
-  </ion-list>
+  @if (lists === null) {
+    <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
+  } @else {
+    <ion-list>
+      <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>
+      <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
+      @for (list of lists; track list.id) {
+        <ion-item class="list" (click)="viewList(list.id)">
+          <ion-label>
+            <div class="title">{{ list.name | translate }}</div>
+          </ion-label>
+          <ion-buttons class="item-buttons">
+            <ion-button id="open-action-sheet-list-{{list.id}}" (click)="$event.stopPropagation()">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-action-sheet
+            trigger="open-action-sheet-list-{{list.id}}"
+            header="{{ 'TK_ACTIONS' | translate }}"
+            [buttons]="getListActionSheetButtons(list)"
+            (didDismiss)="doListAction($event, list.id)"
+          ></ion-action-sheet>
+        </ion-item>
+      } @empty {
+        <ion-text style="display: block; padding: 16px">{{ 'TK_LISTS_ARE_EMPTY' | translate }}</ion-text>
+      }
+    </ion-list>
+  }
 </ion-content>

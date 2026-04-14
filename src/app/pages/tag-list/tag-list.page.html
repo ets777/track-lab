@@ -10,22 +10,26 @@
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  <ion-list>
-    @for (tag of tags; track tag.id) {
-      <ion-item>
-        <ion-label style="cursor: pointer" (click)="goToViewPage(tag.id)">{{ tag.name }}</ion-label>
-        <ion-buttons class="item-buttons">
-          <ion-button id="open-action-sheet-tag-{{tag.id}}">
-            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-action-sheet
-          trigger="open-action-sheet-tag-{{tag.id}}"
-          header="{{ 'TK_TAGS' | translate }}"
-          [buttons]="tagActionSheetButtons"
-          (didDismiss)="doTagAction($event, tag.id)"
-        ></ion-action-sheet>
-      </ion-item>
-    }
-  </ion-list>
+  @if (isLoading) {
+    <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
+  } @else {
+    <ion-list>
+      @for (tag of tags; track tag.id) {
+        <ion-item>
+          <ion-label style="cursor: pointer" (click)="goToViewPage(tag.id)">{{ tag.name }}</ion-label>
+          <ion-buttons class="item-buttons">
+            <ion-button id="open-action-sheet-tag-{{tag.id}}">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-action-sheet
+            trigger="open-action-sheet-tag-{{tag.id}}"
+            header="{{ 'TK_TAGS' | translate }}"
+            [buttons]="tagActionSheetButtons"
+            (didDismiss)="doTagAction($event, tag.id)"
+          ></ion-action-sheet>
+        </ion-item>
+      }
+    </ion-list>
+  }
 </ion-content>
