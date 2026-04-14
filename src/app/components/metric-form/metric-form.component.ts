@@ -19,6 +19,7 @@ import { filterUniqueElements } from 'src/app/functions/item';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { reservedMetricNameValidator } from 'src/app/validators-async/reserved-metric-name.validator';
+import { reservedPrefixValidator } from 'src/app/validators/reserved-prefix.validator';
 import { ToastService } from 'src/app/services/toast.service';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 
@@ -95,7 +96,7 @@ export class MetricFormComponent implements OnInit {
   async ngOnInit() {
     this.metricForm = this.formBuilder.group({
       name: ['', {
-        validators: [Validators.required],
+        validators: [Validators.required, reservedPrefixValidator],
         asyncValidators: [
           existingEntityValidator(this.metricService, this.metric?.name),
           reservedMetricNameValidator(this.metricService, this.metric),

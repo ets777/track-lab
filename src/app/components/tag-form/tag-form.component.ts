@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { ITag } from 'src/app/db/models/tag';
 import { tagValidator } from 'src/app/validators/tag.validator';
+import { reservedPrefixValidator } from 'src/app/validators/reserved-prefix.validator';
 import { TagService } from 'src/app/services/tag.service';
 
 export type TagForm = {
@@ -38,6 +39,7 @@ export class TagFormComponent implements OnInit {
         validators: [
           Validators.required,
           tagValidator,
+          reservedPrefixValidator,
         ],
       }],
       isHidden: [false],

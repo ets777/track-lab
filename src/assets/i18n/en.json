@@ -296,6 +296,7 @@
   "TK_TAG_UPDATED_SUCCESSFULLY": "Tag updated successfully",
   "TK_TAG": "Tag",
   "TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES": "Tags can only contain letters, digits, hyphens and underscores",
+  "TK_NAME_CANNOT_START_WITH_TK_PREFIX": "Name cannot start with TK_",
   "TK_TAGS": "Tags",
   "TK_ITEMS": "Items",
   "TK_TAUGHT": "Taught",

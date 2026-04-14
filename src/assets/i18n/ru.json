@@ -296,6 +296,7 @@
   "TK_TAG_UPDATED_SUCCESSFULLY": "Тег изменён успешно",
   "TK_TAG": "Тег",
   "TK_TAGS_CAN_ONLY_CONTAIN_LETTERS_DIGITS_HYPHENS_AND_UNDERSCORES": "Теги могут содержать только буквы, цифры, дефисы и подчеркивания",
+  "TK_NAME_CANNOT_START_WITH_TK_PREFIX": "Имя не может начинаться с TK_",
   "TK_TAGS": "Теги",
   "TK_ITEMS": "Элементы",
   "TK_TAUGHT": "Учил",
