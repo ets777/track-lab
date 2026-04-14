@@ -116,6 +116,7 @@ const helperRevision1 = {
     backup.lists = [{
       id: emotionListId,
       name: 'TK_EMOTIONS',
+      isBase: true,
     }];
 
     backup.activityMetrics = [];

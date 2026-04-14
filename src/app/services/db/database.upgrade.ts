@@ -188,4 +188,13 @@ export const databaseUpgrades = [
       `INSERT OR IGNORE INTO items (listId, name) SELECT id, 'Surprise' FROM lists WHERE name = 'TK_EMOTIONS';`,
     ],
   },
+  {
+    toVersion: 6,
+    statements: [
+      `UPDATE lists SET isBase = 1 WHERE isBase != 1 AND name IN ('TK_EMOTIONS', 'Emotions', 'Эмоции');`,
+      `UPDATE metrics SET isBase = 1 WHERE isBase != 1 AND name IN ('TK_MOOD', 'Mood', 'Настроение');`,
+      `UPDATE metrics SET isBase = 1 WHERE isBase != 1 AND name IN ('TK_ENERGY', 'Energy', 'Энергия');`,
+      `UPDATE metrics SET isBase = 1 WHERE isBase != 1 AND name IN ('TK_SATIETY', 'Satiety', 'Сытость');`,
+    ],
+  },
 ];
