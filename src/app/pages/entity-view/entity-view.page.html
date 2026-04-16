@@ -11,33 +11,37 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  @if (entityType === 'action' && actionTags.length) {
-    <h2>{{ 'TK_TAGS' | translate }}</h2>
-    <app-tags [tags]="actionTags"></app-tags>
-  }
-
-  <form [formGroup]="filterForm">
-    <app-date-period-input formControlName="datePeriod" [storageKey]="storageKey"></app-date-period-input>
-  </form>
-
-  @if (chartData !== undefined) {
-    <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-    @if (totalTimeMinutes === 0) {
-      <p>{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</p>
-    } @else {
-      <p>{{ 'TK_TOTAL_TIME' | translate }}: {{ getTimeString(totalTimeMinutes) }}</p>
-      <p>{{ 'TK_AVERAGE_PER_DAY' | translate }}: {{ getTimeString(totalTimeMinutes / (activitiesGroupedByDate.length || 1)) }}</p>
-    }
-    <canvas baseChart [data]="chartData" type="bar"></canvas>
-  }
-
-  <h2>{{ 'TK_ACTIVITIES' | translate }}</h2>
-  @if (activitiesGroupedByDate.length) {
-    @for (day of activitiesGroupedByDate; track day.date) {
-      <h3>{{ day.date }}</h3>
-      <app-activity-list [activities]="day.activities"></app-activity-list>
-    }
+  @if (isLoading) {
+    <app-default-skeleton></app-default-skeleton>
   } @else {
-    <div>{{ 'TK_NO_ACTIVITIES_FOR_SELECTED_PERIOD' | translate }}</div>
+    @if (entityType === 'action' && actionTags.length) {
+      <h2>{{ 'TK_TAGS' | translate }}</h2>
+      <app-tags [tags]="actionTags"></app-tags>
+    }
+
+    <form [formGroup]="filterForm">
+      <app-date-period-input formControlName="datePeriod" [storageKey]="storageKey"></app-date-period-input>
+    </form>
+
+    @if (chartData !== undefined) {
+      <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
+      @if (totalTimeMinutes === 0) {
+        <p>{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</p>
+      } @else {
+        <p>{{ 'TK_TOTAL_TIME' | translate }}: {{ getTimeString(totalTimeMinutes) }}</p>
+        <p>{{ 'TK_AVERAGE_PER_DAY' | translate }}: {{ getTimeString(totalTimeMinutes / (activitiesGroupedByDate.length || 1)) }}</p>
+      }
+      <canvas baseChart [data]="chartData" type="bar"></canvas>
+    }
+
+    <h2>{{ 'TK_ACTIVITIES' | translate }}</h2>
+    @if (activitiesGroupedByDate.length) {
+      @for (day of activitiesGroupedByDate; track day.date) {
+        <h3>{{ day.date }}</h3>
+        <app-activity-list [activities]="day.activities"></app-activity-list>
+      }
+    } @else {
+      <div>{{ 'TK_NO_ACTIVITIES_FOR_SELECTED_PERIOD' | translate }}</div>
+    }
   }
 </ion-content>

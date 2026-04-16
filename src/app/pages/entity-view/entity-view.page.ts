@@ -24,6 +24,8 @@ import { TagsComponent } from 'src/app/components/tags/tags.component';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
+import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 export type EntityType = 'action' | 'tag' | 'item';
 
@@ -36,7 +38,7 @@ export type EntityType = 'action' | 'tag' | 'item';
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon,
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     ActivityListComponent, BackButtonComponent, TagsComponent,
-    DatePeriodInputComponent, BaseChartDirective,
+    DatePeriodInputComponent, BaseChartDirective, DefaultSkeletonComponent,
   ],
 })
 export class EntityViewPage {
@@ -59,6 +61,7 @@ export class EntityViewPage {
   entityId: number;
   entityName = '';
   actionTags: ITag[] = [];
+  isLoading = true;
 
   totalTimeMinutes = 0;
   activities: IActivity[] = [];
@@ -101,14 +104,27 @@ export class EntityViewPage {
     return buttons;
   }
 
+  ionViewWillEnter() {
+    this.isLoading = true;
+  }
+
   async ionViewDidEnter() {
-    await this.loadEntity();
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
+    try {
+      await this.loadEntity();
+    } catch (error) {
+      await this.logService.error('EntityViewPage.ionViewDidEnter', error);
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+    } finally {
+      this.isLoading = false;
+    }
     if (this.filterForm.valid) {
       await this.setActivitiesData();
     }
   }
 
-  async loadEntity() {
+  private async loadEntity() {
     switch (this.entityType) {
       case 'action': {
         const action = await this.actionService.getEnriched(this.entityId);
@@ -288,7 +304,7 @@ export class EntityViewPage {
     while (!dates.includes(endDate)) {
       dates.push(format(addDays(new Date(startDate), i), 'yyyy-MM-dd'));
       i++;
-      if (i > 31) break;
+      if (i > MAX_DATE_RANGE_DAYS) break;
     }
 
     const durationData = dates.map(date => {

@@ -2,6 +2,8 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { differenceInDays } from 'date-fns';
 import { isDateValid } from '../functions/date';
 
+export const MAX_DATE_RANGE_DAYS = 31;
+
 export function maxDateRangeValidator(maxDaysRange: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const start = control.get('startDate')?.value;

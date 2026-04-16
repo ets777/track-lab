@@ -10,7 +10,7 @@ import { DatePeriod } from 'src/app/types/date-period';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { dateRangeValidator } from 'src/app/validators/date-range.validator';
-import { maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
+import { MAX_DATE_RANGE_DAYS, maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
 
 export type PeriodName = 'week' | '2weeks' | 'month';
 
@@ -56,7 +56,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
       {
         validators: [
           dateRangeValidator,
-          maxDateRangeValidator(31),
+          maxDateRangeValidator(MAX_DATE_RANGE_DAYS),
         ]
       },
     );
