@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.5] - 2026-04-17
+
+### Added
+
+- Ability to link any metric or library to an activity
+- Links to actions and lists from the activity view
+- Context menu on all view pages
+- Search for actions, tags, and lists
+- Unified view page for actions, tags, and lists (displays a list of related activities and a graph)
+
+### Fixed
+
+- Bug related to action replacements
+- Emotions list after migration from older versions
+- Bug preventing users from changing letter case in names
+- Metrics not resetting after adding a new activity
+- Redirection after action replacement
+
 ## [0.5.4] - 2026-04-13
 
 ### Added

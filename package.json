@@ -1,6 +1,6 @@
 {
   "name": "track-lab",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "author": "Dmitry Klishev",
   "homepage": "https://etsbox.ru/tracklab",
   "scripts": {
@@ -17,7 +17,8 @@
     "build:prod": "APP_ENV=prod ng build --configuration=production",
     "build:dev": "APP_ENV=dev ng build --configuration=development",
     "android:prod": "APP_ENV=prod ionic capacitor run android --configuration=production",
-    "android:dev": "APP_ENV=dev ionic capacitor run android --configuration=development -l --external"
+    "android:dev": "APP_ENV=dev ionic capacitor run android --configuration=development -l --external",
+    "apk": "npm install && npm run build:prod && npx cap sync android && npx cap copy && npx cap open android"
   },
   "private": true,
   "dependencies": {

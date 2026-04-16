@@ -91,6 +91,10 @@ Examples: `default/`
 
 When the user writes "actions, tags, and lists" they mean all lists — both system (actions, tags) and custom (any user-created list). Custom lists vary per user so they are referred to collectively as "lists".
 
+## Metric Data Timing
+
+Metric values recorded on an activity are considered actual at the **end time** of that activity. Users log activities after they happen, so metric values reflect the state at the moment the activity ended — not when it started. Graphs and interpolations must use `endTime` as the reference point for metric data, not `startTime`.
+
 ## Code Rules
 
 - **Android first**: all features must work on Android via Capacitor/SQLite. Browser support is secondary (dev only).
