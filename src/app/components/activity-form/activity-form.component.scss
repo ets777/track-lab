@@ -39,6 +39,38 @@ ion-checkbox[slot="start"] {
   --size: 24px;
 }
 
+.group-header-content {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.group-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ion-text-color, inherit);
+}
+
+.header-add-btn {
+  --padding-start: 4px;
+  --padding-end: 4px;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.remove-btn {
+  align-self: center;
+  --padding-start: 4px;
+  --padding-end: 4px;
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
 ion-range .range-value {
   font-size: 1.4rem;
   font-weight: 600;

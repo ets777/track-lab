@@ -403,5 +403,7 @@
   "TK_KEEPER_OF_KNOWLEDGE": "Keeper of knowledge",
   "TK_ADD_100_ITEMS": "Add 100 list items",
   "TK_PERSONAL_DATABASE": "Personal database",
-  "TK_ADD_1000_ITEMS": "Add 1000 list items"
+  "TK_ADD_1000_ITEMS": "Add 1000 list items",
+  "TK_ADD_LIBRARY_ITEM": "Add metric or list",
+  "TK_SEARCH": "Search"
 }

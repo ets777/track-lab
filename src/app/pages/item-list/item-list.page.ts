@@ -26,13 +26,15 @@ export class ItemListPage {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
   private translate = inject(TranslateService);
-  private router = inject(Router);
+  router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
   items: IItemWithList[] = [];
 
   public itemActionSheetButtons = [
+    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
 
@@ -59,8 +61,16 @@ export class ItemListPage {
   async doItemAction(event: CustomEvent<OverlayEventDetail>, itemId: number) {
     const action = event.detail.data?.action;
 
-    if (action === 'delete') {
-      await this.deleteItem(itemId);
+    switch (action) {
+      case 'view':
+        await this.router.navigate(['/item', itemId]);
+        break;
+      case 'edit':
+        await this.router.navigate(['/item/edit', itemId]);
+        break;
+      case 'delete':
+        await this.deleteItem(itemId);
+        break;
     }
   }
 

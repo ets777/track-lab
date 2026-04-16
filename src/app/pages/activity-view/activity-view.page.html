@@ -12,10 +12,19 @@
 
 <ion-content class="ion-padding">
   @if (activity) {
-    <p>
-      {{ activity.date }}, {{ activity.startTime }}
-      @if (activity.endTime) { — {{ activity.endTime }} }
-    </p>
+    <div class="info-row">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span>{{ activity.date }}</span>
+    </div>
+    <div class="info-row">
+      <ion-icon name="time-outline"></ion-icon>
+      <span>
+        {{ activity.startTime }}
+        @if (activity.endTime) {
+          — {{ activity.endTime }} ({{ getTimeString(getDurationMinutes()) }})
+        }
+      </span>
+    </div>
 
     @if (activity.actions.length) {
       <h2>{{ 'TK_ACTIONS' | translate }}</h2>
@@ -26,6 +35,19 @@
           </ion-item>
         }
       </ion-list>
+    }
+
+    @if (itemsGroupedByList.length) {
+      @for (group of itemsGroupedByList; track group.list.id) {
+        <h2>{{ group.list.name | translate }}</h2>
+        <ion-list>
+          @for (item of group.items; track item.id) {
+            <ion-item button (click)="router.navigate(['/item', item.id])">
+              <ion-label>{{ item.name }}</ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      }
     }
 
     @if (activity.comment) {

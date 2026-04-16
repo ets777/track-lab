@@ -39,7 +39,8 @@ export const routes: Routes = [
       },
       {
         path: ':id',
-        loadComponent: () => import('./pages/action-view/action-view.page').then(m => m.ActionViewPage),
+        loadComponent: () => import('./pages/entity-view/entity-view.page').then(m => m.EntityViewPage),
+        data: { entityType: 'action' },
       },
     ],
   },
@@ -56,7 +57,8 @@ export const routes: Routes = [
       },
       {
         path: ':id',
-        loadComponent: () => import('./pages/tag-view/tag-view.page').then(m => m.TagViewPage)
+        loadComponent: () => import('./pages/entity-view/entity-view.page').then(m => m.EntityViewPage),
+        data: { entityType: 'tag' },
       },
     ],
   },
@@ -161,12 +163,22 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/item-list/item-list.page').then(m => m.ItemListPage)
   },
   {
-    path: 'item/add',
-    loadComponent: () => import('./pages/item-add/item-add.page').then(m => m.ItemAddPage)
-  },
-  {
-    path: 'item/edit/:id',
-    loadComponent: () => import('./pages/item-edit/item-edit.page').then(m => m.ItemEditPage)
+    path: 'item',
+    children: [
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/item-add/item-add.page').then(m => m.ItemAddPage),
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/item-edit/item-edit.page').then(m => m.ItemEditPage),
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/entity-view/entity-view.page').then(m => m.EntityViewPage),
+        data: { entityType: 'item' },
+      },
+    ],
   },
   {
     path: '',

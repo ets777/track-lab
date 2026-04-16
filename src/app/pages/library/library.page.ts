@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonSearchbar } from '@ionic/angular/standalone';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
@@ -18,7 +18,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonSearchbar, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);
@@ -30,6 +30,12 @@ export class LibraryPage {
 
   actions: IAction[] = [];
   isLoading = true;
+  searchQuery = '';
+
+  get filteredActions(): IAction[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.actions.filter(a => a.name.toLowerCase().includes(q)) : this.actions;
+  }
 
   public actionActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },

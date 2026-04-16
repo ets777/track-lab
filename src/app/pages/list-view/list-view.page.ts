@@ -20,7 +20,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
 })
 export class ListViewPage {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
   private listService = inject(ListService);
   private itemService = inject(ItemService);
   private alertController = inject(AlertController);
@@ -33,6 +33,7 @@ export class ListViewPage {
   items: IItem[] | null = null;
 
   itemActionSheetButtons = [
+    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
     { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
@@ -109,6 +110,9 @@ export class ListViewPage {
 
   async doItemAction(action: string, itemId: number) {
     switch (action) {
+      case 'view':
+        await this.router.navigate(['/item', itemId]);
+        break;
       case 'edit':
         await this.router.navigate(['/item/edit', itemId]);
         break;

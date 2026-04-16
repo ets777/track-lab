@@ -6,6 +6,11 @@
         (ionInput)="onInput($event)"
         (ionBlur)="hideSuggestions()"
     ></ion-input>
+    @if (removable) {
+        <ion-button slot="end" fill="clear" size="small" (click)="removed.emit()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+        </ion-button>
+    }
 </ion-item>
 
 @if (showSuggestions) {

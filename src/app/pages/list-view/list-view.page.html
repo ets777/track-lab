@@ -23,7 +23,7 @@
     <ion-list>
       @for (item of items; track item.id) {
         <ion-item>
-          <ion-label>{{ item.name }}</ion-label>
+          <ion-label style="cursor: pointer" (click)="router.navigate(['/item', item.id])">{{ item.name }}</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="openItemMenu(item.id)">
               <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>

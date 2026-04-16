@@ -267,13 +267,18 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     );
 
     const startHour = new Time(first?.startTime).getHour();
-    let lastHour = new Time(last?.startTime).getHour();
+    const lastActivityStartHour = new Time(last?.startTime).getHour();
+    let lastHour = new Time(last?.endTime).getHour();
 
-    if (startHour > lastHour) {
+    if (lastActivityStartHour > lastHour) {
+      // Last activity crosses midnight — show until midnight (00:00)
+      lastHour = 24;
+    } else if (startHour > lastHour) {
+      // Overall range crosses midnight
       lastHour += 24;
     }
 
-    for (let hour = startHour; hour <= lastHour + 1; hour++) {
+    for (let hour = startHour; hour <= lastHour; hour++) {
       const currentTime = new Time(hour % 24, 0, 0);
       const label = currentTime.toString(false);
       const value = this.getInterpolatedValue(sorted, hour, metric);

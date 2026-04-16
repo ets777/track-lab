@@ -1,7 +1,9 @@
 import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton, IonModal, IonSearchbar, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { add, close } from 'ionicons/icons';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
@@ -66,7 +68,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent],
+  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -121,6 +123,15 @@ export class ActivityFormComponent implements OnInit {
   public standaloneLists: IList[] = [];
   public metricEnabled: Record<string, boolean> = {};
 
+  manuallyAddedMetricIds = new Set<number>();
+  manuallyAddedListIds = new Set<number>();
+  metricsGroupOpen = this.loadGroupState('metrics', true);
+  listsGroupOpen = this.loadGroupState('lists', true);
+  isAddLibraryModalOpen = false;
+  modalFilterType: 'metric' | 'list' = 'metric';
+  librarySearchQuery = '';
+  librarySearchResults: { type: 'metric' | 'list'; id: number; name: string }[] = [];
+
   filteredActionSuggestions: string[] = [];
   private allActionSuggestions: string[] = [];
   showActionSuggestions = false;
@@ -128,6 +139,7 @@ export class ActivityFormComponent implements OnInit {
   private currentTime: string = '00:00';
 
   constructor() {
+    addIcons({ add, close });
     this.activityForm = this.formBuilder.group({
       actions: ['', [Validators.required, duplicatedItemsValidator]],
       startTime: ['', [Validators.required, timeFormatValidator]],
@@ -143,9 +155,144 @@ export class ActivityFormComponent implements OnInit {
     }, 5000);
   }
 
+  get manuallyAddedMetricsNotInStandalone(): IMetric[] {
+    const standaloneIds = new Set(this.standaloneMetrics.map(m => m.id));
+    return this.allMetrics.filter(m =>
+      this.manuallyAddedMetricIds.has(m.id) && !standaloneIds.has(m.id)
+    );
+  }
+
+  get manuallyAddedListsNotInStandalone(): IList[] {
+    const standaloneIds = new Set(this.standaloneLists.map(l => l.id));
+    return this.allLists.filter(l =>
+      this.manuallyAddedListIds.has(l.id) && !standaloneIds.has(l.id)
+    );
+  }
+
   async refreshMetricsAndLists() {
     await this.loadMetrics();
     await this.loadLists();
+    this.initManuallyLinked();
+  }
+
+  initManuallyLinked() {
+    const standaloneMetricIds = new Set(this.standaloneMetrics.map(m => m.id));
+    for (const metricIdStr of Object.keys(this.activityMetricValues ?? {})) {
+      const metricId = Number(metricIdStr);
+      const metric = this.allMetrics.find(m => m.id === metricId);
+      if (metric && !standaloneMetricIds.has(metricId)) {
+        this.manuallyAddedMetricIds.add(metricId);
+        this.metricEnabled[`metric_${metricId}`] = true;
+      }
+    }
+
+    const standaloneListIds = new Set(this.standaloneLists.map(l => l.id));
+    for (const [listIdStr, value] of Object.entries(this.activityItemValues ?? {})) {
+      const listId = Number(listIdStr);
+      const list = this.allLists.find(l => l.id === listId && !l.isHidden);
+      if (list && !standaloneListIds.has(listId) && value) {
+        this.manuallyAddedListIds.add(listId);
+      }
+    }
+  }
+
+  openAddMetricModal(event: Event) {
+    event.stopPropagation();
+    this.modalFilterType = 'metric';
+    this.isAddLibraryModalOpen = true;
+    this.librarySearchQuery = '';
+    this.updateLibrarySearch();
+  }
+
+  openAddListModal(event: Event) {
+    event.stopPropagation();
+    this.modalFilterType = 'list';
+    this.isAddLibraryModalOpen = true;
+    this.librarySearchQuery = '';
+    this.updateLibrarySearch();
+  }
+
+  onLibrarySearch(event: any) {
+    this.librarySearchQuery = event.detail.value ?? '';
+    this.updateLibrarySearch();
+  }
+
+  updateLibrarySearch() {
+    const query = this.librarySearchQuery.toLowerCase();
+
+    if (this.modalFilterType === 'metric') {
+      const standaloneMetricIds = new Set(this.standaloneMetrics.map(m => m.id));
+      this.librarySearchResults = this.allMetrics
+        .filter(m =>
+          !standaloneMetricIds.has(m.id) &&
+          !this.manuallyAddedMetricIds.has(m.id) &&
+          (!query || this.translate.instant(m.name).toLowerCase().includes(query))
+        )
+        .map(m => ({ type: 'metric' as const, id: m.id, name: m.name }));
+    } else {
+      const standaloneListIds = new Set(this.standaloneLists.map(l => l.id));
+      this.librarySearchResults = this.allLists
+        .filter(l =>
+          !l.isHidden &&
+          !standaloneListIds.has(l.id) &&
+          !this.manuallyAddedListIds.has(l.id) &&
+          (!query || this.translate.instant(l.name).toLowerCase().includes(query))
+        )
+        .map(l => ({ type: 'list' as const, id: l.id, name: l.name }));
+    }
+  }
+
+  selectLibraryItem(item: { type: 'metric' | 'list'; id: number; name: string }) {
+    if (item.type === 'metric') {
+      this.addManualMetric(item.id);
+    } else {
+      this.addManualList(item.id);
+    }
+    this.isAddLibraryModalOpen = false;
+  }
+
+  addManualMetric(metricId: number) {
+    this.manuallyAddedMetricIds.add(metricId);
+    this.metricEnabled[`metric_${metricId}`] = true;
+    this.metricsGroupOpen = true;
+    this.saveGroupState('metrics', true);
+  }
+
+  removeManualMetric(metricId: number) {
+    this.manuallyAddedMetricIds.delete(metricId);
+    const key = `metric_${metricId}`;
+    this.metricEnabled[key] = false;
+    this.metricsForm.get(key)?.reset();
+  }
+
+  addManualList(listId: number) {
+    this.manuallyAddedListIds.add(listId);
+    this.listsGroupOpen = true;
+    this.saveGroupState('lists', true);
+  }
+
+  removeManualList(listId: number) {
+    this.manuallyAddedListIds.delete(listId);
+    this.listsForm.get(`list_${listId}`)?.setValue('');
+  }
+
+  private loadGroupState(key: string, defaultOpen: boolean): boolean {
+    const stored = localStorage.getItem(`activity-form:${key}-open`);
+    return stored === null ? defaultOpen : stored === 'true';
+  }
+
+  private saveGroupState(key: string, open: boolean) {
+    localStorage.setItem(`activity-form:${key}-open`, String(open));
+  }
+
+  onMetricsGroupChange(event: any) {
+    this.metricsGroupOpen = !!event.detail.value;
+    this.saveGroupState('metrics', this.metricsGroupOpen);
+  }
+
+  onListsGroupChange(event: any) {
+    this.listsGroupOpen = !!event.detail.value;
+    this.saveGroupState('lists', this.listsGroupOpen);
   }
 
   async ngOnInit() {
@@ -289,7 +436,11 @@ export class ActivityFormComponent implements OnInit {
   }
 
   getMetricRecords(): { metricId: number; value: number }[] {
-    return this.standaloneMetrics
+    const standaloneIds = new Set(this.standaloneMetrics.map(m => m.id));
+    const manualOnlyMetrics = this.allMetrics.filter(m =>
+      this.manuallyAddedMetricIds.has(m.id) && !standaloneIds.has(m.id)
+    );
+    return [...this.standaloneMetrics, ...manualOnlyMetrics]
       .map((m) => ({
         metricId: m.id,
         value: this.metricsForm.get(`metric_${m.id}`)?.value,
@@ -346,7 +497,11 @@ export class ActivityFormComponent implements OnInit {
   }
 
   getListItemRecords(): { listId: number; itemNames: string[] }[] {
-    return this.standaloneLists
+    const standaloneIds = new Set(this.standaloneLists.map(l => l.id));
+    const manualOnlyLists = this.allLists.filter(l =>
+      this.manuallyAddedListIds.has(l.id) && !standaloneIds.has(l.id)
+    );
+    return [...this.standaloneLists, ...manualOnlyLists]
       .map(l => ({
         listId: l.id,
         itemNames: (this.listsForm.get(`list_${l.id}`)?.value ?? '')

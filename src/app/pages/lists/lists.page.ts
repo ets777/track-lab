@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonMenuButton, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonMenuButton, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet, IonSearchbar } from '@ionic/angular/standalone';
 import { ListService } from 'src/app/services/list.service';
 import { IList } from 'src/app/db/models/list';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -15,7 +15,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-lists',
   templateUrl: './lists.page.html',
   styleUrls: ['./lists.page.scss'],
-  imports: [IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, DefaultSkeletonComponent],
+  imports: [IonSearchbar, IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, DefaultSkeletonComponent],
 })
 export class ListsPage {
   private listService = inject(ListService);
@@ -25,6 +25,22 @@ export class ListsPage {
   private toastService = inject(ToastService);
 
   lists: IList[] | null = null;
+  searchQuery = '';
+
+  get showActions(): boolean {
+    const q = this.searchQuery.trim().toLowerCase();
+    return !q || this.translate.instant('TK_ACTIONS').toLowerCase().includes(q);
+  }
+
+  get showTags(): boolean {
+    const q = this.searchQuery.trim().toLowerCase();
+    return !q || this.translate.instant('TK_TAGS').toLowerCase().includes(q);
+  }
+
+  get filteredLists(): IList[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? (this.lists ?? []).filter(l => l.name.toLowerCase().includes(q)) : (this.lists ?? []);
+  }
 
   getListActionSheetButtons(list: IList) {
     const buttons: any[] = [

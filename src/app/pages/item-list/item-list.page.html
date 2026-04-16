@@ -10,7 +10,7 @@
   <ion-list>
     @for (item of items; track item.id) {
       <ion-item>
-        <ion-label>
+        <ion-label style="cursor: pointer" (click)="router.navigate(['/item', item.id])">
           <div>{{ item.name }}</div>
           <ion-note>{{ item.listName }}</ion-note>
         </ion-label>

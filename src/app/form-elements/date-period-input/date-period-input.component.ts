@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, forwardRef, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, forwardRef, inject } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
 import { MaskitoDirective } from '@maskito/angular';
@@ -34,6 +34,7 @@ export type PeriodName = 'week' | '2weeks' | 'month';
 })
 export class DatePeriodInputComponent implements ControlValueAccessor, Validator, AfterViewInit {
   private formBuilder = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
   @Input() storageKey?: string;
 
@@ -72,6 +73,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
     }
 
     this.setDefaultDates();
+    this.cdr.detectChanges();
   }
 
   private onChange = (_: any) => { };

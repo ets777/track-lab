@@ -19,10 +19,19 @@
   @if (lists === null) {
     <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
   } @else {
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      placeholder="{{ 'TK_SEARCH' | translate }}"
+      [debounce]="0"
+    ></ion-searchbar>
     <ion-list>
-      <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>
-      <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-      @for (list of lists; track list.id) {
+      @if (showActions) {
+        <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>
+      }
+      @if (showTags) {
+        <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
+      }
+      @for (list of filteredLists; track list.id) {
         <ion-item class="list" (click)="viewList(list.id)">
           <ion-label>
             <div class="title">{{ list.name | translate }}</div>

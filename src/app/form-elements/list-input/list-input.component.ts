@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, Output, forwardRef, Input, OnInit, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { IonInput, IonItem, IonList } from "@ionic/angular/standalone";
+import { IonInput, IonItem, IonList, IonButton, IonIcon } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemService } from 'src/app/services/item.service';
+import { addIcons } from 'ionicons';
+import { close } from 'ionicons/icons';
 
 @Component({
-  imports: [IonList, IonItem, IonInput, TranslateModule, CommonModule],
+  imports: [IonList, IonItem, IonInput, IonButton, IonIcon, TranslateModule, CommonModule],
   selector: 'app-list-input',
   templateUrl: './list-input.component.html',
   styleUrl: './list-input.component.scss',
@@ -24,11 +26,17 @@ export class ListInputComponent implements ControlValueAccessor, OnInit {
 
   @Input() listId!: number;
   @Input() label: string = '';
+  @Input() removable = false;
+  @Output() removed = new EventEmitter<void>();
 
   filteredSuggestions: string[] = [];
   allSuggestions: string[] = [];
   showSuggestions = false;
   value: string = '';
+
+  constructor() {
+    addIcons({ close });
+  }
 
   async ngOnInit() {
     const items = await this.itemService.getAllWhereEquals('listId', this.listId);

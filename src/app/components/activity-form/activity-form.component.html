@@ -79,11 +79,15 @@
     </ion-input>
   </ion-item>
 
-  @if (standaloneMetrics.length) {
-    <ion-accordion-group value="metrics">
+  <ion-accordion-group [value]="metricsGroupOpen ? 'metrics' : null" (ionChange)="onMetricsGroupChange($event)">
       <ion-accordion value="metrics">
         <ion-item slot="header">
-          <ion-label>{{ 'TK_METRICS' | translate }}</ion-label>
+          <div class="group-header-content">
+            <span class="group-title">{{ 'TK_METRICS' | translate }}</span>
+            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddMetricModal($event)">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </div>
         </ion-item>
         <div slot="content">
           <div [formGroup]="metricsForm">
@@ -139,21 +143,90 @@
                 </ion-item>
               }
             }
+            @for (metric of manuallyAddedMetricsNotInStandalone; track metric.id) {
+              @if (isRangeMetric(metric)) {
+                <ion-item>
+                  <ion-button slot="start" fill="clear" size="small" class="remove-btn" (click)="removeManualMetric(metric.id)">
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
+                  </ion-button>
+                  <ion-label position="stacked">
+                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
+                  </ion-label>
+                  <ion-range
+                    [formControlName]="'metric_' + metric.id"
+                    [min]="metric.minValue"
+                    [max]="metric.maxValue"
+                    [step]="metric.step"
+                    [snaps]="true"
+                    [style.--bar-background-active]="getRangeColor(metric)"
+                    [style.--knob-background]="getRangeColor(metric)"
+                    (ionChange)="onRangeChange(metric.id)"
+                    (pointerdown)="onRangeChange(metric.id)"
+                  >
+                    <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
+                  </ion-range>
+                </ion-item>
+              } @else {
+                <ion-item>
+                  <ion-button slot="start" fill="clear" size="small" class="remove-btn" (click)="removeManualMetric(metric.id)">
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
+                  </ion-button>
+                  <ion-label position="stacked">
+                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
+                  </ion-label>
+                  <div class="number-input">
+                    <ion-input
+                      appValidationError
+                      type="number"
+                      [formControlName]="'metric_' + metric.id"
+                      [step]="metric.step"
+                      (ionFocus)="onRangeChange(metric.id)"
+                    ></ion-input>
+                    <div class="number-input-buttons">
+                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
+                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
+                    </div>
+                  </div>
+                </ion-item>
+              }
+            }
           </div>
         </div>
       </ion-accordion>
     </ion-accordion-group>
-  }
 
-  <div [formGroup]="listsForm">
-    @for (list of standaloneLists; track list.id) {
-      <app-list-input
-        [listId]="list.id"
-        [label]="getListLabel(list)"
-        [formControlName]="'list_' + list.id"
-      ></app-list-input>
-    }
-  </div>
+  <ion-accordion-group [value]="listsGroupOpen ? 'lists' : null" (ionChange)="onListsGroupChange($event)">
+    <ion-accordion value="lists">
+      <ion-item slot="header">
+        <div class="group-header-content">
+          <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
+          <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
+            <ion-icon slot="icon-only" name="add"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+      <div slot="content">
+        <div [formGroup]="listsForm">
+          @for (list of standaloneLists; track list.id) {
+            <app-list-input
+              [listId]="list.id"
+              [label]="getListLabel(list)"
+              [formControlName]="'list_' + list.id"
+            ></app-list-input>
+          }
+          @for (list of manuallyAddedListsNotInStandalone; track list.id) {
+            <app-list-input
+              [listId]="list.id"
+              [label]="getListLabel(list)"
+              [formControlName]="'list_' + list.id"
+              [removable]="true"
+              (removed)="removeManualList(list.id)"
+            ></app-list-input>
+          }
+        </div>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
 
   <app-tag-input
     appValidationError
@@ -170,3 +243,34 @@
     ></ion-textarea>
   </ion-item>
 </form>
+
+<ion-modal [isOpen]="isAddLibraryModalOpen" (didDismiss)="isAddLibraryModalOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ (modalFilterType === 'metric' ? 'TK_METRICS' : 'TK_LISTS') | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="isAddLibraryModalOpen = false">{{ 'TK_CLOSE' | translate }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-searchbar
+        [placeholder]="'TK_SEARCH' | translate"
+        [value]="librarySearchQuery"
+        (ionInput)="onLibrarySearch($event)"
+      ></ion-searchbar>
+      <ion-list lines="full">
+        @for (item of librarySearchResults; track item.type + item.id) {
+          <ion-item button detail="false" (click)="selectLibraryItem(item)">
+            <ion-label>{{ item.name | translate }}</ion-label>
+          </ion-item>
+        } @empty {
+          <ion-item lines="none">
+            <ion-label class="ion-text-center">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

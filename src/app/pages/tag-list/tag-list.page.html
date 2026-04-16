@@ -13,8 +13,13 @@
   @if (isLoading) {
     <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
   } @else {
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      placeholder="{{ 'TK_SEARCH' | translate }}"
+      [debounce]="0"
+    ></ion-searchbar>
     <ion-list>
-      @for (tag of tags; track tag.id) {
+      @for (tag of filteredTags; track tag.id) {
         <ion-item>
           <ion-label style="cursor: pointer" (click)="goToViewPage(tag.id)">{{ tag.name }}</ion-label>
           <ion-buttons class="item-buttons">

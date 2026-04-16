@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonSearchbar } from '@ionic/angular/standalone';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagService } from 'src/app/services/tag.service';
@@ -16,7 +16,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-tag-list',
   templateUrl: './tag-list.page.html',
   styleUrls: ['./tag-list.page.scss'],
-  imports: [IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonSearchbar, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class TagListPage {
   private tagService = inject(TagService);
@@ -27,6 +27,12 @@ export class TagListPage {
 
   tags: ITag[] = [];
   isLoading = true;
+  searchQuery = '';
+
+  get filteredTags(): ITag[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.tags.filter(t => t.name.toLowerCase().includes(q)) : this.tags;
+  }
 
   public tagActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
