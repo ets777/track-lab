@@ -79,7 +79,8 @@
     </ion-input>
   </ion-item>
 
-  <ion-accordion-group [value]="!hasAnyMetrics || metricsGroupOpen ? 'metrics' : null" [disabled]="!hasAnyMetrics" (ionChange)="onMetricsGroupChange($event)">
+  @if (hasAnyMetrics) {
+    <ion-accordion-group [value]="metricsGroupOpen ? 'metrics' : null" (ionChange)="onMetricsGroupChange($event)">
       <ion-accordion value="metrics">
         <ion-item slot="header">
           <div class="group-header-content">
@@ -194,39 +195,60 @@
         </div>
       </ion-accordion>
     </ion-accordion-group>
-
-  <ion-accordion-group [value]="!hasAnyLists || listsGroupOpen ? 'lists' : null" [disabled]="!hasAnyLists" (ionChange)="onListsGroupChange($event)">
-    <ion-accordion value="lists">
-      <ion-item slot="header">
-        <div class="group-header-content">
-          <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
-          <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
-            <ion-icon slot="icon-only" name="add"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-      <div slot="content">
-        <div [formGroup]="listsForm">
-          @for (list of standaloneLists; track list.id) {
-            <app-list-input
-              [listId]="list.id"
-              [label]="getListLabel(list)"
-              [formControlName]="'list_' + list.id"
-            ></app-list-input>
-          }
-          @for (list of manuallyAddedListsNotInStandalone; track list.id) {
-            <app-list-input
-              [listId]="list.id"
-              [label]="getListLabel(list)"
-              [formControlName]="'list_' + list.id"
-              [removable]="true"
-              (removed)="removeManualList(list.id)"
-            ></app-list-input>
-          }
-        </div>
+  } @else {
+    <ion-item>
+      <div class="group-header-content">
+        <span class="group-title">{{ 'TK_METRICS' | translate }}</span>
+        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddMetricModal($event)">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
       </div>
-    </ion-accordion>
-  </ion-accordion-group>
+    </ion-item>
+  }
+
+  @if (hasAnyLists) {
+    <ion-accordion-group [value]="listsGroupOpen ? 'lists' : null" (ionChange)="onListsGroupChange($event)">
+      <ion-accordion value="lists">
+        <ion-item slot="header">
+          <div class="group-header-content">
+            <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
+            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+        <div slot="content">
+          <div [formGroup]="listsForm">
+            @for (list of standaloneLists; track list.id) {
+              <app-list-input
+                [listId]="list.id"
+                [label]="getListLabel(list)"
+                [formControlName]="'list_' + list.id"
+              ></app-list-input>
+            }
+            @for (list of manuallyAddedListsNotInStandalone; track list.id) {
+              <app-list-input
+                [listId]="list.id"
+                [label]="getListLabel(list)"
+                [formControlName]="'list_' + list.id"
+                [removable]="true"
+                (removed)="removeManualList(list.id)"
+              ></app-list-input>
+            }
+          </div>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  } @else {
+    <ion-item>
+      <div class="group-header-content">
+        <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
+        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+  }
 
   <app-tag-input
     appValidationError

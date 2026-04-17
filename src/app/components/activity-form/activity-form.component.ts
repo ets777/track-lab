@@ -294,11 +294,13 @@ export class ActivityFormComponent implements OnInit {
   }
 
   onMetricsGroupChange(event: any) {
+    if (!this.hasAnyMetrics) return;
     this.metricsGroupOpen = !!event.detail.value;
     this.saveGroupState('metrics', this.metricsGroupOpen);
   }
 
   onListsGroupChange(event: any) {
+    if (!this.hasAnyLists) return;
     this.listsGroupOpen = !!event.detail.value;
     this.saveGroupState('lists', this.listsGroupOpen);
   }
