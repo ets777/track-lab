@@ -79,7 +79,7 @@
     </ion-input>
   </ion-item>
 
-  <ion-accordion-group [value]="metricsGroupOpen ? 'metrics' : null" (ionChange)="onMetricsGroupChange($event)">
+  <ion-accordion-group [value]="!hasAnyMetrics || metricsGroupOpen ? 'metrics' : null" [disabled]="!hasAnyMetrics" (ionChange)="onMetricsGroupChange($event)">
       <ion-accordion value="metrics">
         <ion-item slot="header">
           <div class="group-header-content">
@@ -195,7 +195,7 @@
       </ion-accordion>
     </ion-accordion-group>
 
-  <ion-accordion-group [value]="listsGroupOpen ? 'lists' : null" (ionChange)="onListsGroupChange($event)">
+  <ion-accordion-group [value]="!hasAnyLists || listsGroupOpen ? 'lists' : null" [disabled]="!hasAnyLists" (ionChange)="onListsGroupChange($event)">
     <ion-accordion value="lists">
       <ion-item slot="header">
         <div class="group-header-content">

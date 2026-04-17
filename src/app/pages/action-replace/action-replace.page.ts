@@ -133,11 +133,13 @@ export class ActionReplacePage implements OnInit {
   async loadSuggestions() {
     const actions = await this.actionService.getAllEnriched();
 
-    this.suggestions = actions.map((item, index) => ({
-      num: index,
-      title: item.name,
-      item,
-    }));
+    this.suggestions = actions
+      .filter(item => item.id !== this.currentActionId)
+      .map((item, index) => ({
+        num: index,
+        title: item.name,
+        item,
+      }));
   }
 
   getFormText() {

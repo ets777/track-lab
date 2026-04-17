@@ -169,6 +169,14 @@ export class ActivityFormComponent implements OnInit {
     );
   }
 
+  get hasAnyMetrics(): boolean {
+    return this.standaloneMetrics.length > 0 || this.manuallyAddedMetricsNotInStandalone.length > 0;
+  }
+
+  get hasAnyLists(): boolean {
+    return this.standaloneLists.length > 0 || this.manuallyAddedListsNotInStandalone.length > 0;
+  }
+
   async refreshMetricsAndLists() {
     await this.loadMetrics();
     await this.loadLists();

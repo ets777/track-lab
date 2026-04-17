@@ -65,7 +65,7 @@ export class ListInputComponent implements ControlValueAccessor, OnInit {
   }
 
   onInput(event: any) {
-    const val = event.target.value;
+    const val = event.detail.value ?? event.target.value ?? '';
     this.updateValue(val);
 
     const parts = val.split(',');
