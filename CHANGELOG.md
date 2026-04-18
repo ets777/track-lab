@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.6] - 2026-04-18
+
+### Fixed
+
+- Displaying the original action in search for replacement
+- Suggestions for lists in the activity form
+- Group header in the activity form is not clickable anymore if empty
+
+### Improved
+
+- Library is now displayed by default in the Lab section
+
 ## [0.5.5] - 2026-04-17
 
 ### Added
