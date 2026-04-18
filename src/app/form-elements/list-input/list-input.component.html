@@ -1,29 +1,12 @@
-<ion-item>
-    <ion-input
-        [label]="inputLabel"
-        labelPlacement="floating"
-        [value]="value"
-        (ionInput)="onInput($event)"
-        (ionBlur)="hideSuggestions()"
-    ></ion-input>
-    @if (removable) {
-        <ion-button slot="end" fill="clear" size="small" (click)="removed.emit()">
-            <ion-icon slot="icon-only" name="close"></ion-icon>
-        </ion-button>
-    }
-</ion-item>
-
-@if (showSuggestions) {
-    <div class="suggestions">
-        <ion-list lines="none">
-        @for (suggestion of filteredSuggestions; track suggestion) {
-            <ion-item
-                button
-                (click)="selectSuggestion(suggestion)"
-            >
-                {{ suggestion }}
-            </ion-item>
-        }
-        </ion-list>
-    </div>
-}
+<app-select-search
+  [multiple]="true"
+  [suggestions]="allSuggestions"
+  [label]="inputLabel"
+  [formControl]="innerControl"
+>
+  @if (removable) {
+    <ion-button select-search-end slot="end" fill="clear" size="small" (click)="removed.emit()">
+      <ion-icon slot="icon-only" name="close"></ion-icon>
+    </ion-button>
+  }
+</app-select-search>

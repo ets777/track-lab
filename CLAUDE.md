@@ -25,6 +25,12 @@ Custom Angular form controls (implement `ControlValueAccessor`). These are reusa
 
 Examples: `date-period-input/`, `select-search/`, `tag-input/`, `list-input/`
 
+**Before creating a new form element, check if an existing one can be reused or extended. `app-select-search` is the single unified component for all suggestion/autocomplete needs — use it everywhere, no exceptions.**
+
+- `app-select-search` — unified suggestion input. Single mode (default): strict selection from a predefined `Selectable[]` list, validates that text matches a suggestion. Multiple mode (`[multiple]="true"`): comma-separated free-text with autocomplete hints; already-entered items are excluded from suggestions automatically. For non-standard inputs (e.g. textarea), project the element as content and mark it with `#selectSearchAnchor` — the host listens for focus/blur events automatically.
+- `app-tag-input` — wraps `app-select-search` with `[multiple]="true"`, loads suggestions from `TagService`. Use for the activity tags field.
+- `app-list-input` — wraps `app-select-search` with `[multiple]="true"`, loads suggestions from `ItemService` by `listId`. Supports a removable button projected via `select-search-end` attribute. Use for custom list fields on the activity form.
+
 ### `functions/`
 
 Pure, reusable utility functions — no side effects, no Angular DI. One file per domain.

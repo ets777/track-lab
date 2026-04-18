@@ -1,16 +1,3 @@
-.suggestions {
-  position: absolute;
-  border: 1px solid #ccc;
-  z-index: 1000;
-  width: 90%;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-ion-accordion::part(content) {
-  overflow: visible;
-}
-
 
 ion-range.range-inactive,
 .number-input-inactive {

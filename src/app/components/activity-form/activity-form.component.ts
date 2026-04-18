@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton, IonModal, IonSearchbar, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
@@ -14,7 +14,6 @@ import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { maskitoTimeOptionsGenerator } from '@maskito/kit';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
-import { getPartIndex } from 'src/app/functions/string';
 import { IActivity } from 'src/app/db/models/activity';
 import { IActionDb } from 'src/app/db/models/action';
 import { IActionMetricDb } from 'src/app/db/models/action-metric';
@@ -42,6 +41,7 @@ import { ActionListService } from 'src/app/services/action-list.service';
 import { IList } from 'src/app/db/models/list';
 import { IActionListDb } from 'src/app/db/models/action-list';
 import { ListInputComponent } from '../../form-elements/list-input/list-input.component';
+import { ActionInputComponent } from '../../form-elements/action-input/action-input.component';
 
 function metricRangeValidator(min?: number, max?: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -68,7 +68,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent],
+  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -81,9 +81,6 @@ export class ActivityFormComponent implements OnInit {
   @Input() activity?: IActivity;
   @Input() activityMetricValues?: Record<number, number>;
 
-  @ViewChild('actionsInput') actionInput!: IonInput;
-  actionInputCaretPosition = 0;
-  actionInputText = '';
 
   protected readonly dateMask: MaskitoOptions = {
     mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
@@ -131,10 +128,6 @@ export class ActivityFormComponent implements OnInit {
   modalFilterType: 'metric' | 'list' = 'metric';
   librarySearchQuery = '';
   librarySearchResults: { type: 'metric' | 'list'; id: number; name: string }[] = [];
-
-  filteredActionSuggestions: string[] = [];
-  private allActionSuggestions: string[] = [];
-  showActionSuggestions = false;
 
   private currentTime: string = '00:00';
 
@@ -527,9 +520,7 @@ export class ActivityFormComponent implements OnInit {
   }
 
   async fetchAllSuggestions() {
-    const actions = await this.actionService.getAllUnhidden();
-    this.allActions = actions;
-    this.allActionSuggestions = actions.map(a => a.name);
+    this.allActions = await this.actionService.getAllUnhidden();
   }
 
   setCurrentTime() {
@@ -635,69 +626,6 @@ export class ActivityFormComponent implements OnInit {
     });
   }
 
-  async updateActionCaretAndText(event: any) {
-    const indexBefore = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-
-    this.actionInputText = event.target.value;
-    const nativeInput = await this.actionInput.getInputElement();
-    this.actionInputCaretPosition = nativeInput.selectionStart ?? 0;
-    const indexAfter = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-
-    if (indexBefore !== indexAfter) {
-      this.hideActionSuggestions();
-    }
-  }
-
-  async onActionsInput(event: any) {
-    await this.updateActionCaretAndText(event);
-
-    const parts = this.actionInputText
-      .split(',')
-      .map((suggestion: string) => suggestion.toLowerCase().trim());
-
-    const currentIndex = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-    const current = parts[currentIndex];
-
-    parts.splice(currentIndex, 1);
-
-    if (current.length > 0) {
-      this.filteredActionSuggestions = this.allActionSuggestions
-        .filter((suggestion) =>
-          suggestion.toLowerCase().includes(current)
-          && !parts.includes(suggestion.toLowerCase())
-        )
-        .slice(0, 5);
-      this.showActionSuggestions = this.filteredActionSuggestions.length > 0;
-    } else {
-      this.hideActionSuggestions();
-    }
-  }
-
-  selectSuggestion(suggestion: string) {
-    const actionsText = this.activityForm.get('actions')?.value;
-
-    if (!actionsText) {
-      return;
-    }
-
-    const currentIndex = getPartIndex(actionsText, this.actionInputCaretPosition);
-    let parts = actionsText.split(',') ?? [];
-
-    if (!parts.length) {
-      return;
-    }
-
-    parts[currentIndex] = ' ' + suggestion;
-    this.activityForm.patchValue({
-      actions: parts.join(',').trim(),
-    });
-
-    this.hideActionSuggestions();
-  }
-
-  hideActionSuggestions() {
-    setTimeout(() => (this.showActionSuggestions = false), 200);
-  }
 
   isCurrentTime(time: string) {
     return this.currentTime == time;

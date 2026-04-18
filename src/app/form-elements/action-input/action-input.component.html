@@ -1,0 +1,18 @@
+<app-select-search
+  [multiple]="true"
+  [suggestions]="filteredActionSelectables"
+  (selected)="selectSuggestion($event)"
+>
+  <ion-item #selectSearchAnchor>
+    <ion-label position="stacked">{{ label }}</ion-label>
+    <ion-textarea
+      #actionsInput
+      [value]="innerControl.value"
+      rows="1"
+      [autoGrow]="true"
+      (ionInput)="onInput($event)"
+      (click)="updateCaretAndText($event)"
+      (keyup)="updateCaretAndText($event)"
+    ></ion-textarea>
+  </ion-item>
+</app-select-search>

@@ -1,0 +1,13 @@
+.suggestions {
+  position: fixed;
+  z-index: 9999;
+  border: 1px solid var(--text-color-grey, #ccc);
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--ion-item-background, var(--ion-background-color, #fff));
+}
+
+.sublabel {
+  font-size: 0.75rem;
+  color: var(--text-color-grey);
+}

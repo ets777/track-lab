@@ -1,38 +1,8 @@
 <form [formGroup]="activityForm">
-  <ion-item>
-    <ion-label position="stacked">
-      {{ 'TK_ACTIONS' | translate }}
-      ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})
-    </ion-label>
-    <ion-textarea
-      #actionsInput
-      appValidationError
-      formControlName="actions"
-      name="actions"
-      rows="1"
-      [autoGrow]="true"
-      (ionInput)="onActionsInput($event)"
-      (ionBlur)="hideActionSuggestions()"
-      (click)="updateActionCaretAndText($event)"
-      (keyup)="updateActionCaretAndText($event)"
-    ></ion-textarea>
-  </ion-item>
-
-  @if (showActionSuggestions) {
-    <ion-list
-      class="suggestions"
-      lines="none"
-    >
-      @for (suggestion of filteredActionSuggestions; track suggestion) {
-        <ion-item
-          button
-          (click)="selectSuggestion(suggestion)"
-        >
-          {{ suggestion | translate }}
-        </ion-item>
-      }
-    </ion-list>
-  }
+  <app-action-input
+    appValidationError
+    formControlName="actions"
+  ></app-action-input>
 
   <ion-item>
     <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>

@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, forwardRef, Input, OnInit, inject } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { IonInput, IonItem, IonList, IonButton, IonIcon } from "@ionic/angular/standalone";
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemService } from 'src/app/services/item.service';
 import { addIcons } from 'ionicons';
 import { close } from 'ionicons/icons';
+import { Selectable } from 'src/app/types/selectable';
+import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 
 @Component({
-  imports: [IonList, IonItem, IonInput, IonButton, IonIcon, TranslateModule, CommonModule],
+  imports: [IonButton, IonIcon, TranslateModule, CommonModule, ReactiveFormsModule, SelectSearchComponent],
   selector: 'app-list-input',
   templateUrl: './list-input.component.html',
   styleUrl: './list-input.component.scss',
@@ -29,76 +31,31 @@ export class ListInputComponent implements ControlValueAccessor, OnInit {
   @Input() removable = false;
   @Output() removed = new EventEmitter<void>();
 
-  filteredSuggestions: string[] = [];
-  allSuggestions: string[] = [];
-  showSuggestions = false;
-  value: string = '';
+  innerControl = new FormControl('');
+  allSuggestions: Selectable<string>[] = [];
+
+  private onChange = (_: any) => {};
+  private onTouched = () => {};
 
   constructor() {
     addIcons({ close });
+    this.innerControl.valueChanges.subscribe(val => {
+      this.onChange(val ?? '');
+      this.onTouched();
+    });
   }
 
   async ngOnInit() {
     const items = await this.itemService.getAllWhereEquals('listId', this.listId);
-    this.allSuggestions = items.map((item) => item.name);
+    this.allSuggestions = items.map((item, i) => ({ num: i, title: item.name, item: item.name }));
   }
-
-  private onChange = (_: any) => { };
-  private onTouched = () => { };
 
   writeValue(value: string): void {
-    this.value = value || '';
+    this.innerControl.setValue(value || '', { emitEvent: false });
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  updateValue(value: string) {
-    this.value = value;
-    this.onChange(this.value);
-    this.onTouched();
-  }
-
-  onInput(event: any) {
-    const val = event.detail.value ?? event.target.value ?? '';
-    this.updateValue(val);
-
-    const parts = val.split(',');
-    const current = parts.at(-1).trim();
-
-    if (current.length > 0) {
-      this.filteredSuggestions = this.allSuggestions
-        .filter((suggestion) =>
-          suggestion.toLowerCase().includes(current.toLowerCase())
-        )
-        .slice(0, 5);
-      this.showSuggestions = this.filteredSuggestions.length > 0;
-    } else {
-      this.showSuggestions = false;
-    }
-  }
-
-  selectSuggestion(suggestion: string) {
-    const parts = this.value.split(',') ?? [];
-
-    if (!parts.length) {
-      return;
-    }
-
-    parts[parts.length - 1] = ' ' + suggestion;
-    this.updateValue(parts.join(',').trim());
-
-    this.showSuggestions = false;
-  }
-
-  hideSuggestions() {
-    setTimeout(() => (this.showSuggestions = false), 200);
-  }
+  registerOnChange(fn: any): void { this.onChange = fn; }
+  registerOnTouched(fn: any): void { this.onTouched = fn; }
 
   get inputLabel() {
     return `${this.label} (${this.translate.instant('TK_SEPARATED_BY_COMMA').toLowerCase()})`;

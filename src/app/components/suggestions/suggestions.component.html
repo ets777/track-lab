@@ -1,0 +1,19 @@
+<div
+  class="suggestions"
+  [style.top.px]="top"
+  [style.left.px]="left"
+  [style.width.px]="width"
+>
+  <ion-list lines="none">
+    @for (item of _suggestions; track item.label) {
+      <ion-item button detail="false" (mousedown)="$event.preventDefault()" (click)="selected.emit(item.label)">
+        <ion-label>
+          <div>{{ item.label }}</div>
+          @if (item.sublabel) {
+            <div class="sublabel">{{ item.sublabel }}</div>
+          }
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+</div>

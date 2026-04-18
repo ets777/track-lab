@@ -1,24 +1,6 @@
-<ion-item>
-    <ion-input
-        label="{{ 'TK_TAGS' | translate }} ({{ 'TK_SEPARATED_BY_COMMA' | translate | lowercase }})"
-        labelPlacement="floating"
-        [value]="value"
-        (ionInput)="onInput($event)"
-        (ionBlur)="hideSuggestions()"
-    ></ion-input>
-</ion-item>
-
-@if (showSuggestions) {
-    <div class="suggestions">
-        <ion-list lines="none">
-        @for (suggestion of filteredSuggestions; track suggestion) {
-            <ion-item
-                button
-                (click)="selectSuggestion(suggestion)"
-            >
-                {{ suggestion | translate }}
-            </ion-item>
-        }
-        </ion-list>
-    </div>
-}
+<app-select-search
+  [multiple]="true"
+  [suggestions]="allTags"
+  [label]="label"
+  [formControl]="innerControl"
+></app-select-search>
