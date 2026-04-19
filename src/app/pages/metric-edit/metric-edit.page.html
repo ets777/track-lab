@@ -5,7 +5,7 @@
     <ion-buttons slot="end">
       <ion-button
         (click)="saveMetric()"
-        [disabled]="!isFormValid()"
+        [disabled]="!isValid"
       >{{ 'TK_SAVE' | translate }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -13,6 +13,6 @@
 
 <ion-content class="ion-padding">
   @if (metric) {
-    <app-metric-form #editFormRef [metric]="metric"></app-metric-form>
+    <app-metric-form #editFormRef [metric]="metric" (validityChange)="isValid = $event"></app-metric-form>
   }
 </ion-content>

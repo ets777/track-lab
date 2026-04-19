@@ -1,8 +1,8 @@
-import { Component, Input, inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
-import { IonItem, IonLabel, IonInput, IonCheckbox, IonSelect, IonSelectOption } from "@ionic/angular/standalone";
+import { IonItem, IonLabel, IonInput, IonCheckbox, IonSelect, IonSelectOption, IonBadge } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IList } from 'src/app/db/models/list';
 import { IMetric } from 'src/app/db/models/metric';
@@ -70,7 +70,7 @@ export type MetricForm = {
   selector: 'app-metric-form',
   templateUrl: './metric-form.component.html',
   styleUrls: ['./metric-form.component.scss'],
-  imports: [IonCheckbox, IonLabel, IonItem, FormsModule, ReactiveFormsModule, TranslateModule, IonInput, IonSelect, IonSelectOption, SelectSearchComponent, ValidationErrorDirective],
+  imports: [IonCheckbox, IonLabel, IonItem, FormsModule, ReactiveFormsModule, TranslateModule, IonInput, IonSelect, IonSelectOption, IonBadge, SelectSearchComponent, ValidationErrorDirective],
 })
 export class MetricFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -87,6 +87,7 @@ export class MetricFormComponent implements OnInit {
   private toastService = inject(ToastService);
 
   @Input() metric?: IMetric;
+  @Output() validityChange = new EventEmitter<boolean>();
 
   public suggestions: Selectable<CommonItem>[] = [];
   public metricForm!: ModelFormGroup<MetricForm>;
@@ -104,7 +105,7 @@ export class MetricFormComponent implements OnInit {
       }],
       unit: [''],
       step: [1],
-      minValue: [0, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
+      minValue: [1, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
       maxValue: [5, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
       isHidden: [false],
       showPreviousValue: [false],
@@ -141,6 +142,11 @@ export class MetricFormComponent implements OnInit {
         term,
       });
     }
+
+    this.metricForm.statusChanges.subscribe(status => {
+      this.validityChange.emit(status === 'VALID');
+    });
+    this.validityChange.emit(this.metricForm.valid);
   }
 
   onNameClick() {

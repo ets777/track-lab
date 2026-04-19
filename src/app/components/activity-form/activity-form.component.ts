@@ -190,7 +190,7 @@ export class ActivityFormComponent implements OnInit {
     const standaloneListIds = new Set(this.standaloneLists.map(l => l.id));
     for (const [listIdStr, value] of Object.entries(this.activityItemValues ?? {})) {
       const listId = Number(listIdStr);
-      const list = this.allLists.find(l => l.id === listId && !l.isHidden);
+      const list = this.allLists.find(l => l.id === listId);
       if (list && !standaloneListIds.has(listId) && value) {
         this.manuallyAddedListIds.add(listId);
       }
@@ -234,7 +234,6 @@ export class ActivityFormComponent implements OnInit {
       const standaloneListIds = new Set(this.standaloneLists.map(l => l.id));
       this.librarySearchResults = this.allLists
         .filter(l =>
-          !l.isHidden &&
           !standaloneListIds.has(l.id) &&
           !this.manuallyAddedListIds.has(l.id) &&
           (!query || this.translate.instant(l.name).toLowerCase().includes(query))
@@ -333,7 +332,7 @@ export class ActivityFormComponent implements OnInit {
   }
 
   async loadMetrics() {
-    this.allMetrics = (await this.metricService.getAll()).filter(m => !m.isHidden);
+    this.allMetrics = await this.metricService.getAll();
     [this.allActionMetrics, this.allTagMetrics, this.allItemMetrics, this.allActionTags, this.allTags] = await Promise.all([
       this.actionMetricService2.getAll(),
       this.tagMetricService.getAll(),
@@ -394,7 +393,7 @@ export class ActivityFormComponent implements OnInit {
     const relevantTagIds = new Set([...directTagIds, ...actionTagIds]);
 
     const enteredItemIds = new Set<number>();
-    for (const list of this.allLists.filter(l => !l.isHidden)) {
+    for (const list of this.allLists.filter(l => !l.isHidden || this.manuallyAddedListIds.has(l.id))) {
       const value: string = this.listsForm.get(`list_${list.id}`)?.value ?? '';
       const lookup = this.itemLookup.get(list.id);
       if (!lookup) continue;
@@ -409,6 +408,7 @@ export class ActivityFormComponent implements OnInit {
     const itemLinkedIds = new Set(this.allItemMetrics.map(im => im.metricId));
 
     this.standaloneMetrics = this.allMetrics.filter(m => {
+      if (m.isHidden) return false;
       if (!actionLinkedIds.has(m.id) && !tagLinkedIds.has(m.id) && !itemLinkedIds.has(m.id)) return true;
       if (actionLinkedIds.has(m.id) && this.allActionMetrics.some(am => am.metricId === m.id && selectedActionIds.has(am.actionId))) return true;
       if (tagLinkedIds.has(m.id) && this.allTagMetrics.some(tm => tm.metricId === m.id && relevantTagIds.has(tm.tagId))) return true;
@@ -472,7 +472,8 @@ export class ActivityFormComponent implements OnInit {
     }
 
     this.listsForm = this.formBuilder.group({});
-    for (const list of this.allLists.filter(l => !l.isHidden)) {
+    for (const list of this.allLists) {
+      if (list.isHidden && !this.activityItemValues[list.id]) continue;
       const initialValue = this.activityItemValues[list.id] ?? '';
       this.listsForm.addControl(`list_${list.id}`, this.formBuilder.control(initialValue));
     }

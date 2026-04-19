@@ -33,13 +33,13 @@ export class ValidationErrorDirective implements OnInit {
   }
 
   private updateWarning(control: AbstractControl) {
-    // TODO: find elements instead of hardcode (sorry)
-    const ionItem = this.el.nativeElement.closest('ion-item')
-      || this.el.nativeElement.children[0];
     const tag = this.el.nativeElement.tagName.toLowerCase();
+    const ionItem = this.el.nativeElement.closest('ion-item')
+      || this.el.nativeElement.querySelector('ion-item')
+      || this.el.nativeElement.children[0];
     const ionInput = ['ion-input', 'ion-textarea'].includes(tag)
       ? this.el.nativeElement
-      : this.el.nativeElement.children[0].children[0];
+      : (this.el.nativeElement.querySelector('ion-textarea, ion-input') ?? this.el.nativeElement.children[0]?.children[0]);
     const iconTarget = tag === 'ion-select' ? this.el.nativeElement : ionInput;
 
     if (!ionItem || !iconTarget) {
@@ -64,6 +64,7 @@ export class ValidationErrorDirective implements OnInit {
     this.renderer.setAttribute(this.warningIcon, 'slot', 'end');
     this.renderer.setAttribute(this.warningIcon, 'src', 'assets/icon/warning-sign.svg');
     this.renderer.setAttribute(this.warningIcon, 'class', 'input-icon');
+    this.renderer.setStyle(this.warningIcon, 'color', 'var(--ion-color-danger)');
     this.renderer.listen(this.warningIcon, 'click', (event: Event) => {
       event.preventDefault();
       this.tooltip.show(event, this.getErrorMessages(control));

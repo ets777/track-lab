@@ -99,7 +99,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
-    this.allMetricSuggestions = visibleMetrics.map(m => m.name);
+    this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
     const defaultMetrics = this.savedMetrics ?? visibleMetrics
       .filter(m => m.isBase)

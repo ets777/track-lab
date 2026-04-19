@@ -38,6 +38,7 @@ export class MetricEditPage {
 
   metricId: number;
   metric?: IMetric;
+  isValid = false;
 
   constructor() {
     this.metricId = Number(this.route.snapshot.paramMap.get('id'));
@@ -48,12 +49,8 @@ export class MetricEditPage {
     this.cdr.detectChanges();
   }
 
-  isFormValid() {
-    return this.editFormRef?.metricForm?.valid;
-  }
-
   async saveMetric() {
-    if (!this.isFormValid()) return;
+    if (!this.isValid) return;
 
     const form = this.editFormRef.metricForm.value as MetricForm;
     const newMin = Number(form.minValue);

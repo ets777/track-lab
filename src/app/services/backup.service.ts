@@ -46,6 +46,7 @@ import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
 import { getEntitiesFromString } from '../functions/string';
 import { LoadingService } from './loading.service';
+import { ALL_BASE_LIST_NAMES, ALL_BASE_METRIC_NAMES, BASE_LIST_DEFAULTS, BASE_METRIC_DEFAULTS } from '../db/base-entity-names';
 
 type Backup = {
   activities: IActivityDb[],
@@ -414,12 +415,43 @@ export class BackupService {
 
     const lists = await this.listService.getAll();
     for (const list of lists) {
+      if (ALL_BASE_LIST_NAMES.includes(list.name) && !list.isBase) {
+        await this.listService.update(list.id, { isBase: true });
+        list.isBase = true;
+      }
+    }
+    for (const list of lists) {
       if (!list.isBase) {
         await this.itemService.delete({ listId: list.id });
       }
     }
     await this.listService.clearNonBase();
+
+    const remainingLists = await this.listService.getAll();
+    const remainingListNames = new Set(remainingLists.map(l => l.name));
+    for (const defaults of BASE_LIST_DEFAULTS) {
+      if (!defaults.names.some(n => remainingListNames.has(n))) {
+        await this.listService.add({ name: defaults.canonical, isBase: defaults.isBase });
+      }
+    }
+
+    const metrics = await this.metricService.getAll();
+    for (const metric of metrics) {
+      if (ALL_BASE_METRIC_NAMES.includes(metric.name) && !metric.isBase) {
+        await this.metricService.update(metric.id, { isBase: true });
+      }
+    }
     await this.metricService.clearNonBase();
+
+    const remainingMetrics = await this.metricService.getAll();
+    const remainingMetricNames = new Set(remainingMetrics.map(m => m.name));
+    for (const defaults of BASE_METRIC_DEFAULTS) {
+      if (!defaults.names.some(n => remainingMetricNames.has(n))) {
+        const { names, canonical, ...createDto } = defaults;
+        await this.metricService.add({ ...createDto, name: canonical });
+      }
+    }
+
     await this.actionService.clear();
     await this.tagService.clear();
   }

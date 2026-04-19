@@ -29,6 +29,7 @@ export class ListEditPage {
 
   listId: number;
   list?: IList;
+  isValid = false;
 
   constructor() {
     this.listId = Number(this.route.snapshot.paramMap.get('id'));
@@ -45,7 +46,7 @@ export class ListEditPage {
   }
 
   async updateList(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!this.isValid) {
       return;
     }
 
@@ -68,7 +69,4 @@ export class ListEditPage {
     await this.router.navigate(['/library']);
   }
 
-  isFormValid() {
-    return this.updateFormRef?.listForm?.valid;
-  }
 }

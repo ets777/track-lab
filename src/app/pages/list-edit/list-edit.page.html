@@ -6,7 +6,7 @@
     <ion-buttons slot="end">
       <ion-button
         (click)="updateList()"
-        [disabled]="!isFormValid()"
+        [disabled]="!isValid"
       >{{ 'TK_SAVE' | translate }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,6 +17,7 @@
     <app-list-form
       #updateFormRef
       [list]="list"
+      (validityChange)="isValid = $event"
     ></app-list-form>
   }
 </ion-content>

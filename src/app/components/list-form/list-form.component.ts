@@ -1,6 +1,6 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonItem, IonLabel, IonInput, IonCheckbox } from "@ionic/angular/standalone";
+import { IonItem, IonLabel, IonInput, IonCheckbox, IonBadge } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IList } from 'src/app/db/models/list';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
@@ -20,7 +20,7 @@ export type ListForm = {
   selector: 'app-list-form',
   templateUrl: './list-form.component.html',
   styleUrls: ['./list-form.component.scss'],
-  imports: [IonCheckbox, IonInput, TranslateModule, IonLabel, IonItem, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective],
+  imports: [IonCheckbox, IonInput, IonBadge, TranslateModule, IonLabel, IonItem, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective],
 })
 export class ListFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -32,6 +32,7 @@ export class ListFormComponent implements OnInit {
   public suggestions: Selectable<CommonItem>[] = [];
 
   @Input() list?: IList;
+  @Output() validityChange = new EventEmitter<boolean>();
 
   constructor() { }
 
@@ -49,6 +50,11 @@ export class ListFormComponent implements OnInit {
     } else {
       this.setDefaultData();
     }
+
+    this.listForm.statusChanges.subscribe(status => {
+      this.validityChange.emit(status === 'VALID');
+    });
+    this.validityChange.emit(this.listForm.valid);
   }
 
   async loadSuggestions() {

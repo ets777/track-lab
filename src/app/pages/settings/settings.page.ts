@@ -11,6 +11,7 @@ import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { DatabaseRouter } from 'src/app/services/db/database-router.service';
+import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 
 export enum autoBackupOption {
   'none' = 'TK_NONE',
@@ -34,6 +35,7 @@ export class SettingsPage implements OnInit {
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
   get currentDatabase() { return this.databaseRouter.getCurrentAdapterName(); }
+  readonly dbVersion = databaseUpgrades[databaseUpgrades.length - 1].toVersion;
   environment = environment;
   autoBackupOption = autoBackupOption;
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;

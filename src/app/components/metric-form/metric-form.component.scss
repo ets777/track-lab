@@ -1,3 +1,12 @@
 .input-readonly {
   opacity: 0.3;
 }
+
+.basic-badge {
+  --background: #999;
+  --color: #fff;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  border-radius: 999px;
+  font-size: 10px;
+}

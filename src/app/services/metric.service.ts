@@ -14,6 +14,11 @@ export class MetricService extends DatabaseService<'metrics'> {
   private itemMetricService = inject(ItemMetricService);
   private hookService = inject(HookService);
 
+  override async getAll() {
+    const all = await super.getAll();
+    return all.sort((a, b) => (b.isBase ? 1 : 0) - (a.isBase ? 1 : 0));
+  }
+
   async clearNonBase() {
     const metrics = await this.getAll();
     for (const metric of metrics) {

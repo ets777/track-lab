@@ -3,6 +3,7 @@
     <ion-item (click)="onNameClick()">
       <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
       <ion-input class="input-readonly" [value]="listForm.get('name')?.value" [readonly]="true"></ion-input>
+      <ion-badge slot="end" class="basic-badge">{{ 'TK_BASIC' | translate }}</ion-badge>
     </ion-item>
   } @else {
     <ion-item>

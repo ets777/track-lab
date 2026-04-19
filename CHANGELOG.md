@@ -1,12 +1,15 @@
 # Changelog
 
-## [0.5.6] - 2026-04-18
+## [0.5.6] - 2026-04-19
 
 ### Fixed
 
 - Displaying the original action in search for replacement
 - Suggestions for lists in the activity form
 - Group header in the activity form is not clickable anymore if empty
+- Hidden metrics and lists are shown now in activity edit form if they have value
+- Small design issues
+- Minor bugs
 
 ### Improved
 
