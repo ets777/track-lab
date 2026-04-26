@@ -16,38 +16,26 @@
     ></ion-input>
   </ion-item>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_START_TIME' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_HH_MM' | translate }}"
-      formControlName="startTime"
-      name="startTime"
-      [maskito]="timeMask"
-      [maskitoElement]="maskPredicate"
-    ></ion-input>
-  </ion-item>
+  <app-time-wheel
+    appValidationError
+    formControlName="startTime"
+    label="TK_START_TIME"
+  ></app-time-wheel>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_END_TIME' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_HH_MM' | translate }}"
-      formControlName="endTime"
-      name="endTime"
-      [maskito]="timeMask"
-      [maskitoElement]="maskPredicate"
-    >
-      @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
-        <ion-icon
-          class="input-icon"
-          slot="end"
-          src="assets/icon/refresh.svg"
-          (click)="updateEndTime($event)"
-        ></ion-icon>
-      }
-    </ion-input>
-  </ion-item>
+  <app-time-wheel
+    appValidationError
+    formControlName="endTime"
+    label="TK_END_TIME"
+  >
+    @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
+      <ion-icon
+        class="input-icon"
+        slot="end"
+        src="assets/icon/refresh.svg"
+        (click)="updateEndTime($event)"
+      ></ion-icon>
+    }
+  </app-time-wheel>
 
   @if (hasAnyMetrics) {
     <ion-accordion-group [value]="metricsGroupOpen ? 'metrics' : null" (ionChange)="onMetricsGroupChange($event)">

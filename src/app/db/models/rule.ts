@@ -14,6 +14,8 @@ export interface IRuleDb {
   value: number;
   period: RulePeriod;
   startDate: string;
+  startTime: string | null;
+  endTime: string | null;
 }
 
 export type IRuleCreateDto = WithOptionalKeys<IRuleDb, 'id'>;

@@ -12,7 +12,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
-import { maskitoTimeOptionsGenerator } from '@maskito/kit';
+import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { IActivity } from 'src/app/db/models/activity';
 import { IActionDb } from 'src/app/db/models/action';
@@ -68,7 +68,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent],
+  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -87,9 +87,6 @@ export class ActivityFormComponent implements OnInit {
   };
   protected readonly maskPredicate: MaskitoElementPredicate =
     async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
-  protected readonly timeMask: MaskitoOptions = maskitoTimeOptionsGenerator({
-    mode: 'HH:MM',
-  });
 
   private actionMetricService2 = inject(ActionMetricService);
   private actionTagService = inject(ActionTagService);
@@ -634,6 +631,7 @@ export class ActivityFormComponent implements OnInit {
 
   updateEndTime(event: Event) {
     event.preventDefault();
+    event.stopPropagation();
 
     this.activityForm.patchValue({
       endTime: this.currentTime,

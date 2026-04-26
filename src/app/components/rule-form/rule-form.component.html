@@ -46,7 +46,7 @@
         name="value"
         type="number"
         inputmode="numeric"
-        min="1"
+        min="0"
         step="1"
       ></ion-input>
       <ion-text class="value-unit">{{ unitLabel }}</ion-text>
@@ -60,4 +60,23 @@
       <ion-segment-button value="month">{{ 'TK_MONTHLY' | translate }}</ion-segment-button>
     </ion-segment>
   </ion-item>
+  <ion-item>
+    <ion-checkbox formControlName="timeEnabled" labelPlacement="start" justify="space-between">
+      {{ 'TK_TIME' | translate }}
+    </ion-checkbox>
+  </ion-item>
+  @if (timeEnabled) {
+    <div class="time-row">
+      <app-time-wheel
+        appValidationError
+        formControlName="startTime"
+        label="TK_START_TIME"
+      ></app-time-wheel>
+      <app-time-wheel
+        appValidationError
+        formControlName="endTime"
+        label="TK_END_TIME"
+      ></app-time-wheel>
+    </div>
+  }
 </form>

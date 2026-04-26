@@ -47,6 +47,8 @@ import { ItemMetricService } from './item-metric.service';
 import { getEntitiesFromString } from '../functions/string';
 import { LoadingService } from './loading.service';
 import { ALL_BASE_LIST_NAMES, ALL_BASE_METRIC_NAMES, BASE_LIST_DEFAULTS, BASE_METRIC_DEFAULTS } from '../db/base-entity-names';
+import { IRuleDb } from '../db/models/rule';
+import { RuleService } from './rule.service';
 
 type Backup = {
   activities: IActivityDb[],
@@ -66,6 +68,7 @@ type Backup = {
   streaks: IStreakDb[],
   tagMetrics: ITagMetricDb[],
   itemMetrics: IItemMetricDb[],
+  rules: IRuleDb[],
   version: string,
 };
 
@@ -242,6 +245,7 @@ export class BackupService {
   private streakService = inject(StreakService);
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
+  private ruleService = inject(RuleService);
   private fileService = inject(FileService);
   private loadingService = inject(LoadingService);
 
@@ -277,6 +281,7 @@ export class BackupService {
       streaks: await this.streakService.getAll(),
       tagMetrics: await this.tagMetricService.getAll(),
       itemMetrics: await this.itemMetricService.getAll(),
+      rules: await this.ruleService.getAll(),
 
       version: appVersion,
     };
@@ -391,6 +396,8 @@ export class BackupService {
 
       this.loadingService.show('TK_RESTORING_STREAKS');
       await this.streakService.bulkAdd(backup.streaks);
+
+      await this.ruleService.bulkAdd(backup.rules ?? []);
     } finally {
       this.loadingService.hide();
     }
@@ -399,6 +406,7 @@ export class BackupService {
   }
 
   async clearDatabase() {
+    await this.ruleService.clear();
     await this.activityService.clear();
     await this.activityActionService.clear();
     await this.activityTagService.clear();

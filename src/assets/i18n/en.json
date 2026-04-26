@@ -1,4 +1,16 @@
 {
+  "TK_CAL_MON": "Mo",
+  "TK_CAL_TUE": "Tu",
+  "TK_CAL_WED": "We",
+  "TK_CAL_THU": "Th",
+  "TK_CAL_FRI": "Fr",
+  "TK_CAL_SAT": "Sa",
+  "TK_CAL_SUN": "Su",
+  "TK_CAL_UPTIME": "Uptime",
+  "TK_CAL_STREAK": "Streak",
+  "TK_CAL_DAYS": "days",
+  "TK_CAL_WEEKS": "weeks",
+  "TK_CAL_MONTHS": "months",
   "TK_A_TABLE_WITH_DATA_WAS_NOT_FOUND": "A table with data was not found.",
   "TK_ACHIEVEMENT_UNLOCKED": "Achievement unlocked",
   "TK_ACHIEVEMENTS": "Achievements",
@@ -105,6 +117,7 @@
   "TK_DID_HOMEWORK": "Did homework",
   "TK_DID_LAUNDRY": "Did laundry",
   "TK_DISCUSSED": "Discussed",
+  "TK_DONE": "Done",
   "TK_DON_T_MEASURE": "Don't measure",
   "TK_DON_T_SET": "Don't set",
   "TK_DRANK": "Drank",
@@ -430,5 +443,7 @@
   "TK_RULE_TIMES": "times",
   "TK_RULE_PER_DAY": "a day",
   "TK_RULE_PER_WEEK": "a week",
-  "TK_RULE_PER_MONTH": "a month"
+  "TK_RULE_PER_MONTH": "a month",
+  "TK_RULE_NO_SUBJECT": "No {{subject}}",
+  "TK_RULE_FROM_TO": "from {{start}} to {{end}}"
 }

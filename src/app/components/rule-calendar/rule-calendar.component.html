@@ -1,0 +1,88 @@
+<div class="rule-calendar">
+  <div class="rule-calendar__stats">
+    <div class="rule-calendar__stat">
+      <span class="rule-calendar__stat-label">{{ 'TK_CAL_UPTIME' | translate }}</span>
+      <span class="rule-calendar__stat-value">
+        {{ uptime !== null ? (uptime | number:'1.1-1') + '%' : '—' }}
+      </span>
+    </div>
+    <div class="rule-calendar__stat">
+      <span class="rule-calendar__stat-label">{{ 'TK_CAL_STREAK' | translate }}</span>
+      <span class="rule-calendar__stat-value">
+        {{ streak }} {{ streakUnitKey | translate }}
+      </span>
+    </div>
+  </div>
+
+  <div class="rule-calendar__header">
+    <ion-button fill="clear" size="small" (click)="prevMonth()">
+      <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+    </ion-button>
+    <span class="rule-calendar__month-label">{{ monthLabel }}</span>
+    <ion-button fill="clear" size="small" (click)="nextMonth()">
+      <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="rule-calendar__grid">
+    <div class="rule-calendar__week-row">
+      @for (key of weekDayKeys; track key) {
+        <div class="rule-calendar__weekday">{{ key | translate }}</div>
+      }
+    </div>
+
+    <div class="rule-calendar__days-section" #daysSection [class.rule-calendar__days-section--month]="rule.period === 'month'">
+      @if (rule.period === 'month' && monthPathD) {
+        <svg
+          class="rule-calendar__month-svg"
+          [attr.viewBox]="'0 0 7 ' + weeks.length"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <clipPath [attr.id]="clipPathId">
+              <path [attr.d]="monthPathD" />
+            </clipPath>
+          </defs>
+          <rect
+            x="0" y="0" width="7"
+            [attr.height]="weeks.length"
+            [attr.fill]="getMonthSvgFill()"
+            [attr.clip-path]="'url(#' + clipPathId + ')'"
+          />
+        </svg>
+      }
+
+      @for (week of weeks; track $index; let i = $index) {
+        <div
+          class="rule-calendar__week-row"
+          [class.rule-calendar__week-row--met]="rule.period === 'week' && weekStatuses[i] === 'met' && i !== currentWeekIndex"
+          [class.rule-calendar__week-row--broken]="rule.period === 'week' && weekStatuses[i] === 'broken' && i !== currentWeekIndex"
+        >
+          @if (rule.period === 'week' && i === currentWeekIndex && weekStatuses[i] !== 'none') {
+            <div
+              class="rule-calendar__week-partial-bg"
+              [class.rule-calendar__week-partial-bg--met]="weekStatuses[i] === 'met'"
+              [class.rule-calendar__week-partial-bg--broken]="weekStatuses[i] === 'broken'"
+              [style.width]="((todayColInWeek + 1) / 7 * 100) + '%'"
+            ></div>
+          }
+          @for (day of week; track day.date) {
+            <div
+              class="rule-calendar__day"
+              [class.rule-calendar__day--other-month]="!day.isCurrentMonth"
+              [class.rule-calendar__day--met]="rule.period === 'day' && day.status === 'met' && !day.isToday"
+              [class.rule-calendar__day--broken]="rule.period === 'day' && day.status === 'broken' && !day.isToday"
+              [class.rule-calendar__day--activity]="rule.period !== 'day' && day.hasActivity && !day.isToday"
+              [class.rule-calendar__day--today-met]="day.status === 'met' && day.isToday"
+              [class.rule-calendar__day--today-broken]="day.status === 'broken' && day.isToday"
+              (click)="day.isCurrentMonth && goToDay(day.date)"
+            >
+              {{ day.dayNumber }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

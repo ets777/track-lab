@@ -1,6 +1,8 @@
 import { format, subDays } from 'date-fns';
 import { SQLiteService } from './sqlite.service';
 
+function d(n: number) { return format(subDays(new Date(), n), 'yyyy-MM-dd'); }
+
 export async function seedDatabase(sqlite: SQLiteService) {
   const today = format(new Date(), 'yyyy-MM-dd');
   const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
@@ -49,14 +51,23 @@ export async function seedDatabase(sqlite: SQLiteService) {
   `);
 
   // id: 1=Running, 2=Meditation, 3=Reading, 4=Gym workout, 5=Cycling, 6=Weighed myself
+  // id: 7=Daily Walk, 8=Evening Stretch, 9=Cold Shower, 10=Coffee, 11=Pull-ups, 12=Dessert, 13=Yoga, 14=Journaling
   await sqlite.execute(`
     INSERT OR REPLACE INTO actions (id, name, isHidden) VALUES
-      (1, 'Running',        0),
-      (2, 'Meditation',     0),
-      (3, 'Reading',        0),
-      (4, 'Gym workout',    0),
-      (5, 'Cycling',        0),
-      (6, 'Weighed myself', 0);
+      (1,  'Running',        0),
+      (2,  'Meditation',     0),
+      (3,  'Reading',        0),
+      (4,  'Gym workout',    0),
+      (5,  'Cycling',        0),
+      (6,  'Weighed myself', 0),
+      (7,  'Daily Walk',     0),
+      (8,  'Evening Stretch',0),
+      (9,  'Cold Shower',    0),
+      (10, 'Coffee',         0),
+      (11, 'Pull-ups',       0),
+      (12, 'Dessert',        0),
+      (13, 'Yoga',           0),
+      (14, 'Journaling',     0);
   `);
 
   // id: 1=Health, 2=Sport, 3=Productivity, 4=Personal, 5=Mindfulness
@@ -96,24 +107,7 @@ export async function seedDatabase(sqlite: SQLiteService) {
       (2, 2);
   `);
 
-  // Activities:
-  //   1  = today run
-  //   2  = today meditation
-  //   3  = yesterday gym
-  //   4  = yesterday reading
-  //   5  = 2d ago cycling
-  //   6  = 4d ago run
-  //   7  = 5d ago gym
-  //   8  = 7d ago weigh-in
-  //   9  = 10d ago cycling
-  //   10 = 11d ago run
-  //   11 = 14d ago weigh-in
-  //   12 = 17d ago gym
-  //   13 = 18d ago run
-  //   14 = 21d ago weigh-in
-  //   15 = 24d ago cycling
-  //   16 = 25d ago run
-  //   17 = 28d ago weigh-in
+  // ── Original activities 1–17 ──────────────────────────────────────────────
   await sqlite.run(
     `INSERT OR REPLACE INTO activities (id, date, startTime, endTime, comment) VALUES
       (1,  ?, '07:00', '07:45', 'Morning run'),
@@ -212,4 +206,118 @@ export async function seedDatabase(sqlite: SQLiteService) {
       (16, 1, 6),  (16, 2, 7),  (16, 4, 157), (16, 5, 5),
       (17, 1, 7),  (17, 2, 7),  (17, 3, 78.5),(17, 5, 7);
   `);
+
+  // ── Rule demo activities 18–143 ───────────────────────────────────────────
+
+  // Rule 1: Daily Walk >= 1/day — 35 consecutive days d0..d34, today done → blue
+  const r1Dates = Array.from({ length: 35 }, (_, i) => d(i));
+  await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES ${r1Dates.map((dt, i) => `(${18 + i}, '${dt}', '06:30', '07:00')`).join(', ')};`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${r1Dates.map((_, i) => `(${18 + i}, 7)`).join(', ')};`);
+
+  // Rule 2: Evening Stretch >= 1/day — 25 days d1..d25, NOT today → yellow
+  const r2Dates = Array.from({ length: 25 }, (_, i) => d(i + 1));
+  await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES ${r2Dates.map((dt, i) => `(${53 + i}, '${dt}', '21:00', '21:20')`).join(', ')};`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${r2Dates.map((_, i) => `(${53 + i}, 8)`).join(', ')};`);
+
+  // Rule 3: Cold Shower <= 1/day — 30 days d0..d29, today done → blue
+  const r3Dates = Array.from({ length: 30 }, (_, i) => d(i));
+  await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES ${r3Dates.map((dt, i) => `(${78 + i}, '${dt}', '06:00', '06:05')`).join(', ')};`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${r3Dates.map((_, i) => `(${78 + i}, 9)`).join(', ')};`);
+
+  // Rule 4: Coffee <= 0/day (forbidden) — no coffee d1..d19 (met), 1 coffee today → yellow
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES (108, ?, '09:00', '09:05')`,
+    [today],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (108, 10);`);
+
+  // Rule 5: Pull-ups >= 3/week (countDays)
+  //   Week Mar 30–Apr 5:  1 day  → broken (red)
+  //   Week Apr  6–Apr 12: 3 days → met   (green)
+  //   Week Apr 13–Apr 19: 4 days → met   (green)
+  //   Week Apr 20–Apr 26: 2 days, today not done → broken (yellow)
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (109, ?, '17:00', '17:30'),
+      (110, ?, '17:00', '17:30'),
+      (111, ?, '17:00', '17:30'),
+      (112, ?, '17:00', '17:30'),
+      (113, ?, '17:00', '17:30'),
+      (114, ?, '17:00', '17:30'),
+      (115, ?, '17:00', '17:30'),
+      (116, ?, '17:00', '17:30'),
+      (117, ?, '17:00', '17:30'),
+      (118, ?, '17:00', '17:30')`,
+    [d(23), d(16), d(14), d(12), d(9), d(8), d(6), d(4), d(2), d(1)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (109,11),(110,11),(111,11),(112,11),(113,11),(114,11),(115,11),(116,11),(117,11),(118,11);`);
+
+  // Rule 6: Dessert <= 1/week (countDays)
+  //   Week Mar 30–Apr 5:  2 days → broken (red)
+  //   Week Apr  6–Apr 12: 1 day  → met   (green)
+  //   Week Apr 13–Apr 19: 0 days → met   (green)
+  //   Week Apr 20–Apr 26: 0 days, today → met (blue)
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (119, ?, '19:00', '19:15'),
+      (120, ?, '19:00', '19:15'),
+      (121, ?, '19:00', '19:15')`,
+    [d(23), d(20), d(14)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (119,12),(120,12),(121,12);`);
+
+  // Rule 7: Yoga >= 8/month (countDays)
+  //   March: 9 days → met (green)
+  //   April: 3 days so far → broken (yellow)
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (122, ?, '07:00', '08:00'),
+      (123, ?, '07:00', '08:00'),
+      (124, ?, '07:00', '08:00'),
+      (125, ?, '07:00', '08:00'),
+      (126, ?, '07:00', '08:00'),
+      (127, ?, '07:00', '08:00'),
+      (128, ?, '07:00', '08:00'),
+      (129, ?, '07:00', '08:00'),
+      (130, ?, '07:00', '08:00'),
+      (131, ?, '07:00', '08:00'),
+      (132, ?, '07:00', '08:00'),
+      (133, ?, '07:00', '08:00')`,
+    [d(52), d(49), d(45), d(42), d(38), d(35), d(31), d(28), d(24), d(21), d(14), d(7)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (122,13),(123,13),(124,13),(125,13),(126,13),(127,13),(128,13),(129,13),(130,13),(131,13),(132,13),(133,13);`);
+
+  // Rule 8: Journaling >= 5/month (countDays)
+  //   February: 6 days → met   (green)
+  //   March:    2 days → broken (red)
+  //   April:    2 days so far → broken (yellow)
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (134, ?, '23:00', '23:20'),
+      (135, ?, '23:00', '23:20'),
+      (136, ?, '23:00', '23:20'),
+      (137, ?, '23:00', '23:20'),
+      (138, ?, '23:00', '23:20'),
+      (139, ?, '23:00', '23:20'),
+      (140, ?, '23:00', '23:20'),
+      (141, ?, '23:00', '23:20'),
+      (142, ?, '23:00', '23:20'),
+      (143, ?, '23:00', '23:20')`,
+    [d(80), d(76), d(72), d(68), d(63), d(59), d(45), d(31), d(14), today],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (134,14),(135,14),(136,14),(137,14),(138,14),(139,14),(140,14),(141,14),(142,14),(143,14);`);
+
+  // ── Rules 1–8 ─────────────────────────────────────────────────────────────
+  await sqlite.run(
+    `INSERT OR REPLACE INTO rules (id, subjectType, subjectId, metric, operator, value, period, startDate) VALUES
+      (1, 'action',  7, 'count',     '>=', 1, 'day',   ?),
+      (2, 'action',  8, 'count',     '>=', 1, 'day',   ?),
+      (3, 'action',  9, 'count',     '<=', 1, 'day',   ?),
+      (4, 'action', 10, 'count',     '<=', 0, 'day',   ?),
+      (5, 'action', 11, 'countDays', '>=', 3, 'week',  ?),
+      (6, 'action', 12, 'countDays', '<=', 1, 'week',  ?),
+      (7, 'action', 13, 'countDays', '>=', 8, 'month', ?),
+      (8, 'action', 14, 'countDays', '>=', 5, 'month', ?)`,
+    [d(34), d(25), d(29), d(19), d(23), d(23), d(52), d(80)],
+  );
 }

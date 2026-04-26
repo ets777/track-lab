@@ -10,13 +10,20 @@ export class RuleService extends DatabaseService<'rules'> {
   private translate = inject(TranslateService);
 
   buildName(rule: Omit<IRuleDb, 'id'>, subjectName: string): string {
+    const timeSuffix = rule.startTime && rule.endTime
+      ? ' ' + this.translate.instant('TK_RULE_FROM_TO', { start: rule.startTime, end: rule.endTime })
+      : '';
+
+    if (rule.value === 0) {
+      return this.translate.instant('TK_RULE_NO_SUBJECT', { subject: subjectName }) + timeSuffix;
+    }
     const operator = this.translate.instant(rule.operator === '>=' ? 'TK_AT_LEAST' : 'TK_AT_MOST').toLowerCase();
     const singular = rule.value === 1;
     const unit = rule.metric === 'totalDuration'
       ? this.translate.instant(singular ? 'TK_RULE_MINUTE' : 'TK_RULE_MINUTES')
       : this.translate.instant(singular ? 'TK_RULE_TIME' : 'TK_RULE_TIMES');
     const period = this.translate.instant(`TK_RULE_PER_${rule.period.toUpperCase()}`);
-    return `${subjectName} ${operator} ${rule.value} ${unit} ${period}`;
+    return `${subjectName} ${operator} ${rule.value} ${unit} ${period}${timeSuffix}`;
   }
 
   async updateFromForm(id: number, formData: RuleForm): Promise<void> {
@@ -28,6 +35,8 @@ export class RuleService extends DatabaseService<'rules'> {
       operator: formData.operator,
       value: formData.value,
       period: formData.period,
+      startTime: formData.timeEnabled ? formData.startTime : null,
+      endTime: formData.timeEnabled ? formData.endTime : null,
     };
     await this.update(id, changes);
   }
@@ -41,6 +50,8 @@ export class RuleService extends DatabaseService<'rules'> {
       operator: formData.operator,
       value: formData.value,
       period: formData.period,
+      startTime: formData.timeEnabled ? formData.startTime : null,
+      endTime: formData.timeEnabled ? formData.endTime : null,
     };
     return this.add(dto);
   }

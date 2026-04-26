@@ -2,6 +2,11 @@
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
     <ion-title>{{ ruleName }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openMenu()">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -32,6 +37,16 @@
           <h2>{{ periodLabel }}</h2>
         </ion-label>
       </ion-item>
+      @if (rule.startTime) {
+        <ion-item>
+          <ion-label>
+            <p>{{ 'TK_TIME' | translate }}</p>
+            <h2>{{ rule.startTime }} – {{ rule.endTime }}</h2>
+          </ion-label>
+        </ion-item>
+      }
     </ion-list>
+
+    <app-rule-calendar [rule]="rule"></app-rule-calendar>
   }
 </ion-content>

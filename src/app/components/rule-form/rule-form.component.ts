@@ -1,7 +1,8 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText, IonCheckbox } from '@ionic/angular/standalone';
+import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { TagService } from 'src/app/services/tag.service';
 import { ActionService } from 'src/app/services/action.service';
@@ -15,6 +16,7 @@ import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
+import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
 import { MaskitoDirective } from '@maskito/angular';
 import { IRule, RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
@@ -28,6 +30,9 @@ export type RuleForm = {
   operator: RuleOperator;
   value: number;
   period: RulePeriod;
+  timeEnabled: boolean;
+  startTime: string;
+  endTime: string;
 };
 
 @Component({
@@ -35,9 +40,9 @@ export type RuleForm = {
   templateUrl: './rule-form.component.html',
   styleUrls: ['./rule-form.component.scss'],
   imports: [
-    IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText,
+    IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText, IonCheckbox,
     FormsModule, ReactiveFormsModule, TranslateModule,
-    SelectSearchComponent, ValidationErrorDirective, MaskitoDirective,
+    SelectSearchComponent, ValidationErrorDirective, MaskitoDirective, TimeWheelComponent,
   ],
 })
 export class RuleFormComponent implements OnInit {
@@ -68,8 +73,11 @@ export class RuleFormComponent implements OnInit {
       subject: [null as CommonItem | null, Validators.required],
       metric: ['count' as RuleFormMetric, Validators.required],
       operator: ['>=' as RuleOperator, Validators.required],
-      value: [1, [Validators.required, Validators.min(1), Validators.pattern(/^[1-9][0-9]*$/)]],
+      value: [1, [Validators.required, Validators.min(0), Validators.pattern(/^(0|[1-9][0-9]*)$/)]],
       period: ['day' as RulePeriod, Validators.required],
+      timeEnabled: [false],
+      startTime: ['00:00', [Validators.required, timeFormatValidator]],
+      endTime: ['23:59', [Validators.required, timeFormatValidator]],
     });
 
     await this.loadSuggestions();
@@ -94,6 +102,9 @@ export class RuleFormComponent implements OnInit {
       operator: rule.operator,
       value: rule.value,
       period: rule.period,
+      timeEnabled: !!rule.startTime,
+      startTime: rule.startTime ?? '00:00',
+      endTime: rule.endTime ?? '23:59',
     });
   }
 
@@ -154,8 +165,19 @@ export class RuleFormComponent implements OnInit {
     const subject = this.ruleForm?.get('subject')?.value;
     if (!subject) return '';
 
-    const operator = this.ruleForm.get('operator')?.value;
     const value = this.ruleForm.get('value')?.value;
+    const timeEnabled = this.ruleForm.get('timeEnabled')?.value;
+    const startTime = this.ruleForm.get('startTime')?.value;
+    const endTime = this.ruleForm.get('endTime')?.value;
+    const timeSuffix = timeEnabled && startTime && endTime
+      ? ' ' + this.translate.instant('TK_RULE_FROM_TO', { start: startTime, end: endTime })
+      : '';
+
+    if (Number(value) === 0) {
+      return this.translate.instant('TK_RULE_NO_SUBJECT', { subject: subject.name }) + timeSuffix;
+    }
+
+    const operator = this.ruleForm.get('operator')?.value;
     const metric = this.ruleForm.get('metric')?.value;
     const period = this.ruleForm.get('period')?.value;
 
@@ -165,7 +187,11 @@ export class RuleFormComponent implements OnInit {
       ? this.translate.instant(singular ? 'TK_RULE_MINUTE' : 'TK_RULE_MINUTES')
       : this.translate.instant(singular ? 'TK_RULE_TIME' : 'TK_RULE_TIMES');
     const periodLabel = this.translate.instant(`TK_RULE_PER_${period?.toUpperCase()}`);
-    return `${subject.name} ${operatorLabel} ${value} ${unit} ${periodLabel}`;
+    return `${subject.name} ${operatorLabel} ${value} ${unit} ${periodLabel}${timeSuffix}`;
+  }
+
+  get timeEnabled(): boolean {
+    return !!this.ruleForm?.get('timeEnabled')?.value;
   }
 
   setDefaultData() {
@@ -176,6 +202,9 @@ export class RuleFormComponent implements OnInit {
       operator: '>=',
       value: 1,
       period: 'day',
+      timeEnabled: false,
+      startTime: '00:00',
+      endTime: '23:59',
     });
   }
 }

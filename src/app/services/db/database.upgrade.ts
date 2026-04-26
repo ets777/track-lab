@@ -214,9 +214,16 @@ export const databaseUpgrades = [
     ],
   },
   {
-    toVersion: 7,
+    toVersion: 8,
     statements: [
       `ALTER TABLE rules DROP COLUMN name;`,
+    ],
+  },
+  {
+    toVersion: 9,
+    statements: [
+      `ALTER TABLE rules ADD COLUMN startTime TEXT;`,
+      `ALTER TABLE rules ADD COLUMN endTime TEXT;`,
     ],
   },
 ];
