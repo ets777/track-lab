@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonItem, IonLabel, IonList, IonText, IonInput } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList, IonText, IonInput, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ActivityService } from 'src/app/services/activity.service';
@@ -10,6 +10,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
+import { formatGraphDate } from 'src/app/functions/date';
 import { Router } from '@angular/router';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { DatePeriod } from 'src/app/types/date-period';
@@ -18,7 +19,7 @@ import { getPartIndex } from 'src/app/functions/string';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { LoadingService } from 'src/app/services/loading.service';
 
-const MAX_METRICS = 5;
+const MAX_METRICS = 3;
 
 const maxMetricsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const parts = (control.value || '').split(',').map((s: string) => s.trim()).filter(Boolean);
@@ -43,7 +44,7 @@ interface NormalizedPoint {
   selector: 'app-stats-content',
   templateUrl: './stats-content.component.html',
   styleUrl: './stats-content.component.scss',
-  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent],
+  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent],
 })
 export class StatsContentComponent implements OnInit, AfterViewInit {
   private activityService = inject(ActivityService);
@@ -81,9 +82,12 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     scales: { y: { beginAtZero: false } },
   };
   filterForm: FormGroup;
+  selectedCalendarMetricIndex = 0;
   private initialized = false;
   private lastLoadedState: string | null = null;
   private loadingData = false;
+
+  readonly weekdays = ['TK_CAL_MON', 'TK_CAL_TUE', 'TK_CAL_WED', 'TK_CAL_THU', 'TK_CAL_FRI', 'TK_CAL_SAT', 'TK_CAL_SUN'];
 
   constructor() {
     this.filterForm = this.formBuilder.group({
@@ -101,11 +105,16 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
     this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
-    const defaultMetrics = this.savedMetrics ?? visibleMetrics
-      .filter(m => m.isBase)
-      .slice(0, MAX_METRICS)
-      .map(m => this.translate.instant(m.name))
-      .join(', ');
+    const defaultMetrics = this.savedMetrics
+      ? this.savedMetrics.split(',').map(s => {
+          const k = s.trim();
+          return k.startsWith('TK_') ? this.translate.instant(k) : k;
+        }).join(', ')
+      : visibleMetrics
+          .filter(m => m.isBase)
+          .slice(0, MAX_METRICS)
+          .map(m => this.translate.instant(m.name))
+          .join(', ');
 
     this.metricInputText = defaultMetrics;
     this.metricsControl.setValue(defaultMetrics, { emitEvent: false });
@@ -165,12 +174,13 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     try {
       if (this.initialized && this.filterForm.valid && this.metricsControl.valid) {
         localStorage.setItem('stats-date-period', JSON.stringify(this.filterForm.value.datePeriod));
-        localStorage.setItem('stats-metrics', this.metricInputText);
+        localStorage.setItem('stats-metrics', this.getSelectedMetrics().map(m => m.name).join(', '));
       }
 
       const activities = await this.activityService.getByDate(startDate, endDate);
       this.activities = activities;
       this.selectedMetrics = this.getSelectedMetrics();
+      this.selectedCalendarMetricIndex = 0;
       this.buildChartData(activities, startDate, endDate);
     } finally {
       this.loadingData = false;
@@ -181,19 +191,6 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
   }
 
   private buildChartData(activities: IActivity[], startDate: string, endDate: string) {
-    const minValues = this.selectedMetrics.map(m => m.minValue).filter((v): v is number => v != null);
-    const maxValues = this.selectedMetrics.map(m => m.maxValue).filter((v): v is number => v != null);
-    this.chartOptions = {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: false,
-          ...(minValues.length ? { min: Math.min(...minValues) } : {}),
-          ...(maxValues.length ? { max: Math.max(...maxValues) } : {}),
-        },
-      },
-    };
-
     const dates = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
       .map(d => format(d, 'yyyy-MM-dd'));
 
@@ -244,12 +241,42 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
       }, -1);
 
       const cutoff = lastNonNullIdx >= 0 ? lastNonNullIdx + 1 : dates.length;
+      const slicedDatasets = datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) }));
+
+      const allValues = slicedDatasets.flatMap(ds => ds.data).filter((v): v is number => v !== null && v !== 0);
+      const dataMin = allValues.length ? Math.min(...allValues) : 0;
+      const dataMax = allValues.length ? Math.max(...allValues) : 10;
+
+      const step = this.selectedMetrics.length
+        ? Math.min(...this.selectedMetrics.map(m => m.step || 1))
+        : 1;
+      const floorStep = (v: number) => Math.floor(v / step) * step;
+      const ceilStep = (v: number) => Math.ceil(v / step) * step;
+      let yMin = floorStep(dataMin);
+      let yMax = ceilStep(dataMax);
+      if (Math.abs(yMin - dataMin) < 1e-9 && Math.abs(yMax - dataMax) < 1e-9) {
+        yMin -= step;
+        yMax += step;
+      }
+
+      const hardMins = this.selectedMetrics.map(m => m.minValue).filter((v): v is number => v != null);
+      const hardMaxes = this.selectedMetrics.map(m => m.maxValue).filter((v): v is number => v != null);
+      if (hardMins.length) yMin = Math.max(yMin, Math.min(...hardMins));
+      if (hardMaxes.length) yMax = Math.min(yMax, Math.max(...hardMaxes));
+
+      this.chartOptions = {
+        responsive: true,
+        scales: { y: { beginAtZero: false, min: yMin, max: yMax } },
+      };
 
       this.chartData = {
-        labels: dates.slice(0, cutoff),
-        datasets: datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) })),
+        labels: dates.slice(0, cutoff).map(d => formatGraphDate(d, this.translate.currentLang || 'en')),
+        datasets: slicedDatasets,
       };
+      return;
     }
+
+    this.chartOptions = { responsive: true, scales: { y: { beginAtZero: false } } };
   }
 
   normalizeWithInterpolation(activities: IActivity[], metric: IMetric): NormalizedPoint[] {
@@ -469,6 +496,29 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
 
     this.hideMetricSuggestions();
     this.loadStats();
+  }
+
+  get calendarCells(): ({ date: string; dayNumber: number; avg: number | null } | null)[] {
+    if (!this.activitiesGroupedByDate.length) return [];
+    const metric = this.selectedMetrics[this.selectedCalendarMetricIndex];
+    const first = parseISO(this.activitiesGroupedByDate[0].date);
+    const offset = (first.getDay() + 6) % 7;
+    const cells: ({ date: string; dayNumber: number; avg: number | null } | null)[] = Array(offset).fill(null);
+    for (const day of this.activitiesGroupedByDate) {
+      const entry = metric ? day.avgValues.find(v => v.metric.id === metric.id) : null;
+      const avg = entry && entry.value !== 0 ? entry.value : null;
+      cells.push({ date: day.date, dayNumber: +day.date.slice(8), avg });
+    }
+    return cells;
+  }
+
+  getDayBgColor(avg: number): string {
+    let hue: number;
+    if (avg <= 1) hue = 0;
+    else if (avg <= 5) hue = (avg - 1) / 4 * 60;
+    else if (avg <= 8) hue = 60 + (avg - 5) / 3 * 60;
+    else hue = 120;
+    return `hsla(${Math.round(hue)}, 65%, 50%, 0.38)`;
   }
 
   hasAnyValue(day: { avgValues: { metric: IMetric, value: number }[] }): boolean {

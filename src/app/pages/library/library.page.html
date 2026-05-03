@@ -13,11 +13,11 @@
   @if (isLoading) {
     <app-default-skeleton [showIcon]="false" [lines]="2"></app-default-skeleton>
   } @else {
-    <ion-searchbar
-      [(ngModel)]="searchQuery"
-      placeholder="{{ 'TK_SEARCH' | translate }}"
-      [debounce]="0"
-    ></ion-searchbar>
+    <ion-item>
+      <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate">
+        <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
+      </ion-input>
+    </ion-item>
     <ion-list>
       @for (action of filteredActions; track action.id) {
         <ion-item class="action">

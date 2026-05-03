@@ -74,3 +74,22 @@ canvas {
 ion-fab {
     position: fixed;
 }
+
+ion-card {
+    --box-shadow: none;
+    box-shadow: none !important;
+    border: 0.5px solid rgba(var(--ion-text-color-rgb), 0.1);
+}
+
+ion-header::after {
+    display: none;
+}
+
+ion-toolbar {
+    --box-shadow: none;
+    box-shadow: none !important;
+}
+
+ion-header {
+    box-shadow: none !important;
+}

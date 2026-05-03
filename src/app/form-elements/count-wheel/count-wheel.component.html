@@ -1,0 +1,33 @@
+<ion-item class="cw-trigger" (click)="openPicker()">
+  <div class="cw-trigger-content">
+    <ion-label position="stacked">{{ label | translate }}</ion-label>
+    <div class="cw-value">{{ value }}</div>
+    @if (unitLabel) {
+      <ion-text class="cw-unit" color="medium">{{ unitLabel }}</ion-text>
+    }
+  </div>
+</ion-item>
+
+@if (isOpen) {
+  <div class="cw-backdrop" (click)="cancel()"></div>
+  <div class="cw-panel">
+    <div class="cw-wheel-container">
+      <div class="cw-highlight"></div>
+      <div class="cw-column" #column>
+        <div class="cw-pad"></div>
+        @for (item of items; track $index) {
+          <div class="cw-item">{{ item }}</div>
+        }
+        <div class="cw-pad"></div>
+      </div>
+    </div>
+    <div class="cw-buttons">
+      <ion-button fill="clear" color="medium" (click)="cancel()">
+        {{ 'TK_CANCEL' | translate }}
+      </ion-button>
+      <ion-button (click)="done()">
+        {{ 'TK_DONE' | translate }}
+      </ion-button>
+    </div>
+  </div>
+}

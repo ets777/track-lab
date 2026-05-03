@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    @if (showBackButton) {
+      <app-back-button slot="start"></app-back-button>
+    }
     <ion-title>{{ 'TK_HISTORY' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -13,24 +16,10 @@
   <ion-buttons class="date-nav">
     <ion-button (click)="goToPreviousDay()">{{ 'TK_PREV' | translate }}</ion-button>
     <div class="date-center">
-      @if (editingDate) {
-        <input
-          #dateInput
-          class="date-input"
-          type="text"
-          [value]="currentDate"
-          placeholder="YYYY-MM-DD"
-          (blur)="onDateInputBlur($event)"
-          (keydown.enter)="dateInput.blur()"
-        />
-        <ion-button fill="clear" size="small" class="confirm-btn" [class.checkmark-out]="!checkmarkVisible" (mousedown)="$event.preventDefault()" (click)="dateInput.blur()">
-          <ion-icon slot="icon-only" src="assets/icon/check.svg"></ion-icon>
-        </ion-button>
-      } @else {
-        <ion-text class="date-text" (click)="startEditingDate()">{{ currentDate }}</ion-text>
-      }
+      <ion-text class="date-text" (click)="openDatePicker()">{{ displayDate }}</ion-text>
     </div>
     <ion-button (click)="goToNextDay()">{{ 'TK_NEXT' | translate }}</ion-button>
   </ion-buttons>
-  <app-activity-list [activities]="activities" [metrics]="metrics" [lists]="lists"></app-activity-list>
+  <app-date-picker #datePicker [hideTrigger]="true" (dateSelected)="onDateSelected($event)"></app-date-picker>
+  <app-activity-list [activities]="activities" [metrics]="metrics" [lists]="lists" [rules]="rules"></app-activity-list>
 </ion-content>

@@ -29,31 +29,46 @@
   <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
 }
 
-<ion-list>
-  @if (activitiesGroupedByDate.length && selectedMetrics.length) {
-    <ion-item>
-      <ion-label>
-        <h2>{{ 'TK_TOTAL_FOR_PERIOD' | translate }}</h2>
-        @for (metric of selectedMetrics; track metric.id) {
-          <p>{{ 'TK_AVG' | translate }} {{ metric.name | translate }}: {{ getTotalAverageValue(metric) | number:'1.1-1' }}</p>
+@if (activitiesGroupedByDate.length && selectedMetrics.length) {
+  <div class="calendar-block">
+  @if (selectedMetrics.length > 1) {
+    <ion-segment [value]="selectedCalendarMetricIndex" (ionChange)="selectedCalendarMetricIndex = +$any($event).detail.value">
+      @for (metric of selectedMetrics; track metric.id; let i = $index) {
+        <ion-segment-button [value]="i">{{ metric.name | translate }}</ion-segment-button>
+      }
+    </ion-segment>
+  }
+
+  <div class="metric-calendar">
+    <div class="metric-calendar__weekdays">
+      @for (wd of weekdays; track wd) {
+        <div class="metric-calendar__weekday">{{ wd | translate }}</div>
+      }
+    </div>
+    <div class="metric-calendar__grid">
+      @for (cell of calendarCells; track $index) {
+        @if (cell === null) {
+          <div class="metric-calendar__empty"></div>
+        } @else {
+          <div
+            class="metric-calendar__day"
+            [style.background-color]="cell.avg !== null ? getDayBgColor(cell.avg) : ''"
+            (click)="goToDay(cell.date)"
+          >
+            <span class="metric-calendar__day-num">{{ cell.dayNumber }}</span>
+            @if (cell.avg !== null) {
+              <span class="metric-calendar__day-avg">{{ cell.avg | number:'1.1-1' }}</span>
+            }
+          </div>
         }
-      </ion-label>
-    </ion-item>
-  }
-  @for (day of activitiesGroupedByDate; track day.date) {
-    @if (hasAnyValue(day)) {
-      <ion-item (click)="goToDay(day.date)">
-        <ion-label>
-          <h2>{{ day.date }}</h2>
-          @for (entry of day.avgValues; track entry.metric.id) {
-            <p>{{ 'TK_AVG' | translate }} {{ entry.metric.name | translate }}: {{ entry.value | number:'1.1-1' }}</p>
-          }
-        </ion-label>
-      </ion-item>
-    }
-  } @empty {
-    <ion-text>
-      {{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}
-    </ion-text>
-  }
-</ion-list>
+      }
+    </div>
+    <div class="metric-calendar__total">
+      {{ 'TK_AVG' | translate }} {{ selectedMetrics[selectedCalendarMetricIndex]?.name | translate }}:
+      {{ getTotalAverageValue(selectedMetrics[selectedCalendarMetricIndex]) | number:'1.1-1' }}
+    </div>
+  </div>
+  </div>
+} @else if (!activitiesGroupedByDate.length) {
+  <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}</ion-text>
+}

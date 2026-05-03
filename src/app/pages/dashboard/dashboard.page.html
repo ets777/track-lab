@@ -1,0 +1,35 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'TK_DASHBOARD' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="dashboard">
+    <app-main-action-widget
+      label="TK_NEW_ACTIVITY"
+      sublabel="TK_LOG_SOMETHING_NOW"
+      icon="add-outline"
+      route="/activity/add"
+    ></app-main-action-widget>
+
+    <app-rules-checklist-widget
+      [items]="checklistItems"
+      [isLoading]="checklistLoading"
+    ></app-rules-checklist-widget>
+
+    <div class="section-label">{{ 'TK_NAVIGATE' | translate }}</div>
+
+    <div class="nav-grid">
+      @for (widget of navWidgets; track widget.route) {
+        <app-link-widget
+          [icon]="widget.icon"
+          [label]="widget.label"
+          [route]="widget.route"
+          [color]="widget.color"
+          [compact]="true"
+        ></app-link-widget>
+      }
+    </div>
+  </div>
+</ion-content>

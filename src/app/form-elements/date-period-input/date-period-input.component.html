@@ -3,29 +3,19 @@
   [formGroup]="form"
 >
   <div class="date-row">
-    <ion-item>
-      <ion-label position="stacked">{{ 'TK_DATE_FROM' | translate }}</ion-label>
-      <ion-input
-        appValidationError
-        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-        formControlName="startDate"
-        [maskito]="dateMask"
-        [maskitoElement]="maskPredicate"
-        (ionInput)="onUserInput()"
-      ></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-label position="stacked">{{ 'TK_DATE_TO' | translate }}</ion-label>
-      <ion-input
-        appValidationError
-        placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-        formControlName="endDate"
-        [maskito]="dateMask"
-        [maskitoElement]="maskPredicate"
-        (ionInput)="onUserInput()"
-      ></ion-input>
-    </ion-item>
+    <app-date-picker
+      formControlName="startDate"
+      label="TK_DATE_FROM"
+    ></app-date-picker>
+    <app-date-picker
+      formControlName="endDate"
+      label="TK_DATE_TO"
+    ></app-date-picker>
+    @if (form.invalid) {
+      <div class="date-row__warning" (click)="showValidationError($event)">
+        <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+      </div>
+    }
   </div>
 </form>
 

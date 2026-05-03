@@ -1,8 +1,10 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText, IonCheckbox } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonSegment, IonSegmentButton, IonText, IonCheckbox } from '@ionic/angular/standalone';
 import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
+import { CountWheelComponent } from 'src/app/form-elements/count-wheel/count-wheel.component';
+import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { TagService } from 'src/app/services/tag.service';
 import { ActionService } from 'src/app/services/action.service';
@@ -17,8 +19,6 @@ import { filterUniqueElements } from 'src/app/functions/item';
 import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
-import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
-import { MaskitoDirective } from '@maskito/angular';
 import { IRule, RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
 
 export type RuleFormMetric = 'count' | 'duration';
@@ -40,9 +40,9 @@ export type RuleForm = {
   templateUrl: './rule-form.component.html',
   styleUrls: ['./rule-form.component.scss'],
   imports: [
-    IonItem, IonLabel, IonInput, IonSegment, IonSegmentButton, IonText, IonCheckbox,
+    IonItem, IonLabel, IonSegment, IonSegmentButton, IonText, IonCheckbox,
     FormsModule, ReactiveFormsModule, TranslateModule,
-    SelectSearchComponent, ValidationErrorDirective, MaskitoDirective, TimeWheelComponent,
+    SelectSearchComponent, ValidationErrorDirective, TimeWheelComponent, CountWheelComponent, DatePickerComponent,
   ],
 })
 export class RuleFormComponent implements OnInit {
@@ -57,12 +57,6 @@ export class RuleFormComponent implements OnInit {
 
   private lists: IList[] = [];
   public suggestions: Selectable<CommonItem>[] = [];
-
-  protected readonly dateMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
-  };
-  protected readonly maskPredicate: MaskitoElementPredicate =
-    async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
 
   public ruleForm!: ModelFormGroup<RuleForm>;
 

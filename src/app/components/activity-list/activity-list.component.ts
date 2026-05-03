@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, OnChanges, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonItem, IonList, IonLabel, IonButtons, IonButton, IonIcon, IonActionSheet, IonText, ActionSheetController } from "@ionic/angular/standalone";
 import { OverlayEventDetail } from '@ionic/core';
@@ -11,6 +11,8 @@ import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { IList } from 'src/app/db/models/list';
 import { ITag } from 'src/app/db/models/tag';
+import { IRule } from 'src/app/db/models/rule';
+import { ActivityRuleResult, computeActivityRuleResults } from 'src/app/functions/rule-color';
 
 @Component({
   selector: 'app-activity-list',
@@ -18,7 +20,7 @@ import { ITag } from 'src/app/db/models/tag';
   styleUrls: ['./activity-list.component.scss'],
   imports: [IonText, IonActionSheet, IonIcon, IonButton, IonButtons, IonLabel, IonList, IonItem, TranslateModule, TagsComponent],
 })
-export class ActivityListComponent {
+export class ActivityListComponent implements OnChanges {
   private translate = inject(TranslateService);
   private actionSheetCtrl = inject(ActionSheetController);
   router = inject(Router);
@@ -29,30 +31,37 @@ export class ActivityListComponent {
   @Input() activities: IActivity[] = [];
   @Input() metrics: IMetric[] = [];
   @Input() lists: IList[] = [];
+  @Input() rules: IRule[] = [];
+  /** Full-period activities for rule evaluation when `activities` is a subset (e.g. one day in a week rule). */
+  @Input() allActivities: IActivity[] = [];
+
+  protected resultMap = new Map<number, ActivityRuleResult>();
+
+  ngOnChanges(): void {
+    const context = this.allActivities.length ? this.allActivities : this.activities;
+    this.resultMap = this.rules.length ? computeActivityRuleResults(context, this.rules) : new Map();
+  }
+
+  getActivityColor(activity: IActivity): ActivityRuleResult['color'] | null {
+    return this.resultMap.get(activity.id)?.color ?? null;
+  }
+
+  getActivityRule(activity: IActivity): IRule | null {
+    return this.resultMap.get(activity.id)?.rule ?? null;
+  }
+
+  getActivityButtons(activity: IActivity) {
+    const rule = this.getActivityRule(activity);
+    const buttons = [
+      { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
+      ...(rule ? [{ text: this.translate.instant('TK_VIEW_RULE'), data: { action: 'view-rule', ruleId: rule.id } }] : []),
+      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+      { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+    ];
+    return buttons;
+  }
 
   entitiesToString = entitiesToString;
-
-  public activityActionSheetButtons = [
-    {
-      text: this.translate.instant('TK_VIEW'),
-      data: {
-        action: 'view',
-      },
-    },
-    {
-      text: this.translate.instant('TK_EDIT'),
-      data: {
-        action: 'edit',
-      },
-    },
-    {
-      text: this.translate.instant('TK_DELETE'),
-      role: 'destructive',
-      data: {
-        action: 'delete',
-      },
-    },
-  ];
 
   async doActivityAction(event: CustomEvent<OverlayEventDetail>, activityId: number) {
     const action = event.detail.data?.action;
@@ -61,13 +70,14 @@ export class ActivityListComponent {
       case 'view':
         await this.router.navigate(['/activity/view', activityId]);
         break;
+      case 'view-rule':
+        await this.router.navigate(['/rule', event.detail.data?.ruleId]);
+        break;
       case 'delete':
         await this.deleteActivity(activityId);
         break;
       case 'edit':
         await this.goToEditPage(activityId);
-        break;
-      default:
         break;
     }
   }

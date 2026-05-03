@@ -1,7 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel, IonButtons } from '@ionic/angular/standalone';
+import { NavigationService } from 'src/app/services/navigation.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { AlertController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
@@ -24,14 +26,19 @@ export enum autoBackupOption {
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption, IonCheckbox],
+  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption, IonCheckbox, BackButtonComponent],
 })
 export class SettingsPage implements OnInit {
   private translate = inject(TranslateService);
   private backupService = inject(BackupService);
+  private navigationService = inject(NavigationService);
   private hookService = inject(HookService);
   private alertController = inject(AlertController);
   private databaseRouter = inject(DatabaseRouter);
+  get showBackButton(): boolean {
+    return this.navigationService.fromDashboard;
+  }
+
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
   get currentDatabase() { return this.databaseRouter.getCurrentAdapterName(); }

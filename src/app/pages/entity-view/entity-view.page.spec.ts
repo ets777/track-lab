@@ -12,6 +12,7 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { LogService } from 'src/app/services/log.service';
 import { AlertController, ActionSheetController } from '@ionic/angular';
 import { RouterTestingModule } from '@angular/router/testing';
+import { RuleService } from 'src/app/services/rule.service';
 import { IActivity } from 'src/app/db/models/activity';
 import { IAction } from 'src/app/db/models/action';
 import { ITag } from 'src/app/db/models/tag';
@@ -62,6 +63,7 @@ describe('EntityViewPage.activityMatchesEntity', () => {
         { provide: LogService, useValue: jasmine.createSpyObj('LogService', ['error']) },
         { provide: AlertController, useValue: jasmine.createSpyObj('AlertController', ['create']) },
         { provide: ActionSheetController, useValue: jasmine.createSpyObj('ActionSheetController', ['create']) },
+        { provide: RuleService, useValue: jasmine.createSpyObj('RuleService', ['getAll', 'buildName']) },
       ],
     });
 

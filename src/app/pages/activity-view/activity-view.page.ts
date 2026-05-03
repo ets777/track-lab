@@ -18,6 +18,13 @@ import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { IList } from 'src/app/db/models/list';
 import { IItem } from 'src/app/db/models/item';
+import { RuleService } from 'src/app/services/rule.service';
+import { ActionService } from 'src/app/services/action.service';
+import { TagService } from 'src/app/services/tag.service';
+import { ItemService } from 'src/app/services/item.service';
+import { IActionDb } from 'src/app/db/models/action';
+import { ITag } from 'src/app/db/models/tag';
+import { ActivityRuleResult, computeRuleResultsForActivity } from 'src/app/functions/rule-color';
 
 @Component({
   selector: 'app-activity-view',
@@ -32,6 +39,10 @@ export class ActivityViewPage {
   private activityService = inject(ActivityService);
   private metricService = inject(MetricService);
   private listService = inject(ListService);
+  private ruleService = inject(RuleService);
+  private actionService = inject(ActionService);
+  private tagService = inject(TagService);
+  private itemService = inject(ItemService);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
@@ -41,6 +52,11 @@ export class ActivityViewPage {
   activity?: IActivity;
   metrics: IMetric[] = [];
   itemsGroupedByList: { list: IList; items: IItem[] }[] = [];
+  triggeredRules: ActivityRuleResult[] = [];
+
+  private allActions: IActionDb[] = [];
+  private allTags: ITag[] = [];
+  private allItems: IItem[] = [];
 
   entitiesToString = entitiesToString;
 
@@ -90,24 +106,37 @@ export class ActivityViewPage {
   }
 
   async ionViewDidEnter() {
-    [this.activity, this.metrics] = await Promise.all([
+    const [activity, metrics, rules, allActivities, actions, tags, items, lists] = await Promise.all([
       this.activityService.getEnriched(this.activityId),
       this.metricService.getAll(),
+      this.ruleService.getAll(),
+      this.activityService.getAllEnriched(),
+      this.actionService.getAll(),
+      this.tagService.getAll(),
+      this.itemService.getAll(),
+      this.listService.getAll(),
     ]);
 
-    if (this.activity?.items.length) {
-      const lists = await this.listService.getAll();
-      const listMap = new Map(lists.map(l => [l.id, l]));
+    this.activity = activity;
+    this.metrics = metrics;
+    this.allActions = actions;
+    this.allTags = tags;
+    this.allItems = items;
 
+    if (this.activity) {
+      this.triggeredRules = computeRuleResultsForActivity(this.activity, allActivities, rules);
+    }
+
+    if (this.activity?.items.length) {
+      const listMap = new Map(lists.map(l => [l.id, l]));
       const groups = new Map<number, IItem[]>();
       for (const item of this.activity.items) {
         const group = groups.get(item.listId) ?? [];
         group.push(item);
         groups.set(item.listId, group);
       }
-
       this.itemsGroupedByList = [...groups.entries()]
-        .map(([listId, items]) => ({ list: listMap.get(listId)!, items }))
+        .map(([listId, groupItems]) => ({ list: listMap.get(listId)!, items: groupItems }))
         .filter(g => g.list);
     } else {
       this.itemsGroupedByList = [];
@@ -142,5 +171,14 @@ export class ActivityViewPage {
 
   getMetricUnit(metricId: number) {
     return this.metrics.find(m => m.id === metricId)?.unit ?? '';
+  }
+
+  getRuleName(result: ActivityRuleResult): string {
+    const rule = result.rule;
+    let subjectName = '';
+    if (rule.subjectType === 'action') subjectName = this.allActions.find(a => a.id === rule.subjectId)?.name ?? '';
+    else if (rule.subjectType === 'tag') subjectName = this.allTags.find(t => t.id === rule.subjectId)?.name ?? '';
+    else subjectName = this.allItems.find(i => i.id === rule.subjectId)?.name ?? '';
+    return this.ruleService.buildName(rule, subjectName);
   }
 }

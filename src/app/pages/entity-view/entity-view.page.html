@@ -38,7 +38,11 @@
     @if (activitiesGroupedByDate.length) {
       @for (day of activitiesGroupedByDate; track day.date) {
         <h3>{{ day.date }}</h3>
-        <app-activity-list [activities]="day.activities"></app-activity-list>
+        <app-activity-list
+          [activities]="day.activities"
+          [rules]="rules"
+          [allActivities]="activities"
+        ></app-activity-list>
       }
     } @else {
       <div>{{ 'TK_NO_ACTIVITIES_FOR_SELECTED_PERIOD' | translate }}</div>

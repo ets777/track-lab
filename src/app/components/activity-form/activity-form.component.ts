@@ -1,18 +1,17 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton, IonModal, IonSearchbar, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton, IonModal, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, close } from 'ionicons/icons';
+import { add, close, searchOutline } from 'ionicons/icons';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
 import { addDays, format } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
-import { MaskitoDirective } from '@maskito/angular';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
+import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { IActivity } from 'src/app/db/models/activity';
 import { IActionDb } from 'src/app/db/models/action';
@@ -68,7 +67,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonSearchbar, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaskitoDirective, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent],
+  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -81,12 +80,6 @@ export class ActivityFormComponent implements OnInit {
   @Input() activity?: IActivity;
   @Input() activityMetricValues?: Record<number, number>;
 
-
-  protected readonly dateMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
-  };
-  protected readonly maskPredicate: MaskitoElementPredicate =
-    async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
 
   private actionMetricService2 = inject(ActionMetricService);
   private actionTagService = inject(ActionTagService);
@@ -129,7 +122,7 @@ export class ActivityFormComponent implements OnInit {
   private currentTime: string = '00:00';
 
   constructor() {
-    addIcons({ add, close });
+    addIcons({ add, close, searchOutline });
     this.activityForm = this.formBuilder.group({
       actions: ['', [Validators.required, duplicatedItemsValidator]],
       startTime: ['', [Validators.required, timeFormatValidator]],

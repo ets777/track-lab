@@ -3,3 +3,13 @@
     align-items: start;
     justify-content: space-between;
 }
+
+.activity-green {
+  border-left: 3px solid var(--ion-color-success);
+  --background: rgba(var(--ion-color-success-rgb), 0.06);
+}
+
+.activity-red {
+  border-left: 3px solid var(--ion-color-danger);
+  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+}

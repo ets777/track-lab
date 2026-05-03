@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      @if (showBackButton) {
+        <app-back-button></app-back-button>
+      } @else {
+        <ion-menu-button menu="stats-menu"></ion-menu-button>
+      }
+    </ion-buttons>
+    <ion-title>{{ 'TK_RULES' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <app-default-skeleton [count]="6" [showIcon]="false" [lines]="1"></app-default-skeleton>
+  } @else {
+    <ion-segment [value]="selectedTab" (ionChange)="onTabChange($event)">
+      <ion-segment-button value="day">{{ 'TK_DAILY' | translate }}</ion-segment-button>
+      <ion-segment-button value="week">{{ 'TK_WEEKLY' | translate }}</ion-segment-button>
+      <ion-segment-button value="month">{{ 'TK_MONTHLY' | translate }}</ion-segment-button>
+    </ion-segment>
+
+    <app-aggregate-rule-calendar
+      [rules]="filteredRules"
+      [allActivities]="allActivities"
+      [period]="selectedTab"
+      [selectedDate]="selectedDate"
+      (daySelected)="onDaySelected($event)"
+      (monthChanged)="onMonthChanged($event)"
+    ></app-aggregate-rule-calendar>
+
+    @if (ruleDayStatuses.length) {
+      <ion-list>
+        @for (result of ruleDayStatuses; track result.rule.id) {
+          <ion-item
+            button
+            (click)="router.navigate(['/rule', result.rule.id])"
+            [class.rule-green]="result.color === 'green'"
+            [class.rule-red]="result.color === 'red'"
+          >
+            <ion-label>{{ getRuleName(result) }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    } @else {
+      <ion-text color="medium">{{ 'TK_NO_RULES' | translate }}</ion-text>
+    }
+  }
+</ion-content>

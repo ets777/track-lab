@@ -1,6 +1,11 @@
 <ion-list>
   @for (activity of activities; track activity.id) {
-    <ion-item button (click)="router.navigate(['/activity/view', activity.id])">
+    <ion-item
+      button
+      (click)="router.navigate(['/activity/view', activity.id])"
+      [class.activity-green]="getActivityColor(activity) === 'green'"
+      [class.activity-red]="getActivityColor(activity) === 'red'"
+    >
       <ion-label>
         <div class="activity-header">
           <h2>{{ entitiesToString(activity.actions) }}</h2>
@@ -29,7 +34,7 @@
         </p>
         <app-tags [tags]="getAllTags(activity)"></app-tags>
         <ion-action-sheet trigger="open-action-sheet-{{activity.id}}" header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="activityActionSheetButtons"
+          [buttons]="getActivityButtons(activity)"
           (didDismiss)="doActivityAction($event, activity.id)"></ion-action-sheet>
       </ion-label>
     </ion-item>

@@ -67,5 +67,16 @@
       <h2>{{ 'TK_TAGS' | translate }}</h2>
       <app-tags [tags]="getAllTags()"></app-tags>
     }
+
+    @if (triggeredRules.length) {
+      <h2>{{ 'TK_RULES' | translate }}</h2>
+      <ion-list>
+        @for (result of triggeredRules; track result.rule.id) {
+          <ion-item button (click)="router.navigate(['/rule', result.rule.id])" [class.rule-green]="result.color === 'green'" [class.rule-red]="result.color === 'red'">
+            <ion-label>{{ getRuleName(result) }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
   }
 </ion-content>

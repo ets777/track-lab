@@ -1,7 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button menu="lab-menu"></ion-menu-button>
+      @if (showBackButton) {
+        <app-back-button></app-back-button>
+      } @else {
+        <ion-menu-button menu="lab-menu"></ion-menu-button>
+      }
     </ion-buttons>
     <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
   </ion-toolbar>
@@ -19,11 +23,11 @@
   @if (lists === null) {
     <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
   } @else {
-    <ion-searchbar
-      [(ngModel)]="searchQuery"
-      placeholder="{{ 'TK_SEARCH' | translate }}"
-      [debounce]="0"
-    ></ion-searchbar>
+    <ion-item>
+      <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate">
+        <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
+      </ion-input>
+    </ion-item>
     <ion-list>
       @if (showActions) {
         <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>

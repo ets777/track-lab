@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IStreak } from 'src/app/db/models/streak';
 import { StreakService } from 'src/app/services/streak.service';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { IonItem, IonLabel, IonInput } from "@ionic/angular/standalone";
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { TagService } from 'src/app/services/tag.service';
 import { ActionService } from 'src/app/services/action.service';
@@ -17,9 +16,7 @@ import { IItem } from 'src/app/db/models/item';
 import { capitalize } from 'src/app/functions/string';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
-import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
-import { maskitoTimeOptionsGenerator } from '@maskito/kit';
-import { MaskitoDirective } from '@maskito/angular';
+import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 
 export type StreakForm = {
   term: CommonItem;
@@ -30,7 +27,7 @@ export type StreakForm = {
   selector: 'app-streak-form',
   templateUrl: './streak-form.component.html',
   styleUrls: ['./streak-form.component.scss'],
-  imports: [IonLabel, IonItem, IonInput, FormsModule, ReactiveFormsModule, TranslateModule, IonItem, SelectSearchComponent, ValidationErrorDirective, MaskitoDirective],
+  imports: [FormsModule, ReactiveFormsModule, TranslateModule, SelectSearchComponent, ValidationErrorDirective, DatePickerComponent],
 })
 export class StreakFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -44,15 +41,6 @@ export class StreakFormComponent implements OnInit {
   public suggestions: Selectable<CommonItem>[] = [];
 
   @Input() streak?: IStreak;
-
-  protected readonly dateMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
-  };
-  protected readonly maskPredicate: MaskitoElementPredicate =
-    async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
-  protected readonly timeMask: MaskitoOptions = maskitoTimeOptionsGenerator({
-    mode: 'HH:MM',
-  });
 
   public streakForm!: ModelFormGroup<StreakForm>;
 

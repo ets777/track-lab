@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+
+ion-card {
+  margin: 0;
+  --background: #0054e9;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 22px;
+    color: #ffffff;
+  }
+}
+
+.text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.arrow {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}

@@ -77,6 +77,10 @@ export const routes: Routes = [
         path: 'library',
         loadComponent: () => import('./pages/stats-item/stats-item.page').then(m => m.StatsItemPage)
       },
+      {
+        path: 'rules',
+        loadComponent: () => import('./pages/stats-rules/stats-rules.page').then(m => m.StatsRulesPage)
+      },
     ],
   },
   {
@@ -164,6 +168,10 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/dashboard.page').then(m => m.DashboardPage),
+  },
+  {
     path: 'database',
     loadComponent: () => import('./pages/database/database.page').then(m => m.DatabasePage)
   },
@@ -203,7 +211,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: '/activity',
+    redirectTo: '/dashboard',
     pathMatch: 'full',
   },
 ];

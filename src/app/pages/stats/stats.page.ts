@@ -1,5 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { IonHeader, IonContent, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { NavigationService } from 'src/app/services/navigation.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.component';
 import { StatsContentComponent } from 'src/app/components/stats-content/stats-content.component';
@@ -12,13 +14,14 @@ import { addDays, addMonths, format } from 'date-fns';
 
 @Component({
   selector: 'app-stats',
-  imports: [IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, TranslateModule, StatsSkeletonComponent, StatsContentComponent],
+  imports: [IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, TranslateModule, StatsSkeletonComponent, StatsContentComponent, BackButtonComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })
 export class StatsPage {
   private metricService = inject(MetricService);
   private activityService = inject(ActivityService);
+  private navigationService = inject(NavigationService);
 
   isLoading = true;
   allMetrics: IMetric[] = [];
@@ -26,6 +29,10 @@ export class StatsPage {
   savedMetrics: string | null = null;
   initialActivities: IActivity[] = [];
   initialPeriod: DatePeriod | null = null;
+
+  get showBackButton(): boolean {
+    return this.navigationService.fromDashboard;
+  }
 
   ionViewWillEnter() {
     this.isLoading = true;

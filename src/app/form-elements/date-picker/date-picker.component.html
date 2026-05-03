@@ -1,0 +1,44 @@
+@if (!hideTrigger) {
+  <div class="dp-trigger" (click)="openPicker()">
+    <span class="dp-trigger__label">{{ label | translate }}</span>
+    <span class="dp-trigger__value">{{ displayValue || ('TK_YYYY_MM_DD' | translate) }}</span>
+  </div>
+}
+
+@if (isOpen) {
+  <div class="dp-backdrop" (click)="cancel()"></div>
+  <div class="dp-panel">
+    <div class="dp-header">
+      <ion-button fill="clear" color="medium" (click)="prevMonth()">‹</ion-button>
+      <span class="dp-month-label">{{ monthLabel }}</span>
+      <ion-button fill="clear" color="medium" (click)="nextMonth()">›</ion-button>
+    </div>
+    <div class="dp-weekdays">
+      @for (wd of weekdays; track $index) {
+        <div class="dp-weekday">{{ wd | translate }}</div>
+      }
+    </div>
+    <div class="dp-grid">
+      @for (cell of cells; track $index) {
+        @if (cell === null) {
+          <div class="dp-cell"></div>
+        } @else {
+          <div
+            class="dp-cell dp-day"
+            [class.dp-day--selected]="isSelected(cell)"
+            [class.dp-day--today]="isToday(cell) && !isSelected(cell)"
+            (click)="selectDay(cell)"
+          >{{ cell }}</div>
+        }
+      }
+    </div>
+    <div class="dp-buttons">
+      <ion-button fill="clear" color="medium" (click)="cancel()">
+        {{ 'TK_CANCEL' | translate }}
+      </ion-button>
+      <ion-button (click)="done()">
+        {{ 'TK_DONE' | translate }}
+      </ion-button>
+    </div>
+  </div>
+}

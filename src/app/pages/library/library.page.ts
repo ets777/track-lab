@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonSearchbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonInput } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { searchOutline } from 'ionicons/icons';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
@@ -18,7 +20,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonSearchbar, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonInput, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);
@@ -27,6 +29,8 @@ export class LibraryPage {
   private router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
+
+  constructor() { addIcons({ searchOutline }); }
 
   actions: IAction[] = [];
   isLoading = true;

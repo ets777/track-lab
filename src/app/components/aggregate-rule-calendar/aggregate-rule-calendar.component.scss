@@ -1,0 +1,44 @@
+.rule-calendar__day--activity-broken {
+  color: var(--ion-color-danger-shade);
+  font-weight: 600;
+
+  &::before {
+    background-color: rgba(var(--ion-color-danger-rgb), 0.14);
+  }
+}
+
+// Daily view: dim out-of-month colored cells
+.rule-calendar__days-section--day {
+  .rule-calendar__day--other-month {
+    &.rule-calendar__day--met,
+    &.rule-calendar__day--broken {
+      opacity: 0.35;
+    }
+  }
+}
+
+// Monthly view: also dim --activity-broken (--met/--broken/--activity already handled by rule-calendar base styles)
+.rule-calendar__days-section--month {
+  .rule-calendar__day--other-month {
+    &.rule-calendar__day--activity-broken {
+      opacity: 0.35;
+    }
+  }
+}
+
+.rule-calendar__week-row--selected {
+  box-shadow: 0 0 0 2px var(--ion-color-primary) inset;
+  border-radius: 16px;
+}
+
+.rule-calendar__day--selected {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 16px;
+    border: 2px solid var(--ion-color-primary);
+    pointer-events: none;
+    z-index: 2;
+  }
+}

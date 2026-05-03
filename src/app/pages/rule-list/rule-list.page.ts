@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IRule } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
 import { Router } from '@angular/router';
+import { NavigationService } from 'src/app/services/navigation.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -20,11 +22,12 @@ import { IItem } from 'src/app/db/models/item';
   selector: 'app-rule-list',
   templateUrl: './rule-list.page.html',
   styleUrls: ['./rule-list.page.scss'],
-  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton, IonButton, IonActionSheet],
+  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText, BackButtonComponent],
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);
   private actionService = inject(ActionService);
+  private navigationService = inject(NavigationService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
   private router = inject(Router);
@@ -42,6 +45,10 @@ export class RuleListPage {
     { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
     { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
   ];
+
+  get showBackButton(): boolean {
+    return this.navigationService.fromDashboard;
+  }
 
   async ionViewDidEnter() {
     [this.rules, this.actions, this.tags, this.items] = await Promise.all([

@@ -1,15 +1,9 @@
 <form [formGroup]="streakForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_START_DATE' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-      formControlName="startDate"
-      name="startDate"
-      [maskito]="dateMask"
-      [maskitoElement]="maskPredicate"
-    ></ion-input>
-  </ion-item>
+  <app-date-picker
+    appValidationError
+    formControlName="startDate"
+    label="TK_START_DATE"
+  ></app-date-picker>
   <app-select-search
     appValidationError
     formControlName="term"

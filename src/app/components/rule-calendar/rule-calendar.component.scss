@@ -35,6 +35,12 @@
         }
       }
     }
+
+    &--day {
+      .rule-calendar__day--other-month {
+        cursor: pointer;
+      }
+    }
   }
 
   &__month-svg {

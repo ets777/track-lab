@@ -1,0 +1,117 @@
+app-count-wheel {
+  display: block;
+
+  .cw-trigger {
+    cursor: pointer;
+
+    .cw-trigger-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .cw-value {
+      font-size: 2.5rem;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--ion-text-color);
+    }
+
+    .cw-unit {
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+  }
+}
+
+.cw-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.cw-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20001;
+  background-color: var(--ion-background-color, #ffffff);
+  border-radius: 16px 16px 0 0;
+  padding-top: 24px;
+}
+
+.cw-wheel-container {
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cw-highlight {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 48px;
+  border-top: 1px solid var(--ion-color-primary);
+  border-bottom: 1px solid var(--ion-color-primary);
+  pointer-events: none;
+}
+
+.cw-column {
+  width: 140px;
+  height: 240px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 20%,
+    black 40%,
+    black 60%,
+    rgba(0, 0, 0, 0.35) 80%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 20%,
+    black 40%,
+    black 60%,
+    rgba(0, 0, 0, 0.35) 80%,
+    transparent 100%
+  );
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cw-pad {
+    height: 96px;
+  }
+
+  .cw-item {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 500;
+    scroll-snap-align: center;
+    user-select: none;
+    color: var(--ion-text-color);
+  }
+}
+
+.cw-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
+}

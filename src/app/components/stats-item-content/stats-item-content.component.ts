@@ -18,6 +18,7 @@ import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
 import { addDays, format } from 'date-fns';
+import { formatDisplayDate } from 'src/app/functions/date';
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { filterUniqueElements } from 'src/app/functions/item';
@@ -221,8 +222,11 @@ export class StatsItemContentComponent implements OnInit {
     const averageTimeLabel = this.translate.instant('TK_AVG') + ' ' + timeLabel.toLowerCase();
     const timesLabel = this.translate.instant('TK_TIMES');
 
+    const lang = this.translate.currentLang || 'en';
+    const displayDates = dates.map(d => formatDisplayDate(d, lang));
+
     this.minutesChartData = {
-      labels: dates,
+      labels: displayDates,
       datasets: [
         { data: durationMinutes, label: timeLabel },
         { data: averages, label: averageTimeLabel },
@@ -230,7 +234,7 @@ export class StatsItemContentComponent implements OnInit {
     };
 
     this.amountChartData = {
-      labels: dates,
+      labels: displayDates,
       datasets: [{ data: amount, label: timesLabel }],
     };
   }

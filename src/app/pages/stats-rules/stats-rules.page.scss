@@ -1,0 +1,13 @@
+ion-segment {
+  margin-bottom: 16px;
+}
+
+.rule-green {
+  border-left: 3px solid var(--ion-color-success);
+  --background: rgba(var(--ion-color-success-rgb), 0.06);
+}
+
+.rule-red {
+  border-left: 3px solid var(--ion-color-danger);
+  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+}

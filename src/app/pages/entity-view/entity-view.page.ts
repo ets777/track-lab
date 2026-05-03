@@ -26,6 +26,8 @@ import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
 import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
+import { IRule } from 'src/app/db/models/rule';
+import { RuleService } from 'src/app/services/rule.service';
 
 export type EntityType = 'action' | 'tag' | 'item';
 
@@ -56,6 +58,7 @@ export class EntityViewPage {
   private translate = inject(TranslateService);
   private formBuilder = inject(FormBuilder);
   private actionSheetCtrl = inject(ActionSheetController);
+  private ruleService = inject(RuleService);
 
   entityType: EntityType;
   entityId: number;
@@ -66,6 +69,7 @@ export class EntityViewPage {
   totalTimeMinutes = 0;
   activities: IActivity[] = [];
   activitiesGroupedByDate: { date: string; activities: IActivity[] }[] = [];
+  rules: IRule[] = [];
   chartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
 
   filterForm = this.formBuilder.group({ datePeriod: [null as any] });
@@ -112,7 +116,7 @@ export class EntityViewPage {
     this.isLoading = true;
     await new Promise(resolve => setTimeout(resolve));
     try {
-      await this.loadEntity();
+      await Promise.all([this.loadEntity(), this.loadRules()]);
     } catch (error) {
       await this.logService.error('EntityViewPage.ionViewDidEnter', error);
       this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
@@ -122,6 +126,10 @@ export class EntityViewPage {
     if (this.filterForm.valid) {
       await this.setActivitiesData();
     }
+  }
+
+  private async loadRules() {
+    this.rules = await this.ruleService.getAll();
   }
 
   private async loadEntity() {

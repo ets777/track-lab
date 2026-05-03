@@ -1,11 +1,12 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, forwardRef, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, Input, forwardRef, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { TooltipService } from 'src/app/services/tooltip.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonButton, IonChip } from "@ionic/angular/standalone";
-import { MaskitoDirective } from '@maskito/angular';
-import { MaskitoElementPredicate, MaskitoOptions } from '@maskito/core';
+import { IonButton, IonChip, IonIcon } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
+import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 import { addDays, addMonths, format } from 'date-fns';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { DatePeriod } from 'src/app/types/date-period';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
@@ -18,7 +19,7 @@ export type PeriodName = 'week' | '2weeks' | 'month';
   selector: 'app-date-period-input',
   templateUrl: './date-period-input.component.html',
   styleUrls: ['./date-period-input.component.scss'],
-  imports: [IonItem, IonLabel, TranslateModule, IonInput, IonButton, IonChip, MaskitoDirective, FormsModule, ReactiveFormsModule, ValidationErrorDirective],
+  imports: [IonButton, IonChip, IonIcon, TranslateModule, FormsModule, ReactiveFormsModule, DatePickerComponent],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -35,17 +36,14 @@ export type PeriodName = 'week' | '2weeks' | 'month';
 export class DatePeriodInputComponent implements ControlValueAccessor, Validator, AfterViewInit {
   private formBuilder = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private tooltip = inject(TooltipService);
+  private translate = inject(TranslateService);
 
   @Input() storageKey?: string;
 
   public form: ModelFormGroup<DatePeriod>;
   selectedPeriod: PeriodName | null = 'week';
-
-  protected readonly dateMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/],
-  };
-  protected readonly maskPredicate: MaskitoElementPredicate =
-    async (el) => (el as unknown as HTMLIonInputElement).getInputElement();
 
   constructor() {
     this.form = this.formBuilder.group(
@@ -60,6 +58,10 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
         ]
       },
     );
+
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.onUserInput());
   }
 
   ngAfterViewInit() {
@@ -81,9 +83,9 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
 
   writeValue(value: DatePeriod): void {
     if (value) {
-      this.form.patchValue(value);
+      this.form.patchValue(value, { emitEvent: false });
     } else {
-      this.form.patchValue({ startDate: '', endDate: '' });
+      this.form.patchValue({ startDate: '', endDate: '' }, { emitEvent: false });
     }
   }
 
@@ -162,7 +164,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   }
 
   patchAndUpdate(value: DatePeriod) {
-    this.form.patchValue(value);
+    this.form.patchValue(value, { emitEvent: false });
     this.updateValue();
   }
 
@@ -170,6 +172,21 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
     if (this.storageKey) {
       localStorage.setItem(`${this.storageKey}-period-type`, String(this.selectedPeriod));
     }
+  }
+
+  showValidationError(event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const errors = { ...this.form.errors };
+    for (const ctrl of Object.values(this.form.controls)) {
+      Object.assign(errors, ctrl.errors ?? {});
+    }
+    const messages = Object.entries(errors).map(([key, val]) => {
+      if (key === 'required') return this.translate.instant('TK_VALUE_IS_REQUIRED');
+      if (val?.message) return this.translate.instant(val.message, val.params);
+      return key;
+    });
+    this.tooltip.show(event, messages.map(m => `- ${m}`).join('<br>'));
   }
 
   validate(control: AbstractControl): ValidationErrors | null {

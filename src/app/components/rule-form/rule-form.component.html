@@ -6,17 +6,11 @@
       <ion-text class="rule-preview__placeholder">{{ 'TK_RULE_NAME_PLACEHOLDER' | translate }}</ion-text>
     }
   </div>
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_START_DATE' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-      formControlName="startDate"
-      name="startDate"
-      [maskito]="dateMask"
-      [maskitoElement]="maskPredicate"
-    ></ion-input>
-  </ion-item>
+  <app-date-picker
+    appValidationError
+    formControlName="startDate"
+    label="TK_START_DATE"
+  ></app-date-picker>
   <app-select-search
     appValidationError
     formControlName="subject"
@@ -37,21 +31,12 @@
       <ion-segment-button value="<=">{{ 'TK_AT_MOST' | translate }}</ion-segment-button>
     </ion-segment>
   </ion-item>
-  <ion-item class="value-item">
-    <div class="value-wrapper">
-      <ion-input
-        appValidationError
-        class="value-input"
-        formControlName="value"
-        name="value"
-        type="number"
-        inputmode="numeric"
-        min="0"
-        step="1"
-      ></ion-input>
-      <ion-text class="value-unit">{{ unitLabel }}</ion-text>
-    </div>
-  </ion-item>
+  <app-count-wheel
+    formControlName="value"
+    [min]="0"
+    [max]="1000"
+    [unitLabel]="unitLabel"
+  ></app-count-wheel>
   <ion-item>
     <ion-label position="stacked">{{ 'TK_PERIOD' | translate }}</ion-label>
     <ion-segment formControlName="period">

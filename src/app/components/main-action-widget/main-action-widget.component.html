@@ -1,0 +1,14 @@
+<ion-card button (click)="navigate()">
+  <ion-card-content>
+    <div class="inner">
+      <div class="icon-btn">
+        <ion-icon [name]="icon"></ion-icon>
+      </div>
+      <div class="text">
+        <span class="title">{{ label | translate }}</span>
+        <span class="subtitle">{{ sublabel | translate }}</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
+    </div>
+  </ion-card-content>
+</ion-card>

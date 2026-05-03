@@ -1,0 +1,48 @@
+<ion-card button (click)="navigate()">
+  <ion-card-content>
+    <div class="widget-header">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      <span class="title">{{ 'TK_RULES' | translate }}</span>
+      @if (!isLoading && items.length > 0) {
+        <span class="counts">
+          {{ totalCount }} {{ 'TK_TOTAL' | translate }} · {{ doneCount }} {{ 'TK_DONE' | translate }}
+        </span>
+      }
+    </div>
+
+    @if (isLoading) {
+      <ul class="checklist">
+        @for (_ of [1,2,3,4]; track $index) {
+          <li>
+            <ion-skeleton-text animated class="icon-skeleton"></ion-skeleton-text>
+            <ion-skeleton-text animated class="text-skeleton"></ion-skeleton-text>
+            <ion-skeleton-text animated class="progress-skeleton"></ion-skeleton-text>
+          </li>
+        }
+      </ul>
+      <p class="more">
+        <ion-skeleton-text animated class="more-skeleton"></ion-skeleton-text>
+      </p>
+    } @else if (items.length === 0) {
+      <p class="empty-desc">{{ 'TK_RULES_DESCRIPTION' | translate }}</p>
+      <button class="add-rule-link" (click)="navigateToAddRule($event)">
+        {{ 'TK_NEW_RULE' | translate }} →
+      </button>
+    } @else {
+      <ul class="checklist">
+        @for (item of visibleItems; track item.name) {
+          <li>
+            <ion-icon [name]="item.met ? 'checkmark-circle' : 'ellipse-outline'" [class.met]="item.met"></ion-icon>
+            <span class="rule-name">{{ item.name }}</span>
+            @if (item.progress) {
+              <span class="progress">{{ item.progress }}</span>
+            }
+          </li>
+        }
+      </ul>
+      @if (hiddenCount > 0) {
+        <p class="more">{{ 'TK_AND_MORE' | translate: { count: hiddenCount } }}</p>
+      }
+    }
+  </ion-card-content>
+</ion-card>

@@ -4,17 +4,11 @@
     formControlName="actions"
   ></app-action-input>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_DATE' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      placeholder="{{ 'TK_YYYY_MM_DD' | translate }}"
-      formControlName="date"
-      name="date"
-      [maskito]="dateMask"
-      [maskitoElement]="maskPredicate"
-    ></ion-input>
-  </ion-item>
+  <app-date-picker
+    appValidationError
+    formControlName="date"
+    label="TK_DATE"
+  ></app-date-picker>
 
   <app-time-wheel
     appValidationError
@@ -235,11 +229,11 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-searchbar
-        [placeholder]="'TK_SEARCH' | translate"
-        [value]="librarySearchQuery"
-        (ionInput)="onLibrarySearch($event)"
-      ></ion-searchbar>
+      <ion-item>
+        <ion-input [placeholder]="'TK_SEARCH' | translate" [value]="librarySearchQuery" (ionInput)="onLibrarySearch($event)">
+          <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
+        </ion-input>
+      </ion-item>
       <ion-list lines="full">
         @for (item of librarySearchResults; track item.type + item.id) {
           <ion-item button detail="false" (click)="selectLibraryItem(item)">
