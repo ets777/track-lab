@@ -12,7 +12,7 @@
 
     @if (isLoading) {
       <ul class="checklist">
-        @for (_ of [1,2,3,4]; track $index) {
+        @for (_ of skeletonItems; track $index) {
           <li>
             <ion-skeleton-text animated class="icon-skeleton"></ion-skeleton-text>
             <ion-skeleton-text animated class="text-skeleton"></ion-skeleton-text>
@@ -20,9 +20,11 @@
           </li>
         }
       </ul>
-      <p class="more">
-        <ion-skeleton-text animated class="more-skeleton"></ion-skeleton-text>
-      </p>
+      @if (showMoreSkeleton) {
+        <p class="more">
+          <ion-skeleton-text animated class="more-skeleton"></ion-skeleton-text>
+        </p>
+      }
     } @else if (items.length === 0) {
       <p class="empty-desc">{{ 'TK_RULES_DESCRIPTION' | translate }}</p>
       <button class="add-rule-link" (click)="navigateToAddRule($event)">

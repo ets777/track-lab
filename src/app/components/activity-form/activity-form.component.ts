@@ -507,7 +507,7 @@ export class ActivityFormComponent implements OnInit {
   }
 
   getListLabel(list: IList): string {
-    return this.translate.instant(list.name);
+    return list.name;
   }
 
   async fetchAllSuggestions() {

@@ -53,7 +53,7 @@ export class ItemListPage {
     this.items = allItems
       .map(t => ({
         ...t,
-        listName: this.translate.instant(listMap.get(t.listId)?.name ?? ''),
+        listName: listMap.get(t.listId)?.name ?? '',
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }

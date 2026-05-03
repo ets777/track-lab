@@ -12,7 +12,7 @@
       <ion-item>
         <ion-label style="cursor: pointer" (click)="router.navigate(['/item', item.id])">
           <div>{{ item.name }}</div>
-          <ion-note>{{ item.listName }}</ion-note>
+          <ion-note>{{ item.listName | translate }}</ion-note>
         </ion-label>
         <ion-buttons class="item-buttons">
           <ion-button id="open-action-sheet-item-{{item.id}}">

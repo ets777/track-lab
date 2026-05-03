@@ -85,9 +85,7 @@ export class ListFormComponent implements OnInit {
 
   setListData(list: IList) {
     this.listForm.patchValue({
-      name: list.isBase
-        ? this.translate.instant(list.name)
-        : list.name,
+      name: list.name,
       isHidden: list.isHidden ?? false,
     });
   }

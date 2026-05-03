@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface SuggestionItem {
   label: string;
@@ -10,7 +11,7 @@ export interface SuggestionItem {
 @Component({
   selector: 'app-suggestions',
   standalone: true,
-  imports: [CommonModule, IonList, IonItem, IonLabel],
+  imports: [CommonModule, IonList, IonItem, IonLabel, TranslateModule],
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.scss',
 })

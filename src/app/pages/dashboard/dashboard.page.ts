@@ -40,8 +40,11 @@ export class DashboardPage {
   private toastService = inject(ToastService);
   private logService = inject(LogService);
 
+  private readonly RULES_COUNT_KEY = 'dashboard_rules_count';
+
   checklistLoading = true;
   checklistItems: ChecklistItem[] = [];
+  checklistSkeletonCount = parseInt(localStorage.getItem(this.RULES_COUNT_KEY) ?? '4', 10);
 
   navWidgets: NavWidget[] = [
     { icon: 'time-outline',             label: 'TK_HISTORY',      route: '/activity',           color: '#3D8B9E' },
@@ -53,6 +56,7 @@ export class DashboardPage {
   ];
 
   ionViewWillEnter() {
+    this.checklistSkeletonCount = parseInt(localStorage.getItem(this.RULES_COUNT_KEY) ?? '4', 10);
     this.checklistLoading = true;
   }
 
@@ -76,6 +80,7 @@ export class DashboardPage {
           progress: s.progress ? `${s.progress.current}/${s.progress.target}` : null,
         }))
         .sort((a, b) => Number(a.met) - Number(b.met));
+      localStorage.setItem(this.RULES_COUNT_KEY, String(this.checklistItems.length));
     } catch (e) {
       this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
       this.logService.error('DashboardPage.ionViewDidEnter', e);

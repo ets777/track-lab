@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, forwardRef, Input, OnInit, inject } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
@@ -10,7 +9,7 @@ import { Selectable } from 'src/app/types/selectable';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 
 @Component({
-  imports: [IonButton, IonIcon, TranslateModule, CommonModule, ReactiveFormsModule, SelectSearchComponent],
+  imports: [IonButton, IonIcon, TranslateModule, ReactiveFormsModule, SelectSearchComponent],
   selector: 'app-list-input',
   templateUrl: './list-input.component.html',
   styleUrl: './list-input.component.scss',
@@ -57,7 +56,7 @@ export class ListInputComponent implements ControlValueAccessor, OnInit {
   registerOnChange(fn: any): void { this.onChange = fn; }
   registerOnTouched(fn: any): void { this.onTouched = fn; }
 
-  get inputLabel() {
-    return `${this.label} (${this.translate.instant('TK_SEPARATED_BY_COMMA').toLowerCase()})`;
+  get inputLabel(): string {
+    return `${this.translate.instant(this.label)} (${this.translate.instant('TK_SEPARATED_BY_COMMA').toLowerCase()})`;
   }
 }

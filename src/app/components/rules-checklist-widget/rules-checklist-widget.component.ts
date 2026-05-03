@@ -23,6 +23,15 @@ const VISIBLE_COUNT = 4;
 export class RulesChecklistWidgetComponent {
   @Input() items: ChecklistItem[] = [];
   @Input() isLoading = true;
+  @Input() skeletonCount = VISIBLE_COUNT;
+
+  get skeletonItems(): number[] {
+    return Array.from({ length: Math.min(this.skeletonCount, VISIBLE_COUNT) });
+  }
+
+  get showMoreSkeleton(): boolean {
+    return this.skeletonCount > VISIBLE_COUNT;
+  }
 
   private router = inject(Router);
   private navigationService = inject(NavigationService);
