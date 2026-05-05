@@ -202,28 +202,16 @@ export const databaseUpgrades = [
     statements: [
       `CREATE TABLE IF NOT EXISTS rules (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
         subjectType TEXT NOT NULL,
         subjectId INTEGER NOT NULL,
         metric TEXT NOT NULL,
         operator TEXT NOT NULL,
         value REAL NOT NULL,
         period TEXT NOT NULL,
-        startDate TEXT NOT NULL
+        startDate TEXT NOT NULL,
+        startTime TEXT,
+        endTime TEXT
       );`,
-    ],
-  },
-  {
-    toVersion: 8,
-    statements: [
-      `ALTER TABLE rules DROP COLUMN name;`,
-    ],
-  },
-  {
-    toVersion: 9,
-    statements: [
-      `ALTER TABLE rules ADD COLUMN startTime TEXT;`,
-      `ALTER TABLE rules ADD COLUMN endTime TEXT;`,
     ],
   },
 ];

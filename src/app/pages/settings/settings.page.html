@@ -70,7 +70,7 @@
     <ion-item>
       {{ 'TK_LAST_BACKUP_DATE' | translate }}:
       @if (lastBackupDate) {
-        {{ lastBackupDate }}
+        {{ formatDisplayDate(lastBackupDate, getLanguage()) }}
       } @else {
         {{ 'TK_NEVER' | translate }}
       }

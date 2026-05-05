@@ -15,6 +15,7 @@ import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 import { CacheService } from 'src/app/services/cache.service';
+import { formatDisplayDate } from 'src/app/functions/date';
 
 export enum autoBackupOption {
   'none' = 'TK_NONE',
@@ -50,6 +51,7 @@ export class SettingsPage implements OnInit {
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;
   password = '';
   lastBackupDate = '';
+  formatDisplayDate = formatDisplayDate;
   resetDatabaseOnReload = false;
   unlockAllAchievements = false;
   cacheEnabled = true;
