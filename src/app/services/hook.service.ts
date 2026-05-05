@@ -10,7 +10,8 @@ export type HookEvent =
     | { type: 'homepage.visited'; payload: {} }
     | { type: 'item.added'; payload: {} }
     | { type: 'list.added'; payload: {} }
-    | { type: 'metric.added'; payload: {} };
+    | { type: 'metric.added'; payload: {} }
+    | { type: 'rule.added'; payload: { ruleId: number } };
 
 @Injectable({ providedIn: 'root' })
 export class HookService {

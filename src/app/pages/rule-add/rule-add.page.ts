@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { RuleForm, RuleFormComponent } from 'src/app/components/rule-form/rule-form.component';
 import { RuleService } from 'src/app/services/rule.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { HookService } from 'src/app/services/hook.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 
 @Component({
@@ -17,6 +18,7 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
 export class RuleAddPage {
   private ruleService = inject(RuleService);
   private toastService = inject(ToastService);
+  private hookService = inject(HookService);
 
   @ViewChild('addFormRef') addFormRef!: RuleFormComponent;
 
@@ -27,7 +29,8 @@ export class RuleAddPage {
 
     const ruleFormValue = this.addFormRef.ruleForm.value as RuleForm;
 
-    await this.ruleService.addFromForm(ruleFormValue);
+    const ruleId = await this.ruleService.addFromForm(ruleFormValue);
+    this.hookService.emit({ type: 'rule.added', payload: { ruleId } });
     this.resetForm();
 
     this.toastService.enqueue({

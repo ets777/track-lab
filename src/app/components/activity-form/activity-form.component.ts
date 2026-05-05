@@ -322,6 +322,12 @@ export class ActivityFormComponent implements OnInit {
   }
 
   async loadMetrics() {
+    const savedEnabled = { ...this.metricEnabled };
+    const savedValues: Record<string, unknown> = {};
+    for (const key of Object.keys(this.metricsForm.controls)) {
+      savedValues[key] = this.metricsForm.get(key)?.value;
+    }
+
     this.allMetrics = await this.metricService.getAll();
     [this.allActionMetrics, this.allTagMetrics, this.allItemMetrics, this.allActionTags, this.allTags] = await Promise.all([
       this.actionMetricService2.getAll(),
@@ -342,6 +348,7 @@ export class ActivityFormComponent implements OnInit {
 
     for (let i = 0; i < this.allMetrics.length; i++) {
       const metric = this.allMetrics[i];
+      const key = `metric_${metric.id}`;
       const isRange = this.isRangeMetric(metric);
       const minVal = Number(metric.minValue);
       const maxVal = Number(metric.maxValue);
@@ -351,11 +358,12 @@ export class ActivityFormComponent implements OnInit {
 
       const prev = prevValues[i];
       const existingValue = this.activityMetricValues?.[metric.id] ?? null;
-      const defaultValue = existingValue !== null ? existingValue : (prev !== null ? prev : midRounded);
+      const userValue = key in savedValues ? savedValues[key] : undefined;
+      const defaultValue = userValue !== undefined ? userValue : (existingValue !== null ? existingValue : (prev !== null ? prev : midRounded));
 
       const validators = isRange ? [] : [metricRangeValidator(metric.minValue, metric.maxValue)];
-      this.metricsForm.addControl(`metric_${metric.id}`, this.formBuilder.control(defaultValue, validators));
-      this.metricEnabled[`metric_${metric.id}`] = existingValue !== null;
+      this.metricsForm.addControl(key, this.formBuilder.control(defaultValue, validators));
+      this.metricEnabled[key] = key in savedEnabled ? savedEnabled[key] : (existingValue !== null);
     }
 
     this.updateVisibleMetrics();
@@ -447,6 +455,11 @@ export class ActivityFormComponent implements OnInit {
   }
 
   async loadLists() {
+    const savedListValues: Record<string, unknown> = {};
+    for (const key of Object.keys(this.listsForm.controls)) {
+      savedListValues[key] = this.listsForm.get(key)?.value;
+    }
+
     const allItems = await this.itemService.getAll();
     [this.allLists, this.allActionLists] = await Promise.all([
       this.listService.getAll(),
@@ -464,8 +477,10 @@ export class ActivityFormComponent implements OnInit {
     this.listsForm = this.formBuilder.group({});
     for (const list of this.allLists) {
       if (list.isHidden && !this.activityItemValues[list.id]) continue;
-      const initialValue = this.activityItemValues[list.id] ?? '';
-      this.listsForm.addControl(`list_${list.id}`, this.formBuilder.control(initialValue));
+      const key = `list_${list.id}`;
+      const userValue = key in savedListValues ? savedListValues[key] : undefined;
+      const initialValue = userValue !== undefined ? userValue : (this.activityItemValues[list.id] ?? '');
+      this.listsForm.addControl(key, this.formBuilder.control(initialValue));
     }
 
     this.listsForm.valueChanges.subscribe(() => this.updateVisibleMetrics());

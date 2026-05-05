@@ -339,7 +339,7 @@
   "TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD": "В выбранном периоде нет активностей.",
   "TK_THERE_ARE_NO_ACTIVITIES": "Здесь нет активностей.",
   "TK_NO_ACHIEVEMENTS_UNLOCKED_YET": "Достижений пока нет.",
-  "TK_NO_RULES": "Правил пока нет. Нажмите + чтобы добавить.",
+  "TK_NO_RULES": "Правил пока нет.",
   "TK_THERE_IS_NO_ACTIVITIES_WITH_THE_TAG_FOR_THE_LAST_7_DAYS": "Нет активностей с данным тегом за последние 7 дней",
   "TK_THERE_S_NO_SUCH_ITEM_IN_THE_LIST": "Такого элемента нет в списке",
   "TK_THERE_S_NOTHING_TO_IMPORT": "Нечего импортировать.",
@@ -453,5 +453,15 @@
   "TK_RULE_PER_WEEK": "в неделю",
   "TK_RULE_PER_MONTH": "в месяц",
   "TK_RULE_NO_SUBJECT": "Запрещено: {{subject}}",
-  "TK_RULE_FROM_TO": "с {{start}} до {{end}}"
+  "TK_RULE_FROM_TO": "с {{start}} до {{end}}",
+  "TK_I_HEREBY_RULE": "Постановляю постановление",
+  "TK_ADD_YOUR_FIRST_RULE": "Добавьте первое правило",
+  "TK_DICTATOR": "Диктатор",
+  "TK_ADD_10_RULES": "Добавьте 10 правил",
+  "TK_DONT_EVEN_TRY": "Даже не пытайся",
+  "TK_ADD_A_PROHIBITING_RULE": "Добавьте запрещающее правило",
+  "TK_LAW_ABIDING_CITIZEN": "Законопослушный гражданин",
+  "TK_RULE_STREAK_10_DESC": "Держите серию из 10 периодов для любого правила",
+  "TK_WHERE_DID_YOU_LEARN": "Где ты научился так держать серии?",
+  "TK_RULE_STREAK_100_DESC": "Держите серию из 100 периодов для любого правила"
 }

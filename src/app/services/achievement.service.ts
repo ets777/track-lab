@@ -11,6 +11,8 @@ import { DatabaseService } from './db/database.service';
 import { MetricService } from './metric.service';
 import { ListService } from './list.service';
 import { ItemService } from './item.service';
+import { RuleService } from './rule.service';
+import { computeRuleStreak } from '../functions/rule-streak';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
@@ -21,6 +23,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
   private metricService = inject(MetricService);
   private listService = inject(ListService);
   private itemService = inject(ItemService);
+  private ruleService = inject(RuleService);
 
   protected tableName: 'achievements' = 'achievements';
 
@@ -168,6 +171,17 @@ export class AchievementService extends DatabaseService<'achievements'> {
     if (event.type === 'homepage.visited') {
       await this.checkAchievement('homepage_visited');
     }
+
+    if (event.type === 'rule.added') {
+      await this.checkAchievement('first_rule');
+      await this.checkAchievement('10_rules');
+      await this.checkAchievement('first_prohibiting_rule', event.payload);
+    }
+
+    if (['activity.added', 'activity.updated'].includes(event.type)) {
+      await this.checkAchievement('rule_streak_10');
+      await this.checkAchievement('rule_streak_100');
+    }
   }
 
   async getByCode(code: string) {
@@ -265,6 +279,23 @@ export class AchievementService extends DatabaseService<'achievements'> {
     if (itemCountAchievements.includes(achievementCode)) {
       await this.checkAbsoluteCountAchievement(achievementCode, await this.itemService.count());
     }
+
+    const ruleCountAchievements = ['first_rule', '10_rules'];
+    if (ruleCountAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievement(achievementCode, await this.ruleService.count());
+    }
+
+    if (achievementCode === 'first_prohibiting_rule') {
+      await this.checkFirstProhibitingRuleAchievement(payload?.ruleId);
+    }
+
+    if (achievementCode === 'rule_streak_10') {
+      await this.checkRuleStreakAchievement('rule_streak_10', 10);
+    }
+
+    if (achievementCode === 'rule_streak_100') {
+      await this.checkRuleStreakAchievement('rule_streak_100', 100);
+    }
   }
 
   async checkAchievementInit(achievementCode: string) {
@@ -329,6 +360,23 @@ export class AchievementService extends DatabaseService<'achievements'> {
 
     if (achievementCode == 'min_energy') {
       await this.checkMinEnergyAchievementInit();
+    }
+
+    const ruleCountAchievements = ['first_rule', '10_rules'];
+    if (ruleCountAchievements.includes(achievementCode)) {
+      await this.checkAbsoluteCountAchievementInit(achievementCode, await this.ruleService.count());
+    }
+
+    if (achievementCode === 'first_prohibiting_rule') {
+      await this.checkFirstProhibitingRuleAchievementInit();
+    }
+
+    if (achievementCode === 'rule_streak_10') {
+      await this.checkRuleStreakAchievement('rule_streak_10', 10);
+    }
+
+    if (achievementCode === 'rule_streak_100') {
+      await this.checkRuleStreakAchievement('rule_streak_100', 100);
     }
   }
 
@@ -573,5 +621,39 @@ export class AchievementService extends DatabaseService<'achievements'> {
     if (hasActivity) {
       await this.checkOneTimeAchievement('five_actions_in_activity', async () => true);
     }
+  }
+
+  async checkFirstProhibitingRuleAchievement(ruleId?: number) {
+    if (!ruleId) return;
+    await this.checkOneTimeAchievement(
+      'first_prohibiting_rule',
+      async (id) => {
+        const rule = await this.ruleService.getById(id!);
+        return rule?.value === 0;
+      },
+      ruleId,
+    );
+  }
+
+  async checkFirstProhibitingRuleAchievementInit() {
+    await this.checkOneTimeAchievement(
+      'first_prohibiting_rule',
+      async () => {
+        const rules = await this.ruleService.getAll();
+        return rules.some(r => r.value === 0);
+      },
+    );
+  }
+
+  async checkRuleStreakAchievement(code: string, threshold: number) {
+    await this.checkOneTimeAchievement(
+      code,
+      async () => {
+        const rules = await this.ruleService.getAll();
+        if (!rules.length) return false;
+        const activities = await this.activityService.getAllEnriched();
+        return rules.some(rule => computeRuleStreak(rule, activities) >= threshold);
+      },
+    );
   }
 }
