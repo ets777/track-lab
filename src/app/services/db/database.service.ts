@@ -1,85 +1,143 @@
 import { inject, Injectable } from '@angular/core';
 import { DatabaseRouter } from './database-router.service';
 import { CreateDtoFor, RowFor, TableName, Where } from './types';
+import { CacheService } from '../cache.service';
 
 @Injectable()
 export abstract class DatabaseService<K extends TableName> {
   protected abstract tableName: K;
 
   protected adapter = inject(DatabaseRouter);
+  private cacheService = inject(CacheService);
 
-  add(dto: CreateDtoFor<K>): Promise<number> {
-    return this.adapter.add(this.tableName, dto);
+  private key(method: string, args?: unknown): string {
+    return `${this.tableName}|${method}|${JSON.stringify(args)}`;
   }
 
-  bulkAdd(dtos: CreateDtoFor<K>[]): Promise<number[]> {
-    return this.adapter.bulkAdd(this.tableName, dtos);
+  async add(dto: CreateDtoFor<K>): Promise<number> {
+    const result = await this.adapter.add(this.tableName, dto);
+    this.cacheService.invalidateAll();
+    return result;
   }
 
-  getById(id: number): Promise<RowFor<K> | undefined> {
-    return this.adapter.getById(this.tableName, id);
+  async bulkAdd(dtos: CreateDtoFor<K>[]): Promise<number[]> {
+    const result = await this.adapter.bulkAdd(this.tableName, dtos);
+    this.cacheService.invalidateAll();
+    return result;
   }
 
-  getAll(where?: Where): Promise<RowFor<K>[]> {
-    return this.adapter.getAll(this.tableName, where);
+  async getById(id: number): Promise<RowFor<K> | undefined> {
+    const key = this.key('getById', id);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    const result = await this.adapter.getById(this.tableName, id);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getFirstWhereEquals(columnName: string, value: string | number): Promise<RowFor<K> | undefined> {
-    return this.adapter.getFirstWhereEquals(this.tableName, columnName, value);
+  async getAll(where?: Where): Promise<RowFor<K>[]> {
+    const key = this.key('getAll', where);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    const result = await this.adapter.getAll(this.tableName, where);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getFirstWhereEqualsIgnoringCase(columnName: string, value: string): Promise<RowFor<K> | undefined> {
-    return this.adapter.getFirstWhereEqualsIgnoringCase(this.tableName, columnName, value);
+  async getFirstWhereEquals(columnName: string, value: string | number): Promise<RowFor<K> | undefined> {
+    const key = this.key('getFirstWhereEquals', [columnName, value]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    const result = await this.adapter.getFirstWhereEquals(this.tableName, columnName, value);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getAllWhereEquals(columnName: string, value: string | number | boolean): Promise<RowFor<K>[]> {
-    return this.adapter.getAllWhereEquals(this.tableName, columnName, value);
+  async getFirstWhereEqualsIgnoringCase(columnName: string, value: string): Promise<RowFor<K> | undefined> {
+    const key = this.key('getFirstWhereEqualsIgnoringCase', [columnName, value]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    const result = await this.adapter.getFirstWhereEqualsIgnoringCase(this.tableName, columnName, value);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getAnyOf(columnName: string, values: string[] | number[]): Promise<RowFor<K>[]> {
-    return this.adapter.getAnyOf(this.tableName, columnName, values);
+  async getAllWhereEquals(columnName: string, value: string | number | boolean): Promise<RowFor<K>[]> {
+    const key = this.key('getAllWhereEquals', [columnName, value]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    const result = await this.adapter.getAllWhereEquals(this.tableName, columnName, value);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getAllByRange(columnName: string, range: { 0: any; 1: any; }): Promise<RowFor<K>[]> {
-    return this.adapter.getAllByRange(this.tableName, columnName, range);
+  async getAnyOf(columnName: string, values: string[] | number[]): Promise<RowFor<K>[]> {
+    const key = this.key('getAnyOf', [columnName, values]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    const result = await this.adapter.getAnyOf(this.tableName, columnName, values);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getAllBetweenOrderedBy(
+  async getAllByRange(columnName: string, range: { 0: any; 1: any; }): Promise<RowFor<K>[]> {
+    const key = this.key('getAllByRange', [columnName, range]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    const result = await this.adapter.getAllByRange(this.tableName, columnName, range);
+    this.cacheService.set(key, result);
+    return result;
+  }
+
+  async getAllBetweenOrderedBy(
     columnName: string,
     orderByColumn: string,
     startValue: string | number,
     endValue: string | number
   ): Promise<RowFor<K>[]> {
-    return this.adapter.getAllBetweenOrderedBy(
+    const key = this.key('getAllBetweenOrderedBy', [columnName, orderByColumn, startValue, endValue]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    const result = await this.adapter.getAllBetweenOrderedBy(
       this.tableName,
       columnName,
       orderByColumn,
       startValue,
       endValue
     );
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  update(id: number, changes: Partial<CreateDtoFor<K>>): Promise<number> {
-    return this.adapter.update(this.tableName, id, changes);
+  async update(id: number, changes: Partial<CreateDtoFor<K>>): Promise<number> {
+    const result = await this.adapter.update(this.tableName, id, changes);
+    this.cacheService.invalidateAll();
+    return result;
   }
 
-  delete(where: Where): Promise<void> {
-    return this.adapter.delete(this.tableName, where);
+  async delete(where: Where): Promise<void> {
+    await this.adapter.delete(this.tableName, where);
+    this.cacheService.invalidateAll();
   }
 
-  getLast(columns: string[]): Promise<RowFor<K> | undefined> {
-    return this.adapter.getLast(this.tableName, columns);
+  async getLast(columns: string[]): Promise<RowFor<K> | undefined> {
+    const key = this.key('getLast', columns);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    const result = await this.adapter.getLast(this.tableName, columns);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  getLastBeforeDate(columns: string[], date: string): Promise<RowFor<K> | undefined> {
-    return this.adapter.getLastBeforeDate(this.tableName, columns, date);
+  async getLastBeforeDate(columns: string[], date: string): Promise<RowFor<K> | undefined> {
+    const key = this.key('getLastBeforeDate', [columns, date]);
+    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    const result = await this.adapter.getLastBeforeDate(this.tableName, columns, date);
+    this.cacheService.set(key, result);
+    return result;
   }
 
-  clear(): Promise<void> {
-    return this.adapter.clear(this.tableName);
+  async clear(): Promise<void> {
+    await this.adapter.clear(this.tableName);
+    this.cacheService.invalidateAll();
   }
 
-  count(): Promise<number> {
-    return this.adapter.count(this.tableName);
+  async count(): Promise<number> {
+    const key = this.key('count');
+    if (this.cacheService.has(key)) return this.cacheService.get<number>(key);
+    const result = await this.adapter.count(this.tableName);
+    this.cacheService.set(key, result);
+    return result;
   }
 }

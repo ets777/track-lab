@@ -46,7 +46,10 @@
           <div [formGroup]="metricsForm">
             @for (metric of standaloneMetrics; track metric.id) {
               @if (isRangeMetric(metric)) {
-                <ion-item>
+                <ion-item
+                  (pointerdown)="onCheckboxPointerDown($event)"
+                  (pointermove)="onCheckboxPointerMove($event)"
+                >
                   <ion-checkbox
                     slot="start"
                     [checked]="metricEnabled['metric_' + metric.id]"
@@ -71,7 +74,10 @@
                   </ion-range>
                 </ion-item>
               } @else {
-                <ion-item>
+                <ion-item
+                  (pointerdown)="onCheckboxPointerDown($event)"
+                  (pointermove)="onCheckboxPointerMove($event)"
+                >
                   <ion-checkbox
                     slot="start"
                     [checked]="metricEnabled['metric_' + metric.id]"

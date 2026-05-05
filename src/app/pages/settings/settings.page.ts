@@ -14,6 +14,7 @@ import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
+import { CacheService } from 'src/app/services/cache.service';
 
 export enum autoBackupOption {
   'none' = 'TK_NONE',
@@ -35,6 +36,7 @@ export class SettingsPage implements OnInit {
   private hookService = inject(HookService);
   private alertController = inject(AlertController);
   private databaseRouter = inject(DatabaseRouter);
+  private cacheService = inject(CacheService);
   get showBackButton(): boolean {
     return this.navigationService.fromDashboard;
   }
@@ -50,6 +52,7 @@ export class SettingsPage implements OnInit {
   lastBackupDate = '';
   resetDatabaseOnReload = false;
   unlockAllAchievements = false;
+  cacheEnabled = true;
 
   async ngOnInit() {
     const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
@@ -62,6 +65,7 @@ export class SettingsPage implements OnInit {
     this.lastBackupDate = (await Preferences.get({ key: 'last-backup-date' }))?.value ?? '';
     this.resetDatabaseOnReload = (await Preferences.get({ key: 'reset-database-on-reload' }))?.value === 'true';
     this.unlockAllAchievements = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
+    this.cacheEnabled = (await Preferences.get({ key: 'cache-enabled' }))?.value !== 'false';
   }
 
   async onTxtFileSelected(event: Event) {
@@ -135,6 +139,11 @@ export class SettingsPage implements OnInit {
   async setUnlockAllAchievements(event: any) {
     const value = event.detail.checked as boolean;
     await Preferences.set({ key: 'unlock-all-achievements', value: String(value) });
+  }
+
+  async setCacheEnabled(event: any) {
+    const value = event.detail.checked as boolean;
+    await this.cacheService.setEnabled(value);
   }
 
   async resetDatabase() {

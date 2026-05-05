@@ -259,6 +259,7 @@
   "TK_RESET_DATABASE_CONFIRMATION": "Все ваши данные будут безвозвратно удалены. Это действие нельзя отменить. Вы хотите продолжить?",
   "TK_RESET_DATABASE_ON_RELOAD": "Сбрасывать базу при перезагрузке",
   "TK_UNLOCK_ALL_ACHIEVEMENTS": "Разблокировать все достижения",
+  "TK_CACHE_ENABLED": "Включить кэш данных",
   "TK_RESTED": "Отдыхал",
   "TK_RESTORE_DATABASE": "Восстановить из бэкапа",
   "TK_REWRITING_HISTORY": "Переписывая историю",
@@ -455,13 +456,13 @@
   "TK_RULE_NO_SUBJECT": "Запрещено: {{subject}}",
   "TK_RULE_FROM_TO": "с {{start}} до {{end}}",
   "TK_I_HEREBY_RULE": "Постановляю постановление",
-  "TK_ADD_YOUR_FIRST_RULE": "Добавьте первое правило",
+  "TK_ADD_YOUR_FIRST_RULE": "Добавить первое правило",
   "TK_DICTATOR": "Диктатор",
-  "TK_ADD_10_RULES": "Добавьте 10 правил",
+  "TK_ADD_10_RULES": "Добавить 10 правил",
   "TK_DONT_EVEN_TRY": "Даже не пытайся",
-  "TK_ADD_A_PROHIBITING_RULE": "Добавьте запрещающее правило",
+  "TK_ADD_A_PROHIBITING_RULE": "Добавить запрещающее правило",
   "TK_LAW_ABIDING_CITIZEN": "Законопослушный гражданин",
-  "TK_RULE_STREAK_10_DESC": "Держите серию из 10 периодов для любого правила",
+  "TK_RULE_STREAK_10_DESC": "Держать серию из 10 периодов для любого правила",
   "TK_WHERE_DID_YOU_LEARN": "Где ты научился так держать серии?",
-  "TK_RULE_STREAK_100_DESC": "Держите серию из 100 периодов для любого правила"
+  "TK_RULE_STREAK_100_DESC": "Держать серию из 100 периодов для любого правила"
 }

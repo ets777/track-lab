@@ -10,6 +10,8 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
+import { MetricService } from 'src/app/services/metric.service';
+import { ListService } from 'src/app/services/list.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { LogService } from 'src/app/services/log.service';
 import { computeRuleStatusesForDay } from 'src/app/functions/rule-color';
@@ -37,6 +39,8 @@ export class DashboardPage {
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
+  private metricService = inject(MetricService);
+  private listService = inject(ListService);
   private toastService = inject(ToastService);
   private logService = inject(LogService);
 
@@ -72,6 +76,8 @@ export class DashboardPage {
         this.tagService.getAll() as Promise<ITag[]>,
         this.itemService.getAll() as Promise<IItem[]>,
       ]);
+      await this.metricService.getAll();
+      await this.listService.getAll();
       const statuses = computeRuleStatusesForDay(today, activities, rules);
       this.checklistItems = statuses
         .map(s => ({

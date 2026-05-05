@@ -110,6 +110,11 @@ export class ActivityFormComponent implements OnInit {
   public standaloneLists: IList[] = [];
   public metricEnabled: Record<string, boolean> = {};
 
+  private _checkboxPointerStartX = 0;
+  private _checkboxPointerStartY = 0;
+  private _checkboxSwipeDetected = false;
+  private readonly SWIPE_THRESHOLD = 8;
+
   manuallyAddedMetricIds = new Set<number>();
   manuallyAddedListIds = new Set<number>();
   metricsGroupOpen = this.loadGroupState('metrics', true);
@@ -432,7 +437,25 @@ export class ActivityFormComponent implements OnInit {
     this.metricEnabled[key] = true;
   }
 
+  onCheckboxPointerDown(event: PointerEvent) {
+    this._checkboxPointerStartX = event.clientX;
+    this._checkboxPointerStartY = event.clientY;
+    this._checkboxSwipeDetected = false;
+  }
+
+  onCheckboxPointerMove(event: PointerEvent) {
+    const dx = Math.abs(event.clientX - this._checkboxPointerStartX);
+    const dy = Math.abs(event.clientY - this._checkboxPointerStartY);
+    if (dx > this.SWIPE_THRESHOLD || dy > this.SWIPE_THRESHOLD) {
+      this._checkboxSwipeDetected = true;
+    }
+  }
+
   onMetricCheckboxChange(metricId: number, event: any) {
+    if (this._checkboxSwipeDetected) {
+      this.metricEnabled[`metric_${metricId}`] = !event.detail.checked;
+      return;
+    }
     this.metricEnabled[`metric_${metricId}`] = event.detail.checked;
   }
 

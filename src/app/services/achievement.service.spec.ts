@@ -4,6 +4,7 @@ import { ActivityService } from './activity.service';
 import { MetricService } from './metric.service';
 import { ActivityMetricService } from './activity-metric.service';
 import { HookService } from './hook.service';
+import { RuleService } from './rule.service';
 import { DatabaseRouter } from './db/database-router.service';
 import { IAchievementDb } from '../db/models/achievement';
 import { IMetricDb } from '../db/models/metric';
@@ -53,6 +54,7 @@ describe('AchievementService - mood/energy init checks', () => {
   let activityService: jasmine.SpyObj<ActivityService>;
   let metricService: jasmine.SpyObj<MetricService>;
   let activityMetricService: jasmine.SpyObj<ActivityMetricService>;
+  let ruleService: jasmine.SpyObj<RuleService>;
 
   beforeEach(() => {
     const activitySpy = jasmine.createSpyObj<ActivityService>(
@@ -78,6 +80,10 @@ describe('AchievementService - mood/energy init checks', () => {
       'getById', 'getAllWhereEquals', 'delete', 'count',
     ]);
 
+    const ruleSpy = jasmine.createSpyObj<RuleService>('RuleService', [
+      'getAll', 'getById', 'count',
+    ]);
+
     TestBed.configureTestingModule({
       providers: [
         AchievementService,
@@ -86,6 +92,7 @@ describe('AchievementService - mood/energy init checks', () => {
         { provide: ActivityMetricService, useValue: activityMetricSpy },
         { provide: HookService, useValue: hookSpy },
         { provide: DatabaseRouter, useValue: dbRouterSpy },
+        { provide: RuleService, useValue: ruleSpy },
       ],
     });
 
@@ -93,6 +100,7 @@ describe('AchievementService - mood/energy init checks', () => {
     activityService = TestBed.inject(ActivityService) as jasmine.SpyObj<ActivityService>;
     metricService = TestBed.inject(MetricService) as jasmine.SpyObj<MetricService>;
     activityMetricService = TestBed.inject(ActivityMetricService) as jasmine.SpyObj<ActivityMetricService>;
+    ruleService = TestBed.inject(RuleService) as jasmine.SpyObj<RuleService>;
 
     // Spy on the achievement's own DB methods so we can assert on update calls
     // without needing a real SQLite connection.

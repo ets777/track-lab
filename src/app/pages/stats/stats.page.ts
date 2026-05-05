@@ -7,8 +7,18 @@ import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.c
 import { StatsContentComponent } from 'src/app/components/stats-content/stats-content.component';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActivityService } from 'src/app/services/activity.service';
+import { ActionService } from 'src/app/services/action.service';
+import { TagService } from 'src/app/services/tag.service';
+import { ListService } from 'src/app/services/list.service';
+import { ItemService } from 'src/app/services/item.service';
+import { RuleService } from 'src/app/services/rule.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { IActivity } from 'src/app/db/models/activity';
+import { IActionDb } from 'src/app/db/models/action';
+import { ITag } from 'src/app/db/models/tag';
+import { IList } from 'src/app/db/models/list';
+import { IItem } from 'src/app/db/models/item';
+import { IRule } from 'src/app/db/models/rule';
 import { DatePeriod } from 'src/app/types/date-period';
 import { addDays, addMonths, format } from 'date-fns';
 
@@ -21,10 +31,20 @@ import { addDays, addMonths, format } from 'date-fns';
 export class StatsPage {
   private metricService = inject(MetricService);
   private activityService = inject(ActivityService);
+  private actionService = inject(ActionService);
+  private tagService = inject(TagService);
+  private listService = inject(ListService);
+  private itemService = inject(ItemService);
+  private ruleService = inject(RuleService);
   private navigationService = inject(NavigationService);
 
   isLoading = true;
   allMetrics: IMetric[] = [];
+  allActions: IActionDb[] = [];
+  allTags: ITag[] = [];
+  allLists: IList[] = [];
+  allItems: IItem[] = [];
+  allRules: IRule[] = [];
   savedPeriod: string | null = null;
   savedMetrics: string | null = null;
   initialActivities: IActivity[] = [];
@@ -41,7 +61,14 @@ export class StatsPage {
   async ionViewDidEnter() {
     this.isLoading = true;
     await new Promise(resolve => setTimeout(resolve));
+
     this.allMetrics = await this.metricService.getAll();
+    this.allActions = await this.actionService.getAll() as IActionDb[];
+    this.allTags = await this.tagService.getAll() as ITag[];
+    this.allLists = await this.listService.getAll();
+    this.allItems = await this.itemService.getAll() as IItem[];
+    this.allRules = await this.ruleService.getAll();
+
     this.savedPeriod = localStorage.getItem('stats-date-period');
     this.savedMetrics = localStorage.getItem('stats-metrics');
 

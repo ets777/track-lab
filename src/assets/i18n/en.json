@@ -259,6 +259,7 @@
   "TK_RESET_DATABASE_CONFIRMATION": "All your data will be permanently erased. This action cannot be undone. Do you want to continue?",
   "TK_RESET_DATABASE_ON_RELOAD": "Reset database on reload",
   "TK_UNLOCK_ALL_ACHIEVEMENTS": "Unlock all achievements",
+  "TK_CACHE_ENABLED": "Enable data cache",
   "TK_RESTED": "Rested",
   "TK_RESTORE_DATABASE": "Restore database",
   "TK_REWRITING_HISTORY": "Rewriting history",

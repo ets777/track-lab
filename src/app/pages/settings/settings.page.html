@@ -104,6 +104,13 @@
           (ionChange)="setUnlockAllAchievements($event)"
         >{{ 'TK_UNLOCK_ALL_ACHIEVEMENTS' | translate }}</ion-checkbox>
       </ion-item>
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          [(ngModel)]="cacheEnabled"
+          (ionChange)="setCacheEnabled($event)"
+        >{{ 'TK_CACHE_ENABLED' | translate }}</ion-checkbox>
+      </ion-item>
     </ion-list>
   }
 

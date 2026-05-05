@@ -324,6 +324,54 @@ export async function seedDatabase(sqlite: SQLiteService) {
   );
   await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (142,14),(143,14),(144,14),(145,14),(146,14),(147,14),(148,14),(149,14),(150,14),(151,14),(152,14),(153,14),(154,14),(155,14),(156,14);`);
 
+  // ── Bulk history: 300 activities across last 150 days ────────────────────
+  // 2 per day, actions 1-5 only (no rule-tracked actions), mood+energy metrics.
+  // Purpose: makes enrichAll (4 queries/activity) slow without cache,
+  //          instant on cached revisits.
+  {
+    const BULK_ACTIONS = [1, 2, 3, 4, 5]; // Running, Meditation, Reading, Gym, Cycling
+    const BULK_ITEMS = [1, 3, 4]; // Happy, Focused, Tired
+    const CHUNK = 150;
+
+    const acts: string[] = [];
+    const actActions: string[] = [];
+    const actMetrics: string[] = [];
+    const actItems: string[] = [];
+
+    let bid = 200;
+    for (let day = 35; day <= 184; day++) {
+      const date = d(day);
+      for (let slot = 0; slot < 2; slot++) {
+        const actionId = BULK_ACTIONS[(day * 2 + slot) % BULK_ACTIONS.length];
+        const itemId = BULK_ITEMS[(day + slot) % BULK_ITEMS.length];
+        const startH = slot === 0 ? '07' : '17';
+        const endH   = slot === 0 ? '08' : '18';
+        const mood   = 1 + (day * 2 + slot) % 10;
+        const energy = 1 + (day + slot * 7) % 10;
+
+        acts.push(`(${bid}, '${date}', '${startH}:00', '${endH}:00')`);
+        actActions.push(`(${bid}, ${actionId})`);
+        actMetrics.push(`(${bid}, 1, ${mood})`);
+        actMetrics.push(`(${bid}, 2, ${energy})`);
+        actItems.push(`(${bid}, ${itemId})`);
+        bid++;
+      }
+    }
+
+    for (let i = 0; i < acts.length; i += CHUNK) {
+      await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES ${acts.slice(i, i + CHUNK).join(',')};`);
+    }
+    for (let i = 0; i < actActions.length; i += CHUNK) {
+      await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${actActions.slice(i, i + CHUNK).join(',')};`);
+    }
+    for (let i = 0; i < actMetrics.length; i += CHUNK) {
+      await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES ${actMetrics.slice(i, i + CHUNK).join(',')};`);
+    }
+    for (let i = 0; i < actItems.length; i += CHUNK) {
+      await sqlite.execute(`INSERT OR REPLACE INTO activityItems (activityId, itemId) VALUES ${actItems.slice(i, i + CHUNK).join(',')};`);
+    }
+  }
+
   // ── Rules 1–8 ─────────────────────────────────────────────────────────────
   await sqlite.run(
     `INSERT OR REPLACE INTO rules (id, subjectType, subjectId, metric, operator, value, period, startDate) VALUES
