@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0] - 2026-05-05
+
+### Added
+
+- Rules
+- Rule-related achievements
+- Dashboard
+- Calendars and wheel pickers for date and time selection
+
+### Improved
+
+- Loading time for stats due to caching
+
 ## [0.5.6] - 2026-04-19
 
 ### Fixed
