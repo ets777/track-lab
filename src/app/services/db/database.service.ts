@@ -16,13 +16,13 @@ export abstract class DatabaseService<K extends TableName> {
 
   async add(dto: CreateDtoFor<K>): Promise<number> {
     const result = await this.adapter.add(this.tableName, dto);
-    this.cacheService.invalidateAll();
+    this.cacheService.invalidate(this.tableName);
     return result;
   }
 
   async bulkAdd(dtos: CreateDtoFor<K>[]): Promise<number[]> {
     const result = await this.adapter.bulkAdd(this.tableName, dtos);
-    this.cacheService.invalidateAll();
+    this.cacheService.invalidate(this.tableName);
     return result;
   }
 
@@ -103,13 +103,13 @@ export abstract class DatabaseService<K extends TableName> {
 
   async update(id: number, changes: Partial<CreateDtoFor<K>>): Promise<number> {
     const result = await this.adapter.update(this.tableName, id, changes);
-    this.cacheService.invalidateAll();
+    this.cacheService.invalidate(this.tableName);
     return result;
   }
 
   async delete(where: Where): Promise<void> {
     await this.adapter.delete(this.tableName, where);
-    this.cacheService.invalidateAll();
+    this.cacheService.invalidate(this.tableName);
   }
 
   async getLast(columns: string[]): Promise<RowFor<K> | undefined> {
@@ -130,7 +130,7 @@ export abstract class DatabaseService<K extends TableName> {
 
   async clear(): Promise<void> {
     await this.adapter.clear(this.tableName);
-    this.cacheService.invalidateAll();
+    this.cacheService.invalidate(this.tableName);
   }
 
   async count(): Promise<number> {

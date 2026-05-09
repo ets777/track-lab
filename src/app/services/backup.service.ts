@@ -48,7 +48,9 @@ import { getEntitiesFromString } from '../functions/string';
 import { LoadingService } from './loading.service';
 import { ALL_BASE_LIST_NAMES, ALL_BASE_METRIC_NAMES, BASE_LIST_DEFAULTS, BASE_METRIC_DEFAULTS } from '../db/base-entity-names';
 import { IRuleDb } from '../db/models/rule';
+import { IRuleCompletionDb } from '../db/models/rule-completion';
 import { RuleService } from './rule.service';
+import { RuleCompletionService } from './rule-completion.service';
 
 type Backup = {
   activities: IActivityDb[],
@@ -69,6 +71,7 @@ type Backup = {
   tagMetrics: ITagMetricDb[],
   itemMetrics: IItemMetricDb[],
   rules: IRuleDb[],
+  ruleCompletions: IRuleCompletionDb[],
   version: string,
 };
 
@@ -246,6 +249,7 @@ export class BackupService {
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private ruleService = inject(RuleService);
+  private ruleCompletionService = inject(RuleCompletionService);
   private fileService = inject(FileService);
   private loadingService = inject(LoadingService);
 
@@ -282,6 +286,7 @@ export class BackupService {
       tagMetrics: await this.tagMetricService.getAll(),
       itemMetrics: await this.itemMetricService.getAll(),
       rules: await this.ruleService.getAll(),
+      ruleCompletions: await this.ruleCompletionService.getAll(),
 
       version: appVersion,
     };
@@ -398,6 +403,7 @@ export class BackupService {
       await this.streakService.bulkAdd(backup.streaks);
 
       await this.ruleService.bulkAdd(backup.rules ?? []);
+      await this.ruleCompletionService.bulkAdd(backup.ruleCompletions ?? []);
     } finally {
       this.loadingService.hide();
     }
@@ -406,6 +412,7 @@ export class BackupService {
   }
 
   async clearDatabase() {
+    await this.ruleCompletionService.clear();
     await this.ruleService.clear();
     await this.activityService.clear();
     await this.activityActionService.clear();

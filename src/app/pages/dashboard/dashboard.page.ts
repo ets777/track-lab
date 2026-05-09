@@ -10,8 +10,6 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
-import { MetricService } from 'src/app/services/metric.service';
-import { ListService } from 'src/app/services/list.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { LogService } from 'src/app/services/log.service';
 import { computeRuleStatusesForDay } from 'src/app/functions/rule-color';
@@ -39,8 +37,6 @@ export class DashboardPage {
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
-  private metricService = inject(MetricService);
-  private listService = inject(ListService);
   private toastService = inject(ToastService);
   private logService = inject(LogService);
 
@@ -69,15 +65,14 @@ export class DashboardPage {
     await new Promise(resolve => setTimeout(resolve));
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const [rules, activities, actions, tags, items] = await Promise.all([
-        this.ruleService.getAll(),
-        this.activityService.getAllEnriched(),
+      const rules = await this.ruleService.getAll();
+      const minDate = this.getMinDateForRules(rules as IRule[], today);
+      const [activities, actions, tags, items] = await Promise.all([
+        this.activityService.getByDate(minDate, today),
         this.actionService.getAll() as Promise<IActionDb[]>,
         this.tagService.getAll() as Promise<ITag[]>,
         this.itemService.getAll() as Promise<IItem[]>,
       ]);
-      await this.metricService.getAll();
-      await this.listService.getAll();
       const statuses = computeRuleStatusesForDay(today, activities, rules);
       this.checklistItems = statuses
         .map(s => ({
@@ -93,6 +88,18 @@ export class DashboardPage {
     } finally {
       this.checklistLoading = false;
     }
+  }
+
+  private getMinDateForRules(rules: IRule[], today: string): string {
+    if (rules.some(r => r.period === 'month')) return `${today.slice(0, 7)}-01`;
+    if (rules.some(r => r.period === 'week')) {
+      const d = new Date(today + 'T00:00:00');
+      const dayOfWeek = (d.getDay() + 6) % 7;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - dayOfWeek);
+      return monday.toISOString().slice(0, 10);
+    }
+    return today;
   }
 
   private resolveName(rule: IRule, actions: IActionDb[], tags: ITag[], items: IItem[]): string {

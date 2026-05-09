@@ -1,5 +1,6 @@
 import { IActivity } from '../db/models/activity';
 import { IRule, RulePeriod } from '../db/models/rule';
+import { matchesRule, computeMetric, isMet } from './rule-streak';
 
 export type RuleColor = 'green' | 'red';
 export type DayStatus = RuleColor | null;
@@ -37,9 +38,9 @@ function computeRuleProgress(
   if (rule.value === 0) return null;
   const periodKey = getPeriodKey(date, rule.period);
   const periodActivities = allActivities.filter(
-    a => activityMatchesRule(a, rule) && getPeriodKey(a.date, rule.period) === periodKey,
+    a => matchesRule(a, rule) && getPeriodKey(a.date, rule.period) === periodKey,
   );
-  return { current: computeMetricTotal(periodActivities, rule), target: rule.value };
+  return { current: computeMetric(periodActivities, rule), target: rule.value };
 }
 
 export function computeDayStatusMap(
@@ -60,19 +61,9 @@ export function computeDayStatusMap(
 function ruleColorForDay(date: string, allActivities: IActivity[], rule: IRule): RuleColor {
   const periodKey = getPeriodKey(date, rule.period);
   const periodActivities = allActivities.filter(
-    a => activityMatchesRule(a, rule) && getPeriodKey(a.date, rule.period) === periodKey,
+    a => matchesRule(a, rule) && getPeriodKey(a.date, rule.period) === periodKey,
   );
-
-  if (rule.value === 0) return periodActivities.length > 0 ? 'red' : 'green';
-
-  const metric = computeMetricTotal(periodActivities, rule);
-  return rule.operator === '>=' ? (metric >= rule.value ? 'green' : 'red') : (metric <= rule.value ? 'green' : 'red');
-}
-
-function computeMetricTotal(activities: IActivity[], rule: IRule): number {
-  if (rule.metric === 'count') return activities.length;
-  if (rule.metric === 'countDays') return new Set(activities.map(a => a.date)).size;
-  return activities.reduce((s, a) => s + getDurationMinutes(a), 0);
+  return isMet(computeMetric(periodActivities, rule), rule) ? 'green' : 'red';
 }
 
 export function computeRuleResultsForActivity(
@@ -83,7 +74,7 @@ export function computeRuleResultsForActivity(
   const results: ActivityRuleResult[] = [];
 
   for (const rule of rules) {
-    const matching = allActivities.filter(a => activityMatchesRule(a, rule));
+    const matching = allActivities.filter(a => matchesRule(a, rule));
     if (!matching.some(a => a.id === target.id)) continue;
 
     if (rule.value === 0) {
@@ -145,7 +136,7 @@ export function computeActivityRuleResults(
   };
 
   for (const rule of rules) {
-    const matching = activities.filter(a => activityMatchesRule(a, rule));
+    const matching = activities.filter(a => matchesRule(a, rule));
     if (!matching.length) continue;
 
     if (rule.value === 0) {
@@ -192,31 +183,6 @@ function beats(color: RuleColor, id: number, existing: ActivityRuleResult): bool
   if (color === 'red' && existing.color === 'green') return true;
   if (color === 'green' && existing.color === 'red') return false;
   return id > existing.rule.id;
-}
-
-function activityMatchesRule(activity: IActivity, rule: IRule): boolean {
-  if (activity.date < rule.startDate) return false;
-  if (!matchesSubject(activity, rule)) return false;
-  if (rule.startTime && rule.endTime && !overlapsTimeRange(activity, rule.startTime, rule.endTime)) return false;
-  return true;
-}
-
-function matchesSubject(activity: IActivity, rule: IRule): boolean {
-  switch (rule.subjectType) {
-    case 'action':
-      return activity.actions.some(a => a.id === rule.subjectId);
-    case 'tag':
-      return activity.tags.some(t => t.id === rule.subjectId)
-        || activity.actions.some(a => a.tags.some(t => t.id === rule.subjectId));
-    case 'item':
-      return activity.items.some(i => i.id === rule.subjectId);
-  }
-}
-
-function overlapsTimeRange(activity: IActivity, ruleStart: string, ruleEnd: string): boolean {
-  const actStart = activity.startTime;
-  const actEnd = activity.endTime ?? activity.startTime;
-  return actStart < ruleEnd && actEnd > ruleStart;
 }
 
 function groupByPeriod(activities: IActivity[], period: RulePeriod): Map<string, IActivity[]> {

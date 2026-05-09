@@ -5,9 +5,10 @@ import { Router } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { startOfMonth, format } from 'date-fns';
+import { TranslateModule } from '@ngx-translate/core';
+import { startOfMonth, subDays, format } from 'date-fns';
 import { RuleService } from 'src/app/services/rule.service';
+import { RuleCompletionService } from 'src/app/services/rule-completion.service';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
@@ -34,11 +35,11 @@ import { AggregateRuleCalendarComponent } from 'src/app/components/aggregate-rul
 })
 export class StatsRulesPage {
   private ruleService = inject(RuleService);
+  private ruleCompletionService = inject(RuleCompletionService);
   private activityService = inject(ActivityService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
-  private translate = inject(TranslateService);
   router = inject(Router);
   private navigationService = inject(NavigationService);
 
@@ -58,6 +59,7 @@ export class StatsRulesPage {
   filteredRules: IRule[] = [];
   selectedDate = '';
   ruleDayStatuses: RuleDayStatus[] = [];
+  completionsMap: Map<number, Map<string, boolean>> = new Map();
 
   ionViewWillEnter() {
     this.isLoading = true;
@@ -67,13 +69,24 @@ export class StatsRulesPage {
     this.isLoading = true;
     await new Promise(resolve => setTimeout(resolve));
 
+    const recentFrom = format(startOfMonth(subDays(new Date(), 31)), 'yyyy-MM-dd');
+
     [this.allRules, this.allActivities, this.allActions, this.allTags, this.allItems] = await Promise.all([
       this.ruleService.getAll(),
-      this.activityService.getAllEnriched(),
+      this.activityService.getAllEnrichedForRules(recentFrom),
       this.actionService.getAll(),
       this.tagService.getAll(),
       this.itemService.getAll(),
     ]);
+
+    const completionsMap = new Map<number, Map<string, boolean>>();
+    for (const rule of this.allRules) {
+      const completions = await this.ruleCompletionService.archiveAndGetCompletions(rule);
+      const map = new Map<string, boolean>();
+      for (const c of completions) map.set(c.periodStart, c.met === 1);
+      completionsMap.set(rule.id, map);
+    }
+    this.completionsMap = completionsMap;
 
     this.selectedTab = 'day';
     this.selectedDate = format(new Date(), 'yyyy-MM-dd');

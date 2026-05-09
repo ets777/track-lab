@@ -16,6 +16,7 @@ import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 import { ITagMetricCreateDto, ITagMetricDb } from "src/app/db/models/tag-metric";
 import { IItemMetricCreateDto, IItemMetricDb } from "src/app/db/models/item-metric";
 import { IRuleCreateDto, IRuleDb } from "src/app/db/models/rule";
+import { IRuleCompletionCreateDto, IRuleCompletionDb } from "src/app/db/models/rule-completion";
 
 export interface ITable {
     actions: IActionDb;
@@ -36,6 +37,7 @@ export interface ITable {
     tagMetrics: ITagMetricDb;
     itemMetrics: IItemMetricDb;
     rules: IRuleDb;
+    ruleCompletions: IRuleCompletionDb;
 }
 
 export interface ICreateDto {
@@ -57,6 +59,7 @@ export interface ICreateDto {
     tagMetrics: ITagMetricDb | ITagMetricCreateDto;
     itemMetrics: IItemMetricDb | IItemMetricCreateDto;
     rules: IRuleDb | IRuleCreateDto;
+    ruleCompletions: IRuleCompletionDb | IRuleCompletionCreateDto;
 }
 
 export type TableName = keyof ITable;

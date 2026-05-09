@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel, IonButtons } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
@@ -38,6 +39,7 @@ export class SettingsPage implements OnInit {
   private alertController = inject(AlertController);
   private databaseRouter = inject(DatabaseRouter);
   private cacheService = inject(CacheService);
+  private router = inject(Router);
   get showBackButton(): boolean {
     return this.navigationService.fromDashboard;
   }
@@ -94,6 +96,10 @@ export class SettingsPage implements OnInit {
 
   getLanguage() {
     return this.translate.getCurrentLang();
+  }
+
+  goToDatabase() {
+    this.router.navigate(['/database']);
   }
 
   async backupDatabase() {

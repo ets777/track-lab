@@ -7,7 +7,7 @@ import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, addMonths, subMonths, parseISO } from 'date-fns';
 import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
-import { getActivityDurationMinutes } from 'src/app/functions/activity';
+import { matchesRule, computeMetric, isMet, getPeriodRange } from 'src/app/functions/rule-streak';
 
 type DayStatus = 'none' | 'met' | 'broken';
 
@@ -34,6 +34,7 @@ interface CalendarDay {
 export class AggregateRuleCalendarComponent implements OnChanges {
   @Input() rules: IRule[] = [];
   @Input() allActivities: IActivity[] = [];
+  @Input() completionsMap: Map<number, Map<string, boolean>> = new Map();
   @Input() period: RulePeriod = 'day';
   @Input() selectedDate = '';
 
@@ -61,7 +62,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rules'] || changes['allActivities'] || changes['period']) {
+    if (changes['rules'] || changes['allActivities'] || changes['completionsMap'] || changes['period']) {
       this.buildCalendar();
     }
   }
@@ -222,11 +223,16 @@ export class AggregateRuleCalendarComponent implements OnChanges {
     const active = this.rules.filter(r => r.startDate <= date);
     if (!active.length) return 'none';
     for (const rule of active) {
-      const [start, end] = this.getPeriodRange(date, rule.period);
-      const matching = this.allActivities.filter(
-        a => a.date >= start && a.date <= end && this.matchesRule(a, rule),
-      );
-      if (!this.isMet(this.computeMetric(matching, rule), rule)) return 'broken';
+      const [start, end] = getPeriodRange(date, rule.period);
+      const stored = this.completionsMap.get(rule.id)?.get(start);
+      if (stored !== undefined) {
+        if (!stored) return 'broken';
+      } else {
+        const matching = this.allActivities.filter(
+          a => a.date >= start && a.date <= end && matchesRule(a, rule),
+        );
+        if (!isMet(computeMetric(matching, rule), rule)) return 'broken';
+      }
     }
     return 'met';
   }
@@ -237,51 +243,10 @@ export class AggregateRuleCalendarComponent implements OnChanges {
     let hasMet = false;
     for (const rule of this.rules) {
       if (rule.startDate > date) continue;
-      if (!this.allActivities.some(a => a.date === date && this.matchesRule(a, rule))) continue;
+      if (!this.allActivities.some(a => a.date === date && matchesRule(a, rule))) continue;
       if (rule.value === 0 || rule.operator === '<=') return 'broken';
       hasMet = true;
     }
     return hasMet ? 'met' : 'none';
-  }
-
-  private getPeriodRange(date: string, period: RulePeriod): [string, string] {
-    if (period === 'day') return [date, date];
-    const d = parseISO(date);
-    if (period === 'week') {
-      return [
-        format(startOfWeek(d, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-        format(endOfWeek(d, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-      ];
-    }
-    return [format(startOfMonth(d), 'yyyy-MM-dd'), format(endOfMonth(d), 'yyyy-MM-dd')];
-  }
-
-  private matchesRule(activity: IActivity, rule: IRule): boolean {
-    let subjectMatch = false;
-    if (rule.subjectType === 'action') {
-      subjectMatch = activity.actions.some(a => a.id === rule.subjectId);
-    } else if (rule.subjectType === 'tag') {
-      subjectMatch = activity.tags.some(t => t.id === rule.subjectId)
-        || activity.actions.some(a => a.tags.some(t => t.id === rule.subjectId));
-    } else {
-      subjectMatch = activity.items.some(i => i.id === rule.subjectId);
-    }
-    if (!subjectMatch) return false;
-    if (rule.startTime && rule.endTime) {
-      const t = activity.startTime;
-      if (t < rule.startTime || t > rule.endTime) return false;
-    }
-    return true;
-  }
-
-  private computeMetric(activities: IActivity[], rule: IRule): number {
-    if (rule.metric === 'count') return activities.length;
-    if (rule.metric === 'totalDuration') return activities.reduce((s, a) => s + getActivityDurationMinutes(a), 0);
-    return new Set(activities.map(a => a.date)).size;
-  }
-
-  private isMet(value: number, rule: IRule): boolean {
-    if (rule.value === 0) return value === 0;
-    return rule.operator === '>=' ? value >= rule.value : value <= rule.value;
   }
 }

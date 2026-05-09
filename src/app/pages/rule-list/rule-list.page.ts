@@ -5,6 +5,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IRule } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
+import { RuleCompletionService } from 'src/app/services/rule-completion.service';
 import { Router } from '@angular/router';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
@@ -26,6 +27,7 @@ import { IItem } from 'src/app/db/models/item';
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);
+  private ruleCompletionService = inject(RuleCompletionService);
   private actionService = inject(ActionService);
   private navigationService = inject(NavigationService);
   private tagService = inject(TagService);
@@ -102,6 +104,7 @@ export class RuleListPage {
     const { role } = await alert.onDidDismiss();
 
     if (role === 'yes') {
+      await this.ruleCompletionService.deleteByRuleId(ruleId);
       await this.ruleService.delete({ id: ruleId });
       this.toastService.enqueue({ title: 'TK_RULE_DELETED_SUCCESSFULLY', type: 'success' });
       this.rules = this.rules.filter((r) => r.id !== ruleId);

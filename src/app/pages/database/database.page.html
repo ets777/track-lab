@@ -1,108 +1,47 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ 'TK_DATABASE' | translate }}</ion-title>
+    <ion-title>Database</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button (click)="clearDatabase()">Clear database</ion-button>
-  @if (activities.length) {
-    <table>
-      <caption>
-        Activities
-      </caption>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>actions</th>
-          <th>tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (activity of activities; track activity.id) {
+  <ion-item>
+    <ion-select
+      [(ngModel)]="selectedTable"
+      (ionChange)="onTableChange()"
+      label="Table"
+      interface="action-sheet"
+    >
+      @for (table of tables; track table) {
+        <ion-select-option [value]="table">{{ table }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+
+  @if (rows.length) {
+    <div style="overflow-x: auto; margin-top: 16px;">
+      <table>
+        <thead>
           <tr>
-            <td>{{ activity.id }}</td>
-            <td>{{ entitiesToString(activity.actions) }}</td>
-            <td>{{ entitiesToString(activity.tags) }}</td>
+            @for (col of columns; track col) {
+              <th>{{ col }}</th>
+            }
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.id) {
+            <tr>
+              @for (col of columns; track col) {
+                <td>{{ row[col] }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (selectedTable) {
+    <p>No rows</p>
   }
 
-  @if (actions.length) {
-    <table>
-      <caption>
-        Actions
-      </caption>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>name</th>
-          <th>tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (action of actions; track action.id) {
-          <tr>
-            <td>{{ action.id }}</td>
-            <td>{{ action.name }}</td>
-            <td>{{ entitiesToString(action.tags) }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
-  @if (activityActions.length) {
-    <table>
-      <caption>
-        ActivityActions
-      </caption>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>activityId</th>
-          <th>actionId</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (activityAction of activityActions; track activityAction.id) {
-          <tr>
-            <td>{{ activityAction.id }}</td>
-            <td>{{ activityAction.activityId }}</td>
-            <td>{{ activityAction.actionId }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
-  @if (achievements.length) {
-    <table>
-      <caption>
-        Achievements
-      </caption>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>code</th>
-          <th>title</th>
-          <th>description</th>
-          <th>current</th>
-          <th>target</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (achievement of achievements; track achievement.id) {
-          <tr>
-            <td>{{ achievement.id }}</td>
-            <td>{{ achievement.code }}</td>
-            <td>{{ achievement.title }}</td>
-            <td>{{ achievement.description }}</td>
-            <td>{{ achievement.current }}</td>
-            <td>{{ achievement.target }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
+  <ion-button color="danger" style="margin-top: 24px;" (click)="clearDatabase()">Clear database</ion-button>
 </ion-content>

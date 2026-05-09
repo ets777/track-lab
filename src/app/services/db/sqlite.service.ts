@@ -68,7 +68,8 @@ export class SQLiteService {
     const result = await this.connection.run(statement, values, false);
 
     if (this.platform == 'web' && result) {
-      await this.saveToStore();
+      const isActive = await this.isTransactionActive();
+      if (!isActive.result) await this.saveToStore();
     }
 
     return result;
@@ -78,7 +79,8 @@ export class SQLiteService {
     const result = await this.connection.execute(statement, false);
 
     if (this.platform == 'web' && result) {
-      await this.saveToStore();
+      const isActive = await this.isTransactionActive();
+      if (!isActive.result) await this.saveToStore();
     }
 
     return result;
@@ -86,7 +88,7 @@ export class SQLiteService {
 
   async beginTransaction() {
     const isTransactionActive = await this.isTransactionActive();
-    
+
     if (!isTransactionActive.result) {
       await this.connection.beginTransaction();
     }
@@ -97,6 +99,9 @@ export class SQLiteService {
 
     if (isTransactionActive.result) {
       await this.connection.commitTransaction();
+      if (this.platform === 'web') {
+        await this.sqlite.saveToStore(this.databaseName);
+      }
     }
   }
 
@@ -590,21 +595,14 @@ export class SQLiteService {
     if (this.platform !== 'web') {
       return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
     }
-    
-    const database = this.databaseName;
-    
     if (this.sqlite != null) {
       try {
-        // commit before saving to store, because saveToStore implicitly
-        // commit transaction, but isTransactionActive doesn't know that
-        await this.commitTransaction();
-        await this.sqlite.saveToStore(database);
-        return Promise.resolve();
+        await this.sqlite.saveToStore(this.databaseName);
       } catch (err) {
         return Promise.reject(new Error(err as string));
       }
     } else {
-      return Promise.reject(new Error(`no connection open for ${database}`));
+      return Promise.reject(new Error(`no connection open for ${this.databaseName}`));
     }
   }
 

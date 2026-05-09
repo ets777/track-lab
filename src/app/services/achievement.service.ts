@@ -6,13 +6,14 @@ import { ActivityService } from './activity.service';
 import { ActivityMetricService } from './activity-metric.service';
 import { ActivityActionService } from './activity-action.service';
 import { Subject } from 'rxjs';
-import { format } from 'date-fns';
+import { format, subDays, startOfMonth } from 'date-fns';
 import { DatabaseService } from './db/database.service';
 import { MetricService } from './metric.service';
 import { ListService } from './list.service';
 import { ItemService } from './item.service';
 import { RuleService } from './rule.service';
-import { computeRuleStreak } from '../functions/rule-streak';
+import { RuleCompletionService } from './rule-completion.service';
+import { computeRuleStreakWithCompletions } from '../functions/rule-streak';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
@@ -24,6 +25,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
   private listService = inject(ListService);
   private itemService = inject(ItemService);
   private ruleService = inject(RuleService);
+  private ruleCompletionService = inject(RuleCompletionService);
 
   protected tableName: 'achievements' = 'achievements';
 
@@ -113,31 +115,39 @@ export class AchievementService extends DatabaseService<'achievements'> {
   }
 
   private async checkAll(event: any) {
+    const t = () => `[${Date.now() % 100000}ms]`;
     if (event.type === 'activity.added') {
-      await this.checkAchievement('first_activity');
-      await this.checkAchievement('10_activities');
-      await this.checkAchievement('100_activities');
-      await this.checkAchievement('1000_activities');
-      await this.checkAchievement('10000_activities');
-      await this.checkAchievement('100000_activities');
-      await this.checkAchievement('new_year', event.payload);
-      await this.checkAchievement('100_action_executions');
-      await this.checkAchievement('1000_action_executions');
-      await this.checkAchievement('five_actions_in_activity', event.payload);
+      console.log(t(), 'achievements: checkAll activity.added start');
+      await Promise.all([
+        this.checkAchievement('first_activity'),
+        this.checkAchievement('10_activities'),
+        this.checkAchievement('100_activities'),
+        this.checkAchievement('1000_activities'),
+        this.checkAchievement('10000_activities'),
+        this.checkAchievement('100000_activities'),
+        this.checkAchievement('new_year', event.payload),
+        this.checkAchievement('100_action_executions'),
+        this.checkAchievement('1000_action_executions'),
+        this.checkAchievement('five_actions_in_activity', event.payload),
+        this.checkAchievement('max_mood', event.payload),
+        this.checkAchievement('min_mood', event.payload),
+        this.checkAchievement('max_energy', event.payload),
+        this.checkAchievement('min_energy', event.payload),
+      ]);
+      console.log(t(), 'achievements: checkAll activity.added parallel done');
     }
 
     if (event.type === 'activity.updated') {
-      await this.checkAchievement('first_activity_editing');
-      await this.checkAchievement('100_action_executions');
-      await this.checkAchievement('1000_action_executions');
-      await this.checkAchievement('five_actions_in_activity', event.payload);
-    }
-
-    if (['activity.added', 'activity.updated'].includes(event.type)) {
-      await this.checkAchievement('max_mood', event.payload);
-      await this.checkAchievement('min_mood', event.payload);
-      await this.checkAchievement('max_energy', event.payload);
-      await this.checkAchievement('min_energy', event.payload);
+      await Promise.all([
+        this.checkAchievement('first_activity_editing'),
+        this.checkAchievement('100_action_executions'),
+        this.checkAchievement('1000_action_executions'),
+        this.checkAchievement('five_actions_in_activity', event.payload),
+        this.checkAchievement('max_mood', event.payload),
+        this.checkAchievement('min_mood', event.payload),
+        this.checkAchievement('max_energy', event.payload),
+        this.checkAchievement('min_energy', event.payload),
+      ]);
     }
 
     if (event.type === 'metric.added') {
@@ -145,27 +155,35 @@ export class AchievementService extends DatabaseService<'achievements'> {
     }
 
     if (event.type === 'activity.metricsAdded') {
-      await this.checkAchievement('10_metric_records');
-      await this.checkAchievement('100_metric_records');
-      await this.checkAchievement('1000_metric_records');
-      await this.checkAchievement('10000_metric_records');
+      await Promise.all([
+        this.checkAchievement('10_metric_records'),
+        this.checkAchievement('100_metric_records'),
+        this.checkAchievement('1000_metric_records'),
+        this.checkAchievement('10000_metric_records'),
+      ]);
     }
 
     if (event.type === 'list.added') {
-      await this.checkAchievement('first_list');
-      await this.checkAchievement('10_lists');
+      await Promise.all([
+        this.checkAchievement('first_list'),
+        this.checkAchievement('10_lists'),
+      ]);
     }
 
     if (event.type === 'item.added') {
-      await this.checkAchievement('100_items');
-      await this.checkAchievement('1000_items');
+      await Promise.all([
+        this.checkAchievement('100_items'),
+        this.checkAchievement('1000_items'),
+      ]);
     }
 
     if (event.type === 'backup.made') {
-      await this.checkAchievement('first_backup_with_password', event.payload);
-      await this.checkAchievement('first_backup_without_password', event.payload);
-      await this.checkAchievement('10_backups');
-      await this.checkAchievement('100_backups');
+      await Promise.all([
+        this.checkAchievement('first_backup_with_password', event.payload),
+        this.checkAchievement('first_backup_without_password', event.payload),
+        this.checkAchievement('10_backups'),
+        this.checkAchievement('100_backups'),
+      ]);
     }
 
     if (event.type === 'homepage.visited') {
@@ -173,14 +191,17 @@ export class AchievementService extends DatabaseService<'achievements'> {
     }
 
     if (event.type === 'rule.added') {
-      await this.checkAchievement('first_rule');
-      await this.checkAchievement('10_rules');
-      await this.checkAchievement('first_prohibiting_rule', event.payload);
+      await Promise.all([
+        this.checkAchievement('first_rule'),
+        this.checkAchievement('10_rules'),
+        this.checkAchievement('first_prohibiting_rule', event.payload),
+      ]);
     }
 
     if (['activity.added', 'activity.updated'].includes(event.type)) {
-      await this.checkAchievement('rule_streak_10');
-      await this.checkAchievement('rule_streak_100');
+      console.log(t(), 'achievements: checkRuleStreakAchievements start');
+      await this.checkRuleStreakAchievements();
+      console.log(t(), 'achievements: checkRuleStreakAchievements done');
     }
   }
 
@@ -651,9 +672,56 @@ export class AchievementService extends DatabaseService<'achievements'> {
       async () => {
         const rules = await this.ruleService.getAll();
         if (!rules.length) return false;
-        const activities = await this.activityService.getAllEnriched();
-        return rules.some(rule => computeRuleStreak(rule, activities) >= threshold);
+        const recentFrom = format(startOfMonth(subDays(new Date(), 31)), 'yyyy-MM-dd');
+        const recentActivities = await this.activityService.getAllEnrichedForRules(recentFrom);
+        for (const rule of rules) {
+          const completions = await this.ruleCompletionService.archiveAndGetCompletions(rule);
+          if (computeRuleStreakWithCompletions(rule, completions, recentActivities) >= threshold) return true;
+        }
+        return false;
       },
     );
+  }
+
+  async checkRuleStreakAchievements() {
+    const [streak10, streak100] = await Promise.all([
+      this.getByCode('rule_streak_10'),
+      this.getByCode('rule_streak_100'),
+    ]);
+
+    if (streak10?.unlocked && streak100?.unlocked) return;
+
+    const rules = await this.ruleService.getAll();
+    if (!rules.length) return;
+
+    // Load recent activities (last 32 days — covers non-archived periods)
+    const recentFrom = format(startOfMonth(subDays(new Date(), 31)), 'yyyy-MM-dd');
+    const recentActivities = await this.activityService.getAllEnrichedForRules(recentFrom);
+
+    // Archive old periods and get completions for each rule
+    const completionsByRule = new Map<number, Awaited<ReturnType<RuleCompletionService['archiveAndGetCompletions']>>>();
+    for (const rule of rules) {
+      completionsByRule.set(rule.id, await this.ruleCompletionService.archiveAndGetCompletions(rule));
+    }
+
+    if (!streak10?.unlocked) {
+      const met = rules.some(rule =>
+        computeRuleStreakWithCompletions(rule, completionsByRule.get(rule.id) ?? [], recentActivities) >= 10
+      );
+      if (met) {
+        await this.update(streak10!.id, { unlocked: true, current: streak10!.target });
+        this.enqueue(streak10!);
+      }
+    }
+
+    if (!streak100?.unlocked) {
+      const met = rules.some(rule =>
+        computeRuleStreakWithCompletions(rule, completionsByRule.get(rule.id) ?? [], recentActivities) >= 100
+      );
+      if (met) {
+        await this.update(streak100!.id, { unlocked: true, current: streak100!.target });
+        this.enqueue(streak100!);
+      }
+    }
   }
 }

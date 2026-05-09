@@ -214,4 +214,16 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 8,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS ruleCompletions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ruleId INTEGER NOT NULL,
+        periodStart TEXT NOT NULL,
+        met INTEGER NOT NULL
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_rule_completions_rule_period ON ruleCompletions (ruleId, periodStart);`,
+    ],
+  },
 ];

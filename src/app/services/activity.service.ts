@@ -14,6 +14,7 @@ import { IActivityMetric } from '../db/models/activity-metric';
 import { ActivityMetricService } from './activity-metric.service';
 import { IItem } from '../db/models/item';
 import { ItemService } from './item.service';
+import { ActivityItemService } from './activity-item.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService extends DatabaseService<'activities'> {
@@ -24,6 +25,7 @@ export class ActivityService extends DatabaseService<'activities'> {
   private activityTagService = inject(ActivityTagService);
   private activityMetricService = inject(ActivityMetricService);
   private itemService = inject(ItemService);
+  private activityItemService = inject(ActivityItemService);
 
   tableName: 'activities' = 'activities' as const;
 
@@ -76,6 +78,51 @@ export class ActivityService extends DatabaseService<'activities'> {
   async getAllEnriched() {
     const activities = await this.getAll();
     return this.enrichAll(activities);
+  }
+
+  async getAllEnrichedForRules(fromDate?: string, toDate?: string): Promise<IActivity[]> {
+    const activitiesPromise = (fromDate && toDate)
+      ? this.getAllByRange('date', { 0: fromDate, 1: toDate })
+      : this.getAll();
+
+    const [activitiesDb, activityActions, activityTags, activityItems] = await Promise.all([
+      activitiesPromise,
+      this.activityActionService.getAll(),
+      this.activityTagService.getAll(),
+      this.activityItemService.getAll(),
+    ]);
+
+    const activities = (fromDate && !toDate) ? activitiesDb.filter(a => a.date >= fromDate) : activitiesDb;
+    const activityIds = new Set(activities.map(a => a.id));
+
+    const actionsByActivity = new Map<number, { id: number }[]>();
+    for (const aa of activityActions) {
+      if (!activityIds.has(aa.activityId)) continue;
+      if (!actionsByActivity.has(aa.activityId)) actionsByActivity.set(aa.activityId, []);
+      actionsByActivity.get(aa.activityId)!.push({ id: aa.actionId });
+    }
+
+    const tagsByActivity = new Map<number, { id: number }[]>();
+    for (const at of activityTags) {
+      if (!activityIds.has(at.activityId)) continue;
+      if (!tagsByActivity.has(at.activityId)) tagsByActivity.set(at.activityId, []);
+      tagsByActivity.get(at.activityId)!.push({ id: at.tagId });
+    }
+
+    const itemsByActivity = new Map<number, { id: number }[]>();
+    for (const ai of activityItems) {
+      if (!activityIds.has(ai.activityId)) continue;
+      if (!itemsByActivity.has(ai.activityId)) itemsByActivity.set(ai.activityId, []);
+      itemsByActivity.get(ai.activityId)!.push({ id: ai.itemId });
+    }
+
+    return activities.map(a => ({
+      ...a,
+      actions: (actionsByActivity.get(a.id) ?? []) as IAction[],
+      tags: (tagsByActivity.get(a.id) ?? []) as ITag[],
+      items: (itemsByActivity.get(a.id) ?? []) as IItem[],
+      metricRecords: [],
+    })) as IActivity[];
   }
 
   async getLastEnriched(date?: string) {
@@ -192,10 +239,12 @@ export class ActivityService extends DatabaseService<'activities'> {
   }
 
   async enrichOne(activityDb: IActivityDb) {
-    const actions: IAction[] = await this.actionService.getByActivityId(activityDb.id);
-    const tags: ITag[] = await this.tagService.getByActivityId(activityDb.id);
-    const metricRecords: IActivityMetric[] = await this.activityMetricService.getByActivityId(activityDb.id);
-    const items: IItem[] = await this.itemService.getByActivityId(activityDb.id);
+    const [actions, tags, metricRecords, items] = await Promise.all([
+      this.actionService.getByActivityId(activityDb.id) as Promise<IAction[]>,
+      this.tagService.getByActivityId(activityDb.id) as Promise<ITag[]>,
+      this.activityMetricService.getByActivityId(activityDb.id) as Promise<IActivityMetric[]>,
+      this.itemService.getByActivityId(activityDb.id) as Promise<IItem[]>,
+    ]);
 
     return {
       ...activityDb,
@@ -207,12 +256,6 @@ export class ActivityService extends DatabaseService<'activities'> {
   }
 
   async enrichAll(activitiesDb: IActivityDb[]) {
-    const result = [];
-
-    for (const activityDb of activitiesDb) {
-      result.push(await this.enrichOne(activityDb));
-    }
-
-    return result;
+    return Promise.all(activitiesDb.map(a => this.enrichOne(a)));
   }
 }

@@ -55,27 +55,33 @@ export class ActivityAddPage implements OnInit {
       return;
     }
 
+    const t = () => `[${Date.now() % 100000}ms]`;
+
     const activityFormValue = this.getForm().value as ActivityForm;
     const activityId = await this.activityService.addFromForm(activityFormValue);
 
     if (activityId != null) {
       const metricRecords = this.addFormRef.getMetricRecords();
-      for (const record of metricRecords) {
-        await this.activityMetricService.add({ activityId, metricId: record.metricId, value: record.value });
-      }
       if (metricRecords.length > 0) {
+        await this.activityMetricService.bulkAdd(
+          metricRecords.map(r => ({ activityId, metricId: r.metricId, value: r.value }))
+        );
         this.hookService.emit({ type: 'activity.metricsAdded', payload: {} });
       }
 
       let newItemsAdded = false;
+      const activityItemDtos: { activityId: number; itemId: number }[] = [];
       for (const record of this.addFormRef.getListItemRecords()) {
         const existingItems = await this.itemService.getAllWhereEquals('listId', record.listId);
         for (const itemName of record.itemNames) {
           const existing = existingItems.find(t => t.name.toLowerCase() === itemName.toLowerCase());
-          const itemId = existing ? existing.id : await this.itemService.add({ name: itemName, listId: record.listId });
+          const itemId = existing ? existing.id! : await this.itemService.add({ name: itemName, listId: record.listId });
           if (!existing) newItemsAdded = true;
-          await this.activityItemService.add({ activityId, itemId });
+          activityItemDtos.push({ activityId, itemId });
         }
+      }
+      if (activityItemDtos.length > 0) {
+        await this.activityItemService.bulkAdd(activityItemDtos);
       }
       if (newItemsAdded) {
         this.hookService.emit({ type: 'item.added', payload: {} });
@@ -88,6 +94,7 @@ export class ActivityAddPage implements OnInit {
       title: 'TK_ACTIVITY_ADDED_SUCCESSFULLY',
       type: 'success',
     });
+    console.log(t(), 'addActivity: complete');
   }
 
   isFormValid() {

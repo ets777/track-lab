@@ -18,6 +18,7 @@ import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { IList } from 'src/app/db/models/list';
 import { IItem } from 'src/app/db/models/item';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, parseISO } from 'date-fns';
 import { RuleService } from 'src/app/services/rule.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
@@ -106,11 +107,10 @@ export class ActivityViewPage {
   }
 
   async ionViewDidEnter() {
-    const [activity, metrics, rules, allActivities, actions, tags, items, lists] = await Promise.all([
+    const [activity, metrics, rules, actions, tags, items, lists] = await Promise.all([
       this.activityService.getEnriched(this.activityId),
       this.metricService.getAll(),
       this.ruleService.getAll(),
-      this.activityService.getAllEnriched(),
       this.actionService.getAll(),
       this.tagService.getAll(),
       this.itemService.getAll(),
@@ -124,7 +124,11 @@ export class ActivityViewPage {
     this.allItems = items;
 
     if (this.activity) {
-      this.triggeredRules = computeRuleResultsForActivity(this.activity, allActivities, rules);
+      const d = parseISO(this.activity.date);
+      const fromDate = format(startOfWeek(startOfMonth(d), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const toDate = format(endOfWeek(endOfMonth(d), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const periodActivities = await this.activityService.getAllEnrichedForRules(fromDate, toDate);
+      this.triggeredRules = computeRuleResultsForActivity(this.activity, periodActivities, rules);
     }
 
     if (this.activity?.items.length) {
