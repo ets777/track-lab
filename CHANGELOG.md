@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.1] - 2026-05-10
+
+### Added
+
+- Clear cache button
+
+### Fixed
+
+- Long rules loading because of cache bug
+- Bug that caused completed rules to be displayed as uncompleted in some cases
+- Updating rules on dashboard after adding a new rule
+
 ## [0.6.0] - 2026-05-05
 
 ### Added
