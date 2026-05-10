@@ -13,8 +13,10 @@ import { BackButtonComponent } from 'src/app/components/back-button/back-button.
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
+import { ListService } from 'src/app/services/list.service';
 import { RuleCalendarComponent } from 'src/app/components/rule-calendar/rule-calendar.component';
 import { ToastService } from 'src/app/services/toast.service';
+import { formatDisplayDate } from 'src/app/functions/date';
 
 const METRIC_KEY: Record<RuleMetric, string> = {
   count: 'TK_COUNT',
@@ -42,6 +44,7 @@ export class RuleViewPage {
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
+  private listService = inject(ListService);
   private translate = inject(TranslateService);
   private actionSheetCtrl = inject(ActionSheetController);
   private alertController = inject(AlertController);
@@ -50,6 +53,8 @@ export class RuleViewPage {
   ruleId: number;
   rule?: IRule;
   ruleName = '';
+  subjectName = '';
+  listName = '';
 
   constructor() {
     this.ruleId = Number(this.route.snapshot.paramMap.get('id'));
@@ -57,25 +62,27 @@ export class RuleViewPage {
   }
 
   async ionViewDidEnter() {
-    const [rule, actions, tags, items] = await Promise.all([
+    const [rule, actions, tags, items, lists] = await Promise.all([
       this.ruleService.getById(this.ruleId),
       this.actionService.getAll(),
       this.tagService.getAll(),
       this.itemService.getAll(),
+      this.listService.getAll(),
     ]);
 
     this.rule = rule;
 
     if (rule) {
-      let subjectName = '';
       if (rule.subjectType === 'action') {
-        subjectName = actions.find(a => a.id === rule.subjectId)?.name ?? '';
+        this.subjectName = actions.find(a => a.id === rule.subjectId)?.name ?? '';
       } else if (rule.subjectType === 'tag') {
-        subjectName = tags.find(t => t.id === rule.subjectId)?.name ?? '';
+        this.subjectName = tags.find(t => t.id === rule.subjectId)?.name ?? '';
       } else {
-        subjectName = items.find(i => i.id === rule.subjectId)?.name ?? '';
+        const item = items.find(i => i.id === rule.subjectId);
+        this.subjectName = item?.name ?? '';
+        this.listName = lists.find(l => l.id === item?.listId)?.name ?? '';
       }
-      this.ruleName = this.ruleService.buildName(rule, subjectName);
+      this.ruleName = this.ruleService.buildName(rule, this.subjectName);
     }
   }
 
@@ -111,6 +118,17 @@ export class RuleViewPage {
       this.toastService.enqueue({ title: 'TK_RULE_DELETED_SUCCESSFULLY', type: 'success' });
       await this.router.navigate(['/rule']);
     }
+  }
+
+  get subjectSubtitle(): string {
+    if (!this.rule) return '';
+    if (this.rule.subjectType === 'action') return this.translate.instant('TK_ACTION');
+    if (this.rule.subjectType === 'tag') return this.translate.instant('TK_TAG');
+    return this.listName;
+  }
+
+  get formattedStartDate(): string {
+    return this.rule ? formatDisplayDate(this.rule.startDate, this.translate.currentLang) : '';
   }
 
   get metricLabel(): string {

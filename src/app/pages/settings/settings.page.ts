@@ -16,6 +16,7 @@ import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 import { CacheService } from 'src/app/services/cache.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { formatDisplayDate } from 'src/app/functions/date';
 
 export enum autoBackupOption {
@@ -39,6 +40,7 @@ export class SettingsPage implements OnInit {
   private alertController = inject(AlertController);
   private databaseRouter = inject(DatabaseRouter);
   private cacheService = inject(CacheService);
+  private toastService = inject(ToastService);
   private router = inject(Router);
   get showBackButton(): boolean {
     return this.navigationService.fromDashboard;
@@ -152,6 +154,11 @@ export class SettingsPage implements OnInit {
   async setCacheEnabled(event: any) {
     const value = event.detail.checked as boolean;
     await this.cacheService.setEnabled(value);
+  }
+
+  clearCache(): void {
+    this.cacheService.invalidateAll();
+    this.toastService.emit({ title: this.translate.instant('TK_DONE'), type: 'success' });
   }
 
   async resetDatabase() {

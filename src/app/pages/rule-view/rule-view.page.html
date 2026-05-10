@@ -15,8 +15,15 @@
     <ion-list>
       <ion-item>
         <ion-label>
+          <p>{{ 'TK_ITEM' | translate }}</p>
+          <h2>{{ subjectName }}</h2>
+          <p>{{ subjectSubtitle }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>
           <p>{{ 'TK_START_DATE' | translate }}</p>
-          <h2>{{ rule.startDate }}</h2>
+          <h2>{{ formattedStartDate }}</h2>
         </ion-label>
       </ion-item>
       <ion-item>
