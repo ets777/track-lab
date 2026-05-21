@@ -1,19 +1,23 @@
-<form [formGroup]="filterForm">
-  <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
-</form>
+@if (!hidePeriodSelector) {
+  <form [formGroup]="filterForm">
+    <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
+  </form>
+}
 
-<ion-item>
-  <ion-label position="stacked">{{ 'TK_METRICS' | translate }}</ion-label>
-  <ion-input
-    #metricInput
-    appValidationError
-    [formControl]="metricsControl"
-    (ionInput)="onMetricInput($event)"
-    (ionBlur)="hideMetricSuggestions()"
-    (click)="updateMetricCaretAndText($event)"
-    (keyup)="updateMetricCaretAndText($event)"
-  ></ion-input>
-</ion-item>
+@if (!fixedMetricName) {
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_METRICS' | translate }}</ion-label>
+    <ion-input
+      #metricInput
+      appValidationError
+      [formControl]="metricsControl"
+      (ionInput)="onMetricInput($event)"
+      (ionBlur)="hideMetricSuggestions()"
+      (click)="updateMetricCaretAndText($event)"
+      (keyup)="updateMetricCaretAndText($event)"
+    ></ion-input>
+  </ion-item>
+}
 
 @if (showMetricSuggestions) {
   <ion-list class="suggestions" lines="none">
@@ -29,7 +33,7 @@
   <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
 }
 
-@if (activitiesGroupedByDate.length && selectedMetrics.length) {
+@if (activitiesGroupedByDate.length && selectedMetrics.length && !hideCalendar) {
   <div class="calendar-block">
   @if (selectedMetrics.length > 1) {
     <ion-segment [value]="selectedCalendarMetricIndex" (ionChange)="selectedCalendarMetricIndex = +$any($event).detail.value">

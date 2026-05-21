@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      @if (showBackButton) {
+        <app-back-button></app-back-button>
+      } @else {
+        <ion-menu-button menu="lab-menu"></ion-menu-button>
+      }
+    </ion-buttons>
+    <ion-title>{{ 'TK_EXPERIMENTS' | translate }}</ion-title>
+  </ion-toolbar>
+  @if (hasFinishedExperiments) {
+    <ion-toolbar>
+      <ion-segment [value]="activeTab" (ionChange)="onTabChange($any($event))">
+        <ion-segment-button value="in-progress">
+          <ion-label>{{ 'TK_IN_PROGRESS' | translate }}</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="success">
+          <ion-label>{{ 'TK_SUCCESS' | translate }}</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="failed">
+          <ion-label>{{ 'TK_FAILED' | translate }}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+  }
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    (click)="goToAddPage()"
+  >
+    <ion-fab-button>
+      <ion-icon src="assets/icon/plus.svg"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  @if (visibleExperiments.length === 0) {
+    <div class="empty-state">
+      <ion-text color="medium">{{ 'TK_NO_EXPERIMENTS' | translate }}</ion-text>
+    </div>
+  } @else {
+    <ion-list>
+      @for (experiment of visibleExperiments; track experiment.id) {
+        <ion-item (click)="goToViewPage(experiment.id)" button>
+          <ion-label>
+            <div class="title">{{ experiment.title }}</div>
+            @if (experiment.factEndDate) {
+              <p>{{ formatDate(experiment.factEndDate) }}</p>
+            }
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button id="open-action-sheet-experiment-{{experiment.id}}" (click)="$event.stopPropagation()">
+              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-action-sheet
+            trigger="open-action-sheet-experiment-{{experiment.id}}"
+            [buttons]="getActionSheetButtons(experiment)"
+            (didDismiss)="doExperimentAction($event, experiment.id)"
+          ></ion-action-sheet>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

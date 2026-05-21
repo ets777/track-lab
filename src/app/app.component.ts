@@ -21,11 +21,12 @@ import { filter } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
 import { LoadingComponent } from './components/loading/loading.component';
+import { ExperimentNotificationComponent } from './components/experiment-notification/experiment-notification.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LoadingComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LoadingComponent, ExperimentNotificationComponent],
 })
 export class AppComponent implements OnInit {
   private translate = inject(TranslateService);

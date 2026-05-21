@@ -126,6 +126,27 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'experiment',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/experiment-list/experiment-list.page').then(m => m.ExperimentListPage),
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./pages/experiment-add/experiment-add.page').then(m => m.ExperimentAddPage),
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/experiment-edit/experiment-edit.page').then(m => m.ExperimentEditPage),
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./pages/experiment-view/experiment-view.page').then(m => m.ExperimentViewPage),
+      },
+    ],
+  },
+  {
     path: 'streak',
     children: [
       {

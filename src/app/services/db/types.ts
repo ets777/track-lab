@@ -17,6 +17,10 @@ import { ITagMetricCreateDto, ITagMetricDb } from "src/app/db/models/tag-metric"
 import { IItemMetricCreateDto, IItemMetricDb } from "src/app/db/models/item-metric";
 import { IRuleCreateDto, IRuleDb } from "src/app/db/models/rule";
 import { IRuleCompletionCreateDto, IRuleCompletionDb } from "src/app/db/models/rule-completion";
+import { IExperimentCreateDto, IExperimentDb } from "src/app/db/models/experiment";
+import { IExperimentMetricCreateDto, IExperimentMetricDb } from "src/app/db/models/experiment-metric";
+import { IExperimentIndicatorCreateDto, IExperimentIndicatorDb } from "src/app/db/models/experiment-indicator";
+import { IExperimentRuleCreateDto, IExperimentRuleDb } from "src/app/db/models/experiment-rule";
 
 export interface ITable {
     actions: IActionDb;
@@ -38,6 +42,10 @@ export interface ITable {
     itemMetrics: IItemMetricDb;
     rules: IRuleDb;
     ruleCompletions: IRuleCompletionDb;
+    experiments: IExperimentDb;
+    experimentMetrics: IExperimentMetricDb;
+    experimentIndicators: IExperimentIndicatorDb;
+    experimentRules: IExperimentRuleDb;
 }
 
 export interface ICreateDto {
@@ -60,6 +68,10 @@ export interface ICreateDto {
     itemMetrics: IItemMetricDb | IItemMetricCreateDto;
     rules: IRuleDb | IRuleCreateDto;
     ruleCompletions: IRuleCompletionDb | IRuleCompletionCreateDto;
+    experiments: IExperimentDb | IExperimentCreateDto;
+    experimentMetrics: IExperimentMetricDb | IExperimentMetricCreateDto;
+    experimentIndicators: IExperimentIndicatorDb | IExperimentIndicatorCreateDto;
+    experimentRules: IExperimentRuleDb | IExperimentRuleCreateDto;
 }
 
 export type TableName = keyof ITable;

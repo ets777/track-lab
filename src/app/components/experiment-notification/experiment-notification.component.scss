@@ -1,0 +1,61 @@
+.exp-notification {
+  position: fixed;
+  top: calc(16px + var(--ion-safe-area-top));
+  left: 16px;
+  right: 16px;
+  z-index: 10000;
+  background: var(--ion-background-color, #fff);
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 12px;
+  padding: 14px 44px 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  animation: slideDown 0.35s ease;
+}
+
+.exp-notification__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+.exp-notification__emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.exp-notification__body {
+  min-width: 0;
+}
+
+.exp-notification__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.exp-notification__subtitle {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin-top: 2px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

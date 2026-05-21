@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ experiment?.title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openMenu()">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <app-default-skeleton></app-default-skeleton>
+  } @else if (experiment && initialGraphPeriod) {
+    <app-experiment-view-content
+      [experiment]="experiment"
+      [indicators]="indicators"
+      [rules]="rules"
+      [allActivities]="allActivities"
+      [completionsMap]="completionsMap"
+      [initialGraphPeriod]="initialGraphPeriod"
+      [allMetrics]="allMetrics"
+      [lists]="lists"
+      [allSuggestions]="allSuggestions"
+      [allActions]="allActions"
+      [allTags]="allTags"
+      [allItems]="allItems"
+    ></app-experiment-view-content>
+  }
+</ion-content>

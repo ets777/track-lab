@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
@@ -35,7 +35,7 @@ export type FilterForm = {
   styleUrls: ['./stats-item-content.component.scss'],
   imports: [IonLabel, IonItem, IonList, CommonModule, FormsModule, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
 })
-export class StatsItemContentComponent implements OnInit {
+export class StatsItemContentComponent implements OnInit, OnChanges {
   private activityService = inject(ActivityService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
@@ -53,6 +53,8 @@ export class StatsItemContentComponent implements OnInit {
   @Input() initialPeriod: DatePeriod | null = null;
   @Input() savedPeriod: string | null = null;
   @Input() savedItem: string | null = null;
+  @Input() fixedItem?: CommonItem;
+  @Input() hidePeriodSelector = false;
 
   activities: IActivity[] = [];
   filterForm: ModelFormGroup<FilterForm>;
@@ -96,15 +98,20 @@ export class StatsItemContentComponent implements OnInit {
     });
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized) return;
+    if (changes['initialPeriod'] && this.initialPeriod) {
+      this.filterForm.patchValue({ datePeriod: this.initialPeriod });
+    }
+  }
+
   ngOnInit() {
     this.activities = this.initialActivities;
     this.suggestions = this.initialSuggestions;
 
-    if (this.savedPeriod) {
-      this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
-    }
-
-    if (this.savedItem) {
+    if (this.fixedItem) {
+      this.filterForm.patchValue({ item: this.fixedItem }, { emitEvent: false });
+    } else if (this.savedItem) {
       const item = JSON.parse(this.savedItem) as CommonItem;
       const found = this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
       if (found) {
@@ -113,12 +120,19 @@ export class StatsItemContentComponent implements OnInit {
     }
 
     if (this.initialPeriod) {
-      this.lastLoadedPeriod = JSON.stringify(this.initialPeriod);
+      if (this.initialActivities.length) {
+        this.filterForm.patchValue({ datePeriod: this.initialPeriod }, { emitEvent: false });
+        this.lastLoadedPeriod = JSON.stringify(this.initialPeriod);
+      } else {
+        this.filterForm.patchValue({ datePeriod: this.initialPeriod }); // emitEvent: true — triggers subscription → loadSuggestions
+      }
+    } else if (!this.hidePeriodSelector && this.savedPeriod) {
+      this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
     }
 
     this.initialized = true;
 
-    if (this.filterForm.valid) {
+    if (this.filterForm.valid && this.initialActivities.length) {
       this.setChartData();
     }
   }
@@ -183,7 +197,7 @@ export class StatsItemContentComponent implements OnInit {
     const item: CommonItem = this.filterForm.value.item;
     const { startDate, endDate } = this.filterForm.controls['datePeriod'].value;
 
-    if (this.initialized) {
+    if (this.initialized && !this.fixedItem && !this.hidePeriodSelector) {
       localStorage.setItem('stats-item-date-period', JSON.stringify(this.filterForm.controls['datePeriod'].value));
       localStorage.setItem('stats-item-item', JSON.stringify(item));
     }

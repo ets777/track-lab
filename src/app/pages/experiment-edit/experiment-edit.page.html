@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <app-back-button slot="start"></app-back-button>
+    <ion-title>{{ 'TK_EDIT_EXPERIMENT' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="saveExperiment()"
+        [disabled]="!isFormValid()"
+      >{{ 'TK_SAVE' | translate }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (experiment) {
+    <app-experiment-form
+      #editFormRef
+      [experiment]="experiment"
+      [initialEntries]="initialEntries"
+      [initialRuleIds]="initialRuleIds"
+    ></app-experiment-form>
+  }
+</ion-content>

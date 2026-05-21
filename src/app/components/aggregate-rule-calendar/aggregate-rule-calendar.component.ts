@@ -4,7 +4,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, addMonths, subMonths, parseISO } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, addMonths, subMonths, addWeeks, parseISO } from 'date-fns';
 import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
 import { matchesRule, computeMetric, isMet, getPeriodRange } from 'src/app/functions/rule-streak';
@@ -37,6 +37,8 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   @Input() completionsMap: Map<number, Map<string, boolean>> = new Map();
   @Input() period: RulePeriod = 'day';
   @Input() selectedDate = '';
+  @Input() lockedStartDate?: string;
+  @Input() lockedWeeks = 5;
 
   @Output() daySelected = new EventEmitter<string>();
   @Output() monthChanged = new EventEmitter<Date>();
@@ -62,7 +64,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rules'] || changes['allActivities'] || changes['completionsMap'] || changes['period']) {
+    if (changes['rules'] || changes['allActivities'] || changes['completionsMap'] || changes['period'] || changes['lockedStartDate'] || changes['lockedWeeks']) {
       this.buildCalendar();
     }
   }
@@ -116,18 +118,25 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   }
 
   private buildCalendar(): void {
-    const monthStart = startOfMonth(this.currentDate);
-    const monthEnd = endOfMonth(this.currentDate);
-    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
-    const allDays = eachDayOfInterval({ start: calStart, end: calEnd });
+    let allDays: Date[];
+    if (this.lockedStartDate) {
+      const lockStart = startOfWeek(parseISO(this.lockedStartDate), { weekStartsOn: 1 });
+      const lockEnd = endOfWeek(addWeeks(lockStart, this.lockedWeeks - 1), { weekStartsOn: 1 });
+      allDays = eachDayOfInterval({ start: lockStart, end: lockEnd });
+      this.currentDate = lockStart;
+    } else {
+      const monthStart = startOfMonth(this.currentDate);
+      const monthEnd = endOfMonth(this.currentDate);
+      const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+      allDays = eachDayOfInterval({ start: calStart, end: calEnd });
+    }
     const dayObjects: CalendarDay[] = allDays.map(d => {
       const dateStr = format(d, 'yyyy-MM-dd');
       return {
         date: dateStr,
         dayNumber: d.getDate(),
-        isCurrentMonth: d.getMonth() === this.currentDate.getMonth(),
+        isCurrentMonth: this.lockedStartDate ? true : d.getMonth() === this.currentDate.getMonth(),
         isToday: dateStr === this.today,
         periodStatus: this.getPeriodStatus(dateStr),
         activityStatus: this.getActivityStatus(dateStr),

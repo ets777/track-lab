@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { IonItem, IonLabel, IonList, IonText, IonInput, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
@@ -46,7 +46,7 @@ interface NormalizedPoint {
   styleUrl: './stats-content.component.scss',
   imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent],
 })
-export class StatsContentComponent implements OnInit, AfterViewInit {
+export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   private activityService = inject(ActivityService);
   private toastCtrl = inject(ToastController);
   private router = inject(Router);
@@ -59,6 +59,9 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
   @Input() savedMetrics: string | null = null;
   @Input() initialActivities: IActivity[] = [];
   @Input() initialPeriod: DatePeriod | null = null;
+  @Input() fixedMetricName?: string;
+  @Input() hidePeriodSelector = false;
+  @Input() hideCalendar = false;
 
   @ViewChild('metricInput') metricInput!: IonInput;
   metricInputText = '';
@@ -101,35 +104,50 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     });
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized) return;
+    if (changes['initialPeriod'] && this.initialPeriod) {
+      this.filterForm.patchValue({ datePeriod: this.initialPeriod });
+    }
+  }
+
   ngOnInit() {
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
     this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
-    const defaultMetrics = this.savedMetrics
-      ? this.savedMetrics.split(',').map(s => {
-          const k = s.trim();
-          return k.startsWith('TK_') ? this.translate.instant(k) : k;
-        }).join(', ')
-      : visibleMetrics
-          .filter(m => m.isBase)
-          .slice(0, MAX_METRICS)
-          .map(m => this.translate.instant(m.name))
-          .join(', ');
+    let defaultMetrics: string;
+    if (this.fixedMetricName) {
+      defaultMetrics = this.translate.instant(this.fixedMetricName);
+    } else {
+      defaultMetrics = this.savedMetrics
+        ? this.savedMetrics.split(',').map(s => {
+            const k = s.trim();
+            return k.startsWith('TK_') ? this.translate.instant(k) : k;
+          }).join(', ')
+        : visibleMetrics
+            .filter(m => m.isBase)
+            .slice(0, MAX_METRICS)
+            .map(m => this.translate.instant(m.name))
+            .join(', ');
+    }
 
     this.metricInputText = defaultMetrics;
     this.metricsControl.setValue(defaultMetrics, { emitEvent: false });
     this.initialized = true;
 
-    if (this.savedPeriod) {
+    if (!this.hidePeriodSelector && this.savedPeriod) {
       this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
     }
 
     if (this.initialPeriod) {
-      const { startDate, endDate } = this.initialPeriod;
-      this.activities = this.initialActivities;
-      this.selectedMetrics = this.getSelectedMetrics();
-      this.buildChartData(this.initialActivities, startDate, endDate);
-      this.lastLoadedState = `${startDate}|${endDate}|${this.metricInputText}`;
+      this.filterForm.patchValue({ datePeriod: this.initialPeriod }, { emitEvent: false });
+      if (this.initialActivities.length) {
+        const { startDate, endDate } = this.initialPeriod;
+        this.activities = this.initialActivities;
+        this.selectedMetrics = this.getSelectedMetrics();
+        this.buildChartData(this.initialActivities, startDate, endDate);
+        this.lastLoadedState = `${startDate}|${endDate}|${this.metricInputText}`;
+      }
     }
   }
 
@@ -172,7 +190,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit {
     await new Promise(resolve => setTimeout(resolve));
 
     try {
-      if (this.initialized && this.filterForm.valid && this.metricsControl.valid) {
+      if (this.initialized && this.filterForm.valid && this.metricsControl.valid && !this.fixedMetricName && !this.hidePeriodSelector) {
         localStorage.setItem('stats-date-period', JSON.stringify(this.filterForm.value.datePeriod));
         localStorage.setItem('stats-metrics', this.getSelectedMetrics().map(m => m.name).join(', '));
       }

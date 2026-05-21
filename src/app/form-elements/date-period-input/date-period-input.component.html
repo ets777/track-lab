@@ -19,27 +19,29 @@
   </div>
 </form>
 
-<div class="controls">
-  <ion-button
-    fill="clear"
-    (click)="shiftDates(-1)"
-    [disabled]="!form.valid"
-  >{{ 'TK_PREV' | translate }}</ion-button>
-  <ion-chip
-    [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
-    (click)="selectPeriod('week')"
-  >{{ 'TK_WEEK' | translate }}</ion-chip>
-  <ion-chip
-    [color]="selectedPeriod == '2weeks' ? 'primary' : 'medium'"
-    (click)="selectPeriod('2weeks')"
-  >{{ 'TK_2_WEEKS' | translate }}</ion-chip>
-  <ion-chip
-    [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
-    (click)="selectPeriod('month')"
-  >{{ 'TK_MONTH' | translate }}</ion-chip>
-  <ion-button
-    fill="clear"
-    (click)="shiftDates(1)"
-    [disabled]="!form.valid"
-  >{{ 'TK_NEXT' | translate }}</ion-button>
-</div>
+@if (!hideControls) {
+  <div class="controls">
+    <ion-button
+      fill="clear"
+      (click)="shiftDates(-1)"
+      [disabled]="!form.valid"
+    >{{ 'TK_PREV' | translate }}</ion-button>
+    <ion-chip
+      [color]="selectedPeriod == 'week' ? 'primary' : 'medium'"
+      (click)="selectPeriod('week')"
+    >{{ 'TK_WEEK' | translate }}</ion-chip>
+    <ion-chip
+      [color]="selectedPeriod == '2weeks' ? 'primary' : 'medium'"
+      (click)="selectPeriod('2weeks')"
+    >{{ 'TK_2_WEEKS' | translate }}</ion-chip>
+    <ion-chip
+      [color]="selectedPeriod == 'month' ? 'primary' : 'medium'"
+      (click)="selectPeriod('month')"
+    >{{ 'TK_MONTH' | translate }}</ion-chip>
+    <ion-button
+      fill="clear"
+      (click)="shiftDates(1)"
+      [disabled]="!form.valid"
+    >{{ 'TK_NEXT' | translate }}</ion-button>
+  </div>
+}

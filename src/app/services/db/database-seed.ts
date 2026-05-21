@@ -385,4 +385,85 @@ export async function seedDatabase(sqlite: SQLiteService) {
       (8, 'action', 14, 'countDays', '>=', 5, 'month', ?)`,
     [d(34), d(25), d(29), d(19), d(27), d(27), d(61), d(81)],
   );
+
+  // ── Experiment demo ────────────────────────────────────────────────────────
+
+  // Experiment 1: in progress (started 30 days ago, ends in 30 days)
+  await sqlite.run(
+    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, resultData) VALUES (1, 'Well-being experiment', ?, ?, NULL, NULL, NULL)`,
+    [d(30), format(new Date(new Date().setDate(new Date().getDate() + 30)), 'yyyy-MM-dd')],
+  );
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction) VALUES
+      (1, 1, 'metric', 1, 'increasing'),
+      (2, 1, 'metric', 2, 'increasing');
+  `);
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES
+      (1, 1, 1),
+      (2, 1, 7),
+      (3, 2, 7),
+      (4, 3, 2),
+      (5, 3, 8);
+  `);
+
+  // Experiment 2: SUCCESS — Weight loss (started 65 days ago, ended 5 days ago)
+  // Baseline [d(72)..d(66)]: weight ~82.66 kg; last week [d(11)..d(5)]: weight ~78.61 kg → decreased ✓
+  const exp2ResultData = JSON.stringify([{ indicatorType: 'metric', indicatorId: 3, initialValue: 82.7, resultValue: 78.6 }]);
+  await sqlite.run(
+    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, resultData) VALUES (2, 'Weight loss challenge', ?, ?, ?, 1, ?)`,
+    [d(65), d(5), d(5), exp2ResultData],
+  );
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction) VALUES
+      (3, 2, 'metric', 3, 'decreasing');
+  `);
+  // Baseline weight activities (d72..d66) — ids 600-606
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (600, ?, '08:00', '08:05'), (601, ?, '08:00', '08:05'), (602, ?, '08:00', '08:05'),
+      (603, ?, '08:00', '08:05'), (604, ?, '08:00', '08:05'), (605, ?, '08:00', '08:05'), (606, ?, '08:00', '08:05')`,
+    [d(72), d(71), d(70), d(69), d(68), d(67), d(66)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (600,3),(601,3),(602,3),(603,3),(604,3),(605,3),(606,3);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (600,3,83.1),(601,3,82.8),(602,3,82.5),(603,3,82.9),(604,3,82.3),(605,3,82.6),(606,3,82.4);`);
+  // Last-week weight activities (d11..d5) — ids 607-613
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (607, ?, '08:00', '08:05'), (608, ?, '08:00', '08:05'), (609, ?, '08:00', '08:05'),
+      (610, ?, '08:00', '08:05'), (611, ?, '08:00', '08:05'), (612, ?, '08:00', '08:05'), (613, ?, '08:00', '08:05')`,
+    [d(11), d(10), d(9), d(8), d(7), d(6), d(5)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (607,3),(608,3),(609,3),(610,3),(611,3),(612,3),(613,3);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (607,3,79.0),(608,3,78.8),(609,3,78.5),(610,3,78.7),(611,3,78.3),(612,3,78.6),(613,3,78.4);`);
+
+  // Experiment 3: FAILED — Mood improvement (started 50 days ago, ended 15 days ago)
+  // Baseline [d(57)..d(51)]: mood ~7.1; last week [d(21)..d(15)]: mood ~3.9 → expected increasing but decreased ✗
+  const exp3ResultData = JSON.stringify([{ indicatorType: 'metric', indicatorId: 1, initialValue: 7.1, resultValue: 3.9 }]);
+  await sqlite.run(
+    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, resultData) VALUES (3, 'Mood improvement', ?, ?, ?, 0, ?)`,
+    [d(50), d(15), d(15), exp3ResultData],
+  );
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction) VALUES
+      (4, 3, 'metric', 1, 'increasing');
+  `);
+  // Baseline mood activities (d57..d51) — ids 620-626
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (620, ?, '20:00', '20:05'), (621, ?, '20:00', '20:05'), (622, ?, '20:00', '20:05'),
+      (623, ?, '20:00', '20:05'), (624, ?, '20:00', '20:05'), (625, ?, '20:00', '20:05'), (626, ?, '20:00', '20:05')`,
+    [d(57), d(56), d(55), d(54), d(53), d(52), d(51)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (620,1),(621,1),(622,1),(623,1),(624,1),(625,1),(626,1);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (620,1,7),(621,1,7),(622,1,8),(623,1,6),(624,1,7),(625,1,7),(626,1,8);`);
+  // Last-week mood activities (d21..d15) — ids 627-633
+  await sqlite.run(
+    `INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES
+      (627, ?, '20:00', '20:05'), (628, ?, '20:00', '20:05'), (629, ?, '20:00', '20:05'),
+      (630, ?, '20:00', '20:05'), (631, ?, '20:00', '20:05'), (632, ?, '20:00', '20:05'), (633, ?, '20:00', '20:05')`,
+    [d(21), d(20), d(19), d(18), d(17), d(16), d(15)],
+  );
+  await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (627,1),(628,1),(629,1),(630,1),(631,1),(632,1),(633,1);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (627,1,4),(628,1,4),(629,1,3),(630,1,5),(631,1,4),(632,1,3),(633,1,4);`);
 }

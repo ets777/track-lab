@@ -1,0 +1,158 @@
+.experiment-view {
+  padding: 0;
+}
+
+.status-banner {
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
+  &--success {
+    background: rgba(var(--ion-color-success-rgb), 0.12);
+    color: var(--ion-color-success-shade);
+  }
+
+  &--failed {
+    background: rgba(var(--ion-color-danger-rgb), 0.12);
+    color: var(--ion-color-danger-shade);
+  }
+}
+
+.dates-section {
+  padding: 0 0 8px;
+}
+
+.dates-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+}
+
+.date-sep {
+  opacity: 0.5;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--ion-color-light-shade);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: var(--ion-color-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ion-color-medium);
+  padding: 16px 0 4px;
+}
+
+.indicators-list {
+  padding: 0;
+}
+
+.indicator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.indicator-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.indicator-name {
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.indicator-subtitle {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+}
+
+.indicator-direction {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.trend-icon {
+  font-size: 28px;
+  color: var(--ion-color-medium);
+}
+
+.graph-section {
+  margin-top: 16px;
+}
+
+.graph-title {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0 0 4px;
+  color: var(--ion-text-color);
+}
+
+.indicator-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 8px;
+}
+
+.indicator-stats__val {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
+
+.indicator-stats__arrow {
+  font-size: 1.25rem;
+  color: var(--ion-color-medium);
+}
+
+.indicator-stats--success {
+  color: var(--ion-color-success);
+}
+
+.indicator-stats--danger {
+  color: var(--ion-color-danger);
+}
+
+ion-segment {
+  margin-bottom: 16px;
+}
+
+.rule-green {
+  border-left: 3px solid var(--ion-color-success);
+  --background: rgba(var(--ion-color-success-rgb), 0.06);
+}
+
+.rule-red {
+  border-left: 3px solid var(--ion-color-danger);
+  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+}

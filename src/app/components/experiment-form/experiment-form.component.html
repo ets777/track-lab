@@ -1,0 +1,164 @@
+<form [formGroup]="experimentForm">
+  <app-date-period-input
+    formControlName="datePeriod"
+    [hideControls]="true"
+  ></app-date-period-input>
+
+  <ion-item>
+    <ion-label position="stacked">{{ 'TK_EXPERIMENT_TITLE' | translate }}</ion-label>
+    <ion-input
+      appValidationError
+      formControlName="title"
+      name="title"
+    ></ion-input>
+  </ion-item>
+</form>
+
+<!-- Entries group -->
+@if (hasEntries) {
+  <ion-accordion-group [value]="entriesGroupOpen ? 'entries' : null" (ionChange)="onEntriesGroupChange($event)">
+    <ion-accordion value="entries">
+      <ion-item slot="header">
+        <div class="group-header-content">
+          <span class="group-title">{{ 'TK_INDICATORS' | translate }}</span>
+          @if (entries.length < 3) {
+            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openEntryModal($event)">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          }
+        </div>
+      </ion-item>
+      <div slot="content">
+        <ion-list lines="full">
+          @for (entry of entries; track entry.type + ':' + entry.subjectId) {
+            <ion-item class="entry-item">
+              <div class="entry-wrapper">
+                <div class="entry-inner">
+                  <ion-button fill="clear" size="small" class="remove-btn" (click)="removeEntry(entry)">
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
+                  </ion-button>
+                  <div class="entry-label">
+                    <span class="entry-title">{{ getEntryDisplayName(entry) }}</span>
+                    <span class="entry-subtitle">{{ getEntrySubtitle(entry) }}</span>
+                  </div>
+                  <div class="metric-direction">
+                    <ion-segment style="width: 100%" [value]="entry.direction" (ionChange)="setEntryDirection(entry, $any($event.detail.value))" size="small">
+                      <ion-segment-button value="decreasing">
+                        <ion-icon src="assets/icon/trend-down.svg"></ion-icon>
+                      </ion-segment-button>
+                      <ion-segment-button value="any">
+                        <ion-icon src="assets/icon/trend-any.svg"></ion-icon>
+                      </ion-segment-button>
+                      <ion-segment-button value="increasing">
+                        <ion-icon src="assets/icon/trend-up.svg"></ion-icon>
+                      </ion-segment-button>
+                    </ion-segment>
+                  </div>
+                </div>
+                @if (entry.type === 'metric' && getInitialValueLabel(entry)) {
+                  <p class="entry-initial-value">{{ getInitialValueLabel(entry) }}</p>
+                }
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+} @else {
+  <ion-item>
+    <div class="group-header-content">
+      <span class="group-title">{{ 'TK_INDICATORS' | translate }}</span>
+      @if (entries.length < 3) {
+        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openEntryModal($event)">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      }
+    </div>
+  </ion-item>
+}
+
+<!-- Rules group -->
+@if (hasRules) {
+  <ion-accordion-group [value]="rulesGroupOpen ? 'rules' : null" (ionChange)="onRulesGroupChange($event)">
+    <ion-accordion value="rules">
+      <ion-item slot="header">
+        <div class="group-header-content">
+          <span class="group-title">{{ 'TK_RULES' | translate }}</span>
+          @if (selectedRuleIds.length < 3) {
+            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openRuleModal($event)">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          }
+        </div>
+      </ion-item>
+      <div slot="content">
+        <ion-list lines="full">
+          @for (rule of selectedRuleItems; track rule.id) {
+            <ion-item>
+              <ion-button slot="start" fill="clear" size="small" class="remove-btn" (click)="removeRule(rule.id)">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+              <ion-label>{{ rule.name }}</ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+} @else {
+  <ion-item>
+    <div class="group-header-content">
+      <span class="group-title">{{ 'TK_RULES' | translate }}</span>
+      @if (selectedRuleIds.length < 3) {
+        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openRuleModal($event)">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      }
+    </div>
+  </ion-item>
+}
+
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ (modalType === 'entry' ? 'TK_INDICATORS' : 'TK_RULES') | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">{{ 'TK_CLOSE' | translate }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-item>
+        <ion-input [placeholder]="'TK_SEARCH' | translate" [value]="searchQuery" (ionInput)="onSearch($event)"></ion-input>
+      </ion-item>
+      <ion-list lines="full">
+        @if (modalType === 'entry') {
+          @for (ei of entryModalResults; track ei.commonItem.type + ':' + ei.commonItem.itemId) {
+            <ion-item button detail="false" (click)="selectEntryItem(ei)">
+              <ion-label>
+                <h2>{{ ei.displayName }}</h2>
+                <p>{{ ei.subtitle }}</p>
+              </ion-label>
+            </ion-item>
+          } @empty {
+            <ion-item lines="none">
+              <ion-label class="ion-text-center">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</ion-label>
+            </ion-item>
+          }
+        } @else {
+          @for (rule of ruleModalResults; track rule.id) {
+            <ion-item button detail="false" (click)="selectRuleItem(rule)">
+              <ion-label>{{ rule.name }}</ion-label>
+            </ion-item>
+          } @empty {
+            <ion-item lines="none">
+              <ion-label class="ion-text-center">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</ion-label>
+            </ion-item>
+          }
+        }
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

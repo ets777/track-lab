@@ -1,12 +1,16 @@
 <form [formGroup]="filterForm">
-  <app-date-period-input formControlName="datePeriod" storageKey="stats-item"></app-date-period-input>
-  <app-select-search
-    appValidationError
-    formControlName="item"
-    label="TK_ITEM"
-    [suggestions]="suggestions"
-    (selected)="onItemSelected()"
-  ></app-select-search>
+  @if (!hidePeriodSelector) {
+    <app-date-period-input formControlName="datePeriod" storageKey="stats-item"></app-date-period-input>
+  }
+  @if (!fixedItem) {
+    <app-select-search
+      appValidationError
+      formControlName="item"
+      label="TK_ITEM"
+      [suggestions]="suggestions"
+      (selected)="onItemSelected()"
+    ></app-select-search>
+  }
 </form>
 
 @if (minutesChartData !== undefined) {

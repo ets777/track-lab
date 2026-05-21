@@ -41,6 +41,10 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   private translate = inject(TranslateService);
 
   @Input() storageKey?: string;
+  @Input() hideControls: boolean = false;
+  @Input() defaultPeriod: PeriodName = 'week';
+  @Input() minDate?: string;
+  @Input() maxDate?: string;
 
   public form: ModelFormGroup<DatePeriod>;
   selectedPeriod: PeriodName | null = 'week';
@@ -65,6 +69,8 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   }
 
   ngAfterViewInit() {
+    this.selectedPeriod = this.defaultPeriod;
+
     if (this.storageKey) {
       const saved = localStorage.getItem(`${this.storageKey}-period-type`);
       if (saved === 'null') {
@@ -74,7 +80,9 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
       }
     }
 
-    this.setDefaultDates();
+    if (!this.form.value.startDate) {
+      this.setDefaultDates();
+    }
     this.cdr.detectChanges();
   }
 
@@ -110,18 +118,50 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
     if (this.selectedPeriod === 'week') {
       newStartDate = format(addDays(new Date(startDate), shift * 7), 'yyyy-MM-dd');
       newEndDate = format(addDays(new Date(endDate), shift * 7), 'yyyy-MM-dd');
+      if (this.minDate && newStartDate < this.minDate) {
+        newStartDate = this.minDate;
+        newEndDate = format(addDays(new Date(this.minDate), 6), 'yyyy-MM-dd');
+      } else if (this.maxDate && newEndDate > this.maxDate) {
+        newEndDate = this.maxDate;
+        newStartDate = format(addDays(new Date(this.maxDate), -6), 'yyyy-MM-dd');
+        if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
+      }
     } else if (this.selectedPeriod === '2weeks') {
       newStartDate = format(addDays(new Date(startDate), shift * 14), 'yyyy-MM-dd');
       newEndDate = format(addDays(new Date(endDate), shift * 14), 'yyyy-MM-dd');
+      if (this.minDate && newStartDate < this.minDate) {
+        newStartDate = this.minDate;
+        newEndDate = format(addDays(new Date(this.minDate), 13), 'yyyy-MM-dd');
+      } else if (this.maxDate && newEndDate > this.maxDate) {
+        newEndDate = this.maxDate;
+        newStartDate = format(addDays(new Date(this.maxDate), -13), 'yyyy-MM-dd');
+        if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
+      }
     } else if (this.selectedPeriod === 'month') {
       newStartDate = format(addMonths(new Date(startDate), shift), 'yyyy-MM-dd');
       newEndDate = format(addMonths(new Date(endDate), shift), 'yyyy-MM-dd');
+      if (this.minDate && newStartDate < this.minDate) {
+        newStartDate = this.minDate;
+        newEndDate = format(addMonths(new Date(this.minDate), 1), 'yyyy-MM-dd');
+      } else if (this.maxDate && newEndDate > this.maxDate) {
+        newEndDate = this.maxDate;
+        newStartDate = format(addMonths(new Date(this.maxDate), -1), 'yyyy-MM-dd');
+        if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
+      }
     } else {
       const diffDays = Math.round(
         (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000
       ) + 1;
       newStartDate = format(addDays(new Date(startDate), shift * diffDays), 'yyyy-MM-dd');
       newEndDate = format(addDays(new Date(endDate), shift * diffDays), 'yyyy-MM-dd');
+      if (this.minDate && newStartDate < this.minDate) {
+        newStartDate = this.minDate;
+        newEndDate = format(addDays(new Date(this.minDate), diffDays - 1), 'yyyy-MM-dd');
+      } else if (this.maxDate && newEndDate > this.maxDate) {
+        newEndDate = this.maxDate;
+        newStartDate = format(addDays(new Date(this.maxDate), -(diffDays - 1)), 'yyyy-MM-dd');
+        if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
+      }
     }
 
     this.patchAndUpdate({ startDate: newStartDate, endDate: newEndDate });
@@ -164,8 +204,22 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   }
 
   patchAndUpdate(value: DatePeriod) {
-    this.form.patchValue(value, { emitEvent: false });
+    const clamped = this.clamp(value);
+    this.form.patchValue(clamped, { emitEvent: false });
     this.updateValue();
+  }
+
+  private clamp(value: DatePeriod): DatePeriod {
+    let { startDate, endDate } = value;
+    if (this.minDate) {
+      if (startDate < this.minDate) startDate = this.minDate;
+      if (endDate < this.minDate) endDate = this.minDate;
+    }
+    if (this.maxDate) {
+      if (endDate > this.maxDate) endDate = this.maxDate;
+      if (startDate > this.maxDate) startDate = this.maxDate;
+    }
+    return { startDate, endDate };
   }
 
   private savePeriodType() {

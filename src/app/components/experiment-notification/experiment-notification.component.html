@@ -1,0 +1,10 @@
+@if (visible && current) {
+  <div class="exp-notification" (click)="navigate()">
+    <button class="exp-notification__close" (click)="$event.stopPropagation(); dismiss()">✕</button>
+    <div class="exp-notification__emoji">🎉</div>
+    <div class="exp-notification__body">
+      <div class="exp-notification__title">{{ 'TK_EXPERIMENT_FINISHED_TITLE' | translate }}</div>
+      <div class="exp-notification__subtitle">{{ 'TK_EXPERIMENT_FINISHED_SUBTITLE' | translate }}</div>
+    </div>
+  </div>
+}
