@@ -143,6 +143,31 @@
   color: var(--ion-color-danger);
 }
 
+.combined-rule-stats {
+  display: flex;
+  gap: 24px;
+  padding: 8px 0 12px;
+}
+
+.combined-rule-stats__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.combined-rule-stats__label {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.combined-rule-stats__value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
 ion-segment {
   margin-bottom: 16px;
 }

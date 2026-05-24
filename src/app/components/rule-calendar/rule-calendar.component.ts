@@ -272,9 +272,16 @@ private getDayStatus(date: string): DayStatus {
       return this.isMet(this.computeMetric(activities));
     });
 
-    const metCount = completedStatuses.filter(Boolean).length;
-    this.uptime = completedStatuses.length > 0
-      ? (metCount / completedStatuses.length) * 100
+    const [curStart, curEnd] = this.getPeriodRange(this.today);
+    const curActivities = this.allActivities.filter(
+      a => a.date >= curStart && a.date <= curEnd && this.activityMatchesRule(a),
+    );
+    const currentMet = this.isMet(this.computeMetric(curActivities));
+
+    const uptimeStatuses = currentMet ? [...completedStatuses, true] : completedStatuses;
+    const metCount = uptimeStatuses.filter(Boolean).length;
+    this.uptime = uptimeStatuses.length > 0
+      ? (metCount / uptimeStatuses.length) * 100
       : null;
 
     let streak = 0;
@@ -282,13 +289,7 @@ private getDayStatus(date: string): DayStatus {
     while (i >= 0 && completedStatuses[i]) { streak++; i--; }
 
     const canExtend = completedStatuses.length === 0 || completedStatuses[completedStatuses.length - 1];
-    if (canExtend) {
-      const [curStart, curEnd] = this.getPeriodRange(this.today);
-      const curActivities = this.allActivities.filter(
-        a => a.date >= curStart && a.date <= curEnd && this.activityMatchesRule(a),
-      );
-      if (this.isMet(this.computeMetric(curActivities))) streak++;
-    }
+    if (canExtend && currentMet) streak++;
 
     this.streak = streak;
     this.streakUnitKey = this.rule.period === 'week'

@@ -441,6 +441,8 @@
   "TK_ADD_LIBRARY_ITEM": "Добавить метрику или список",
   "TK_SEARCH": "Поиск",
   "TK_RULES": "Правила",
+  "TK_UPTIME": "Эффективность",
+  "TK_STREAK": "Серия",
   "TK_NEW_RULE": "Новое правило",
   "TK_EDIT_RULE": "Редактировать правило",
   "TK_RULE_ADDED_SUCCESSFULLY": "Правило добавлено успешно",

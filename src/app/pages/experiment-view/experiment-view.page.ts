@@ -135,12 +135,11 @@ export class ExperimentViewPage {
         return { num: index, title: ci.name, subtitle, item: ci };
       });
 
-      // Fetch activities from experiment start (or 31 days ago) to today for calendar
+      // Fetch activities covering experiment start, all rule start dates, and last 31 days
       const today = format(new Date(), 'yyyy-MM-dd');
       const thirtyOneDaysAgo = format(subDays(new Date(), 31), 'yyyy-MM-dd');
-      const activitiesFrom = experiment.startDate
-        ? (experiment.startDate < thirtyOneDaysAgo ? experiment.startDate : thirtyOneDaysAgo)
-        : thirtyOneDaysAgo;
+      const dates = [thirtyOneDaysAgo, experiment.startDate, ...this.rules.map(r => r.startDate)].filter(Boolean) as string[];
+      const activitiesFrom = dates.sort()[0];
       this.allActivities = await this.activityService.getAllEnrichedForRules(activitiesFrom);
 
       // Initial graph period: last 7 days of the experiment (or today for ongoing)

@@ -55,7 +55,7 @@
                     </ion-segment>
                   </div>
                 </div>
-                @if (entry.type === 'metric' && getInitialValueLabel(entry)) {
+                @if (getInitialValueLabel(entry)) {
                   <p class="entry-initial-value">{{ getInitialValueLabel(entry) }}</p>
                 }
               </div>

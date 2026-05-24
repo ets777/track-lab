@@ -55,6 +55,8 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
   @Input() savedItem: string | null = null;
   @Input() fixedItem?: CommonItem;
   @Input() hidePeriodSelector = false;
+  @Input() hideTimesChart = false;
+  @Input() hideDetails = false;
 
   activities: IActivity[] = [];
   filterForm: ModelFormGroup<FilterForm>;

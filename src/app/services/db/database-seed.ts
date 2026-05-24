@@ -396,15 +396,13 @@ export async function seedDatabase(sqlite: SQLiteService) {
   await sqlite.execute(`
     INSERT OR REPLACE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction) VALUES
       (1, 1, 'metric', 1, 'increasing'),
-      (2, 1, 'metric', 2, 'increasing');
+      (2, 1, 'metric', 2, 'increasing'),
+      (5, 1, 'action', 1, 'increasing');
   `);
   await sqlite.execute(`
     INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES
       (1, 1, 1),
-      (2, 1, 7),
-      (3, 2, 7),
-      (4, 3, 2),
-      (5, 3, 8);
+      (2, 1, 7);
   `);
 
   // Experiment 2: SUCCESS — Weight loss (started 65 days ago, ended 5 days ago)
@@ -436,6 +434,7 @@ export async function seedDatabase(sqlite: SQLiteService) {
   );
   await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (607,3),(608,3),(609,3),(610,3),(611,3),(612,3),(613,3);`);
   await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (607,3,79.0),(608,3,78.8),(609,3,78.5),(610,3,78.7),(611,3,78.3),(612,3,78.6),(613,3,78.4);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES (3, 2, 7);`);
 
   // Experiment 3: FAILED — Mood improvement (started 50 days ago, ended 15 days ago)
   // Baseline [d(57)..d(51)]: mood ~7.1; last week [d(21)..d(15)]: mood ~3.9 → expected increasing but decreased ✗
@@ -466,4 +465,5 @@ export async function seedDatabase(sqlite: SQLiteService) {
   );
   await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (627,1),(628,1),(629,1),(630,1),(631,1),(632,1),(633,1);`);
   await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (627,1,4),(628,1,4),(629,1,3),(630,1,5),(631,1,4),(632,1,3),(633,1,4);`);
+  await sqlite.execute(`INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES (4, 3, 2),(5, 3, 8);`);
 }

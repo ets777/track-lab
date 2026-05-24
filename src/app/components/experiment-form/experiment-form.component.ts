@@ -287,25 +287,36 @@ export class ExperimentFormComponent implements OnInit {
   private async computeInitialValues() {
     const startDate = this.experimentForm.get('datePeriod')?.value?.startDate;
     if (!startDate) { this.initialValueMap = {}; return; }
-    const weekEnd = format(subDays(parseISO(startDate), 1), 'yyyy-MM-dd');
-    const weekStart = format(subDays(parseISO(startDate), 7), 'yyyy-MM-dd');
+    const weekEnd = startDate;
+    const weekStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
     const activities = await this.activityService.getByDate(weekStart, weekEnd);
     const newMap: Record<string, string> = {};
     for (const entry of this.entries) {
-      if (entry.type !== 'metric') continue;
-      const metric = this.allMetrics.find(m => m.id === entry.subjectId);
-      if (!metric) continue;
-      const values = activities
-        .flatMap(a => a.metricRecords ?? [])
-        .filter(r => r.metricId === metric.id && r.value != null)
-        .map(r => r.value as number);
-      if (!values.length) {
-        newMap[`${entry.type}:${entry.subjectId}`] = '';
-        continue;
+      const key = `${entry.type}:${entry.subjectId}`;
+      if (entry.type === 'metric') {
+        const metric = this.allMetrics.find(m => m.id === entry.subjectId);
+        if (!metric) continue;
+        const values = activities
+          .flatMap(a => a.metricRecords ?? [])
+          .filter(r => r.metricId === metric.id && r.value != null)
+          .map(r => r.value as number);
+        if (!values.length) { newMap[key] = ''; continue; }
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        newMap[key] = `${Math.round(avg * 10) / 10}${metric.unit ? ' ' + metric.unit : ''}`;
+      } else {
+        const matching = activities.filter(a => {
+          if (entry.type === 'action') return a.actions.some(ac => ac.id === entry.subjectId);
+          if (entry.type === 'tag') return a.tags.some(t => t.id === entry.subjectId);
+          return a.items.some(i => i.id === entry.subjectId);
+        });
+        const totalMin = matching.reduce((sum, a) => {
+          if (!a.endTime) return sum;
+          const [sh, sm] = a.startTime.split(':').map(Number);
+          const [eh, em] = a.endTime.split(':').map(Number);
+          return sum + Math.max(0, eh * 60 + em - sh * 60 - sm);
+        }, 0);
+        newMap[key] = totalMin > 0 ? `${Math.round(totalMin)} min` : '';
       }
-      const avg = values.reduce((a, b) => a + b, 0) / values.length;
-      const rounded = Math.round(avg * 10) / 10;
-      newMap[`${entry.type}:${entry.subjectId}`] = `${rounded}${metric.unit ? ' ' + metric.unit : ''}`;
     }
     this.initialValueMap = newMap;
   }

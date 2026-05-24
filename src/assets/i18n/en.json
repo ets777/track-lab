@@ -441,6 +441,8 @@
   "TK_ADD_LIBRARY_ITEM": "Add metric or list",
   "TK_SEARCH": "Search",
   "TK_RULES": "Rules",
+  "TK_UPTIME": "Uptime",
+  "TK_STREAK": "Streak",
   "TK_NEW_RULE": "New rule",
   "TK_EDIT_RULE": "Edit rule",
   "TK_RULE_ADDED_SUCCESSFULLY": "Rule added successfully",

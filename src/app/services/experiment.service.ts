@@ -133,8 +133,8 @@ export class ExperimentService extends DatabaseService<'experiments'> {
     const startDate = experiment.startDate!;
     const endDate = experiment.endDate!;
 
-    const baselineEnd = format(subDays(parseISO(startDate), 1), 'yyyy-MM-dd');
-    const baselineStart = format(subDays(parseISO(startDate), 7), 'yyyy-MM-dd');
+    const baselineEnd = startDate;
+    const baselineStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
     const lastWeekStart = format(subDays(parseISO(endDate), 6), 'yyyy-MM-dd');
 
     const [baselineActs, lastWeekActs] = await Promise.all([

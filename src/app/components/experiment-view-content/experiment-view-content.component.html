@@ -55,14 +55,12 @@
           @if (ind.stats.baseline) {
             <span class="indicator-stats__val">{{ ind.stats.baseline }}</span>
           }
-          @if (ind.stats.arrowUp !== null) {
-            <ion-icon
-              [name]="ind.stats.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline'"
-              class="indicator-stats__arrow"
-              [class.indicator-stats--success]="ind.stats.color === 'success'"
-              [class.indicator-stats--danger]="ind.stats.color === 'danger'"
-            ></ion-icon>
-          }
+          <ion-icon
+            [name]="ind.stats.arrowUp === null ? 'arrow-forward-outline' : (ind.stats.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline')"
+            class="indicator-stats__arrow"
+            [class.indicator-stats--success]="ind.stats.color === 'success'"
+            [class.indicator-stats--danger]="ind.stats.color === 'danger'"
+          ></ion-icon>
           @if (ind.stats.current) {
             <span
               class="indicator-stats__val"
@@ -87,6 +85,8 @@
           [initialPeriod]="graphPeriod"
           [fixedItem]="ind.commonItem"
           [hidePeriodSelector]="true"
+          [hideTimesChart]="true"
+          [hideDetails]="true"
         ></app-stats-item-content>
       }
     </div>
@@ -95,6 +95,19 @@
   <!-- Rules calendar -->
   @if (rules.length) {
     <div class="section-title">{{ 'TK_RULES' | translate }}</div>
+
+    @if (combinedUptime !== null) {
+      <div class="combined-rule-stats">
+        <div class="combined-rule-stats__item">
+          <span class="combined-rule-stats__label">{{ 'TK_UPTIME' | translate }}</span>
+          <span class="combined-rule-stats__value">{{ combinedUptime }}%</span>
+        </div>
+        <div class="combined-rule-stats__item">
+          <span class="combined-rule-stats__label">{{ 'TK_STREAK' | translate }}</span>
+          <span class="combined-rule-stats__value">{{ combinedStreak }} {{ 'TK_DAYS' | translate }}</span>
+        </div>
+      </div>
+    }
 
     @if (availablePeriods.length > 1) {
       <ion-segment [value]="selectedRulePeriod" (ionChange)="onRulePeriodTabChange($any($event))">
@@ -120,6 +133,8 @@
       <ion-list>
         @for (result of ruleDayStatuses; track result.rule.id) {
           <ion-item
+            button
+            (click)="navigateToRule(result.rule.id)"
             [class.rule-green]="result.color === 'green'"
             [class.rule-red]="result.color === 'red'"
           >

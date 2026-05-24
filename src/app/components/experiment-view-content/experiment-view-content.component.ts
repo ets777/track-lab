@@ -4,8 +4,8 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonText } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
-import { trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline } from 'ionicons/icons';
-import { format, parseISO, differenceInDays, startOfMonth, subDays } from 'date-fns';
+import { trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline } from 'ionicons/icons';
+import { format, parseISO, differenceInDays, startOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 import { IExperiment, ExperimentResultEntry } from 'src/app/db/models/experiment';
 import { formatDisplayDate } from 'src/app/functions/date';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
@@ -20,6 +20,8 @@ import { IItem } from 'src/app/db/models/item';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { DatePeriod } from 'src/app/types/date-period';
 import { RuleDayStatus, computeRuleStatusesForDay } from 'src/app/functions/rule-color';
+import { getPeriodRange, isRulePeriodMet } from 'src/app/functions/rule-streak';
+import { Router } from '@angular/router';
 import { RuleService } from 'src/app/services/rule.service';
 import { ActivityService } from 'src/app/services/activity.service';
 import { StatsContentComponent } from 'src/app/components/stats-content/stats-content.component';
@@ -58,6 +60,7 @@ interface IndicatorView {
 })
 export class ExperimentViewContentComponent implements OnInit {
   private translate = inject(TranslateService);
+  private router = inject(Router);
   private ruleService = inject(RuleService);
   private activityService = inject(ActivityService);
   private formBuilder = inject(FormBuilder);
@@ -83,11 +86,13 @@ export class ExperimentViewContentComponent implements OnInit {
   ruleDayStatuses: RuleDayStatus[] = [];
   progressPercent = 0;
   graphPeriod!: DatePeriod;
+  combinedUptime: number | null = null;
+  combinedStreak = 0;
 
   filterForm = this.formBuilder.group({ datePeriod: [null as DatePeriod | null] });
 
   constructor() {
-    addIcons({ trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline });
+    addIcons({ trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline });
   }
 
   ngOnInit() {
@@ -101,6 +106,7 @@ export class ExperimentViewContentComponent implements OnInit {
     this.computeProgress();
     this.updateRuleStatuses();
     this.computeIndicatorStats();
+    this.computeExperimentRuleStats();
   }
 
   get experimentMinDate(): string {
@@ -149,6 +155,10 @@ export class ExperimentViewContentComponent implements OnInit {
       this.selectedDate = format(startOfMonth(date), 'yyyy-MM-dd');
       this.updateRuleStatuses();
     }
+  }
+
+  navigateToRule(ruleId: number) {
+    this.router.navigate(['/rule', ruleId]);
   }
 
   getRuleName(result: RuleDayStatus): string {
@@ -212,7 +222,14 @@ export class ExperimentViewContentComponent implements OnInit {
     const startDate = this.experiment.startDate;
     if (!startDate) return;
 
-    // Use stored values for finished experiments to avoid data-drift
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const baselineEnd = startDate;
+    const baselineStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
+    const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
+    const currentEnd = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
+    const currentStart = format(subDays(parseISO(currentEnd), 6), 'yyyy-MM-dd');
+
+    // Metrics for finished experiments: use stored resultData to avoid data-drift
     if (this.experiment.resultData) {
       const stored: ExperimentResultEntry[] = JSON.parse(this.experiment.resultData);
       this.indicatorViews = this.indicatorViews.map(ind => {
@@ -228,33 +245,18 @@ export class ExperimentViewContentComponent implements OnInit {
           if (ind.direction === 'increasing') color = arrowUp ? 'success' : 'danger';
           else if (ind.direction === 'decreasing') color = arrowUp ? 'danger' : 'success';
         }
-
-        return {
-          ...ind,
-          stats: {
-            baseline: fmt(entry.initialValue),
-            current: fmt(entry.resultValue),
-            arrowUp,
-            color,
-          },
-        };
+        return { ...ind, stats: { baseline: fmt(entry.initialValue), current: fmt(entry.resultValue), arrowUp, color } };
       });
-      return;
-    }
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const baselineEnd = format(subDays(parseISO(startDate), 1), 'yyyy-MM-dd');
-    const baselineStart = format(subDays(parseISO(startDate), 7), 'yyyy-MM-dd');
-    const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
-    const currentEnd = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
-    const currentStart = format(subDays(parseISO(currentEnd), 6), 'yyyy-MM-dd');
+      if (!this.indicatorViews.some(ind => ind.type !== 'metric')) return;
+    }
 
     const [baselineActs, currentActs] = await Promise.all([
       this.activityService.getByDate(baselineStart, baselineEnd),
       this.activityService.getByDate(currentStart, currentEnd),
     ]);
 
-    const avgFor = (acts: typeof baselineActs, metricId: number): number | null => {
+    const avgMetric = (acts: typeof baselineActs, metricId: number): number | null => {
       const values = acts
         .flatMap(a => a.metricRecords ?? [])
         .filter(r => r.metricId === metricId && r.value != null)
@@ -262,36 +264,107 @@ export class ExperimentViewContentComponent implements OnInit {
       return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
     };
 
+    const avgMinPerDay = (acts: typeof baselineActs, ind: IndicatorView): number | null => {
+      const matching = acts.filter(a => {
+        if (ind.type === 'action') return a.actions.some(ac => ac.id === ind.subjectId);
+        if (ind.type === 'tag') return a.tags.some(t => t.id === ind.subjectId);
+        return a.items.some(i => i.id === ind.subjectId);
+      });
+      const totalMin = matching.reduce((sum, a) => {
+        if (!a.endTime) return sum;
+        const [sh, sm] = a.startTime.split(':').map(Number);
+        const [eh, em] = a.endTime.split(':').map(Number);
+        return sum + Math.max(0, eh * 60 + em - sh * 60 - sm);
+      }, 0);
+      return totalMin > 0 ? Math.round((totalMin / 7) * 10) / 10 : null;
+    };
+
     this.indicatorViews = this.indicatorViews.map(ind => {
-      if (ind.type !== 'metric' || !ind.metric) return ind;
+      if (ind.stats) return ind; // already set from stored resultData
 
-      const unit = ind.metric.unit ? ' ' + ind.metric.unit : '';
-      const fmt = (v: number) => `${Math.round(v * 10) / 10}${unit}`;
+      let baselineRaw: number | null;
+      let currentRaw: number | null;
+      let fmtFn: (v: number) => string;
 
-      const baselineRaw = avgFor(baselineActs, ind.metric.id!);
-      const currentRaw = avgFor(currentActs, ind.metric.id!);
+      if (ind.type === 'metric' && ind.metric) {
+        baselineRaw = avgMetric(baselineActs, ind.metric.id!);
+        currentRaw = avgMetric(currentActs, ind.metric.id!);
+        const unit = ind.metric.unit ? ' ' + ind.metric.unit : '';
+        fmtFn = (v: number) => `${Math.round(v * 10) / 10}${unit}`;
+      } else if (ind.type !== 'metric') {
+        baselineRaw = avgMinPerDay(baselineActs, ind);
+        currentRaw = avgMinPerDay(currentActs, ind);
+        fmtFn = (v: number) => `${Math.round(v * 10) / 10} min/day`;
+      } else {
+        return ind;
+      }
 
       let arrowUp: boolean | null = null;
       let color: IndicatorStats['color'] = 'medium';
-
       if (baselineRaw !== null && currentRaw !== null && currentRaw !== baselineRaw) {
         arrowUp = currentRaw > baselineRaw;
-        if (ind.direction === 'increasing') {
-          color = arrowUp ? 'success' : 'danger';
-        } else if (ind.direction === 'decreasing') {
-          color = arrowUp ? 'danger' : 'success';
-        }
+        if (ind.direction === 'increasing') color = arrowUp ? 'success' : 'danger';
+        else if (ind.direction === 'decreasing') color = arrowUp ? 'danger' : 'success';
       }
 
       return {
         ...ind,
         stats: {
-          baseline: baselineRaw !== null ? fmt(baselineRaw) : null,
-          current: currentRaw !== null ? fmt(currentRaw) : null,
+          baseline: baselineRaw !== null ? fmtFn(baselineRaw) : null,
+          current: currentRaw !== null ? fmtFn(currentRaw) : null,
           arrowUp,
           color,
         },
       };
     });
+  }
+
+  private computeExperimentRuleStats() {
+    if (!this.rules.length || !this.experiment.startDate) return;
+
+    const start = this.experiment.startDate;
+    const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const end = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
+
+    const days = eachDayOfInterval({ start: parseISO(start), end: parseISO(end) })
+      .map(d => format(d, 'yyyy-MM-dd'));
+
+    if (!days.length) return;
+
+    const periodCache = new Map<string, boolean>();
+
+    const isRuleMetForDay = (rule: IRule, day: string): boolean => {
+      if (day < rule.startDate) return true;
+      const [periodStart, periodEnd] = getPeriodRange(day, rule.period);
+      const cacheKey = `${rule.id}:${periodStart}`;
+      if (periodCache.has(cacheKey)) return periodCache.get(cacheKey)!;
+      const ruleMap = this.completionsMap.get(rule.id);
+      let result: boolean;
+      if (ruleMap?.has(periodStart)) {
+        result = ruleMap.get(periodStart)!;
+      } else {
+        const periodActs = this.allActivities.filter(a => a.date >= periodStart && a.date <= periodEnd);
+        result = isRulePeriodMet(rule, periodActs);
+      }
+      periodCache.set(cacheKey, result);
+      return result;
+    };
+
+    const goodDays: boolean[] = days.map(day => this.rules.every(rule => isRuleMetForDay(rule, day)));
+
+    const completedCount = days.filter(d => d !== today).length;
+    const goodCompletedCount = goodDays.filter((g, i) => g && days[i] !== today).length;
+    this.combinedUptime = completedCount > 0 ? Math.round((goodCompletedCount / completedCount) * 100) : null;
+
+    let streak = 0;
+    for (let i = goodDays.length - 1; i >= 0; i--) {
+      if (!goodDays[i]) {
+        if (days[i] === today) continue;
+        break;
+      }
+      streak++;
+    }
+    this.combinedStreak = streak;
   }
 }
