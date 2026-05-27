@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
+import { Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
@@ -57,12 +57,19 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
   @Input() hidePeriodSelector = false;
   @Input() hideTimesChart = false;
   @Input() hideDetails = false;
+  @Input() skipLoadingModal = false;
+  @Input() fillHeight = false;
+  @Input() chartColor?: string;
+  @Input() hideAvgDataset = false;
+
+  @HostBinding('class.fill-height') get isFillHeight() { return this.fillHeight; }
 
   activities: IActivity[] = [];
   filterForm: ModelFormGroup<FilterForm>;
   suggestions: Selectable<CommonItem>[] = [];
   minutesChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
   amountChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
+  minutesChartOptions: ChartConfiguration<'bar'>['options'] = { responsive: true };
   totalAmount = 0;
   totalDuration = 0;
   averageAmountPerDay = 0;
@@ -82,6 +89,12 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
       
       if (currentPeriod === this.lastLoadedPeriod) return;
       this.lastLoadedPeriod = currentPeriod;
+
+      if (this.skipLoadingModal) {
+        await this.loadSuggestions();
+        if (this.filterForm.valid) this.setChartData();
+        return;
+      }
 
       if (!this.loadingService.tryLock()) {
         return;
@@ -108,6 +121,9 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
+    if (this.fillHeight) {
+      this.minutesChartOptions = { responsive: true, maintainAspectRatio: false };
+    }
     this.activities = this.initialActivities;
     this.suggestions = this.initialSuggestions;
 
@@ -241,17 +257,22 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
     const lang = this.translate.currentLang || 'en';
     const displayDates = dates.map(d => formatDisplayDate(d, lang));
 
+    const colorProps = this.chartColor ? {
+      backgroundColor: this.chartColor + 'AA',
+      borderColor: this.chartColor,
+    } : {};
+
     this.minutesChartData = {
       labels: displayDates,
       datasets: [
-        { data: durationMinutes, label: timeLabel },
-        { data: averages, label: averageTimeLabel },
+        { data: durationMinutes, label: timeLabel, ...colorProps },
+        ...(!this.hideAvgDataset ? [{ data: averages, label: averageTimeLabel }] : []),
       ],
     };
 
     this.amountChartData = {
       labels: displayDates,
-      datasets: [{ data: amount, label: timesLabel }],
+      datasets: [{ data: amount, label: timesLabel, ...colorProps }],
     };
   }
 

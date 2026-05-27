@@ -32,7 +32,9 @@
       </ion-item>
     </ion-list>
   }
-  <canvas baseChart [data]="minutesChartData" type="bar"></canvas>
+  <div [class.chart-fill]="fillHeight">
+    <canvas baseChart [data]="minutesChartData" [options]="minutesChartOptions" type="bar"></canvas>
+  </div>
   @if (!hideTimesChart) {
     <canvas baseChart [data]="amountChartData" type="bar"></canvas>
   }

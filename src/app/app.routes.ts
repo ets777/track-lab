@@ -147,27 +147,6 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'streak',
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('./pages/streak-list/streak-list.page').then(m => m.StreakListPage)
-      },
-      {
-        path: 'add',
-        loadComponent: () => import('./pages/streak-add/streak-add.page').then(m => m.StreakAddPage)
-      },
-      {
-        path: 'edit/:id',
-        loadComponent: () => import('./pages/streak-edit/streak-edit.page').then(m => m.StreakEditPage)
-      },
-      {
-        path: ':id',
-        loadComponent: () => import('./pages/streak-view/streak-view.page').then(m => m.StreakViewPage)
-      },
-    ],
-  },
-  {
     path: 'library',
     children: [
       {
@@ -191,6 +170,10 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.page').then(m => m.DashboardPage),
+  },
+  {
+    path: 'dashboard-settings',
+    loadComponent: () => import('./pages/dashboard-settings/dashboard-settings.page').then(m => m.DashboardSettingsPage),
   },
   {
     path: 'database',

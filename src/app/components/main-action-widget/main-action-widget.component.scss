@@ -1,10 +1,12 @@
 :host {
   display: block;
+  height: 100%;
 }
 
 ion-card {
   margin: 0;
-  --background: #0054e9;
+  height: 100%;
+  --background: #3880FF;
 }
 
 .inner {

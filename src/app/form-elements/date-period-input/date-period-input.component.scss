@@ -36,4 +36,17 @@
       --padding-end: 4px;
     }
   }
+
+  @media (max-width: 365px) {
+    flex-wrap: wrap;
+
+    ion-chip {
+      order: 1;
+    }
+
+    ion-button {
+      order: 2;
+      flex: 1;
+    }
+  }
 }

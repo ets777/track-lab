@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, AfterViewInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,21 +15,18 @@ export interface SuggestionItem {
   templateUrl: './suggestions.component.html',
   styleUrl: './suggestions.component.scss',
 })
-export class SuggestionsComponent implements OnChanges, OnInit, OnDestroy {
+export class SuggestionsComponent implements OnChanges, OnInit, AfterViewInit, OnDestroy {
   @Input() set suggestions(val: string[] | SuggestionItem[]) {
     this._suggestions = (val as any[]).map(s =>
       typeof s === 'string' ? { label: s } : s
     );
-    this.updatePosition();
+    this.scheduleUpdatePosition();
   }
 
   @Input() anchor: HTMLElement | null = null;
   @Output() selected = new EventEmitter<string>();
 
   _suggestions: SuggestionItem[] = [];
-  top = 0;
-  left = 0;
-  width = 0;
 
   constructor(private el: ElementRef) {}
 
@@ -38,6 +35,14 @@ export class SuggestionsComponent implements OnChanges, OnInit, OnDestroy {
     if (ionApp) {
       ionApp.appendChild(this.el.nativeElement);
     }
+    const host = this.el.nativeElement as HTMLElement;
+    host.style.position = 'absolute';
+    host.style.zIndex = '99990';
+    host.style.display = 'block';
+  }
+
+  ngAfterViewInit() {
+    this.scheduleUpdatePosition();
   }
 
   ngOnDestroy() {
@@ -46,15 +51,18 @@ export class SuggestionsComponent implements OnChanges, OnInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['anchor']) {
-      this.updatePosition();
+      this.scheduleUpdatePosition();
     }
   }
 
-  private updatePosition() {
-    if (!this.anchor) return;
-    const rect = this.anchor.getBoundingClientRect();
-    this.top = rect.bottom;
-    this.left = rect.left;
-    this.width = rect.width;
+  private scheduleUpdatePosition() {
+    requestAnimationFrame(() => {
+      if (!this.anchor) return;
+      const rect = this.anchor.getBoundingClientRect();
+      const host = this.el.nativeElement as HTMLElement;
+      host.style.top = rect.bottom + 'px';
+      host.style.left = rect.left + 'px';
+      host.style.width = rect.width + 'px';
+    });
   }
 }

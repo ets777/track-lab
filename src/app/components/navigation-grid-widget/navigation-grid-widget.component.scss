@@ -1,0 +1,27 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 8px 16px 8px;
+  box-sizing: border-box;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+  flex-shrink: 0;
+}
+
+.nav-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: 8px;
+}

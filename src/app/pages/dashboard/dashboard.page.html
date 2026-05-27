@@ -1,36 +1,56 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{ 'TK_DASHBOARD' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openSettings()">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="dashboard">
-    <app-main-action-widget
-      label="TK_NEW_ACTIVITY"
-      sublabel="TK_LOG_SOMETHING_NOW"
-      icon="add-outline"
-      route="/activity/add"
-    ></app-main-action-widget>
+<ion-content [scrollY]="false">
+  <div class="dashboard" [style.grid-template-rows]="dashboardGridRows">
+    @for (widget of widgets; track widget.id) {
+      <div class="widget-cell" [style.grid-row]="'span ' + getWidgetHeight(widget.config)">
+        @switch (widget.config.type) {
 
-    <app-rules-checklist-widget
-      [items]="checklistItems"
-      [isLoading]="checklistLoading"
-      [skeletonCount]="checklistSkeletonCount"
-    ></app-rules-checklist-widget>
+          @case ('action-button') {
+            <app-main-action-widget
+              [label]="getActionLabel(widget.config)"
+              sublabel="TK_LOG_SOMETHING_NOW"
+              icon="add-outline"
+              [route]="getActionRoute(widget.config)"
+              [color]="getActionColor(widget.config)"
+            ></app-main-action-widget>
+          }
 
-    <div class="section-label">{{ 'TK_NAVIGATE' | translate }}</div>
+          @case ('rules') {
+            <app-rules-checklist-widget
+              [items]="checklistItems"
+              [isLoading]="checklistLoading"
+              [skeletonCount]="checklistSkeletonCount"
+            ></app-rules-checklist-widget>
+          }
 
-    <div class="nav-grid">
-      @for (widget of navWidgets; track widget.route) {
-        <app-link-widget
-          [icon]="widget.icon"
-          [label]="widget.label"
-          [route]="widget.route"
-          [color]="widget.color"
-          [compact]="true"
-        ></app-link-widget>
-      }
-    </div>
+          @case ('navigation') {
+            <app-navigation-grid-widget [config]="asNavConfig(widget.config)"></app-navigation-grid-widget>
+          }
+
+          @case ('metric-graph') {
+            <app-metric-graph-widget [config]="asMetricConfig(widget.config)"></app-metric-graph-widget>
+          }
+
+          @case ('library-graph') {
+            <app-library-graph-widget [config]="asLibraryConfig(widget.config)"></app-library-graph-widget>
+          }
+
+          @case ('experiment') {
+            <app-experiment-dashboard-widget [config]="asExperimentConfig(widget.config)"></app-experiment-dashboard-widget>
+          }
+
+        }
+      </div>
+    }
   </div>
 </ion-content>

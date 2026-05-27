@@ -1,0 +1,205 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'TK_DASHBOARD_SETTINGS' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="rows">
+    @for (slot of rowSlots; track slot.rowStart) {
+      @if (slot.type === 'empty') {
+        <div class="row-slot empty" [class.span2]="slot.rowSpan === 2" (click)="onEmptySlotTap()">
+          <ion-icon name="add-outline"></ion-icon>
+          <span>{{ 'TK_ADD_WIDGET' | translate }}</span>
+        </div>
+      } @else {
+        <div class="row-slot widget" [class.span2]="slot.rowSpan === 2">
+          <div class="widget-info">
+            <ion-icon [name]="getWidgetIcon(slot.widget!)"></ion-icon>
+            <div class="widget-text">
+              <span class="widget-type">{{ getWidgetTypeKey(slot.widget!.config.type) | translate }}</span>
+              <span class="widget-label">{{ getWidgetLabel(slot.widget!) }}</span>
+            </div>
+          </div>
+          <ion-button fill="clear" class="menu-btn" (click)="onWidgetMenuTap(slot.widget!, $event)">
+            <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </div>
+      }
+    }
+  </div>
+</ion-content>
+
+<ion-modal #configModal [isOpen]="modalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-title>
+          @if (modalStep === 'type') {
+            {{ 'TK_CHOOSE_WIDGET_TYPE' | translate }}
+          } @else {
+            {{ modalFormTitle | translate }}
+          }
+        </ion-title>
+        <ion-buttons slot="end">
+          @if (modalStep === 'form') {
+            <ion-button [disabled]="!canSave()" (click)="saveWidget()">
+              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+            </ion-button>
+          }
+          <ion-button (click)="closeModal()">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      @if (modalStep === 'type') {
+        <ion-list>
+          @for (opt of widgetTypeOptions; track opt.type) {
+            <ion-item button (click)="selectWidgetType(opt.type)">
+              <ion-icon [name]="opt.icon" slot="start"></ion-icon>
+              <ion-label>{{ opt.labelKey | translate }}</ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      } @else {
+        <div class="form-content">
+          @switch (selectedWidgetType) {
+
+            @case ('action-button') {
+              <p class="form-label">{{ 'TK_WIDGET_ACTION' | translate }}</p>
+              <ion-radio-group [(ngModel)]="actionAction">
+                <ion-list>
+                  <ion-item>
+                    <ion-radio value="new-activity">{{ 'TK_ACTION_NEW_ACTIVITY' | translate }}</ion-radio>
+                  </ion-item>
+                  <ion-item>
+                    <ion-radio value="new-action">{{ 'TK_ACTION_NEW_ACTION' | translate }}</ion-radio>
+                  </ion-item>
+                  <ion-item>
+                    <ion-radio value="new-tag">{{ 'TK_ACTION_NEW_TAG' | translate }}</ion-radio>
+                  </ion-item>
+                </ion-list>
+              </ion-radio-group>
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
+                <div class="color-picker">
+                  @for (c of widgetColors; track c) {
+                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('navigation') {
+              <p class="form-label">{{ 'TK_SELECT_PAGES' | translate }}</p>
+              <ion-list>
+                @for (link of availableNavLinks; track link.route) {
+                  <ion-item>
+                    <ion-icon [name]="link.icon" slot="start"></ion-icon>
+                    <ion-label>{{ link.label | translate }}</ion-label>
+                    <ion-checkbox
+                      slot="end"
+                      [checked]="isNavLinkSelected(link.route)"
+                      [disabled]="!isNavLinkSelected(link.route) && navSelectedRoutes.size >= navMaxLinks"
+                      (ionChange)="toggleNavLink(link.route)"
+                    ></ion-checkbox>
+                  </ion-item>
+                }
+              </ion-list>
+            }
+
+            @case ('metric-graph') {
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_METRIC' | translate }}</p>
+                @if (!metricSuggestions.length) {
+                  <p class="no-data">{{ 'TK_NO_METRICS_AVAILABLE' | translate }}</p>
+                } @else {
+                  <app-select-search
+                    [suggestions]="metricSuggestions"
+                    [label]="'TK_WIDGET_METRIC' | translate"
+                    [(ngModel)]="selectedMetric"
+                  ></app-select-search>
+                }
+              </div>
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_PERIOD' | translate }}</p>
+                <ion-segment [(ngModel)]="metricPeriod">
+                  @for (p of periods; track p.value) {
+                    <ion-segment-button [value]="p.value">{{ p.labelKey | translate }}</ion-segment-button>
+                  }
+                </ion-segment>
+              </div>
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
+                <div class="color-picker">
+                  @for (c of widgetColors; track c) {
+                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('library-graph') {
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_ITEM' | translate }}</p>
+                @if (!itemSuggestions.length) {
+                  <p class="no-data">{{ 'TK_NO_ITEMS_AVAILABLE' | translate }}</p>
+                } @else {
+                  <app-select-search
+                    [suggestions]="itemSuggestions"
+                    [label]="'TK_WIDGET_ITEM' | translate"
+                    [(ngModel)]="selectedItem"
+                  ></app-select-search>
+                }
+              </div>
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_PERIOD' | translate }}</p>
+                <ion-segment [(ngModel)]="itemPeriod">
+                  @for (p of periods; track p.value) {
+                    <ion-segment-button [value]="p.value">{{ p.labelKey | translate }}</ion-segment-button>
+                  }
+                </ion-segment>
+              </div>
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
+                <div class="color-picker">
+                  @for (c of widgetColors; track c) {
+                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                  }
+                </div>
+              </div>
+            }
+
+            @case ('experiment') {
+              <div class="form-field">
+                <p class="form-label">{{ 'TK_EXPERIMENT' | translate }}</p>
+                @if (!experimentSuggestions.length) {
+                  <p class="no-data">{{ 'TK_NO_EXPERIMENTS_AVAILABLE' | translate }}</p>
+                } @else {
+                  <app-select-search
+                    [suggestions]="experimentSuggestions"
+                    [label]="'TK_EXPERIMENT' | translate"
+                    [(ngModel)]="selectedExperiment"
+                  ></app-select-search>
+                }
+              </div>
+            }
+
+          }
+
+          <div class="save-btn-wrap">
+            <ion-button expand="block" [disabled]="!canSave()" (click)="saveWidget()">
+              {{ 'TK_SAVE' | translate }}
+            </ion-button>
+          </div>
+        </div>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>

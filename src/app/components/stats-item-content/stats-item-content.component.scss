@@ -1,0 +1,11 @@
+:host.fill-height {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-fill {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}

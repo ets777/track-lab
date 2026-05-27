@@ -31,7 +31,6 @@ import { IActivityMetricDb } from '../db/models/activity-metric';
 import { IItemDb } from '../db/models/item';
 import { IListDb } from '../db/models/list';
 import { IMetricDb } from '../db/models/metric';
-import { IStreakDb } from '../db/models/streak';
 import { ITagMetricDb } from '../db/models/tag-metric';
 import { IItemMetricDb } from '../db/models/item-metric';
 import { ActionListService } from './action-list.service';
@@ -41,7 +40,6 @@ import { ActivityMetricService } from './activity-metric.service';
 import { ItemService } from './item.service';
 import { ListService } from './list.service';
 import { MetricService } from './metric.service';
-import { StreakService } from './streak.service';
 import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
 import { getEntitiesFromString } from '../functions/string';
@@ -67,7 +65,6 @@ type Backup = {
   items: IItemDb[],
   lists: IListDb[],
   metrics: IMetricDb[],
-  streaks: IStreakDb[],
   tagMetrics: ITagMetricDb[],
   itemMetrics: IItemMetricDb[],
   rules: IRuleDb[],
@@ -245,7 +242,6 @@ export class BackupService {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
   private metricService = inject(MetricService);
-  private streakService = inject(StreakService);
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private ruleService = inject(RuleService);
@@ -282,7 +278,6 @@ export class BackupService {
       items: await this.itemService.getAll(),
       lists: await this.listService.getAll(),
       metrics: await this.metricService.getAll(),
-      streaks: await this.streakService.getAll(),
       tagMetrics: await this.tagMetricService.getAll(),
       itemMetrics: await this.itemMetricService.getAll(),
       rules: await this.ruleService.getAll(),
@@ -399,9 +394,6 @@ export class BackupService {
       await this.activityItemService.bulkAdd(backup.activityItems);
       await this.activityMetricService.bulkAdd(backup.activityMetrics);
 
-      this.loadingService.show('TK_RESTORING_STREAKS');
-      await this.streakService.bulkAdd(backup.streaks);
-
       await this.ruleService.bulkAdd(backup.rules ?? []);
       await this.ruleCompletionService.bulkAdd(backup.ruleCompletions ?? []);
     } finally {
@@ -420,8 +412,6 @@ export class BackupService {
     await this.activityItemService.clear();
     await this.activityMetricService.clear();
     await this.achievementService.clear();
-    await this.streakService.clear();
-
     await this.tagMetricService.clear();
     await this.itemMetricService.clear();
     await this.actionMetricService.clear();

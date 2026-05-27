@@ -16,6 +16,7 @@ export class MainActionWidgetComponent {
   @Input() sublabel = '';
   @Input() icon = 'add-outline';
   @Input() route = '';
+  @Input() color?: string;
 
   private router = inject(Router);
 

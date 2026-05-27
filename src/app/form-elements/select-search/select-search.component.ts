@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterContentInit, Component, ContentChild, ElementRef, EventEmitter, HostListener, Output, ViewChild, forwardRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { AfterContentInit, ChangeDetectorRef, Component, ContentChild, ElementRef, EventEmitter, HostListener, Output, ViewChild, forwardRef, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms';
 import { IonItem, IonInput } from "@ionic/angular/standalone";
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,6 +25,8 @@ import { SuggestionsComponent, SuggestionItem } from 'src/app/components/suggest
   ],
 })
 export class SelectSearchComponent implements ControlValueAccessor, Validator, OnChanges, AfterContentInit {
+  private cdr = inject(ChangeDetectorRef);
+
   @ViewChild('inputItem', { read: ElementRef }) inputItemRef?: ElementRef;
   @ContentChild('selectSearchAnchor', { read: ElementRef }) customAnchor?: ElementRef;
 
@@ -84,6 +86,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     } else {
       this.updateComponent(val);
     }
+    this.cdr.detectChanges();
   }
 
   openSuggestions(event: any) {
@@ -95,7 +98,10 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
   }
 
   hideSuggestions() {
-    setTimeout(() => (this.showSuggestions = false), 200);
+    setTimeout(() => {
+      this.showSuggestions = false;
+      this.cdr.detectChanges();
+    }, 200);
   }
 
   // ─── host listeners for projected content ────────────────────────────────
@@ -105,6 +111,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     if (!this.hasCustomInputMode) return;
     this.isFocused = true;
     this.showSuggestions = this.filteredSuggestions.length > 0;
+    this.cdr.detectChanges();
   }
 
   @HostListener('ionBlur')
@@ -113,6 +120,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     setTimeout(() => {
       this.isFocused = false;
       this.showSuggestions = false;
+      this.cdr.detectChanges();
     }, 200);
   }
 
@@ -228,9 +236,14 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
       this.enteredText = '';
       return;
     }
-    const suggestion = this.suggestions.find(
-      s => s.item?.type === this.value?.type && s.item?.itemId === this.value?.itemId
-    );
+    const val = this.value;
+    const suggestion = this.suggestions.find(s => {
+      const item = s.item;
+      if (item?.itemId !== undefined && item?.type !== undefined) {
+        return item.itemId === val?.itemId && item.type === val?.type;
+      }
+      return item?.id !== undefined && item?.id === val?.id;
+    });
     if (suggestion) {
       this.selectedSuggestion = suggestion;
       this.enteredText = suggestion.title;

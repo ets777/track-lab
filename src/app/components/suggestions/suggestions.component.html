@@ -1,9 +1,4 @@
-<div
-  class="suggestions"
-  [style.top.px]="top"
-  [style.left.px]="left"
-  [style.width.px]="width"
->
+<div class="suggestions">
   <ion-list lines="none">
     @for (item of _suggestions; track item.label) {
       <ion-item button detail="false" (mousedown)="$event.preventDefault()" (click)="selected.emit(item.label)">

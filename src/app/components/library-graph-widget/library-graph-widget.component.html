@@ -1,0 +1,19 @@
+<div class="graph-card">
+  <div class="widget-title">{{ fixedItem?.name }}</div>
+  @if (isLoading) {
+    <ion-skeleton-text animated class="chart-skeleton"></ion-skeleton-text>
+  } @else {
+    <app-stats-item-content
+      [lists]="lists"
+      [fixedItem]="fixedItem"
+      [initialPeriod]="initialPeriod"
+      [hidePeriodSelector]="true"
+      [hideDetails]="true"
+      [hideTimesChart]="true"
+      [hideAvgDataset]="true"
+      [skipLoadingModal]="true"
+      [fillHeight]="true"
+      [chartColor]="chartColor"
+    ></app-stats-item-content>
+  }
+</div>

@@ -29,11 +29,13 @@
   </ion-list>
 }
 
-@if (chartData && selectedMetrics.length) {
-  <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
-}
+<div [class.chart-fill]="fillHeight">
+  @if (chartData && selectedMetrics.length) {
+    <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
+  }
+</div>
 
-@if (activitiesGroupedByDate.length && selectedMetrics.length && !hideCalendar) {
+@if (!fillHeight && activitiesGroupedByDate.length && selectedMetrics.length && !hideCalendar) {
   <div class="calendar-block">
   @if (selectedMetrics.length > 1) {
     <ion-segment [value]="selectedCalendarMetricIndex" (ionChange)="selectedCalendarMetricIndex = +$any($event).detail.value">
@@ -73,6 +75,6 @@
     </div>
   </div>
   </div>
-} @else if (!activitiesGroupedByDate.length) {
+} @else if (!fillHeight && !activitiesGroupedByDate.length) {
   <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}</ion-text>
 }

@@ -1,0 +1,55 @@
+<ion-card button (click)="navigate()">
+  <ion-card-content>
+    @if (isLoading) {
+      <ion-skeleton-text animated class="title-skeleton"></ion-skeleton-text>
+      <ion-skeleton-text animated class="bar-skeleton"></ion-skeleton-text>
+      <ion-skeleton-text animated class="ind-skeleton"></ion-skeleton-text>
+      <ion-skeleton-text animated class="ind-skeleton"></ion-skeleton-text>
+    } @else if (!experiment) {
+      <div class="widget-header">
+        <ion-icon name="flask-outline"></ion-icon>
+        <span class="title">{{ config.experimentTitle }}</span>
+      </div>
+      <p class="no-data">{{ 'TK_NO_EXPERIMENTS' | translate }}</p>
+    } @else {
+      <div class="widget-header">
+        <span class="title">{{ experiment.title }}</span>
+        @if (experiment.isSuccess === null) {
+          <span class="percent">{{ progressPercent }}%</span>
+        }
+      </div>
+      @if (experiment.isSuccess === 1) {
+        <div class="status-banner status-banner--success">{{ 'TK_EXPERIMENT_SUCCESS' | translate }}</div>
+      } @else if (experiment.isSuccess === 0) {
+        <div class="status-banner status-banner--failed">{{ 'TK_EXPERIMENT_FAILED' | translate }}</div>
+      } @else {
+        <div class="progress-bar">
+          <div class="progress-bar__fill" [style.width]="progressPercent + '%'"></div>
+        </div>
+      }
+      <ul class="indicators">
+        @for (ind of indicators; track ind.name) {
+          <li>
+            <span class="ind-name">{{ ind.name }}</span>
+            <span class="ind-stats">
+              @if (ind.baselineValue) {
+                <span class="ind-baseline">{{ ind.baselineValue }}</span>
+              }
+              <ion-icon
+                [name]="ind.arrowUp === null ? 'arrow-forward-outline' : (ind.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline')"
+                [class.ind-success]="ind.color === 'success'"
+                [class.ind-danger]="ind.color === 'danger'"
+              ></ion-icon>
+              @if (ind.currentValue !== null) {
+                <span class="ind-value" [class.ind-success]="ind.color === 'success'" [class.ind-danger]="ind.color === 'danger'">{{ ind.currentValue }}</span>
+              }
+            </span>
+          </li>
+        }
+        @if (!indicators.length) {
+          <li class="no-indicators">{{ 'TK_INDICATORS' | translate }}: —</li>
+        }
+      </ul>
+    }
+  </ion-card-content>
+</ion-card>

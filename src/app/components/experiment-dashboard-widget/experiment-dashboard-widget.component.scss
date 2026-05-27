@@ -1,0 +1,161 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+ion-card {
+  margin: 0;
+  height: 100%;
+
+  ion-card-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+  }
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  .title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .percent {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+    flex-shrink: 0;
+  }
+}
+
+.status-banner {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+
+  &--success {
+    background: var(--ion-color-success-tint);
+    color: var(--ion-color-success-shade);
+  }
+
+  &--failed {
+    background: var(--ion-color-danger-tint);
+    color: var(--ion-color-danger-shade);
+  }
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ion-color-light);
+  margin-bottom: 12px;
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    background: var(--ion-color-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+}
+
+.indicators {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    gap: 8px;
+
+    .ind-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--ion-color-medium);
+    }
+
+    .ind-stats {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
+
+      ion-icon {
+        font-size: 12px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .ind-baseline {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+    }
+
+    .ind-value {
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .ind-success {
+      color: var(--ion-color-success);
+    }
+
+    .ind-danger {
+      color: var(--ion-color-danger);
+    }
+  }
+
+  .no-indicators {
+    color: var(--ion-color-medium);
+    font-size: 13px;
+  }
+}
+
+.title-skeleton {
+  height: 18px;
+  width: 60%;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.bar-skeleton {
+  height: 6px;
+  border-radius: 3px;
+  margin-bottom: 12px;
+}
+
+.ind-skeleton {
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  width: 80%;
+}
+
+.no-data {
+  color: var(--ion-color-medium);
+  font-size: 13px;
+}

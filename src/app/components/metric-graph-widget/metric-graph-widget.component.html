@@ -1,0 +1,17 @@
+<div class="graph-card">
+  <div class="widget-title">{{ fixedMetricName }}</div>
+  @if (isLoading) {
+    <ion-skeleton-text animated class="chart-skeleton"></ion-skeleton-text>
+  } @else {
+    <app-stats-content
+      [allMetrics]="allMetrics"
+      [initialPeriod]="initialPeriod"
+      [fixedMetricName]="fixedMetricName"
+      [hidePeriodSelector]="true"
+      [hideCalendar]="true"
+      [skipLoadingModal]="true"
+      [fillHeight]="true"
+      [chartColor]="chartColor"
+    ></app-stats-content>
+  }
+</div>

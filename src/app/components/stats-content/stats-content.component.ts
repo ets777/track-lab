@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { IonItem, IonLabel, IonList, IonText, IonInput, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
@@ -62,6 +62,11 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() fixedMetricName?: string;
   @Input() hidePeriodSelector = false;
   @Input() hideCalendar = false;
+  @Input() skipLoadingModal = false;
+  @Input() fillHeight = false;
+  @Input() chartColor?: string;
+
+  @HostBinding('class.fill-height') get isFillHeight() { return this.fillHeight; }
 
   @ViewChild('metricInput') metricInput!: IonInput;
   metricInputText = '';
@@ -112,6 +117,9 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   ngOnInit() {
+    if (this.fillHeight) {
+      this.chartOptions = { ...this.chartOptions, maintainAspectRatio: false };
+    }
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
     this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
@@ -186,8 +194,10 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     if (this.loadingData) return;
     this.lastLoadedState = currentState;
     this.loadingData = true;
-    this.loadingService.show('TK_LOADING');
-    await new Promise(resolve => setTimeout(resolve));
+    if (!this.skipLoadingModal) {
+      this.loadingService.show('TK_LOADING');
+      await new Promise(resolve => setTimeout(resolve));
+    }
 
     try {
       if (this.initialized && this.filterForm.valid && this.metricsControl.valid && !this.fixedMetricName && !this.hidePeriodSelector) {
@@ -202,7 +212,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       this.buildChartData(activities, startDate, endDate);
     } finally {
       this.loadingData = false;
-      this.loadingService.hide();
+      if (!this.skipLoadingModal) this.loadingService.hide();
     }
 
     await this.loadStats();
@@ -231,12 +241,19 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
     const avg = this.translate.instant('TK_AVG');
 
+    const colorProps = this.chartColor ? {
+      borderColor: this.chartColor,
+      backgroundColor: this.chartColor + '33',
+      pointBackgroundColor: this.chartColor,
+    } : {};
+
     if (dates.length === 1) {
       const datasets = this.selectedMetrics.map(metric => {
         const normalizedData = this.normalizeWithInterpolation(activities, metric);
         return {
           data: normalizedData.map((data) => data.value || 0),
           label: avg + ' ' + this.translate.instant(metric.name),
+          ...colorProps,
         };
       });
 
@@ -251,6 +268,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
           return entry?.value ?? 0;
         })),
         label: avg + ' ' + this.translate.instant(metric.name),
+        ...colorProps,
       }));
 
       const lastNonNullIdx = datasets.reduce((max, ds) => {
@@ -284,6 +302,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
       this.chartOptions = {
         responsive: true,
+        maintainAspectRatio: !this.fillHeight,
         scales: { y: { beginAtZero: false, min: yMin, max: yMax } },
       };
 
@@ -294,7 +313,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    this.chartOptions = { responsive: true, scales: { y: { beginAtZero: false } } };
+    this.chartOptions = { responsive: true, maintainAspectRatio: !this.fillHeight, scales: { y: { beginAtZero: false } } };
   }
 
   normalizeWithInterpolation(activities: IActivity[], metric: IMetric): NormalizedPoint[] {

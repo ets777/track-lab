@@ -1,16 +1,26 @@
 :host {
   display: block;
+  height: 100%;
 }
 
 ion-card {
   margin: 0;
+  height: 100%;
+  overflow: hidden;
+
+  ion-card-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+  }
 }
 
 .widget-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 
   ion-icon {
     font-size: 14px;
