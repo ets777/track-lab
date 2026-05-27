@@ -21,6 +21,7 @@ import { IExperimentCreateDto, IExperimentDb } from "src/app/db/models/experimen
 import { IExperimentMetricCreateDto, IExperimentMetricDb } from "src/app/db/models/experiment-metric";
 import { IExperimentIndicatorCreateDto, IExperimentIndicatorDb } from "src/app/db/models/experiment-indicator";
 import { IExperimentRuleCreateDto, IExperimentRuleDb } from "src/app/db/models/experiment-rule";
+import { IAppConfigCreateDto, IAppConfigDb } from "src/app/db/models/app-config";
 
 export interface ITable {
     actions: IActionDb;
@@ -46,6 +47,7 @@ export interface ITable {
     experimentMetrics: IExperimentMetricDb;
     experimentIndicators: IExperimentIndicatorDb;
     experimentRules: IExperimentRuleDb;
+    appConfig: IAppConfigDb;
 }
 
 export interface ICreateDto {
@@ -72,6 +74,7 @@ export interface ICreateDto {
     experimentMetrics: IExperimentMetricDb | IExperimentMetricCreateDto;
     experimentIndicators: IExperimentIndicatorDb | IExperimentIndicatorCreateDto;
     experimentRules: IExperimentRuleDb | IExperimentRuleCreateDto;
+    appConfig: IAppConfigDb | IAppConfigCreateDto;
 }
 
 export type TableName = keyof ITable;

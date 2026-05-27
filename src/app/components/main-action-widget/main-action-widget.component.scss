@@ -10,9 +10,12 @@ ion-card {
 }
 
 .inner {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   gap: 16px;
+  padding: 0 16px;
 }
 
 .icon-btn {
@@ -31,25 +34,11 @@ ion-card {
   }
 }
 
-.text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
 .title {
+  flex: 1;
   font-size: 17px;
   font-weight: 700;
   color: #ffffff;
-}
-
-.subtitle {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
 }
 
 .arrow {

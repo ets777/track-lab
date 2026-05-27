@@ -1,12 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DashboardWidget, WidgetConfig, DEFAULT_DASHBOARD_WIDGETS } from 'src/app/types/dashboard-widget';
+import { AppConfigService } from './app-config.service';
 
-const STORAGE_KEY = 'dashboard_widgets';
+const KEY = 'dashboard_widgets';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardConfigService {
-  getWidgets(): DashboardWidget[] {
-    const raw = localStorage.getItem(STORAGE_KEY);
+  private appConfig = inject(AppConfigService);
+
+  async getWidgets(): Promise<DashboardWidget[]> {
+    const raw = await this.appConfig.get(KEY);
     if (raw) {
       try {
         return JSON.parse(raw) as DashboardWidget[];
@@ -17,44 +20,45 @@ export class DashboardConfigService {
     return [...DEFAULT_DASHBOARD_WIDGETS];
   }
 
-  save(widgets: DashboardWidget[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(widgets));
+  async save(widgets: DashboardWidget[]): Promise<void> {
+    await this.appConfig.set(KEY, JSON.stringify(widgets));
   }
 
-  addWidget(config: WidgetConfig): void {
-    const widgets = this.getWidgets();
+  async addWidget(config: WidgetConfig): Promise<void> {
+    const widgets = await this.getWidgets();
     widgets.push({ id: crypto.randomUUID(), config });
-    this.save(widgets);
+    await this.save(widgets);
   }
 
-  updateWidget(id: string, config: WidgetConfig): void {
-    const widgets = this.getWidgets();
+  async updateWidget(id: string, config: WidgetConfig): Promise<void> {
+    const widgets = await this.getWidgets();
     const idx = widgets.findIndex(w => w.id === id);
     if (idx !== -1) {
       widgets[idx] = { ...widgets[idx], config };
-      this.save(widgets);
+      await this.save(widgets);
     }
   }
 
-  deleteWidget(id: string): void {
-    this.save(this.getWidgets().filter(w => w.id !== id));
+  async deleteWidget(id: string): Promise<void> {
+    const widgets = await this.getWidgets();
+    await this.save(widgets.filter(w => w.id !== id));
   }
 
-  moveUp(id: string): void {
-    const widgets = this.getWidgets();
+  async moveUp(id: string): Promise<void> {
+    const widgets = await this.getWidgets();
     const idx = widgets.findIndex(w => w.id === id);
     if (idx > 0) {
       [widgets[idx - 1], widgets[idx]] = [widgets[idx], widgets[idx - 1]];
-      this.save(widgets);
+      await this.save(widgets);
     }
   }
 
-  moveDown(id: string): void {
-    const widgets = this.getWidgets();
+  async moveDown(id: string): Promise<void> {
+    const widgets = await this.getWidgets();
     const idx = widgets.findIndex(w => w.id === id);
     if (idx < widgets.length - 1) {
       [widgets[idx], widgets[idx + 1]] = [widgets[idx + 1], widgets[idx]];
-      this.save(widgets);
+      await this.save(widgets);
     }
   }
 }

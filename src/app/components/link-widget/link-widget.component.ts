@@ -7,6 +7,7 @@ import { addIcons } from 'ionicons';
 import {
   addCircleOutline, timeOutline, shieldCheckmarkOutline,
   barChartOutline, libraryOutline, settingsOutline, trophyOutline,
+  flaskOutline, analyticsOutline, listOutline, pricetagOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -30,7 +31,7 @@ export class LinkWidgetComponent {
   private navigationService = inject(NavigationService);
 
   constructor() {
-    addIcons({ addCircleOutline, timeOutline, shieldCheckmarkOutline, barChartOutline, libraryOutline, settingsOutline, trophyOutline });
+    addIcons({ addCircleOutline, timeOutline, shieldCheckmarkOutline, barChartOutline, libraryOutline, settingsOutline, trophyOutline, flaskOutline, analyticsOutline, listOutline, pricetagOutline });
   }
 
   navigate() {

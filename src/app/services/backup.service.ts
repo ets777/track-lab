@@ -49,6 +49,9 @@ import { IRuleDb } from '../db/models/rule';
 import { IRuleCompletionDb } from '../db/models/rule-completion';
 import { RuleService } from './rule.service';
 import { RuleCompletionService } from './rule-completion.service';
+import { DashboardWidget } from '../types/dashboard-widget';
+import { DashboardConfigService } from './dashboard-config.service';
+import { AppConfigService } from './app-config.service';
 
 type Backup = {
   activities: IActivityDb[],
@@ -69,6 +72,7 @@ type Backup = {
   itemMetrics: IItemMetricDb[],
   rules: IRuleDb[],
   ruleCompletions: IRuleCompletionDb[],
+  dashboardWidgets?: DashboardWidget[],
   version: string,
 };
 
@@ -246,6 +250,8 @@ export class BackupService {
   private itemMetricService = inject(ItemMetricService);
   private ruleService = inject(RuleService);
   private ruleCompletionService = inject(RuleCompletionService);
+  private dashboardConfigService = inject(DashboardConfigService);
+  private appConfigService = inject(AppConfigService);
   private fileService = inject(FileService);
   private loadingService = inject(LoadingService);
 
@@ -282,6 +288,7 @@ export class BackupService {
       itemMetrics: await this.itemMetricService.getAll(),
       rules: await this.ruleService.getAll(),
       ruleCompletions: await this.ruleCompletionService.getAll(),
+      dashboardWidgets: await this.dashboardConfigService.getWidgets(),
 
       version: appVersion,
     };
@@ -396,6 +403,9 @@ export class BackupService {
 
       await this.ruleService.bulkAdd(backup.rules ?? []);
       await this.ruleCompletionService.bulkAdd(backup.ruleCompletions ?? []);
+      if (backup.dashboardWidgets?.length) {
+        await this.dashboardConfigService.save(backup.dashboardWidgets);
+      }
     } finally {
       this.loadingService.hide();
     }
@@ -404,6 +414,7 @@ export class BackupService {
   }
 
   async clearDatabase() {
+    await this.appConfigService.clear();
     await this.ruleCompletionService.clear();
     await this.ruleService.clear();
     await this.activityService.clear();

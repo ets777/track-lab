@@ -1,9 +1,23 @@
 @if (visible) {
-<div class="achievement-toast">
-  <div class="title">{{ 'TK_ACHIEVEMENT_UNLOCKED' | translate }}</div>
-  <div class="body">
-    <div class="icon">{{ icon }}</div>
-    <div class="text">{{ title | translate }}</div>
+<div class="toast-container">
+  @if (queue.length > 1) {
+    <button class="close-all-btn" (click)="closeAll()">
+      {{ 'TK_CLOSE_ALL' | translate }} ({{ queue.length }})
+    </button>
+  }
+  <div
+    class="achievement-toast"
+    [class.closing]="closing"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd()"
+  >
+    <button class="close-btn" (click)="close()">✕</button>
+    <div class="title">{{ 'TK_ACHIEVEMENT_UNLOCKED' | translate }}</div>
+    <div class="body">
+      <div class="icon">{{ icon }}</div>
+      <div class="text">{{ title | translate }}</div>
+    </div>
   </div>
 </div>
 }

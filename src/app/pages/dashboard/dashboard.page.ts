@@ -72,10 +72,19 @@ export class DashboardPage {
   private readonly RULES_COUNT_KEY = 'dashboard_rules_count';
 
   widgets: DashboardWidget[] = [];
-  readonly getWidgetHeight = getWidgetHeight;
+  getWidgetHeight(config: WidgetConfig): 1 | 2 {
+    if (config.type === 'rules') {
+      const count = this.checklistLoading ? this.checklistSkeletonCount : this.checklistItems.length;
+      return getWidgetHeight(config, count);
+    }
+    return getWidgetHeight(config);
+  }
   checklistLoading = true;
   checklistItems: ChecklistItem[] = [];
   checklistSkeletonCount = parseInt(localStorage.getItem(this.RULES_COUNT_KEY) ?? '4', 10);
+
+  private widgetsReady = false;
+  private viewReady = false;
 
   constructor() {
     addIcons({ settingsOutline });
@@ -86,14 +95,26 @@ export class DashboardPage {
   }
 
   ionViewWillEnter(): void {
-    this.widgets = this.configService.getWidgets();
     this.checklistSkeletonCount = parseInt(localStorage.getItem(this.RULES_COUNT_KEY) ?? '4', 10);
     this.checklistLoading = true;
+    this.widgetsReady = false;
+    this.viewReady = false;
+
+    this.configService.getWidgets().then(widgets => {
+      this.widgets = widgets;
+      this.widgetsReady = true;
+      if (this.viewReady) this.startRulesLoad();
+    });
   }
 
-  async ionViewDidEnter(): Promise<void> {
+  ionViewDidEnter(): void {
+    this.viewReady = true;
+    if (this.widgetsReady) this.startRulesLoad();
+  }
+
+  private startRulesLoad(): void {
     if (this.widgets.some(w => w.config.type === 'rules')) {
-      await this.loadRulesChecklist();
+      this.loadRulesChecklist();
     } else {
       this.checklistLoading = false;
     }

@@ -132,8 +132,16 @@ export class DashboardSettingsPage {
     });
   }
 
-  ionViewWillEnter(): void {
-    this.widgets = this.configService.getWidgets();
+  async ionViewWillEnter(): Promise<void> {
+    this.widgets = await this.configService.getWidgets();
+  }
+
+  private get storedRuleCount(): number {
+    return parseInt(localStorage.getItem('dashboard_rules_count') ?? '4', 10);
+  }
+
+  private widgetHeight(config: WidgetConfig): 1 | 2 {
+    return getWidgetHeight(config, config.type === 'rules' ? this.storedRuleCount : undefined);
   }
 
   get maxRows(): number {
@@ -141,14 +149,14 @@ export class DashboardSettingsPage {
   }
 
   get remainingRows(): number {
-    const used = this.widgets.reduce((sum, w) => sum + getWidgetHeight(w.config), 0);
+    const used = this.widgets.reduce((sum, w) => sum + this.widgetHeight(w.config), 0);
     return this.maxRows - used;
   }
 
   get effectiveRemainingRows(): number {
     if (this.modalEditingId) {
       const editing = this.widgets.find(w => w.id === this.modalEditingId);
-      if (editing) return this.remainingRows + getWidgetHeight(editing.config);
+      if (editing) return this.remainingRows + this.widgetHeight(editing.config);
     }
     return this.remainingRows;
   }
@@ -168,7 +176,7 @@ export class DashboardSettingsPage {
     const slots: RowSlot[] = [];
     let currentRow = 1;
     for (const widget of this.widgets) {
-      const rowSpan = getWidgetHeight(widget.config);
+      const rowSpan = this.widgetHeight(widget.config);
       slots.push({ type: 'widget', widget, rowStart: currentRow, rowSpan });
       currentRow += rowSpan;
     }
@@ -361,18 +369,18 @@ export class DashboardSettingsPage {
     return true;
   }
 
-  saveWidget(): void {
+  async saveWidget(): Promise<void> {
     if (!this.selectedWidgetType) return;
     const config = this.buildConfig();
     if (!config) return;
 
     if (this.modalEditingId) {
-      this.configService.updateWidget(this.modalEditingId, config);
+      await this.configService.updateWidget(this.modalEditingId, config);
     } else {
-      this.configService.addWidget(config);
+      await this.configService.addWidget(config);
     }
 
-    this.widgets = this.configService.getWidgets();
+    this.widgets = await this.configService.getWidgets();
     this.closeModal();
   }
 
@@ -418,10 +426,10 @@ export class DashboardSettingsPage {
     }
   }
 
-  private moveWidget(id: string, dir: 'up' | 'down'): void {
-    if (dir === 'up') this.configService.moveUp(id);
-    else this.configService.moveDown(id);
-    this.widgets = this.configService.getWidgets();
+  private async moveWidget(id: string, dir: 'up' | 'down'): Promise<void> {
+    if (dir === 'up') await this.configService.moveUp(id);
+    else await this.configService.moveDown(id);
+    this.widgets = await this.configService.getWidgets();
   }
 
   private async confirmDelete(widget: DashboardWidget): Promise<void> {
@@ -432,9 +440,9 @@ export class DashboardSettingsPage {
         {
           text: this.translate.instant('TK_DELETE'),
           role: 'destructive',
-          handler: () => {
-            this.configService.deleteWidget(widget.id);
-            this.widgets = this.configService.getWidgets();
+          handler: async () => {
+            await this.configService.deleteWidget(widget.id);
+            this.widgets = await this.configService.getWidgets();
             this.toastService.enqueue({ title: 'TK_WIDGET_DELETED', type: 'success' });
           },
         },

@@ -3,7 +3,7 @@ export type ActionWidgetAction = 'new-activity' | 'new-action' | 'new-tag';
 export type WidgetPeriod = '1w' | '2w' | '1m';
 
 export const WIDGET_COLORS = [
-  '#3880FF', '#2DD36F', '#EB445A', '#5260FF', '#FFC409', '#3DC2FF', '#FF6B35', '#9C27B0',
+  '#3880FF', '#2DD36F', '#EB445A', '#FFC409', '#3DC2FF', '#FF6B35', '#9C27B0',
 ];
 
 export interface ActionButtonWidgetConfig {
@@ -63,9 +63,9 @@ export interface DashboardWidget {
   config: WidgetConfig;
 }
 
-export function getWidgetHeight(config: WidgetConfig): 1 | 2 {
+export function getWidgetHeight(config: WidgetConfig, ruleCount?: number): 1 | 2 {
   if (config.type === 'action-button') return 1;
-  if (config.type === 'rules') return 2;
+  if (config.type === 'rules') return (ruleCount ?? 4) <= 2 ? 1 : 2;
   if (config.type === 'navigation') {
     return (config as NavigationWidgetConfig).links.length <= 4 ? 1 : 2;
   }
@@ -115,10 +115,6 @@ export const AVAILABLE_NAV_LINKS: NavigationLinkOption[] = [
 
 export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidget[] = [
   {
-    id: 'default-action',
-    config: { type: 'action-button', action: 'new-activity' },
-  },
-  {
     id: 'default-rules',
     config: { type: 'rules' },
   },
@@ -129,11 +125,15 @@ export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidget[] = [
       links: [
         { route: '/activity', label: 'TK_HISTORY', icon: 'time-outline' },
         { route: '/rule', label: 'TK_RULES', icon: 'shield-checkmark-outline' },
-        { route: '/stats', label: 'TK_STATS', icon: 'bar-chart-outline' },
+        { route: '/experiment', label: 'TK_EXPERIMENTS', icon: 'flask-outline' },
         { route: '/library', label: 'TK_LIBRARY', icon: 'library-outline' },
-        { route: '/settings', label: 'TK_SETTINGS', icon: 'settings-outline' },
+        { route: '/metric', label: 'TK_METRICS', icon: 'analytics-outline' },
         { route: '/stats/achievements', label: 'TK_ACHIEVEMENTS', icon: 'trophy-outline' },
       ],
     },
+  },
+  {
+    id: 'default-action',
+    config: { type: 'action-button', action: 'new-activity', color: '#3880FF' },
   },
 ];

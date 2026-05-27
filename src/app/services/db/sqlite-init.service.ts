@@ -113,10 +113,13 @@ export class SQLiteInitService {
       DROP TABLE IF EXISTS activityTerms;
       DROP TABLE IF EXISTS metrics;
       DROP TABLE IF EXISTS achievements;
+      DROP TABLE IF EXISTS experimentMetrics;
       DROP TABLE IF EXISTS experimentRules;
       DROP TABLE IF EXISTS experimentIndicators;
       DROP TABLE IF EXISTS experiments;
+      DROP TABLE IF EXISTS ruleCompletions;
       DROP TABLE IF EXISTS rules;
+      DROP TABLE IF EXISTS appConfig;
       PRAGMA foreign_keys = ON;
     `);
 

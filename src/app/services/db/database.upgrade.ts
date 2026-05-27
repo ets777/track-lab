@@ -266,4 +266,14 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 10,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS appConfig (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT NOT NULL
+      );`,
+    ],
+  },
 ];

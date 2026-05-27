@@ -30,7 +30,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
   protected tableName: 'achievements' = 'achievements';
 
   private achievementEvent$ = new Subject<IAchievement>();
-  private queue: IAchievement[] = [];
+  private pendingQueue: IAchievement[] = [];
   private showing = false;
 
   isShowing() {
@@ -46,24 +46,17 @@ export class AchievementService extends DatabaseService<'achievements'> {
   }
 
   enqueue(achievement: IAchievement) {
-    this.queue.push(achievement);
+    this.pendingQueue.push(achievement);
     this.processQueue();
   }
 
   private processQueue() {
-    if (this.showing || this.queue.length === 0) {
-      return;
-    }
-
-    const next = this.queue.shift()!;
+    if (this.showing || this.pendingQueue.length === 0) return;
     this.showing = true;
-
-    this.achievementEvent$.next(next);
-
-    setTimeout(() => {
-      this.showing = false;
-      this.processQueue();
-    }, 5000);
+    while (this.pendingQueue.length > 0) {
+      this.achievementEvent$.next(this.pendingQueue.shift()!);
+    }
+    this.showing = false;
   }
 
   async init() {

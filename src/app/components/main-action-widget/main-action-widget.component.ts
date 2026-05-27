@@ -1,6 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonCard, IonCardContent, IonIcon } from '@ionic/angular/standalone';
+import { IonCard, IonIcon } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { addOutline, chevronForwardOutline } from 'ionicons/icons';
@@ -9,7 +9,7 @@ import { addOutline, chevronForwardOutline } from 'ionicons/icons';
   selector: 'app-main-action-widget',
   templateUrl: './main-action-widget.component.html',
   styleUrl: './main-action-widget.component.scss',
-  imports: [IonCard, IonCardContent, IonIcon, TranslateModule],
+  imports: [IonCard, IonIcon, TranslateModule],
 })
 export class MainActionWidgetComponent {
   @Input() label = '';
