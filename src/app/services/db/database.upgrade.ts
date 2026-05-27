@@ -231,22 +231,13 @@ export const databaseUpgrades = [
     statements: [
       `CREATE TABLE IF NOT EXISTS experiments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL
-      );`,
-    ],
-  },
-  {
-    toVersion: 10,
-    statements: [
-      `CREATE TABLE IF NOT EXISTS experiments_v10 (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         startDate TEXT,
-        endDate TEXT
+        endDate TEXT,
+        factEndDate TEXT,
+        isSuccess INTEGER,
+        resultData TEXT
       );`,
-      `INSERT OR IGNORE INTO experiments_v10 (id, title) SELECT id, title FROM experiments;`,
-      `DROP TABLE IF EXISTS experiments;`,
-      `ALTER TABLE experiments_v10 RENAME TO experiments;`,
       `CREATE TABLE IF NOT EXISTS experimentMetrics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         experimentId INTEGER NOT NULL,
@@ -264,11 +255,6 @@ export const databaseUpgrades = [
         FOREIGN KEY(ruleId) REFERENCES rules(id) ON DELETE CASCADE,
         UNIQUE(experimentId, ruleId)
       );`,
-    ],
-  },
-  {
-    toVersion: 11,
-    statements: [
       `CREATE TABLE IF NOT EXISTS experimentIndicators (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         experimentId INTEGER NOT NULL,
@@ -278,21 +264,6 @@ export const databaseUpgrades = [
         FOREIGN KEY(experimentId) REFERENCES experiments(id) ON DELETE CASCADE,
         UNIQUE(experimentId, subjectType, subjectId)
       );`,
-      `INSERT OR IGNORE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction)
-        SELECT id, experimentId, 'metric', metricId, direction FROM experimentMetrics;`,
-    ],
-  },
-  {
-    toVersion: 12,
-    statements: [
-      `ALTER TABLE experiments ADD COLUMN factEndDate TEXT;`,
-      `ALTER TABLE experiments ADD COLUMN isSuccess INTEGER;`,
-    ],
-  },
-  {
-    toVersion: 13,
-    statements: [
-      `ALTER TABLE experiments ADD COLUMN resultData TEXT;`,
     ],
   },
 ];

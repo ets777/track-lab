@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0] - 2026-05-27
+
+### Added
+
+- Experiments
+- Customizable dashboard
+
 ## [0.6.1] - 2026-05-10
 
 ### Added
