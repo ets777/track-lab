@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { DashboardWidget, WidgetConfig, DEFAULT_DASHBOARD_WIDGETS } from 'src/app/types/dashboard-widget';
+import { generateUUID } from 'src/app/functions/crypto';
 import { AppConfigService } from './app-config.service';
 
 const KEY = 'dashboard_widgets';
@@ -26,7 +27,7 @@ export class DashboardConfigService {
 
   async addWidget(config: WidgetConfig): Promise<void> {
     const widgets = await this.getWidgets();
-    widgets.push({ id: crypto.randomUUID(), config });
+    widgets.push({ id: generateUUID(), config });
     await this.save(widgets);
   }
 
