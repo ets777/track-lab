@@ -1,12 +1,11 @@
 import { Component, Input, OnChanges, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonItem, IonList, IonLabel, IonButtons, IonButton, IonIcon, IonActionSheet, IonText, ActionSheetController } from "@ionic/angular/standalone";
+import { IonActionSheet, ActionSheetController } from "@ionic/angular/standalone";
 import { OverlayEventDetail } from '@ionic/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { entitiesToString } from 'src/app/functions/string';
 import { ActivityService } from 'src/app/services/activity.service';
-import { TagsComponent } from "../tags/tags.component";
 import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { IList } from 'src/app/db/models/list';
@@ -18,7 +17,7 @@ import { ActivityRuleResult, computeActivityRuleResults } from 'src/app/function
   selector: 'app-activity-list',
   templateUrl: './activity-list.component.html',
   styleUrls: ['./activity-list.component.scss'],
-  imports: [IonText, IonActionSheet, IonIcon, IonButton, IonButtons, IonLabel, IonList, IonItem, TranslateModule, TagsComponent],
+  imports: [IonActionSheet, TranslateModule],
 })
 export class ActivityListComponent implements OnChanges {
   private translate = inject(TranslateService);
@@ -145,6 +144,10 @@ export class ActivityListComponent implements OnChanges {
     return entitiesToString(items);
   }
 
+  getListItems(activity: IActivity, list: IList) {
+    return activity.items.filter((item) => item.listId == list.id);
+  }
+
   getAllTags(activity: IActivity): ITag[] {
     const seen = new Set<number>();
     const all: ITag[] = [];
@@ -155,5 +158,36 @@ export class ActivityListComponent implements OnChanges {
       }
     }
     return all;
+  }
+
+  getStatus(activity: IActivity): 'good' | 'bad' | 'neutral' {
+    const c = this.getActivityColor(activity);
+    if (c === 'green') return 'good';
+    if (c === 'red') return 'bad';
+    return 'neutral';
+  }
+
+  getDuration(activity: IActivity): string {
+    if (!activity.endTime) return '';
+    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const mins = toMin(activity.endTime) - toMin(activity.startTime);
+    if (mins <= 0) return '';
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+
+  isLinkedToNext(index: number): boolean {
+    if (index >= this.activities.length - 1) return false;
+    return this.activities[index].endTime === this.activities[index + 1].startTime;
+  }
+
+  hasData(activity: IActivity): boolean {
+    return (
+      (activity.metricRecords && activity.metricRecords.length > 0) ||
+      this.lists.some(l => this.activityHasItems(activity, l)) ||
+      this.getAllTags(activity).length > 0
+    );
   }
 }

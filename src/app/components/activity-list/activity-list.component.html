@@ -1,44 +1,92 @@
-<ion-list>
-  @for (activity of activities; track activity.id) {
-    <ion-item
-      button
-      (click)="router.navigate(['/activity/view', activity.id])"
-      [class.activity-green]="getActivityColor(activity) === 'green'"
-      [class.activity-red]="getActivityColor(activity) === 'red'"
-    >
-      <ion-label>
-        <div class="activity-header">
-          <h2>{{ entitiesToString(activity.actions) }}</h2>
-          <ion-buttons class="activity-item-buttons">
-            <ion-button id="open-action-sheet-{{activity.id}}" (click)="$event.stopPropagation()">
-              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+@if (activities.length === 0) {
+  <p class="empty-text">{{ 'TK_THERE_ARE_NO_ACTIVITIES' | translate }}</p>
+} @else {
+  <ul class="tl-edge">
+    @for (activity of activities; track activity.id; let i = $index) {
+      <li class="tl-eg-row" [attr.data-status]="getStatus(activity)"
+          (click)="router.navigate(['/activity/view', activity.id])">
+        <div class="tl-eg-times">
+          <span class="tl-eg-t tl-eg-t-start">{{ activity.startTime }}</span>
+          @if (!isLinkedToNext(i) && activity.endTime) {
+            <span class="tl-eg-t tl-eg-t-end">{{ activity.endTime }}</span>
+          }
         </div>
-        <p>
-          {{ activity.startTime }} @if (activity.endTime) { - {{ activity.endTime }} }
-        </p>
-        <p>
-          @for (metric of metrics; track metric.id) {
-            @if (activityHasMetric(activity, metric)) {
-              {{ metric.name | translate }}: {{ getMetricValue(activity, metric) }}{{ metric.unit ? ' ' + metric.unit : '' }}
-            }
+
+        <div class="tl-eg-card">
+          <span class="tl-eg-rail"></span>
+          <span class="tl-eg-node tl-eg-node-start"></span>
+          @if (!isLinkedToNext(i) && activity.endTime) {
+            <span class="tl-eg-node tl-eg-node-end"></span>
           }
-        </p>
-        <p>
-          @for (list of lists; track list.id) {
-            @if (activityHasItems(activity, list)) {
-              {{ list.name | translate }}: {{ getItems(activity, list) }}
+
+          <div class="tl-eg-body">
+            <div class="tl-entry-hd">
+              <span class="tl-entry-name">{{ entitiesToString(activity.actions) }}</span>
+              <button class="tl-entry-menu" [id]="'open-action-sheet-' + activity.id"
+                      (click)="$event.stopPropagation()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>
+                </svg>
+              </button>
+            </div>
+
+            @if (getDuration(activity)) {
+              <div class="tl-eg-dur">{{ getDuration(activity) }}</div>
             }
-          }
-        </p>
-        <app-tags [tags]="getAllTags(activity)"></app-tags>
-        <ion-action-sheet trigger="open-action-sheet-{{activity.id}}" header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="getActivityButtons(activity)"
-          (didDismiss)="doActivityAction($event, activity.id)"></ion-action-sheet>
-      </ion-label>
-    </ion-item>
-  } @empty {
-    <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES' | translate }}</ion-text>
-  }
-</ion-list>
+
+            @if (hasData(activity)) {
+              <div class="tl-sh">
+                @if (activity.metricRecords.length > 0) {
+                  <div class="tl-sh-row">
+                    <div class="tl-sh-label">{{ 'TK_METRICS' | translate }}</div>
+                    <div class="tl-sh-val">
+                      @for (metric of metrics; track metric.id) {
+                        @if (activityHasMetric(activity, metric)) {
+                          <span class="tl-sh-metric">
+                            <b>{{ getMetricValue(activity, metric) }}{{ metric.unit ? ' ' + metric.unit : '' }}</b>
+                            {{ metric.name | translate }}
+                          </span>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+
+                @for (list of lists; track list.id) {
+                  @if (activityHasItems(activity, list)) {
+                    <div class="tl-sh-row">
+                      <div class="tl-sh-label">{{ list.name | translate }}</div>
+                      <div class="tl-sh-val">
+                        @for (item of getListItems(activity, list); track item.id) {
+                          <span class="tl-tag">{{ item.name }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+
+                @if (getAllTags(activity).length > 0) {
+                  <div class="tl-sh-row">
+                    <div class="tl-sh-label">{{ 'TK_TAGS' | translate }}</div>
+                    <div class="tl-sh-val">
+                      @for (tag of getAllTags(activity); track tag.id) {
+                        <span class="tl-tag tl-tag--ghost">{{ tag.name }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <ion-action-sheet
+            [trigger]="'open-action-sheet-' + activity.id"
+            [header]="'TK_ACTIONS' | translate"
+            [buttons]="getActivityButtons(activity)"
+            (didDismiss)="doActivityAction($event, activity.id)">
+          </ion-action-sheet>
+        </div>
+      </li>
+    }
+  </ul>
+}

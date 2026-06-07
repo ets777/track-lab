@@ -1,15 +1,219 @@
-.activity-header {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
+:host {
+  display: block;
 }
 
-.activity-green {
-  border-left: 3px solid var(--ion-color-success);
-  --background: rgba(var(--ion-color-success-rgb), 0.06);
+.empty-text {
+  font-size: 14px;
+  color: var(--tl-text-faint);
+  margin: 16px 0;
+  text-align: center;
 }
 
-.activity-red {
-  border-left: 3px solid var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+// ── Edge rail list ──────────────────────────────────────────────────────────
+
+.tl-edge {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.tl-eg-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  column-gap: 14px;
+  align-items: stretch;
+  --rail-c: var(--tl-line-2);
+  --node-c: var(--tl-text-faint);
+  --card-bg: var(--tl-surface);
+  --card-border: var(--tl-line);
+  cursor: pointer;
+
+  &[data-status='good'] {
+    --rail-c: var(--tl-good);
+    --node-c: var(--tl-good);
+    --card-bg: var(--tl-good-bg);
+    --card-border: var(--tl-good-line);
+  }
+
+  &[data-status='bad'] {
+    --rail-c: var(--tl-bad);
+    --node-c: var(--tl-bad);
+    --card-bg: var(--tl-bad-bg);
+    --card-border: var(--tl-bad-line);
+  }
+}
+
+.tl-eg-times {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 13px 0 14px;
+}
+
+.tl-eg-t {
+  font-family: var(--tl-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tl-eg-t-start { color: var(--tl-text-dim); }
+.tl-eg-t-end   { color: var(--tl-text-faint); }
+
+// ── Card ──
+
+.tl-eg-card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--tl-radius-sm);
+  padding: 12px 14px 12px 20px;
+  min-width: 0;
+}
+
+// Full-height colour rail = left edge
+.tl-eg-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rail-c);
+  border-radius: var(--tl-radius-sm) 0 0 var(--tl-radius-sm);
+}
+
+// Nodes folded onto the rail
+.tl-eg-node {
+  position: absolute;
+  left: -3.5px;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--node-c);
+  outline: 3px solid var(--card-bg);
+}
+
+.tl-eg-node-start { top: 14px; }
+.tl-eg-node-end   { bottom: 14px; }
+
+// ── Card body ──
+
+.tl-eg-body {
+  min-width: 0;
+}
+
+.tl-entry-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tl-entry-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tl-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-entry-menu {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--tl-text-faint);
+  cursor: pointer;
+  padding: 0 2px;
+  margin: -2px -6px 0 0;
+  display: grid;
+  place-items: center;
+}
+
+.tl-eg-dur {
+  font-family: var(--tl-font-mono);
+  font-size: 12px;
+  color: var(--tl-text-faint);
+  letter-spacing: 0.02em;
+  margin-top: 3px;
+}
+
+// ── Data sheet ──
+
+.tl-sh {
+  margin-top: 11px;
+  border-top: 1px solid var(--card-border);
+}
+
+.tl-sh-row {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--card-border);
+  align-items: start;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.tl-sh-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tl-text-faint);
+  // vertically center label with first line of tag pills (~22px tall)
+  padding-top: 5px;
+}
+
+.tl-sh-val {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.tl-sh-metric {
+  font-family: var(--tl-font-mono);
+  font-size: 11.5px;
+  color: var(--tl-text-dim);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+
+  b {
+    color: var(--tl-text);
+    font-weight: 600;
+  }
+}
+
+// ── Tag pills (list items + tags) ──
+
+.tl-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--tl-text-dim);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tl-tag--ghost {
+  background: transparent;
+  color: var(--tl-text-faint);
 }

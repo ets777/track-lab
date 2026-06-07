@@ -1,22 +1,32 @@
 .date-nav {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100%;
+  justify-content: space-between;
+  padding: 4px 2px 15px;
+
+  ion-button {
+    font-family: var(--tl-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tl-text-dim);
+    --color: var(--tl-text-dim);
+  }
 }
 
 .date-center {
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  flex: 1;
-  height: 100%;
+  gap: 2px;
 }
 
 .date-text {
   cursor: pointer;
   font-size: 17px;
-  font-weight: 500;
-  text-align: center;
+  font-weight: 700;
+  color: var(--tl-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
