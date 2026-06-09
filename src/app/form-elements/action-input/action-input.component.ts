@@ -1,17 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, ViewChild, forwardRef, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, forwardRef, OnInit, inject, OnDestroy } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { IonItem, IonLabel, IonTextarea } from '@ionic/angular/standalone';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
-import { Selectable } from 'src/app/types/selectable';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
-import { getPartIndex } from 'src/app/functions/string';
 
 @Component({
   selector: 'app-action-input',
   standalone: true,
-  imports: [IonItem, IonLabel, IonTextarea, TranslateModule, CommonModule, ReactiveFormsModule, SelectSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './action-input.component.html',
   styleUrl: './action-input.component.scss',
   providers: [{
@@ -20,25 +16,24 @@ import { getPartIndex } from 'src/app/functions/string';
     multi: true,
   }],
 })
-export class ActionInputComponent implements ControlValueAccessor, OnInit {
+export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   private actionService = inject(ActionService);
-  private translate = inject(TranslateService);
 
-  @ViewChild('actionsInput') actionsInput!: IonTextarea;
+  @ViewChild('inputEl') private inputEl?: ElementRef<HTMLInputElement>;
 
   innerControl = new FormControl('');
-  filteredActionSelectables: Selectable<string>[] = [];
+  inputText = '';
+  suggestions: string[] = [];
+  isFocused = false;
+  private blurTimeout: any;
 
   private allActionSuggestions: string[] = [];
-  private actionInputCaretPosition = 0;
-  private actionInputText = '';
-
   private onChange = (_: any) => {};
   private onTouched = () => {};
 
   constructor() {
-    this.innerControl.valueChanges.subscribe(val => {
-      this.onChange(val ?? '');
+    this.innerControl.valueChanges.subscribe(() => {
+      this.onChange(this.innerControl.value ?? '');
       this.onTouched();
     });
   }
@@ -46,58 +41,90 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit {
   async ngOnInit() {
     const actions = await this.actionService.getAllUnhidden();
     this.allActionSuggestions = actions.map(a => a.name);
+    this.updateSuggestions();
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.blurTimeout);
+  }
+
+  get chips(): string[] {
+    return (this.innerControl.value ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  get showDropdown(): boolean {
+    return this.isFocused && this.suggestions.length > 0;
+  }
+
+  get canConfirm(): boolean {
+    return this.inputText.trim().length > 0;
   }
 
   writeValue(value: string): void {
     this.innerControl.setValue(value || '', { emitEvent: false });
+    this.updateSuggestions();
   }
 
   registerOnChange(fn: any): void { this.onChange = fn; }
   registerOnTouched(fn: any): void { this.onTouched = fn; }
 
-  async updateCaretAndText(event: any) {
-    const indexBefore = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-    this.actionInputText = event.detail?.value ?? event.target?.value ?? this.actionInputText;
-    const nativeInput = await this.actionsInput.getInputElement();
-    this.actionInputCaretPosition = nativeInput.selectionStart ?? 0;
-    const indexAfter = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-    if (indexBefore !== indexAfter) {
-      this.filteredActionSelectables = [];
+  addChip(name: string, closeDropdown = false) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const current = this.chips;
+    if (!current.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+      current.push(trimmed);
+      this.innerControl.setValue(current.join(', '));
+    }
+    this.inputText = '';
+    if (closeDropdown) {
+      this.inputEl?.nativeElement.blur();
+    }
+    this.updateSuggestions();
+  }
+
+  removeChip(index: number) {
+    const current = this.chips;
+    current.splice(index, 1);
+    this.innerControl.setValue(current.join(', '));
+    this.updateSuggestions();
+  }
+
+  onFocus() {
+    clearTimeout(this.blurTimeout);
+    this.isFocused = true;
+    this.updateSuggestions();
+  }
+
+  onBlur() {
+    this.blurTimeout = setTimeout(() => { this.isFocused = false; }, 150);
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    if ((event.key === 'Enter' || event.key === ',') && this.inputText.trim()) {
+      event.preventDefault();
+      this.addChip(this.inputText.trim());
+    } else if (event.key === 'Backspace' && !this.inputText && this.chips.length) {
+      this.removeChip(this.chips.length - 1);
     }
   }
 
-  async onInput(event: any) {
-    await this.updateCaretAndText(event);
-    this.innerControl.setValue(this.actionInputText, { emitEvent: true });
+  onTextInput(event: Event) {
+    this.inputText = (event.target as HTMLInputElement).value;
+    this.updateSuggestions();
+  }
 
-    const parts = this.actionInputText
-      .split(',')
-      .map((s: string) => s.toLowerCase().trim());
-    const currentIndex = getPartIndex(this.actionInputText, this.actionInputCaretPosition);
-    const current = parts[currentIndex];
-    const otherParts = parts.filter((_, i) => i !== currentIndex);
-
-    if (current?.length > 0) {
-      const filtered = this.allActionSuggestions
-        .filter(s => s.toLowerCase().includes(current) && !otherParts.includes(s.toLowerCase()))
-        .slice(0, 5);
-      this.filteredActionSelectables = filtered.map((s, i) => ({ num: i, title: s, item: s }));
-    } else {
-      this.filteredActionSelectables = [];
+  confirmInput() {
+    if (this.inputText.trim()) {
+      this.addChip(this.inputText.trim());
     }
   }
 
-  selectSuggestion(suggestion: string) {
-    const text = this.innerControl.value ?? '';
-    const currentIndex = getPartIndex(text, this.actionInputCaretPosition);
-    const parts = text.split(',');
-    if (!parts.length) return;
-    parts[currentIndex] = ' ' + suggestion;
-    this.innerControl.setValue(parts.join(',').trim());
-    this.filteredActionSelectables = [];
-  }
-
-  get label() {
-    return `${this.translate.instant('TK_ACTIONS')} (${this.translate.instant('TK_SEPARATED_BY_COMMA').toLowerCase()})`;
+  updateSuggestions() {
+    const query = this.inputText.toLowerCase().trim();
+    const currentChips = new Set(this.chips.map(c => c.toLowerCase()));
+    this.suggestions = this.allActionSuggestions
+      .filter(s => !currentChips.has(s.toLowerCase()) && (!query || s.toLowerCase().includes(query)))
+      .slice(0, 6);
   }
 }

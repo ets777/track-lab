@@ -63,7 +63,8 @@ export class DatePickerComponent implements ControlValueAccessor {
   get monthLabel(): string {
     const d = new Date(this.viewYear, this.viewMonth, 1);
     const lang = this.translate.currentLang || 'en';
-    const label = d.toLocaleDateString(lang, { month: 'long', year: 'numeric' });
+    const label = d.toLocaleDateString(lang, { month: 'short', year: 'numeric' })
+      .replace(/\.(?=\s|$)/g, '');
     return label.charAt(0).toUpperCase() + label.slice(1);
   }
 

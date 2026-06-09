@@ -1,18 +1,41 @@
-<app-select-search
-  [multiple]="true"
-  [suggestions]="filteredActionSelectables"
-  (selected)="selectSuggestion($event)"
->
-  <ion-item #selectSearchAnchor>
-    <ion-label position="stacked">{{ label }}</ion-label>
-    <ion-textarea
-      #actionsInput
-      [value]="innerControl.value"
-      rows="1"
-      [autoGrow]="true"
-      (ionInput)="onInput($event)"
-      (click)="updateCaretAndText($event)"
-      (keyup)="updateCaretAndText($event)"
-    ></ion-textarea>
-  </ion-item>
-</app-select-search>
+<div class="nf-ti">
+  <div class="nf-ti-field">
+    @for (chip of chips; track chip; let i = $index) {
+      <span class="nf-action">
+        {{ chip }}
+        <i (click)="removeChip(i)" aria-label="Remove">✕</i>
+      </span>
+    }
+    <input
+      #inputEl
+      class="nf-ti-input"
+      [value]="inputText"
+      [placeholder]="chips.length === 0 ? ('TK_ADD_AN_ACTION' | translate) : 'Add…'"
+      (input)="onTextInput($event)"
+      (keydown)="onKeydown($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+    />
+    @if (canConfirm) {
+      <button type="button" class="nf-ti-confirm" aria-label="Add"
+              (mousedown)="$event.preventDefault()" (click)="confirmInput()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    }
+  </div>
+  @if (showDropdown) {
+    <div class="nf-ti-drop">
+      @for (s of suggestions; track s) {
+        <button type="button" class="nf-ti-opt"
+                (mousedown)="$event.preventDefault()" (click)="addChip(s, true)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          {{ s }}
+        </button>
+      }
+    </div>
+  }
+</div>

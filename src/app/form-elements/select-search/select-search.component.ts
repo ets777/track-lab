@@ -39,6 +39,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
   showSuggestions = false;
   hasCustomInputMode = false;
   isFocused = false;
+  private justSelected = false;
 
   // single mode state
   selectedSuggestion: Selectable<any> | null = null;
@@ -93,6 +94,10 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     if (this.multiple) {
       // don't show suggestions on focus — only while actively typing
     } else {
+      if (this.justSelected) {
+        this.justSelected = false;
+        return;
+      }
       this.onInput(event);
     }
   }
@@ -188,6 +193,7 @@ export class SelectSearchComponent implements ControlValueAccessor, Validator, O
     this.updateValue(suggestion.item);
     this.selected.emit(suggestion.item);
     this.showSuggestions = false;
+    this.justSelected = true;
   }
 
   // ─── ControlValueAccessor ─────────────────────────────────────────────────

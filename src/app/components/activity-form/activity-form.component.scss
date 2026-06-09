@@ -1,75 +1,468 @@
+// ── Form scroll container ──────────────────────────────────────────────────
 
-ion-accordion::part(content) {
-  overflow: visible;
+.nf-screen {
+  display: block;
+  padding: 0 var(--tl-screen-pad) 6px;
 }
 
-ion-range.range-inactive,
-.number-input-inactive {
-  opacity: 0.3;
+// ── Labelled field ─────────────────────────────────────────────────────────
+
+.nf-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
 }
 
-.number-input {
+.nf-label {
   display: flex;
   align-items: center;
-  width: 100%;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 6px;
+}
 
-  ion-input {
-    flex: 1;
-  }
+.nf-req {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tl-bad);
+  display: inline-block;
+  flex: 0 0 auto;
+}
 
-  .number-input-buttons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+.nf-opt {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--tl-text-faint);
+  text-transform: uppercase;
+}
 
-    ion-button {
-      font-size: 1.4rem;
-      --padding-start: 12px;
-      --padding-end: 12px;
+// ── When row (date · start · end) ─────────────────────────────────────────
+
+.nf-when {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--tl-line);
+
+  .nf-cell {
+    padding: 8px 0 6px;
+
+    & + .nf-cell {
+      padding-left: 14px;
     }
   }
+
+  // Remove ion-item chrome from time-wheel
+  ::ng-deep ion-item {
+    --inner-border-width: 0 !important;
+    --border-width: 0 !important;
+    --padding-start: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --inner-padding-end: 0;
+    --background: transparent;
+    --min-height: 0;
+    --highlight-height: 0;
+  }
+
+  // Date picker overrides
+  ::ng-deep .dp-trigger {
+    padding: 0 !important;
+    border-bottom: none !important;
+    display: block !important;
+  }
+  ::ng-deep .dp-trigger__label {
+    display: none !important;
+  }
+  ::ng-deep .dp-trigger__value {
+    font-family: var(--tl-font-mono);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--tl-text);
+    display: block;
+  }
+
+  // Time wheel font overrides
+  ::ng-deep ion-label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    color: var(--tl-text-dim) !important;
+    margin-bottom: 2px !important;
+  }
+  ::ng-deep .native-input {
+    font-family: var(--tl-font-mono) !important;
+    font-size: 20px !important;
+    font-weight: 500 !important;
+    color: var(--tl-text) !important;
+    padding-top: 0 !important;
+  }
+
+  // Start + end cells: custom header replaces time-wheel label
+  .nf-cell--start,
+  .nf-cell--end {
+    ::ng-deep ion-label {
+      display: none !important;
+    }
+  }
+
+  // Collapse ion-input height so time value aligns with date value.
+  // Document-level rules beat shadow :host rules per CSS cascade.
+  ::ng-deep ion-input {
+    min-height: 0;
+  }
 }
 
-ion-checkbox[slot="start"] {
-  align-self: center;
-  --size: 24px;
+// End cell header + duration
+.nf-cell-hd {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-bottom: 2px;
 }
 
-.group-header-content {
+.nf-cell-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+}
+
+.nf-cell-time-row {
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.group-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ion-text-color, inherit);
-}
-
-.header-add-btn {
-  --padding-start: 4px;
-  --padding-end: 4px;
+.nf-resync {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--tl-text-faint);
+  cursor: pointer;
+  padding: 0;
 
   ion-icon {
-    font-size: 22px;
+    font-size: 14px;
+  }
+
+  &:hover {
+    color: var(--tl-accent);
   }
 }
 
-.remove-btn {
-  align-self: center;
-  --padding-start: 4px;
-  --padding-end: 4px;
-  color: var(--ion-color-danger);
+.nf-cell-sub {
+  font-family: var(--tl-font-mono);
+  font-size: 11px;
+  color: var(--tl-text-faint);
+  margin-top: 1px;
+}
 
-  ion-icon {
-    font-size: 22px;
+// ── Disclosure section ─────────────────────────────────────────────────────
+
+.nf-disc {
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
-ion-range .range-value {
-  font-size: 1.4rem;
+.nf-disc--pills {
+  border-bottom: none;
+
+  .nf-disc-hd::after {
+    display: none;
+  }
+}
+
+.nf-disc-hd {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--tl-line);
+  }
+}
+
+// ── Progressive disclosure pills row ──────────────────────────────────────
+
+.nf-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0 6px;
+}
+
+.nf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border: 1px dashed var(--tl-line-2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tl-text-dim);
+  font-family: var(--tl-font-sans);
+  font-size: 12px;
   font-weight: 600;
-  min-width: 2.5rem;
-  text-align: right;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+
+  svg {
+    flex: 0 0 auto;
+  }
+
+  &:hover {
+    border-color: var(--tl-accent);
+    color: var(--tl-accent);
+  }
+
+  &[data-on='1'] {
+    border-style: solid;
+    border-color: var(--tl-accent);
+    background: var(--tl-accent-soft);
+    color: var(--tl-accent);
+  }
 }
+
+// ── Section heading (Metrics / Lists / Tags) ───────────────────────────────
+
+.nf-sec2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 8px;
+}
+
+.nf-sec-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tl-text);
+  letter-spacing: -0.01em;
+}
+
+.nf-sec-spacer {
+  flex: 1 1 auto;
+}
+
+.nf-sec-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 7px;
+  border: 1px solid var(--tl-accent-soft);
+  border-radius: 999px;
+  background: var(--tl-accent-soft);
+  color: var(--tl-accent);
+  font-family: var(--tl-font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--tl-accent) 16%, transparent);
+  }
+}
+
+// ── Metric rows ────────────────────────────────────────────────────────────
+
+.nf-metric {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &[data-on='0'] {
+    .nf-metric-name {
+      color: var(--tl-text-faint);
+    }
+
+    ion-range,
+    .number-input {
+      opacity: 0.4;
+    }
+  }
+}
+
+.nf-check {
+  --size: 22px;
+  --border-radius: 7px;
+  --border-color: var(--tl-line-2);
+  --border-color-checked: var(--tl-accent);
+  --background-checked: var(--tl-accent);
+  --checkmark-color: var(--tl-accent-ink);
+  align-self: center;
+
+  &::part(mark) {
+    transform: scale(0.6);
+    transform-origin: center center;
+  }
+}
+
+.nf-metric-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nf-metric-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--tl-text);
+  letter-spacing: -0.005em;
+}
+
+.nf-metric-val {
+  font-family: var(--tl-font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--tl-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+}
+
+ion-range.nf-slider {
+  --bar-height: 3px;
+  --bar-border-radius: 999px;
+  --knob-size: 14px;
+  --knob-border-radius: 50%;
+  --bar-background: var(--tl-line-2);
+  --bar-background-active: var(--tl-accent);
+  --knob-background: var(--tl-accent);
+  padding: 0;
+  height: 28px;
+}
+
+ion-range.nf-slider::part(tick),
+ion-range.nf-slider::part(tick-active) {
+  display: none;
+}
+
+.nf-remove-btn {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: var(--tl-surface-2);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--tl-text-faint);
+  align-self: center;
+
+  &:hover {
+    background: var(--tl-bad-bg);
+    color: var(--tl-bad);
+  }
+}
+
+// number metric input + step buttons
+.number-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  ion-input {
+    flex: 1;
+    --padding-start: 0;
+    --padding-end: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tl-text);
+  }
+}
+
+.number-input-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.nf-step-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--tl-line-2);
+  border-radius: 8px;
+  background: var(--tl-surface-2);
+  color: var(--tl-text-dim);
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--tl-accent);
+    color: var(--tl-accent);
+  }
+}
+
+// ── List block ─────────────────────────────────────────────────────────────
+
+.nf-list {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// ── Note textarea ──────────────────────────────────────────────────────────
+
+.nf-comment {
+  width: 100%;
+  min-height: 64px;
+  resize: none;
+  border: none;
+  background: transparent;
+  font-family: var(--tl-font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--tl-text);
+  outline: none;
+  padding: 0;
+  display: block;
+
+  &::placeholder {
+    color: var(--tl-text-faint);
+  }
+}
+
+// ── ion-range slider override ──────────────────────────────────────────────
+

@@ -2,16 +2,10 @@
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
     <ion-title>{{ 'TK_EDIT' | translate }} {{ 'TK_ACTIVITY' | translate | lowercase }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="updateActivity()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
   @if (activity) {
     <app-activity-form
       #updateFormRef
@@ -21,3 +15,14 @@
     ></app-activity-form>
   }
 </ion-content>
+
+<ion-footer>
+  <div class="nf-actionbar">
+    <button
+      type="button"
+      class="nf-submit"
+      [disabled]="!isFormValid()"
+      (click)="updateActivity()"
+    >{{ 'TK_SAVE' | translate }}</button>
+  </div>
+</ion-footer>

@@ -1,0 +1,119 @@
+.nf-tag-hd {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.nf-tag-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+}
+
+.nf-ti {
+  position: relative;
+}
+
+.nf-ti-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 0;
+}
+
+.nf-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px 0 10px;
+  background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  border-radius: 999px;
+  font-family: var(--tl-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tl-text);
+
+  i {
+    font-style: normal;
+    font-size: 12px;
+    color: var(--tl-text-faint);
+    cursor: pointer;
+    padding: 2px;
+
+    &:hover {
+      color: var(--tl-bad);
+    }
+  }
+}
+
+.nf-ti-input {
+  flex: 1 1 80px;
+  min-width: 60px;
+  border: none;
+  background: transparent;
+  font-family: var(--tl-font-sans);
+  font-size: 14px;
+  color: var(--tl-text);
+  outline: none;
+  padding: 2px 0;
+
+  &::placeholder {
+    color: var(--tl-text-faint);
+  }
+}
+
+.nf-ti-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--tl-accent);
+  color: var(--tl-accent-ink);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nf-ti-drop {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line-2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.nf-ti-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  font-family: var(--tl-font-sans);
+  font-size: 14px;
+  color: var(--tl-text);
+  cursor: pointer;
+  text-align: left;
+
+  svg {
+    flex: 0 0 auto;
+    color: var(--tl-text-faint);
+  }
+
+  &:hover {
+    background: var(--tl-surface-2);
+  }
+}

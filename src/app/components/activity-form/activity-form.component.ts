@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonTextarea, IonList, IonIcon, IonAccordionGroup, IonAccordion, IonRange, IonCheckbox, IonButton, IonModal, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonList, IonIcon, IonRange, IonCheckbox, IonButton, IonModal, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, close, searchOutline } from 'ionicons/icons';
 import { ActivityService } from 'src/app/services/activity.service';
@@ -33,7 +33,6 @@ import { MetricService } from 'src/app/services/metric.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { tagsValidator } from 'src/app/validators/tags.validator';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
 import { ListService } from 'src/app/services/list.service';
 import { ActionListService } from 'src/app/services/action-list.service';
@@ -67,7 +66,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonAccordion, IonAccordionGroup, IonIcon, IonList, IonTextarea, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
+  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonIcon, IonList, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -117,8 +116,9 @@ export class ActivityFormComponent implements OnInit {
 
   manuallyAddedMetricIds = new Set<number>();
   manuallyAddedListIds = new Set<number>();
-  metricsGroupOpen = this.loadGroupState('metrics', true);
-  listsGroupOpen = this.loadGroupState('lists', true);
+  metricsGroupOpen = this.loadGroupState('metrics', false);
+  listsGroupOpen = this.loadGroupState('lists', false);
+  noteOpen = false;
   isAddLibraryModalOpen = false;
   modalFilterType: 'metric' | 'list' = 'metric';
   librarySearchQuery = '';
@@ -276,7 +276,7 @@ export class ActivityFormComponent implements OnInit {
     return stored === null ? defaultOpen : stored === 'true';
   }
 
-  private saveGroupState(key: string, open: boolean) {
+  saveGroupState(key: string, open: boolean) {
     localStorage.setItem(`activity-form:${key}-open`, String(open));
   }
 
@@ -412,6 +412,7 @@ export class ActivityFormComponent implements OnInit {
     const tagLinkedIds = new Set(this.allTagMetrics.map(tm => tm.metricId));
     const itemLinkedIds = new Set(this.allItemMetrics.map(im => im.metricId));
 
+    const prevLen = this.standaloneMetrics.length;
     this.standaloneMetrics = this.allMetrics.filter(m => {
       if (m.isHidden) return false;
       if (!actionLinkedIds.has(m.id) && !tagLinkedIds.has(m.id) && !itemLinkedIds.has(m.id)) return true;
@@ -420,6 +421,10 @@ export class ActivityFormComponent implements OnInit {
       if (itemLinkedIds.has(m.id) && this.allItemMetrics.some(im => im.metricId === m.id && enteredItemIds.has(im.itemId))) return true;
       return false;
     });
+    if (this.standaloneMetrics.length > 0 && prevLen === 0) {
+      this.metricsGroupOpen = true;
+      this.saveGroupState('metrics', true);
+    }
   }
 
   onRangeChange(metricId: number) {
@@ -523,11 +528,16 @@ export class ActivityFormComponent implements OnInit {
 
     const actionLinkedIds = new Set(this.allActionLists.map(al => al.listId));
 
+    const prevLen = this.standaloneLists.length;
     this.standaloneLists = this.allLists.filter(l => {
       if (l.isHidden) return false;
       if (!actionLinkedIds.has(l.id)) return true;
       return this.allActionLists.some(al => al.listId === l.id && selectedActionIds.has(al.actionId));
     });
+    if (this.standaloneLists.length > 0 && prevLen === 0) {
+      this.listsGroupOpen = true;
+      this.saveGroupState('lists', true);
+    }
   }
 
   getListItemRecords(): { listId: number; itemNames: string[] }[] {
@@ -632,6 +642,19 @@ export class ActivityFormComponent implements OnInit {
     };
   }
 
+  get durationDisplay(): string {
+    const start = this.activityForm.get('startTime')?.value ?? '';
+    const end = this.activityForm.get('endTime')?.value ?? '';
+    const startMatch = start.match(/^(\d{2}):(\d{2})$/);
+    const endMatch = end.match(/^(\d{2}):(\d{2})$/);
+    if (!startMatch || !endMatch) return '';
+    const startMins = parseInt(startMatch[1]) * 60 + parseInt(startMatch[2]);
+    const endMins = parseInt(endMatch[1]) * 60 + parseInt(endMatch[2]);
+    let diff = endMins - startMins;
+    if (diff < 0) diff += 24 * 60;
+    return `${diff} min`;
+  }
+
   setActivityData(activity: IActivity) {
     this.activityForm.patchValue({
       actions: entitiesToString(activity.actions),
@@ -641,6 +664,11 @@ export class ActivityFormComponent implements OnInit {
       date: activity.date,
       tags: entitiesToString(activity.tags),
     });
+    if (activity.comment) this.noteOpen = true;
+    if (activity.tags?.length) {
+      this.listsGroupOpen = true;
+      this.saveGroupState('lists', true);
+    }
   }
 
 

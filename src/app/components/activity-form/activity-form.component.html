@@ -1,227 +1,262 @@
-<form [formGroup]="activityForm">
-  <app-action-input
-    appValidationError
-    formControlName="actions"
-  ></app-action-input>
+<form [formGroup]="activityForm" class="nf-screen">
 
-  <app-date-picker
-    appValidationError
-    formControlName="date"
-    label="TK_DATE"
-  ></app-date-picker>
+  <!-- ACTIONS -->
+  <div class="nf-field">
+    <div class="nf-label">{{ 'TK_ACTIONS' | translate }}</div>
+    <app-action-input formControlName="actions"></app-action-input>
+  </div>
 
-  <app-time-wheel
-    appValidationError
-    formControlName="startTime"
-    label="TK_START_TIME"
-  ></app-time-wheel>
-
-  <app-time-wheel
-    appValidationError
-    formControlName="endTime"
-    label="TK_END_TIME"
-  >
-    @if (!isCurrentTime(activityForm.get('endTime')?.value ?? '')) {
-      <ion-icon
-        class="input-icon"
-        slot="end"
-        src="assets/icon/refresh.svg"
-        (click)="updateEndTime($event)"
-      ></ion-icon>
-    }
-  </app-time-wheel>
-
-  @if (hasAnyMetrics) {
-    <ion-accordion-group [value]="metricsGroupOpen ? 'metrics' : null" (ionChange)="onMetricsGroupChange($event)">
-      <ion-accordion value="metrics">
-        <ion-item slot="header">
-          <div class="group-header-content">
-            <span class="group-title">{{ 'TK_METRICS' | translate }}</span>
-            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddMetricModal($event)">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
-            </ion-button>
-          </div>
-        </ion-item>
-        <div slot="content">
-          <div [formGroup]="metricsForm">
-            @for (metric of standaloneMetrics; track metric.id) {
-              @if (isRangeMetric(metric)) {
-                <ion-item
-                  (pointerdown)="onCheckboxPointerDown($event)"
-                  (pointermove)="onCheckboxPointerMove($event)"
-                >
-                  <ion-checkbox
-                    slot="start"
-                    [checked]="metricEnabled['metric_' + metric.id]"
-                    (ionChange)="onMetricCheckboxChange(metric.id, $event)"
-                  ></ion-checkbox>
-                  <ion-label position="stacked">
-                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                  </ion-label>
-                  <ion-range
-                    [formControlName]="'metric_' + metric.id"
-                    [min]="metric.minValue"
-                    [max]="metric.maxValue"
-                    [step]="metric.step"
-                    [snaps]="true"
-                    [class.range-inactive]="!metricEnabled['metric_' + metric.id]"
-                    [style.--bar-background-active]="getRangeColor(metric)"
-                    [style.--knob-background]="getRangeColor(metric)"
-                    (ionChange)="onRangeChange(metric.id)"
-                  >
-                    <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
-                  </ion-range>
-                </ion-item>
-              } @else {
-                <ion-item
-                  (pointerdown)="onCheckboxPointerDown($event)"
-                  (pointermove)="onCheckboxPointerMove($event)"
-                >
-                  <ion-checkbox
-                    slot="start"
-                    [checked]="metricEnabled['metric_' + metric.id]"
-                    (ionChange)="onMetricCheckboxChange(metric.id, $event)"
-                  ></ion-checkbox>
-                  <ion-label position="stacked">
-                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                  </ion-label>
-                  <div class="number-input" [class.number-input-inactive]="!metricEnabled['metric_' + metric.id]">
-                    <ion-input
-                      appValidationError
-                      type="number"
-                      [formControlName]="'metric_' + metric.id"
-                      [step]="metric.step"
-                      (ionFocus)="onRangeChange(metric.id)"
-                    ></ion-input>
-                    <div class="number-input-buttons">
-                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
-                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
-                    </div>
-                  </div>
-                </ion-item>
-              }
-            }
-            @for (metric of manuallyAddedMetricsNotInStandalone; track metric.id) {
-              @if (isRangeMetric(metric)) {
-                <ion-item>
-                  <ion-button slot="start" fill="clear" size="small" class="remove-btn" (click)="removeManualMetric(metric.id)">
-                    <ion-icon slot="icon-only" name="close"></ion-icon>
-                  </ion-button>
-                  <ion-label position="stacked">
-                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                  </ion-label>
-                  <ion-range
-                    [formControlName]="'metric_' + metric.id"
-                    [min]="metric.minValue"
-                    [max]="metric.maxValue"
-                    [step]="metric.step"
-                    [snaps]="true"
-                    [style.--bar-background-active]="getRangeColor(metric)"
-                    [style.--knob-background]="getRangeColor(metric)"
-                    (ionChange)="onRangeChange(metric.id)"
-                  >
-                    <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
-                  </ion-range>
-                </ion-item>
-              } @else {
-                <ion-item>
-                  <ion-button slot="start" fill="clear" size="small" class="remove-btn" (click)="removeManualMetric(metric.id)">
-                    <ion-icon slot="icon-only" name="close"></ion-icon>
-                  </ion-button>
-                  <ion-label position="stacked">
-                    {{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}
-                  </ion-label>
-                  <div class="number-input">
-                    <ion-input
-                      appValidationError
-                      type="number"
-                      [formControlName]="'metric_' + metric.id"
-                      [step]="metric.step"
-                      (ionFocus)="onRangeChange(metric.id)"
-                    ></ion-input>
-                    <div class="number-input-buttons">
-                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, -1)">&lt;</ion-button>
-                      <ion-button fill="clear" size="small" (click)="stepMetric(metric, 1)">&gt;</ion-button>
-                    </div>
-                  </div>
-                </ion-item>
-              }
-            }
-          </div>
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
-  } @else {
-    <ion-item>
-      <div class="group-header-content">
-        <span class="group-title">{{ 'TK_METRICS' | translate }}</span>
-        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddMetricModal($event)">
-          <ion-icon slot="icon-only" name="add"></ion-icon>
-        </ion-button>
+  <!-- WHEN: date · start · end -->
+  <div class="nf-when">
+    <div class="nf-cell">
+      <div class="nf-cell-hd">
+        <span class="nf-cell-lbl">{{ 'TK_DATE' | translate }}</span>
       </div>
-    </ion-item>
+      <app-date-picker formControlName="date" label=""></app-date-picker>
+    </div>
+    <div class="nf-cell nf-cell--start">
+      <div class="nf-cell-hd">
+        <span class="nf-cell-lbl">{{ 'TK_START_TIME' | translate }}</span>
+      </div>
+      <app-time-wheel formControlName="startTime" label=""></app-time-wheel>
+    </div>
+    <div class="nf-cell nf-cell--end">
+      <div class="nf-cell-hd">
+        <span class="nf-cell-lbl">{{ 'TK_END_TIME' | translate }}</span>
+      </div>
+      <div class="nf-cell-time-row">
+        <app-time-wheel formControlName="endTime" label=""></app-time-wheel>
+        <button type="button" class="nf-resync" (click)="updateEndTime($event)"
+                [style.visibility]="isCurrentTime(activityForm.get('endTime')?.value ?? '') ? 'hidden' : 'visible'">
+          <ion-icon src="assets/icon/refresh.svg"></ion-icon>
+        </button>
+      </div>
+      @if (durationDisplay) {
+        <div class="nf-cell-sub">{{ durationDisplay }}</div>
+      }
+    </div>
+  </div>
+
+  <!-- ADD DETAILS: progressive disclosure pills -->
+  <div class="nf-disc nf-disc--pills">
+    <div class="nf-disc-hd">{{ 'TK_ADD_DETAILS' | translate }}</div>
+    <div class="nf-pills">
+      <button type="button" class="nf-pill" [attr.data-on]="metricsGroupOpen ? '1' : '0'"
+              (click)="metricsGroupOpen = !metricsGroupOpen; saveGroupState('metrics', metricsGroupOpen)">
+        @if (metricsGroupOpen) {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        }
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 8h10M18 8h2M4 16h2M10 16h10"/>
+          <circle cx="16" cy="8" r="2.3"/>
+          <circle cx="8" cy="16" r="2.3"/>
+        </svg>
+        {{ 'TK_METRICS' | translate }}
+      </button>
+      <button type="button" class="nf-pill" [attr.data-on]="listsGroupOpen ? '1' : '0'"
+              (click)="listsGroupOpen = !listsGroupOpen; saveGroupState('lists', listsGroupOpen)">
+        @if (listsGroupOpen) {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        }
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6h12M8 12h12M8 18h12"/>
+          <circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+        {{ 'TK_LISTS' | translate }}
+      </button>
+      <button type="button" class="nf-pill" [attr.data-on]="noteOpen ? '1' : '0'"
+              (click)="noteOpen = !noteOpen">
+        @if (noteOpen) {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        }
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 4h14v16l-4-3H5z"/>
+          <path d="M9 9h6M9 13h4"/>
+        </svg>
+        {{ 'TK_COMMENT' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- METRICS SECTION -->
+  @if (metricsGroupOpen) {
+    <div class="nf-disc">
+      <div class="nf-sec2">
+        <span class="nf-sec-title">{{ 'TK_METRICS' | translate }}</span>
+        <span class="nf-sec-spacer"></span>
+        <button type="button" class="nf-sec-add" (click)="openAddMetricModal($event)">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ 'TK_ADD' | translate }}
+        </button>
+      </div>
+      <div [formGroup]="metricsForm">
+        @for (metric of standaloneMetrics; track metric.id) {
+          <div class="nf-metric" [attr.data-on]="metricEnabled['metric_' + metric.id] ? '1' : '0'"
+               (pointerdown)="onCheckboxPointerDown($event)"
+               (pointermove)="onCheckboxPointerMove($event)">
+            <ion-checkbox
+              class="nf-check"
+              [checked]="metricEnabled['metric_' + metric.id]"
+              (ionChange)="onMetricCheckboxChange(metric.id, $event)"
+            ></ion-checkbox>
+            <div class="nf-metric-main">
+              <span class="nf-metric-name">{{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}</span>
+              @if (isRangeMetric(metric)) {
+                <ion-range
+                  [formControlName]="'metric_' + metric.id"
+                  [min]="metric.minValue"
+                  [max]="metric.maxValue"
+                  [step]="metric.step"
+                  [snaps]="true"
+                  class="nf-slider"
+                  (ionChange)="onRangeChange(metric.id)"
+                  (pointerdown)="onRangeChange(metric.id)"
+                ></ion-range>
+              } @else {
+                <div class="number-input">
+                  <ion-input
+                    type="number"
+                    [formControlName]="'metric_' + metric.id"
+                    [step]="metric.step"
+                    (ionFocus)="onRangeChange(metric.id)"
+                  ></ion-input>
+                  <div class="number-input-buttons">
+                    <button type="button" class="nf-step-btn" (click)="stepMetric(metric, -1)">−</button>
+                    <button type="button" class="nf-step-btn" (click)="stepMetric(metric, 1)">+</button>
+                  </div>
+                </div>
+              }
+            </div>
+            @if (isRangeMetric(metric)) {
+              <span class="nf-metric-val">{{ metricsForm.get('metric_' + metric.id)?.value }}</span>
+            }
+          </div>
+        }
+        @for (metric of manuallyAddedMetricsNotInStandalone; track metric.id) {
+          <div class="nf-metric" [attr.data-on]="'1'">
+            <button type="button" class="nf-remove-btn" (click)="removeManualMetric(metric.id)">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="nf-metric-main">
+              <span class="nf-metric-name">{{ metric.name | translate }}{{ metric.unit ? ' (' + metric.unit + ')' : '' }}</span>
+              @if (isRangeMetric(metric)) {
+                <ion-range
+                  [formControlName]="'metric_' + metric.id"
+                  [min]="metric.minValue"
+                  [max]="metric.maxValue"
+                  [step]="metric.step"
+                  [snaps]="true"
+                  class="nf-slider"
+                  (ionChange)="onRangeChange(metric.id)"
+                  (pointerdown)="onRangeChange(metric.id)"
+                ></ion-range>
+              } @else {
+                <div class="number-input">
+                  <ion-input
+                    type="number"
+                    [formControlName]="'metric_' + metric.id"
+                    [step]="metric.step"
+                    (ionFocus)="onRangeChange(metric.id)"
+                  ></ion-input>
+                  <div class="number-input-buttons">
+                    <button type="button" class="nf-step-btn" (click)="stepMetric(metric, -1)">−</button>
+                    <button type="button" class="nf-step-btn" (click)="stepMetric(metric, 1)">+</button>
+                  </div>
+                </div>
+              }
+            </div>
+            @if (isRangeMetric(metric)) {
+              <span class="nf-metric-val">{{ metricsForm.get('metric_' + metric.id)?.value }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
   }
 
-  @if (hasAnyLists) {
-    <ion-accordion-group [value]="listsGroupOpen ? 'lists' : null" (ionChange)="onListsGroupChange($event)">
-      <ion-accordion value="lists">
-        <ion-item slot="header">
-          <div class="group-header-content">
-            <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
-            <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
-            </ion-button>
-          </div>
-        </ion-item>
-        <div slot="content">
-          <div [formGroup]="listsForm">
-            @for (list of standaloneLists; track list.id) {
-              <app-list-input
-                [listId]="list.id"
-                [label]="getListLabel(list)"
-                [formControlName]="'list_' + list.id"
-              ></app-list-input>
-            }
-            @for (list of manuallyAddedListsNotInStandalone; track list.id) {
-              <app-list-input
-                [listId]="list.id"
-                [label]="getListLabel(list)"
-                [formControlName]="'list_' + list.id"
-                [removable]="true"
-                (removed)="removeManualList(list.id)"
-              ></app-list-input>
-            }
-          </div>
-        </div>
-      </ion-accordion>
-    </ion-accordion-group>
-  } @else {
-    <ion-item>
-      <div class="group-header-content">
-        <span class="group-title">{{ 'TK_LISTS' | translate }}</span>
-        <ion-button fill="clear" size="small" class="header-add-btn" (click)="openAddListModal($event)">
-          <ion-icon slot="icon-only" name="add"></ion-icon>
-        </ion-button>
+  <!-- LISTS + TAGS SECTION -->
+  @if (listsGroupOpen) {
+    <div class="nf-disc">
+      <div class="nf-sec2">
+        <span class="nf-sec-title">{{ 'TK_LISTS' | translate }}</span>
+        <span class="nf-sec-spacer"></span>
+        <button type="button" class="nf-sec-add" (click)="openAddListModal($event)">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ 'TK_ADD' | translate }}
+        </button>
       </div>
-    </ion-item>
+      <div [formGroup]="listsForm">
+        @for (list of standaloneLists; track list.id) {
+          <div class="nf-list">
+            <app-list-input
+              [listId]="list.id"
+              [label]="getListLabel(list)"
+              [formControlName]="'list_' + list.id"
+            ></app-list-input>
+          </div>
+        }
+        @for (list of manuallyAddedListsNotInStandalone; track list.id) {
+          <div class="nf-list">
+            <app-list-input
+              [listId]="list.id"
+              [label]="getListLabel(list)"
+              [formControlName]="'list_' + list.id"
+              [removable]="true"
+              (removed)="removeManualList(list.id)"
+            ></app-list-input>
+          </div>
+        }
+      </div>
+      <div class="nf-list">
+        <app-tag-input [formControl]="$any(activityForm.get('tags'))"></app-tag-input>
+      </div>
+    </div>
   }
 
-  <app-tag-input
-    appValidationError
-    formControlName="tags"
-  ></app-tag-input>
+  <!-- NOTE SECTION -->
+  @if (noteOpen) {
+    <div class="nf-disc">
+      <div class="nf-field" style="border-bottom: none">
+        <label class="nf-label">{{ 'TK_COMMENT' | translate }}</label>
+        <textarea
+          class="nf-comment"
+          formControlName="comment"
+          [placeholder]="'TK_TELL_MORE_ABOUT_THIS_ACTIVITY' | translate"
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+  }
 
-  <ion-item>
-    <ion-textarea
-      label="{{ 'TK_COMMENT' | translate }}"
-      labelPlacement="floating"
-      placeholder="{{ 'TK_TELL_MORE_ABOUT_THIS_ACTIVITY' | translate }}"
-      formControlName="comment"
-      name="comment"
-    ></ion-textarea>
-  </ion-item>
 </form>
 
+<!-- Add metric / list modal -->
 <ion-modal [isOpen]="isAddLibraryModalOpen" (didDismiss)="isAddLibraryModalOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
   <ng-template>
     <ion-header>

@@ -3,9 +3,13 @@ export function formatDisplayDate(dateStr: string, lang: string): string {
     if (!m) return dateStr;
     const d = new Date(+m[1], +m[2] - 1, +m[3]);
     const options: Intl.DateTimeFormatOptions = d.getFullYear() === new Date().getFullYear()
-        ? { month: 'long', day: 'numeric' }
-        : { year: 'numeric', month: 'long', day: 'numeric' };
-    return d.toLocaleDateString(lang, options);
+        ? { month: 'short', day: 'numeric' }
+        : { year: 'numeric', month: 'short', day: 'numeric' };
+    return normalizeShortDate(d.toLocaleDateString(lang, options));
+}
+
+function normalizeShortDate(s: string): string {
+    return s.replace(/\.(?=\s|$)/g, '');
 }
 
 export function formatGraphDate(dateStr: string, lang: string): string {

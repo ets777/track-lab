@@ -1,15 +1,11 @@
-import { Component, EventEmitter, Output, forwardRef, Input, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, Output, forwardRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemService } from 'src/app/services/item.service';
-import { addIcons } from 'ionicons';
-import { close } from 'ionicons/icons';
-import { Selectable } from 'src/app/types/selectable';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 
 @Component({
-  imports: [IonButton, IonIcon, TranslateModule, ReactiveFormsModule, SelectSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   selector: 'app-list-input',
   templateUrl: './list-input.component.html',
   styleUrl: './list-input.component.scss',
@@ -21,7 +17,7 @@ import { SelectSearchComponent } from 'src/app/form-elements/select-search/selec
     },
   ],
 })
-export class ListInputComponent implements ControlValueAccessor, OnInit {
+export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   private itemService = inject(ItemService);
   private translate = inject(TranslateService);
 
@@ -31,32 +27,110 @@ export class ListInputComponent implements ControlValueAccessor, OnInit {
   @Output() removed = new EventEmitter<void>();
 
   innerControl = new FormControl('');
-  allSuggestions: Selectable<string>[] = [];
+  inputText = '';
+  suggestions: string[] = [];
+  isFocused = false;
+  private blurTimeout: any;
 
+  private allSuggestionNames: string[] = [];
   private onChange = (_: any) => {};
   private onTouched = () => {};
 
   constructor() {
-    addIcons({ close });
-    this.innerControl.valueChanges.subscribe(val => {
-      this.onChange(val ?? '');
+    this.innerControl.valueChanges.subscribe(() => {
+      this.onChange(this.innerControl.value ?? '');
       this.onTouched();
     });
   }
 
   async ngOnInit() {
     const items = await this.itemService.getAllWhereEquals('listId', this.listId);
-    this.allSuggestions = items.map((item, i) => ({ num: i, title: item.name, item: item.name }));
+    this.allSuggestionNames = items.map(item => item.name);
+    this.updateSuggestions();
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.blurTimeout);
+  }
+
+  get chips(): string[] {
+    return (this.innerControl.value ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  get translatedLabel(): string {
+    return this.translate.instant(this.label);
+  }
+
+  get showDropdown(): boolean {
+    return this.isFocused && this.suggestions.length > 0;
+  }
+
+  get canConfirm(): boolean {
+    return this.inputText.trim().length > 0;
   }
 
   writeValue(value: string): void {
     this.innerControl.setValue(value || '', { emitEvent: false });
+    this.updateSuggestions();
   }
 
   registerOnChange(fn: any): void { this.onChange = fn; }
   registerOnTouched(fn: any): void { this.onTouched = fn; }
 
-  get inputLabel(): string {
-    return `${this.translate.instant(this.label)} (${this.translate.instant('TK_SEPARATED_BY_COMMA').toLowerCase()})`;
+  addChip(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const current = this.chips;
+    if (!current.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+      current.push(trimmed);
+      this.innerControl.setValue(current.join(', '));
+    }
+    this.inputText = '';
+    this.updateSuggestions();
+  }
+
+  removeChip(index: number) {
+    const current = this.chips;
+    current.splice(index, 1);
+    this.innerControl.setValue(current.join(', '));
+    this.updateSuggestions();
+  }
+
+  onFocus() {
+    clearTimeout(this.blurTimeout);
+    this.isFocused = true;
+    this.updateSuggestions();
+  }
+
+  onBlur() {
+    this.blurTimeout = setTimeout(() => { this.isFocused = false; }, 150);
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    if ((event.key === 'Enter' || event.key === ',') && this.inputText.trim()) {
+      event.preventDefault();
+      this.addChip(this.inputText.trim());
+    } else if (event.key === 'Backspace' && !this.inputText && this.chips.length) {
+      this.removeChip(this.chips.length - 1);
+    }
+  }
+
+  onTextInput(event: Event) {
+    this.inputText = (event.target as HTMLInputElement).value;
+    this.updateSuggestions();
+  }
+
+  confirmInput() {
+    if (this.inputText.trim()) {
+      this.addChip(this.inputText.trim());
+    }
+  }
+
+  updateSuggestions() {
+    const query = this.inputText.toLowerCase().trim();
+    const currentChips = new Set(this.chips.map(c => c.toLowerCase()));
+    this.suggestions = this.allSuggestionNames
+      .filter(s => !currentChips.has(s.toLowerCase()) && (!query || s.toLowerCase().includes(query)))
+      .slice(0, 6);
   }
 }

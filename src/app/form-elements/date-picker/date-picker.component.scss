@@ -26,6 +26,16 @@ app-date-picker {
   padding-inline: 0;
 }
 
+.nf-when .dp-trigger {
+  padding: 0;
+  border-bottom: none;
+  display: block;
+}
+
+.nf-when .dp-trigger__label {
+  display: none;
+}
+
 .dp-backdrop {
   position: fixed;
   inset: 0;

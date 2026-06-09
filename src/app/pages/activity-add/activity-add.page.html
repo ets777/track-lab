@@ -2,15 +2,20 @@
   <ion-toolbar>
     <app-back-button slot="start"></app-back-button>
     <ion-title>{{ 'TK_NEW_ACTIVITY' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="addActivity()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_ADD' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
   <app-activity-form #addFormRef></app-activity-form>
 </ion-content>
+
+<ion-footer>
+  <div class="nf-actionbar">
+    <button
+      type="button"
+      class="nf-submit"
+      [disabled]="!isFormValid()"
+      (click)="addActivity()"
+    >{{ 'TK_ADD_ACTIVITY' | translate }}</button>
+  </div>
+</ion-footer>

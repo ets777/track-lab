@@ -1,0 +1,124 @@
+:host {
+  display: block;
+}
+
+.nf-ti {
+  position: relative;
+}
+
+.nf-ti-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-height: 34px;
+}
+
+.nf-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--tl-accent);
+  padding: 5px 8px 5px 13px;
+  border-radius: 999px;
+  letter-spacing: -0.005em;
+  background: var(--tl-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--tl-accent) 24%, transparent);
+
+  i {
+    width: 16px;
+    height: 16px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tl-accent) 22%, transparent);
+    color: var(--tl-accent);
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    font-style: normal;
+    flex: 0 0 auto;
+
+    &:hover {
+      background: var(--tl-accent);
+      color: var(--tl-accent-ink);
+    }
+  }
+}
+
+.nf-ti-input {
+  flex: 1 1 100px;
+  min-width: 80px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--tl-font-sans);
+  font-size: 15px;
+  color: var(--tl-text);
+  padding: 6px 2px;
+
+  &::placeholder {
+    color: var(--tl-text-faint);
+  }
+}
+
+.nf-ti-confirm {
+  flex: 0 0 auto;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  border: none;
+  background: var(--tl-accent);
+  color: var(--tl-accent-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+}
+
+.nf-ti-drop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 9px;
+  z-index: 30;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line-2);
+  border-radius: var(--tl-radius-sm);
+  overflow: hidden;
+}
+
+.nf-ti-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--tl-font-sans);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--tl-text);
+
+  & + & {
+    border-top: 1px solid var(--tl-line);
+  }
+
+  &:hover {
+    background: var(--tl-surface-2);
+  }
+
+  svg {
+    color: var(--tl-text-faint);
+    flex: 0 0 auto;
+  }
+}
