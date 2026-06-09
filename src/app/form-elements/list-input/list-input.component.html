@@ -17,6 +17,7 @@
       </span>
     }
     <input
+      #inputEl
       class="nf-ti-input"
       [value]="inputText"
       [placeholder]="chips.length === 0 ? ('TK_ADD_ITEM' | translate) : 'Add…'"
@@ -38,7 +39,7 @@
     <div class="nf-ti-drop">
       @for (s of suggestions; track s) {
         <button type="button" class="nf-ti-opt"
-                (mousedown)="$event.preventDefault()" (click)="addChip(s)">
+                (mousedown)="$event.preventDefault()" (click)="addChip(s, true)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>

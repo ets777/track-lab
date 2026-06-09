@@ -116,7 +116,7 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
 
   confirmInput() {
     if (this.inputText.trim()) {
-      this.addChip(this.inputText.trim());
+      this.addChip(this.inputText.trim(), true);
     }
   }
 

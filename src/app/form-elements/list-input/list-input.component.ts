@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, forwardRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output, ViewChild, forwardRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,6 +25,8 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   @Input() label: string = '';
   @Input() removable = false;
   @Output() removed = new EventEmitter<void>();
+
+  @ViewChild('inputEl') private inputEl?: ElementRef<HTMLInputElement>;
 
   innerControl = new FormControl('');
   inputText = '';
@@ -77,7 +79,7 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   registerOnChange(fn: any): void { this.onChange = fn; }
   registerOnTouched(fn: any): void { this.onTouched = fn; }
 
-  addChip(name: string) {
+  addChip(name: string, closeDropdown = false) {
     const trimmed = name.trim();
     if (!trimmed) return;
     const current = this.chips;
@@ -86,6 +88,7 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
       this.innerControl.setValue(current.join(', '));
     }
     this.inputText = '';
+    if (closeDropdown) this.inputEl?.nativeElement.blur();
     this.updateSuggestions();
   }
 
@@ -122,7 +125,7 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
 
   confirmInput() {
     if (this.inputText.trim()) {
-      this.addChip(this.inputText.trim());
+      this.addChip(this.inputText.trim(), true);
     }
   }
 
