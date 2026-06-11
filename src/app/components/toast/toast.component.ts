@@ -21,6 +21,7 @@ export class ToastComponent implements OnInit {
         this.show(toast);
       }
     );
+    this.toastService.markReady();
   }
 
   show(toast: IToast) {

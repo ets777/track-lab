@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import Dexie from 'dexie';
 import { environment } from 'src/environments/environment';
 import { SQLiteService } from './sqlite.service';
 import { ActivityService } from '../activity.service';
@@ -75,13 +76,20 @@ export class SQLiteInitService {
     const migratedToSqlite = (await Preferences.get({ key: 'migratedToSqlite' }))?.value === 'true';
 
     if (!migratedToSqlite) {
-      this.databaseRouter.setAdapterToDexie();
-      try {
-        await this.migrateFromDexie();
-        this.toastService.enqueue({ title: 'Data migrated successfully', type: 'success' });
-      } catch (err) {
-        this.toastService.enqueue({ title: 'Migration failed', type: 'error', duration: 5000 });
-        throw err;
+      // Fresh installs have no Dexie database — nothing to migrate
+      const dexieExists = await Dexie.exists('myAppDB');
+
+      if (!dexieExists) {
+        await Preferences.set({ key: 'migratedToSqlite', value: 'true' });
+      } else {
+        this.databaseRouter.setAdapterToDexie();
+        try {
+          await this.migrateFromDexie();
+          this.toastService.enqueue({ title: 'Data migrated successfully', type: 'success' });
+        } catch (err) {
+          this.toastService.enqueue({ title: 'Migration failed', type: 'error', duration: 5000 });
+          throw err;
+        }
       }
     }
 

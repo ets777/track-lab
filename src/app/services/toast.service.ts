@@ -16,6 +16,7 @@ export class ToastService {
   private toastEvent$ = new Subject<IToast>();
   private queue: IToast[] = [];
   private showing = false;
+  private ready = false;
   private defaultDuration: number = 3000;
 
   emit(toast: IToast) {
@@ -26,13 +27,20 @@ export class ToastService {
     return this.toastEvent$.asObservable();
   }
 
+  // Called by ToastComponent once it has subscribed. Toasts enqueued during
+  // app initialization (before the component exists) are held until then.
+  markReady() {
+    this.ready = true;
+    this.processQueue();
+  }
+
   enqueue(toast: IToast) {
     this.queue.push(toast);
     this.processQueue();
   }
 
   private processQueue() {
-    if (this.showing || this.queue.length === 0) {
+    if (!this.ready || this.showing || this.queue.length === 0) {
       return;
     }
 

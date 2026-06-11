@@ -2,11 +2,13 @@ import { Injectable, inject } from '@angular/core';
 
 import { SQLiteService } from './db/sqlite.service';
 import { SQLiteInitService } from './db/sqlite-init.service';
+import { LogService } from './log.service';
 
 @Injectable()
 export class InitializeAppService {
   private sqliteService = inject(SQLiteService);
   private sqliteInitService = inject(SQLiteInitService);
+  private logService = inject(LogService);
 
   isAppInit: boolean = false;
   platform!: string;
@@ -33,6 +35,7 @@ export class InitializeAppService {
       this.isAppInit = true;
     } catch (error) {
       console.log(`initializeAppError: ${error}`);
+      await this.logService.error('InitializeAppService.initializeApp', error);
     }
   }
 
