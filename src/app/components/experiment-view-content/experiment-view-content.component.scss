@@ -18,6 +18,13 @@
     background: rgba(var(--ion-color-danger-rgb), 0.12);
     color: var(--ion-color-danger-shade);
   }
+
+  &__reason {
+    margin-top: 4px;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    opacity: 0.9;
+  }
 }
 
 .dates-section {

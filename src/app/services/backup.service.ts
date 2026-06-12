@@ -49,6 +49,12 @@ import { IRuleDb } from '../db/models/rule';
 import { IRuleCompletionDb } from '../db/models/rule-completion';
 import { RuleService } from './rule.service';
 import { RuleCompletionService } from './rule-completion.service';
+import { IExperimentDb } from '../db/models/experiment';
+import { IExperimentIndicatorDb } from '../db/models/experiment-indicator';
+import { IExperimentRuleDb } from '../db/models/experiment-rule';
+import { ExperimentService } from './experiment.service';
+import { ExperimentIndicatorService } from './experiment-indicator.service';
+import { ExperimentRuleService } from './experiment-rule.service';
 import { DashboardWidget } from '../types/dashboard-widget';
 import { DashboardConfigService } from './dashboard-config.service';
 import { AppConfigService } from './app-config.service';
@@ -72,6 +78,9 @@ type Backup = {
   itemMetrics: IItemMetricDb[],
   rules: IRuleDb[],
   ruleCompletions: IRuleCompletionDb[],
+  experiments?: IExperimentDb[],
+  experimentIndicators?: IExperimentIndicatorDb[],
+  experimentRules?: IExperimentRuleDb[],
   dashboardWidgets?: DashboardWidget[],
   version: string,
 };
@@ -214,7 +223,6 @@ const helperRevision1 = {
 
     backup.actionLists = [];
     backup.actionMetrics = [];
-    backup.streaks = [];
 
     return backup;
   },
@@ -250,6 +258,9 @@ export class BackupService {
   private itemMetricService = inject(ItemMetricService);
   private ruleService = inject(RuleService);
   private ruleCompletionService = inject(RuleCompletionService);
+  private experimentService = inject(ExperimentService);
+  private experimentIndicatorService = inject(ExperimentIndicatorService);
+  private experimentRuleService = inject(ExperimentRuleService);
   private dashboardConfigService = inject(DashboardConfigService);
   private appConfigService = inject(AppConfigService);
   private fileService = inject(FileService);
@@ -288,6 +299,9 @@ export class BackupService {
       itemMetrics: await this.itemMetricService.getAll(),
       rules: await this.ruleService.getAll(),
       ruleCompletions: await this.ruleCompletionService.getAll(),
+      experiments: await this.experimentService.getAll(),
+      experimentIndicators: await this.experimentIndicatorService.getAll(),
+      experimentRules: await this.experimentRuleService.getAll(),
       dashboardWidgets: await this.dashboardConfigService.getWidgets(),
 
       version: appVersion,
@@ -403,6 +417,12 @@ export class BackupService {
 
       await this.ruleService.bulkAdd(backup.rules ?? []);
       await this.ruleCompletionService.bulkAdd(backup.ruleCompletions ?? []);
+
+      this.loadingService.show('TK_RESTORING_EXPERIMENTS');
+      await this.experimentService.bulkAdd(backup.experiments ?? []);
+      await this.experimentIndicatorService.bulkAdd(backup.experimentIndicators ?? []);
+      await this.experimentRuleService.bulkAdd(backup.experimentRules ?? []);
+
       if (backup.dashboardWidgets?.length) {
         await this.dashboardConfigService.save(backup.dashboardWidgets);
       }
@@ -415,6 +435,9 @@ export class BackupService {
 
   async clearDatabase() {
     await this.appConfigService.clear();
+    await this.experimentIndicatorService.clear();
+    await this.experimentRuleService.clear();
+    await this.experimentService.clear();
     await this.ruleCompletionService.clear();
     await this.ruleService.clear();
     await this.activityService.clear();

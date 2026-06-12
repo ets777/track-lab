@@ -11,7 +11,6 @@ import { IActivityTagCreateDto, IActivityTagDb } from "src/app/db/models/activit
 import { IListCreateDto, IListDb } from "src/app/db/models/list";
 import { IItemCreateDto, IItemDb } from "src/app/db/models/item";
 import { IMetricCreateDto, IMetricDb } from "src/app/db/models/metric";
-import { IStreakCreateDto, IStreakDb } from "src/app/db/models/streak";
 import { ITagCreateDto, ITagDb } from "src/app/db/models/tag";
 import { ITagMetricCreateDto, ITagMetricDb } from "src/app/db/models/tag-metric";
 import { IItemMetricCreateDto, IItemMetricDb } from "src/app/db/models/item-metric";
@@ -38,7 +37,6 @@ export interface ITable {
     items: IItemDb;
     lists: IListDb;
     metrics: IMetricDb;
-    streaks: IStreakDb;
     tagMetrics: ITagMetricDb;
     itemMetrics: IItemMetricDb;
     rules: IRuleDb;
@@ -65,7 +63,6 @@ export interface ICreateDto {
     items: IItemDb | IItemCreateDto;
     lists: IListDb | IListCreateDto;
     metrics: IMetricDb | IMetricCreateDto;
-    streaks: IStreakDb | IStreakCreateDto;
     tagMetrics: ITagMetricDb | ITagMetricCreateDto;
     itemMetrics: IItemMetricDb | IItemMetricCreateDto;
     rules: IRuleDb | IRuleCreateDto;

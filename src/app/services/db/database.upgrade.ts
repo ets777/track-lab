@@ -276,4 +276,16 @@ export const databaseUpgrades = [
       );`,
     ],
   },
+  {
+    toVersion: 11,
+    statements: [
+      `ALTER TABLE experiments ADD COLUMN failReasonId INTEGER;`,
+    ],
+  },
+  {
+    toVersion: 12,
+    statements: [
+      `DROP TABLE IF EXISTS streaks;`,
+    ],
+  },
 ];

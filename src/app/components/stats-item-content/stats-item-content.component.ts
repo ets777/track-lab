@@ -60,7 +60,6 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
   @Input() skipLoadingModal = false;
   @Input() fillHeight = false;
   @Input() chartColor?: string;
-  @Input() hideAvgDataset = false;
 
   @HostBinding('class.fill-height') get isFillHeight() { return this.fillHeight; }
 
@@ -235,13 +234,11 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
       return {
         durationMinutes: totalMinutes,
         amount: filtered.length,
-        averages: totalMinutes / filtered.length,
       };
     });
 
     const durationMinutes = result.map(r => r.durationMinutes);
     const amount = result.map(r => r.amount);
-    const averages = result.map(r => r.averages);
 
     this.totalDuration = durationMinutes.reduce((sum, curr) => sum + curr, 0);
     this.averageTimePerDay = this.totalDuration / durationMinutes.length;
@@ -251,7 +248,6 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
 
     const units = '(' + this.translate.instant('TK_M') + '.)';
     const timeLabel = this.translate.instant('TK_TIME') + ' ' + units;
-    const averageTimeLabel = this.translate.instant('TK_AVG') + ' ' + timeLabel.toLowerCase();
     const timesLabel = this.translate.instant('TK_TIMES');
 
     const lang = this.translate.currentLang || 'en';
@@ -266,7 +262,6 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
       labels: displayDates,
       datasets: [
         { data: durationMinutes, label: timeLabel, ...colorProps },
-        ...(!this.hideAvgDataset ? [{ data: averages, label: averageTimeLabel }] : []),
       ],
     };
 

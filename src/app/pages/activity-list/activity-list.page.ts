@@ -1,4 +1,6 @@
 import { Component, ViewChild, inject } from '@angular/core';
+import { addIcons } from 'ionicons';
+import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
@@ -41,6 +43,10 @@ export class ActivityListPage {
   lists: IList[] = [];
   rules: IRule[] = [];
   currentDate: string = '';
+
+  constructor() {
+    addIcons({ chevronBackOutline, chevronForwardOutline });
+  }
 
   async ionViewDidEnter() {
     let date = this.route.snapshot.queryParamMap.get('date');

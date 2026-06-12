@@ -28,25 +28,19 @@
 .controls {
   margin-top: 8px;
   display: flex;
+  align-items: center;
   justify-content: center;
 
-  @media (max-width: 410px) {
-    ion-button {
-      --padding-start: 4px;
-      --padding-end: 4px;
-    }
+  ion-button {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    flex-shrink: 0;
   }
 
-  @media (max-width: 365px) {
+  .chips {
+    display: flex;
     flex-wrap: wrap;
-
-    ion-chip {
-      order: 1;
-    }
-
-    ion-button {
-      order: 2;
-      flex: 1;
-    }
+    justify-content: center;
+    min-width: 0;
   }
 }

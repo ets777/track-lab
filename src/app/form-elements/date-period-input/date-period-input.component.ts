@@ -4,6 +4,8 @@ import { TooltipService } from 'src/app/services/tooltip.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, ControlValueAccessor, FormBuilder, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { IonButton, IonChip, IonIcon } from "@ionic/angular/standalone";
+import { addIcons } from 'ionicons';
+import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 import { addDays, addMonths, format } from 'date-fns';
@@ -50,6 +52,7 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   selectedPeriod: PeriodName | null = 'week';
 
   constructor() {
+    addIcons({ chevronBackOutline, chevronForwardOutline });
     this.form = this.formBuilder.group(
       {
         startDate: ['', [Validators.required, dateFormatValidator]],

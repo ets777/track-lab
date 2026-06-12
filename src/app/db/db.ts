@@ -14,7 +14,6 @@ import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-m
 import { IItemCreateDto, IItemDb } from './models/item';
 import { IListCreateDto, IListDb } from './models/list';
 import { IMetricCreateDto, IMetricDb } from './models/metric';
-import { IStreakCreateDto, IStreakDb } from './models/streak';
 import { ITagMetricCreateDto, ITagMetricDb } from './models/tag-metric';
 import { IItemMetricCreateDto, IItemMetricDb } from './models/item-metric';
 import { IRuleCreateDto, IRuleDb } from './models/rule';
@@ -36,7 +35,6 @@ export class MyAppDatabase extends Dexie {
   items!: Table<IItemDb, number, IItemCreateDto>;
   lists!: Table<IListDb, number, IListCreateDto>;
   metrics!: Table<IMetricDb, number, IMetricCreateDto>;
-  streaks!: Table<IStreakDb, number, IStreakCreateDto>;
   tagMetrics!: Table<ITagMetricDb, number, ITagMetricCreateDto>;
   itemMetrics!: Table<IItemMetricDb, number, IItemMetricCreateDto>;
   rules!: Table<IRuleDb, number, IRuleCreateDto>;

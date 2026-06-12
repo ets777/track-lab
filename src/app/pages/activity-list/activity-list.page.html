@@ -14,11 +14,11 @@
     </ion-fab-button>
   </ion-fab>
   <ion-buttons class="date-nav">
-    <ion-button (click)="goToPreviousDay()">{{ 'TK_PREV' | translate }}</ion-button>
+    <ion-button (click)="goToPreviousDay()"><ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon></ion-button>
     <div class="date-center">
       <ion-text class="date-text" (click)="openDatePicker()">{{ displayDate }}</ion-text>
     </div>
-    <ion-button (click)="goToNextDay()">{{ 'TK_NEXT' | translate }}</ion-button>
+    <ion-button (click)="goToNextDay()"><ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon></ion-button>
   </ion-buttons>
   <app-date-picker #datePicker [hideTrigger]="true" (dateSelected)="onDateSelected($event)"></app-date-picker>
   <app-activity-list [activities]="activities" [metrics]="metrics" [lists]="lists" [rules]="rules"></app-activity-list>

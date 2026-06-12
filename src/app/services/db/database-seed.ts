@@ -440,7 +440,7 @@ export async function seedDatabase(sqlite: SQLiteService) {
   // Baseline [d(57)..d(51)]: mood ~7.1; last week [d(21)..d(15)]: mood ~3.9 → expected increasing but decreased ✗
   const exp3ResultData = JSON.stringify([{ indicatorType: 'metric', indicatorId: 1, initialValue: 7.1, resultValue: 3.9 }]);
   await sqlite.run(
-    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, resultData) VALUES (3, 'Mood improvement', ?, ?, ?, 0, ?)`,
+    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, failReasonId, resultData) VALUES (3, 'Mood improvement', ?, ?, ?, 0, 3, ?)`,
     [d(50), d(15), d(15), exp3ResultData],
   );
   await sqlite.execute(`

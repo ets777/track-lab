@@ -4,7 +4,12 @@
   @if (experiment.isSuccess === 1) {
     <div class="status-banner status-banner--success">🎉 {{ 'TK_EXPERIMENT_SUCCESS' | translate }}</div>
   } @else if (experiment.isSuccess === 0) {
-    <div class="status-banner status-banner--failed">❌ {{ 'TK_EXPERIMENT_FAILED' | translate }}</div>
+    <div class="status-banner status-banner--failed">
+      <div>❌ {{ 'TK_EXPERIMENT_FAILED' | translate }}</div>
+      @if (failReasonKey) {
+        <div class="status-banner__reason">{{ failReasonKey | translate }}</div>
+      }
+    </div>
   }
 
   <!-- Dates + Progress -->
@@ -102,10 +107,6 @@
           <span class="combined-rule-stats__label">{{ 'TK_UPTIME' | translate }}</span>
           <span class="combined-rule-stats__value">{{ combinedUptime }}%</span>
         </div>
-        <div class="combined-rule-stats__item">
-          <span class="combined-rule-stats__label">{{ 'TK_STREAK' | translate }}</span>
-          <span class="combined-rule-stats__value">{{ combinedStreak }} {{ 'TK_DAYS' | translate }}</span>
-        </div>
       </div>
     }
 
@@ -125,6 +126,8 @@
       [completionsMap]="completionsMap"
       [period]="selectedRulePeriod"
       [selectedDate]="selectedDate"
+      [minDate]="experimentMinDate"
+      [maxDate]="calendarMaxDate"
       (daySelected)="onDaySelected($event)"
       (monthChanged)="onMonthChanged($event)"
     ></app-aggregate-rule-calendar>

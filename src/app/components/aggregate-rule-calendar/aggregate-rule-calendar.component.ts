@@ -16,6 +16,7 @@ interface CalendarDay {
   dayNumber: number;
   isCurrentMonth: boolean;
   isToday: boolean;
+  isOutOfRange: boolean;
   /** Period-level status — used for week row / SVG and daily day-cell coloring. */
   periodStatus: DayStatus;
   /** Activity-based status for week/month — met = >= rule activity, broken = <= / value=0. */
@@ -39,6 +40,9 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   @Input() selectedDate = '';
   @Input() lockedStartDate?: string;
   @Input() lockedWeeks = 5;
+  /** Inclusive bounds: days outside [minDate, maxDate] are muted and inert. */
+  @Input() minDate?: string;
+  @Input() maxDate?: string;
 
   @Output() daySelected = new EventEmitter<string>();
   @Output() monthChanged = new EventEmitter<Date>();
@@ -64,7 +68,11 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rules'] || changes['allActivities'] || changes['completionsMap'] || changes['period'] || changes['lockedStartDate'] || changes['lockedWeeks']) {
+    if (changes['minDate'] || changes['maxDate']) {
+      if (this.maxDate && this.maxDate < this.today) this.currentDate = parseISO(this.maxDate);
+      else if (this.minDate && this.minDate > this.today) this.currentDate = parseISO(this.minDate);
+    }
+    if (changes['rules'] || changes['allActivities'] || changes['completionsMap'] || changes['period'] || changes['lockedStartDate'] || changes['lockedWeeks'] || changes['minDate'] || changes['maxDate']) {
       this.buildCalendar();
     }
   }
@@ -87,7 +95,18 @@ export class AggregateRuleCalendarComponent implements OnChanges {
     this.monthChanged.emit(this.currentDate);
   }
 
+  get canGoPrev(): boolean {
+    if (!this.minDate) return true;
+    return format(startOfMonth(this.currentDate), 'yyyy-MM-dd') > this.minDate;
+  }
+
+  get canGoNext(): boolean {
+    if (!this.maxDate) return true;
+    return format(endOfMonth(this.currentDate), 'yyyy-MM-dd') < this.maxDate;
+  }
+
   onDayClick(day: CalendarDay): void {
+    if (day.isOutOfRange) return;
     if (this.period === 'month') return;
     if (this.period === 'week') {
       this.daySelected.emit(format(startOfWeek(parseISO(day.date), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
@@ -138,6 +157,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
         dayNumber: d.getDate(),
         isCurrentMonth: this.lockedStartDate ? true : d.getMonth() === this.currentDate.getMonth(),
         isToday: dateStr === this.today,
+        isOutOfRange: this.isOutOfRange(dateStr),
         periodStatus: this.getPeriodStatus(dateStr),
         activityStatus: this.getActivityStatus(dateStr),
       };
@@ -167,12 +187,11 @@ export class AggregateRuleCalendarComponent implements OnChanges {
       this.monthStatus = firstCurrent?.periodStatus ?? 'none';
       if (this.monthStatus !== 'none') {
         const cs = this.weeks[0].findIndex(d => d.isCurrentMonth);
-        const todayNow = new Date();
-        const isThisMonth = this.currentDate.getFullYear() === todayNow.getFullYear()
-          && this.currentDate.getMonth() === todayNow.getMonth();
+        const endBound = this.maxDate && this.maxDate < this.today ? this.maxDate : this.today;
+        const boundIdx = dayObjects.findIndex(d => d.date === endBound && d.isCurrentMonth);
         let endC: number, endR: number;
-        if (isThisMonth && this.currentWeekIndex >= 0) {
-          endR = this.currentWeekIndex; endC = this.todayColInWeek;
+        if (boundIdx >= 0) {
+          endR = Math.floor(boundIdx / 7); endC = boundIdx % 7;
         } else {
           const lastWeekIdx = this.weeks.length - 1;
           const ce = [...this.weeks[lastWeekIdx]].reverse().findIndex(d => d.isCurrentMonth);
@@ -226,9 +245,14 @@ export class AggregateRuleCalendarComponent implements OnChanges {
     return p.join(' ');
   }
 
+  private isOutOfRange(date: string): boolean {
+    return !!(this.minDate && date < this.minDate) || !!(this.maxDate && date > this.maxDate);
+  }
+
   /** Period-level aggregate status: all rules met → met; any broken → broken. */
   private getPeriodStatus(date: string): DayStatus {
     if (date > this.today) return 'none';
+    if (this.isOutOfRange(date)) return 'none';
     const active = this.rules.filter(r => r.startDate <= date);
     if (!active.length) return 'none';
     for (const rule of active) {
@@ -249,6 +273,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   /** Per-day activity coloring for week/month: >= rule activity → met; <= / value=0 → broken. */
   private getActivityStatus(date: string): DayStatus {
     if (date > this.today) return 'none';
+    if (this.isOutOfRange(date)) return 'none';
     let hasMet = false;
     for (const rule of this.rules) {
       if (rule.startDate > date) continue;

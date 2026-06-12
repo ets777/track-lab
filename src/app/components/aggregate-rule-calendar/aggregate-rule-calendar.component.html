@@ -1,13 +1,13 @@
 <div class="rule-calendar">
   <div class="rule-calendar__header">
     @if (!lockedStartDate) {
-      <ion-button fill="clear" size="small" (click)="prevMonth()">
+      <ion-button fill="clear" size="small" [disabled]="!canGoPrev" (click)="prevMonth()">
         <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
       </ion-button>
     }
     <span class="rule-calendar__month-label">{{ monthLabel }}</span>
     @if (!lockedStartDate) {
-      <ion-button fill="clear" size="small" (click)="nextMonth()">
+      <ion-button fill="clear" size="small" [disabled]="!canGoNext" (click)="nextMonth()">
         <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
       </ion-button>
     }
@@ -66,6 +66,7 @@
             <div
               class="rule-calendar__day"
               [class.rule-calendar__day--other-month]="!day.isCurrentMonth"
+              [class.rule-calendar__day--out-of-range]="day.isOutOfRange"
               [class.rule-calendar__day--met]="period === 'day' && day.periodStatus === 'met' && !day.isToday"
               [class.rule-calendar__day--broken]="period === 'day' && day.periodStatus === 'broken' && !day.isToday"
               [class.rule-calendar__day--activity]="period !== 'day' && day.activityStatus === 'met' && !day.isToday"

@@ -26,6 +26,11 @@
   }
 }
 
+.rule-calendar__day--out-of-range {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 .rule-calendar__week-row--selected {
   box-shadow: 0 0 0 2px var(--ion-color-primary) inset;
   border-radius: 16px;

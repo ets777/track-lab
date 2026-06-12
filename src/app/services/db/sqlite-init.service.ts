@@ -19,7 +19,6 @@ import { ActivityMetricService } from '../activity-metric.service';
 import { ItemService } from '../item.service';
 import { ListService } from '../list.service';
 import { MetricService } from '../metric.service';
-import { StreakService } from '../streak.service';
 import { TagMetricService } from '../tag-metric.service';
 import { ItemMetricService } from '../item-metric.service';
 import { databaseUpgrades } from './database.upgrade';
@@ -42,7 +41,6 @@ export class SQLiteInitService {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
   private metricService = inject(MetricService);
-  private streakService = inject(StreakService);
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private databaseRouter = inject(DatabaseRouter);
@@ -196,7 +194,6 @@ export class SQLiteInitService {
     const items = await this.itemService.getAll();
     const lists = await this.listService.getAll();
     const metrics = await this.metricService.getAll();
-    const streaks = await this.streakService.getAll();
     const tagMetrics = await this.tagMetricService.getAll();
     const itemMetrics = await this.itemMetricService.getAll();
 
@@ -333,15 +330,6 @@ export class SQLiteInitService {
           'activityItems',
           activityItems,
           ['id', 'activityId', 'itemId'],
-        );
-      }
-
-      if (streaks.length) {
-        await this.sqliteService.run('DELETE FROM streaks');
-        await this.insertArrayChunked(
-          'streaks',
-          streaks,
-          ['id', 'tagId', 'actionId', 'itemId', 'startDate', 'lastDate'],
         );
       }
 
