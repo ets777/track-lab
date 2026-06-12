@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.1] - 2026-06-13
+
+### Added
+
+- Experiments failing reasons
+
+### Fixed
+
+- Dashboard width for Russian language
+- A bug that prevented default data from being added on first launch
+
 ## [0.7.0] - 2026-05-27
 
 ### Added
