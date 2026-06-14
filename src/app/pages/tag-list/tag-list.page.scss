@@ -1,0 +1,21 @@
+.lib-card {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  overflow: hidden;
+  margin-bottom: 80px;
+
+  ion-list {
+    padding: 0;
+  }
+}
+
+.lib-search {
+  --inner-padding-end: 16px;
+}
+
+.lib-name {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}

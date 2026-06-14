@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular';
 import { MetricService } from 'src/app/services/metric.service';
@@ -9,12 +9,15 @@ import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
+import { addIcons } from 'ionicons';
+import { searchOutline } from 'ionicons/icons';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
   selector: 'app-metric-list',
   templateUrl: './metric-list.page.html',
   styleUrls: ['./metric-list.page.scss'],
-  imports: [IonActionSheet, IonButton, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, IonText],
+  imports: [IonActionSheet, IonButton, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, IonText, IonInput, DefaultSkeletonComponent],
 })
 export class MetricListPage {
   private metricService = inject(MetricService);
@@ -23,7 +26,16 @@ export class MetricListPage {
   private router = inject(Router);
   private translate = inject(TranslateService);
 
+  constructor() { addIcons({ searchOutline }); }
+
   metrics: IMetric[] = [];
+  isLoading = true;
+  searchQuery = '';
+
+  get filteredMetrics(): IMetric[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.metrics.filter(m => m.name.toLowerCase().includes(q)) : this.metrics;
+  }
 
   getMetricActionSheetButtons(metric: IMetric) {
     const buttons: any[] = [
@@ -42,8 +54,15 @@ export class MetricListPage {
     return buttons;
   }
 
+  ionViewWillEnter() {
+    this.isLoading = true;
+  }
+
   async ionViewDidEnter() {
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
     await this.fetchMetrics();
+    this.isLoading = false;
   }
 
   async fetchMetrics() {

@@ -11,11 +11,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    (click)="goToAddPage()"
-  >
+  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddPage()">
     <ion-fab-button>
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
@@ -23,38 +19,49 @@
   @if (lists === null) {
     <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
   } @else {
-    <ion-item>
-      <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate">
-        <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
-      </ion-input>
-    </ion-item>
-    <ion-list>
-      @if (showActions) {
-        <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>
-      }
-      @if (showTags) {
-        <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-      }
-      @for (list of filteredLists; track list.id) {
-        <ion-item class="list" (click)="viewList(list.id)">
-          <ion-label>
-            <div class="title">{{ list.name | translate }}</div>
-          </ion-label>
-          <ion-buttons class="item-buttons">
-            <ion-button id="open-action-sheet-list-{{list.id}}" (click)="$event.stopPropagation()">
-              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-action-sheet
-            trigger="open-action-sheet-list-{{list.id}}"
-            header="{{ 'TK_ACTIONS' | translate }}"
-            [buttons]="getListActionSheetButtons(list)"
-            (didDismiss)="doListAction($event, list.id)"
-          ></ion-action-sheet>
-        </ion-item>
-      } @empty {
-        <ion-text style="display: block; padding: 16px">{{ 'TK_LISTS_ARE_EMPTY' | translate }}</ion-text>
-      }
-    </ion-list>
+    <div class="lib-card">
+      <ion-item lines="full" class="lib-search">
+        <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>
+        <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate"></ion-input>
+      </ion-item>
+      <ion-list lines="full">
+        @if (showActions) {
+          <ion-item (click)="goTo('/actions')" button>
+            <ion-label>
+              <div class="lib-name">{{ 'TK_ACTIONS' | translate }}</div>
+            </ion-label>
+          </ion-item>
+        }
+        @if (showTags) {
+          <ion-item (click)="goTo('/tag-list')" button>
+            <ion-label>
+              <div class="lib-name">{{ 'TK_TAGS' | translate }}</div>
+            </ion-label>
+          </ion-item>
+        }
+        @for (list of filteredLists; track list.id) {
+          <ion-item (click)="viewList(list.id)" button>
+            <ion-label>
+              <div class="lib-name">{{ list.name | translate }}</div>
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button id="open-action-sheet-list-{{list.id}}" (click)="$event.stopPropagation()">
+                <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-action-sheet
+              trigger="open-action-sheet-list-{{list.id}}"
+              header="{{ 'TK_ACTIONS' | translate }}"
+              [buttons]="getListActionSheetButtons(list)"
+              (didDismiss)="doListAction($event, list.id)"
+            ></ion-action-sheet>
+          </ion-item>
+        } @empty {
+          @if (!showActions && !showTags) {
+            <ion-text style="display: block; padding: 16px">{{ 'TK_LISTS_ARE_EMPTY' | translate }}</ion-text>
+          }
+        }
+      </ion-list>
+    </div>
   }
 </ion-content>

@@ -13,31 +13,32 @@
   @if (isLoading) {
     <app-default-skeleton [showIcon]="false" [lines]="2"></app-default-skeleton>
   } @else {
-    <ion-item>
-      <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate">
-        <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
-      </ion-input>
-    </ion-item>
-    <ion-list>
-      @for (action of filteredActions; track action.id) {
-        <ion-item class="action">
-          <ion-label style="cursor: pointer" (click)="goToViewPage(action.id)">
-            <div class="title">{{ action.name }}</div>
-            <app-tags [tags]="action.tags"></app-tags>
-          </ion-label>
-          <ion-buttons class="item-buttons">
-            <ion-button id="open-action-sheet-action-{{action.id}}">
-              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-action-sheet
-            trigger="open-action-sheet-action-{{action.id}}"
-            header="{{ 'TK_ACTIONS' | translate }}"
-            [buttons]="actionActionSheetButtons"
-            (didDismiss)="doActionAction($event, action.id)"
-          ></ion-action-sheet>
-        </ion-item>
-      }
-    </ion-list>
+    <div class="lib-card">
+      <ion-item lines="full" class="lib-search">
+        <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>
+        <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate"></ion-input>
+      </ion-item>
+      <ion-list lines="full">
+        @for (action of filteredActions; track action.id) {
+          <ion-item (click)="goToViewPage(action.id)" button>
+            <ion-label>
+              <div class="lib-name">{{ action.name }}</div>
+              <app-tags [tags]="action.tags"></app-tags>
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button id="open-action-sheet-action-{{action.id}}" (click)="$event.stopPropagation()">
+                <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-action-sheet
+              trigger="open-action-sheet-action-{{action.id}}"
+              header="{{ 'TK_ACTIONS' | translate }}"
+              [buttons]="actionActionSheetButtons"
+              (didDismiss)="doActionAction($event, action.id)"
+            ></ion-action-sheet>
+          </ion-item>
+        }
+      </ion-list>
+    </div>
   }
 </ion-content>

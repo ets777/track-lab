@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IRule } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
@@ -23,7 +25,7 @@ import { IItem } from 'src/app/db/models/item';
   selector: 'app-rule-list',
   templateUrl: './rule-list.page.html',
   styleUrls: ['./rule-list.page.scss'],
-  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText, BackButtonComponent],
+  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText, IonInput, BackButtonComponent],
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);
@@ -37,7 +39,15 @@ export class RuleListPage {
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
 
+  constructor() { addIcons({ searchOutline }); }
+
   rules: IRule[] = [];
+  searchQuery = '';
+
+  get filteredRules(): IRule[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.rules.filter(r => this.getRuleName(r).toLowerCase().includes(q)) : this.rules;
+  }
   private actions: IActionDb[] = [];
   private tags: ITag[] = [];
   private items: IItem[] = [];

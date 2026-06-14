@@ -11,25 +11,21 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    (click)="goToAddPage()"
-  >
+  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddPage()">
     <ion-fab-button>
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  @if (rules.length === 0) {
-    <div class="empty-state">
-      <ion-text color="medium">{{ 'TK_NO_RULES' | translate }}</ion-text>
-    </div>
-  } @else {
-    <ion-list>
-      @for (rule of rules; track rule.id) {
+  <div class="lib-card">
+    <ion-item lines="full" class="lib-search">
+      <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>
+      <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate"></ion-input>
+    </ion-item>
+    <ion-list lines="full">
+      @for (rule of filteredRules; track rule.id) {
         <ion-item (click)="goToViewPage(rule.id)" button>
           <ion-label>
-            <div class="title">{{ getRuleName(rule) }}</div>
+            <div class="lib-name">{{ getRuleName(rule) }}</div>
           </ion-label>
           <ion-buttons slot="end">
             <ion-button id="open-action-sheet-rule-{{rule.id}}" (click)="$event.stopPropagation()">
@@ -42,7 +38,9 @@
             (didDismiss)="doRuleAction($event, rule.id)"
           ></ion-action-sheet>
         </ion-item>
+      } @empty {
+        <ion-text style="display: block; padding: 16px">{{ 'TK_NO_RULES' | translate }}</ion-text>
       }
     </ion-list>
-  }
+  </div>
 </ion-content>

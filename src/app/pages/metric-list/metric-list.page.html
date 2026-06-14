@@ -7,35 +7,41 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    (click)="goToAddPage()"
-  >
+  <ion-fab vertical="bottom" horizontal="end" (click)="goToAddPage()">
     <ion-fab-button>
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  <ion-list>
-    @for (metric of metrics; track metric.id) {
-      <ion-item class="metric">
-        <ion-label style="cursor: pointer" (click)="goToViewPage(metric.id)">
-          <div class="title">{{ metric.name | translate }}</div>
-        </ion-label>
-        <ion-buttons class="item-buttons">
-          <ion-button id="open-action-sheet-metric-{{metric.id}}">
-            <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-action-sheet
-          trigger="open-action-sheet-metric-{{metric.id}}"
-          header="{{ 'TK_ACTIONS' | translate }}"
-          [buttons]="getMetricActionSheetButtons(metric)"
-          (didDismiss)="doMetricAction($event, metric.id)"
-        ></ion-action-sheet>
+  @if (isLoading) {
+    <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
+  } @else {
+    <div class="lib-card">
+      <ion-item lines="full" class="lib-search">
+        <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>
+        <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate"></ion-input>
       </ion-item>
-    } @empty {
-      <ion-text style="display: block; padding: 16px">{{ 'TK_THERE_ARE_NO_METRICS' | translate }}</ion-text>
-    }
-  </ion-list>
+      <ion-list lines="full">
+        @for (metric of filteredMetrics; track metric.id) {
+          <ion-item (click)="goToViewPage(metric.id)" button>
+            <ion-label>
+              <div class="lib-name">{{ metric.name | translate }}</div>
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button id="open-action-sheet-metric-{{metric.id}}" (click)="$event.stopPropagation()">
+                <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-action-sheet
+              trigger="open-action-sheet-metric-{{metric.id}}"
+              header="{{ 'TK_ACTIONS' | translate }}"
+              [buttons]="getMetricActionSheetButtons(metric)"
+              (didDismiss)="doMetricAction($event, metric.id)"
+            ></ion-action-sheet>
+          </ion-item>
+        } @empty {
+          <ion-text style="display: block; padding: 16px">{{ 'TK_THERE_ARE_NO_METRICS' | translate }}</ion-text>
+        }
+      </ion-list>
+    </div>
+  }
 </ion-content>

@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonSegment, IonSegmentButton, IonInput } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { ExperimentService } from 'src/app/services/experiment.service';
@@ -24,7 +26,7 @@ type Tab = 'in-progress' | 'success' | 'failed';
     IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList,
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
     TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText,
-    IonSegment, IonSegmentButton,
+    IonSegment, IonSegmentButton, IonInput,
     BackButtonComponent,
   ],
 })
@@ -37,8 +39,11 @@ export class ExperimentListPage {
   private translate = inject(TranslateService);
   private logService = inject(LogService);
 
+  constructor() { addIcons({ searchOutline }); }
+
   experiments: IExperiment[] = [];
   activeTab: Tab = 'in-progress';
+  searchQuery = '';
 
   getActionSheetButtons(experiment: IExperiment) {
     const buttons = [
@@ -66,6 +71,11 @@ export class ExperimentListPage {
       case 'success': return this.experiments.filter(e => e.isSuccess === 1);
       case 'failed': return this.experiments.filter(e => e.isSuccess === 0);
     }
+  }
+
+  get filteredExperiments(): IExperiment[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.visibleExperiments.filter(e => e.title.toLowerCase().includes(q)) : this.visibleExperiments;
   }
 
   onTabChange(event: CustomEvent) {
