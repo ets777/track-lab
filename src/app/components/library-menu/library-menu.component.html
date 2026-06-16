@@ -1,18 +1,12 @@
-<ion-menu
-  menuId="library-menu"
-  contentId="main-content"
-  side="start"
->
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content class="ion-padding">
-    <ion-list>
-      <ion-item (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</ion-item>
-      <ion-item (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</ion-item>
-      <ion-item (click)="goTo('/item-list')">{{ 'TK_ITEMS' | translate }}</ion-item>
-    </ion-list>
+<ion-menu menuId="library-menu" contentId="main-content" side="start">
+  <ion-content>
+    <div class="menu-head">
+      <span class="menu-title">{{ 'TK_LIBRARY' | translate }}</span>
+    </div>
+    <ul class="menu-list">
+      <li class="menu-item" (click)="goTo('/actions')">{{ 'TK_ACTIONS' | translate }}</li>
+      <li class="menu-item" (click)="goTo('/tag-list')">{{ 'TK_TAGS' | translate }}</li>
+      <li class="menu-item" (click)="goTo('/item-list')">{{ 'TK_ITEMS' | translate }}</li>
+    </ul>
   </ion-content>
 </ion-menu>

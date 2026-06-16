@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonSegment, IonSegmentButton, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -16,7 +16,7 @@ import { OverlayEventDetail } from '@ionic/core';
 import { LogService } from 'src/app/services/log.service';
 import { formatDisplayDate } from 'src/app/functions/date';
 
-type Tab = 'in-progress' | 'success' | 'failed';
+type Filter = 'all' | 'progress' | 'success' | 'failed';
 
 @Component({
   selector: 'app-experiment-list',
@@ -25,8 +25,7 @@ type Tab = 'in-progress' | 'success' | 'failed';
   imports: [
     IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList,
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
-    TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText,
-    IonSegment, IonSegmentButton, IonInput,
+    TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText, IonInput,
     BackButtonComponent,
   ],
 })
@@ -42,8 +41,26 @@ export class ExperimentListPage {
   constructor() { addIcons({ searchOutline }); }
 
   experiments: IExperiment[] = [];
-  activeTab: Tab = 'in-progress';
+  activeFilter: Filter = 'all';
   searchQuery = '';
+
+  readonly filters: { id: Filter; labelKey: string }[] = [
+    { id: 'all', labelKey: 'TK_ALL' },
+    { id: 'progress', labelKey: 'TK_IN_PROGRESS' },
+    { id: 'success', labelKey: 'TK_SUCCESS' },
+    { id: 'failed', labelKey: 'TK_FAILED' },
+  ];
+
+  getStatus(e: IExperiment): 'progress' | 'success' | 'failed' {
+    if (e.isSuccess === 1) return 'success';
+    if (e.isSuccess === 0) return 'failed';
+    return 'progress';
+  }
+
+  getFilterCount(filter: Filter): number {
+    if (filter === 'all') return this.experiments.length;
+    return this.experiments.filter(e => this.getStatus(e) === filter).length;
+  }
 
   getActionSheetButtons(experiment: IExperiment) {
     const buttons = [
@@ -60,26 +77,12 @@ export class ExperimentListPage {
     return this.navigationService.fromDashboard;
   }
 
-  get hasFinishedExperiments(): boolean {
-    return this.experiments.some(e => e.isSuccess !== null);
-  }
-
-  get visibleExperiments(): IExperiment[] {
-    if (!this.hasFinishedExperiments) return this.experiments;
-    switch (this.activeTab) {
-      case 'in-progress': return this.experiments.filter(e => e.isSuccess === null && !e.factEndDate);
-      case 'success': return this.experiments.filter(e => e.isSuccess === 1);
-      case 'failed': return this.experiments.filter(e => e.isSuccess === 0);
-    }
-  }
-
   get filteredExperiments(): IExperiment[] {
+    let base = this.activeFilter === 'all'
+      ? this.experiments
+      : this.experiments.filter(e => this.getStatus(e) === this.activeFilter);
     const q = this.searchQuery.trim().toLowerCase();
-    return q ? this.visibleExperiments.filter(e => e.title.toLowerCase().includes(q)) : this.visibleExperiments;
-  }
-
-  onTabChange(event: CustomEvent) {
-    this.activeTab = event.detail.value as Tab;
+    return q ? base.filter(e => e.title.toLowerCase().includes(q)) : base;
   }
 
   formatDate(dateStr: string): string {

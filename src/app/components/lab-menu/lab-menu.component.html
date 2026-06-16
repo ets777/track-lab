@@ -1,19 +1,13 @@
-<ion-menu
-  menuId="lab-menu"
-  contentId="main-content"
-  side="start"
->
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>{{ 'TK_LAB' | translate }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content class="ion-padding">
-    <ion-list>
-      <ion-item (click)="goTo('/library')">{{ 'TK_LIBRARY' | translate }}</ion-item>
-      <ion-item (click)="goTo('/metric')">{{ 'TK_METRICS' | translate }}</ion-item>
-      <ion-item (click)="goTo('/rule')">{{ 'TK_RULES' | translate }}</ion-item>
-      <ion-item (click)="goTo('/experiment')">{{ 'TK_EXPERIMENTS' | translate }}</ion-item>
-    </ion-list>
+<ion-menu menuId="lab-menu" contentId="main-content" side="start">
+  <ion-content>
+    <div class="menu-head">
+      <span class="menu-title">{{ 'TK_LAB' | translate }}</span>
+    </div>
+    <ul class="menu-list">
+      <li class="menu-item" (click)="goTo('/library')">{{ 'TK_LIBRARY' | translate }}</li>
+      <li class="menu-item" (click)="goTo('/metric')">{{ 'TK_METRICS' | translate }}</li>
+      <li class="menu-item" (click)="goTo('/rule')">{{ 'TK_RULES' | translate }}</li>
+      <li class="menu-item" (click)="goTo('/experiment')">{{ 'TK_EXPERIMENTS' | translate }}</li>
+    </ul>
   </ion-content>
 </ion-menu>
