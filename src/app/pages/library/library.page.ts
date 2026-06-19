@@ -10,7 +10,6 @@ import { ActionService } from 'src/app/services/action.service';
 import { OverlayEventDetail } from '@ionic/core';
 import { Router } from '@angular/router';
 import { IAction } from 'src/app/db/models/action';
-import { TagsComponent } from "src/app/components/tags/tags.component";
 import { AlertController } from '@ionic/angular';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -20,7 +19,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonInput, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagsComponent, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonInput, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);

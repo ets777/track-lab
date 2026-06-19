@@ -22,8 +22,12 @@
         @for (action of filteredActions; track action.id) {
           <ion-item (click)="goToViewPage(action.id)" button>
             <ion-label>
-              <div class="lib-name">{{ action.name }}</div>
-              <app-tags [tags]="action.tags"></app-tags>
+              <div class="lib-name">
+                {{ action.name }}
+                @for (tag of action.tags; track tag.id) {
+                  <span class="lib-tag">{{ tag.name }}</span>
+                }
+              </div>
             </ion-label>
             <ion-buttons slot="end">
               <ion-button id="open-action-sheet-action-{{action.id}}" (click)="$event.stopPropagation()">

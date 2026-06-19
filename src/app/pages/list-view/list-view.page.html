@@ -20,21 +20,34 @@
   @if (items === null) {
     <app-default-skeleton [showIcon]="false" [lines]="1"></app-default-skeleton>
   } @else {
-    <ion-list>
-      @for (item of items; track item.id) {
-        <ion-item>
-          <ion-label style="cursor: pointer" (click)="router.navigate(['/item', item.id])">{{ item.name }}</ion-label>
-          <ion-buttons slot="end">
-            <ion-button (click)="openItemMenu(item.id)">
-              <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-item>
-      } @empty {
-        <ion-item>
-          <ion-label>{{ 'TK_LIST_IS_EMPTY' | translate }}</ion-label>
-        </ion-item>
-      }
-    </ion-list>
+    <div class="lib-card">
+      <ion-item lines="full" class="lib-search">
+        <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>
+        <ion-input [(ngModel)]="searchQuery" [placeholder]="'TK_SEARCH' | translate"></ion-input>
+      </ion-item>
+      <ion-list lines="full">
+        @for (item of filteredItems; track item.id) {
+          <ion-item (click)="router.navigate(['/item', item.id])" button>
+            <ion-label>
+              <div class="lib-name">{{ item.name }}</div>
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button id="open-action-sheet-item-{{item.id}}" (click)="$event.stopPropagation()">
+                <ion-icon src="assets/icon/three-dots-vertical.svg"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-action-sheet
+              trigger="open-action-sheet-item-{{item.id}}"
+              [buttons]="itemActionSheetButtons"
+              (didDismiss)="doItemActionFromSheet($event, item.id)"
+            ></ion-action-sheet>
+          </ion-item>
+        } @empty {
+          <ion-item>
+            <ion-label>{{ 'TK_LIST_IS_EMPTY' | translate }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </div>
   }
 </ion-content>

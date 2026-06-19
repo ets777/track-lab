@@ -1,8 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, ActionSheetController } from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, IonInput, IonActionSheet, ActionSheetController } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OverlayEventDetail } from '@ionic/core';
 import { ListService } from 'src/app/services/list.service';
 import { ItemService } from 'src/app/services/item.service';
 import { IList } from 'src/app/db/models/list';
@@ -16,7 +20,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-list-view',
   templateUrl: './list-view.page.html',
   styleUrls: ['./list-view.page.scss'],
-  imports: [IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonButton, CommonModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonInput, IonActionSheet, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonButton, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
 })
 export class ListViewPage {
   private route = inject(ActivatedRoute);
@@ -31,6 +35,14 @@ export class ListViewPage {
   listId = 0;
   list?: IList;
   items: IItem[] | null = null;
+  searchQuery = '';
+
+  get filteredItems(): IItem[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    return q ? this.items!.filter(i => i.name.toLowerCase().includes(q)) : this.items!;
+  }
+
+  constructor() { addIcons({ searchOutline }); }
 
   itemActionSheetButtons = [
     { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
@@ -101,11 +113,9 @@ export class ListViewPage {
     this.items = items.sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async openItemMenu(itemId: number) {
-    const actionSheet = await this.actionSheetCtrl.create({ buttons: this.itemActionSheetButtons });
-    await actionSheet.present();
-    const { data } = await actionSheet.onWillDismiss();
-    if (data?.action) await this.doItemAction(data.action, itemId);
+  async doItemActionFromSheet(event: CustomEvent<OverlayEventDetail>, itemId: number) {
+    const action = event.detail.data?.action;
+    if (action) await this.doItemAction(action, itemId);
   }
 
   async doItemAction(action: string, itemId: number) {

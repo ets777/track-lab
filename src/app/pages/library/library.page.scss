@@ -18,4 +18,18 @@
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  line-height: 1.65;
+}
+
+.lib-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tl-text-dim);
+  border: 1px solid var(--tl-line-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
