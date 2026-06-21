@@ -1,22 +1,23 @@
-$row-height: 80px;
-
 .rows {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 12px 16px 24px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .row-slot {
-  height: $row-height;
+  flex: 1;
+  min-height: 0;
   border-radius: 12px;
   display: flex;
   align-items: center;
   overflow: hidden;
 
-  &.span2 {
-    height: $row-height * 2 + 8px;
-  }
+  &.span2 { flex: 2; }
+  &.span3 { flex: 3; }
+  &.span4 { flex: 4; }
 
   &.empty {
     border: 2px dashed var(--ion-color-light-shade);
@@ -32,6 +33,10 @@ $row-height: 80px;
 
     &:active {
       opacity: 0.7;
+    }
+
+    &.excess {
+      border-color: var(--ion-color-danger);
     }
   }
 
@@ -79,6 +84,10 @@ $row-height: 80px;
 
     .menu-btn {
       flex-shrink: 0;
+    }
+
+    &.excess {
+      border-color: var(--ion-color-danger);
     }
   }
 }

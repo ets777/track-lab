@@ -1,13 +1,14 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonCard, IonCardContent, IonIcon, IonSkeletonText } from '@ionic/angular/standalone';
+import { IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { addIcons } from 'ionicons';
-import { flaskOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline } from 'ionicons/icons';
-import { format, parseISO, differenceInDays, subDays } from 'date-fns';
+import { format, parseISO, differenceInDays, subDays, addDays } from 'date-fns';
 import { ExperimentWidgetConfig } from 'src/app/types/dashboard-widget';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { ExperimentIndicatorService } from 'src/app/services/experiment-indicator.service';
+import { ExperimentRuleService } from 'src/app/services/experiment-rule.service';
+import { RuleService } from 'src/app/services/rule.service';
+import { RuleCompletionService } from 'src/app/services/rule-completion.service';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
@@ -17,25 +18,27 @@ import { ToastService } from 'src/app/services/toast.service';
 import { LogService } from 'src/app/services/log.service';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
+import { IRule } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
 import { IMetric } from 'src/app/db/models/metric';
 import { IActionDb } from 'src/app/db/models/action';
 import { ITag } from 'src/app/db/models/tag';
 import { IItem } from 'src/app/db/models/item';
+import { computeExperimentUptime } from 'src/app/functions/experiment';
+import { getPeriodRange, isRulePeriodMet } from 'src/app/functions/rule-streak';
 
 interface IndicatorRow {
   name: string;
-  baselineValue: string | null;
-  currentValue: string | null;
-  arrowUp: boolean | null;
-  color: 'success' | 'danger' | 'medium';
+  baseline: string | null;
+  current: string | null;
+  trend: 'up' | 'down' | 'flat' | 'unknown';
 }
 
 @Component({
   selector: 'app-experiment-dashboard-widget',
   templateUrl: './experiment-dashboard-widget.component.html',
   styleUrl: './experiment-dashboard-widget.component.scss',
-  imports: [IonCard, IonCardContent, IonIcon, IonSkeletonText, TranslateModule],
+  imports: [IonSkeletonText, TranslateModule],
 })
 export class ExperimentDashboardWidgetComponent {
   @Input() set config(value: ExperimentWidgetConfig) {
@@ -47,6 +50,9 @@ export class ExperimentDashboardWidgetComponent {
 
   private experimentService = inject(ExperimentService);
   private indicatorService = inject(ExperimentIndicatorService);
+  private experimentRuleService = inject(ExperimentRuleService);
+  private ruleService = inject(RuleService);
+  private ruleCompletionService = inject(RuleCompletionService);
   private activityService = inject(ActivityService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
@@ -57,14 +63,16 @@ export class ExperimentDashboardWidgetComponent {
   private translate = inject(TranslateService);
   private router = inject(Router);
 
+  @Output() lineCountChange = new EventEmitter<number>();
+
   isLoading = true;
   experiment: IExperiment | null = null;
   progressPercent = 0;
   indicators: IndicatorRow[] = [];
+  ruleItems: { name: string; currentlyMet: boolean }[] = [];
+  uptime: number | null = null;
 
-  constructor() {
-    addIcons({ flaskOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline });
-  }
+  constructor() {}
 
   private async load(): Promise<void> {
     if (!this._config) return;
@@ -75,42 +83,90 @@ export class ExperimentDashboardWidgetComponent {
       this.experiment = exp as IExperiment;
       this.progressPercent = this.computeProgress(this.experiment);
 
-      const [dbIndicators, actions, tags, items, metrics] = await Promise.all([
+      const [dbIndicators, actions, tags, items, metrics, experimentRuleLinks, allRules] = await Promise.all([
         this.indicatorService.getByExperimentId(this.experiment.id),
         this.actionService.getAll() as Promise<IActionDb[]>,
         this.tagService.getAll() as Promise<ITag[]>,
         this.itemService.getAll() as Promise<IItem[]>,
         this.metricService.getAll() as Promise<IMetric[]>,
+        this.experimentRuleService.getByExperimentId(this.experiment.id),
+        this.ruleService.getAll(),
       ]);
+
+      const ruleIdSet = new Set(experimentRuleLinks.map((r: any) => r.ruleId));
+      const experimentRules = (allRules as IRule[]).filter(r => ruleIdSet.has(r.id));
 
       const today = format(new Date(), 'yyyy-MM-dd');
       const startDate = this.experiment.startDate ?? today;
       const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
       const currentEnd = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
 
-      const baselineEnd = startDate;
-      const baselineStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
+      // Baseline: week before experiment start, falling back to first week of experiment
+      const preExpStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
+      const firstWeekEnd = format(addDays(parseISO(startDate), 6), 'yyyy-MM-dd');
       const currentStart = format(subDays(parseISO(currentEnd), 6), 'yyyy-MM-dd');
 
-      const [baselineActs, currentActs] = await Promise.all([
-        this.activityService.getByDate(baselineStart, baselineEnd),
+      const [preExpActs, firstWeekActs, currentActs] = await Promise.all([
+        this.activityService.getByDate(preExpStart, startDate),
+        this.activityService.getByDate(startDate, firstWeekEnd),
         this.activityService.getByDate(currentStart, currentEnd),
       ]);
 
       this.indicators = (dbIndicators as IExperimentIndicator[]).slice(0, 3).map(ind => {
         const name = this.resolveIndicatorName(ind, actions, tags, items, metrics);
-        const { baselineRaw, currentRaw, fmtFn } = this.resolveValues(ind, baselineActs, currentActs, metrics);
-        const baselineValue = baselineRaw !== null ? fmtFn(baselineRaw) : null;
-        const currentValue = currentRaw !== null ? fmtFn(currentRaw) : null;
-        let arrowUp: boolean | null = null;
-        let color: IndicatorRow['color'] = 'medium';
-        if (baselineRaw !== null && currentRaw !== null && currentRaw !== baselineRaw) {
-          arrowUp = currentRaw > baselineRaw;
-          if (ind.direction === 'increasing') color = arrowUp ? 'success' : 'danger';
-          else if (ind.direction === 'decreasing') color = arrowUp ? 'danger' : 'success';
+        const { baselineRaw, currentRaw, fmtFn } = this.resolveValues(ind, preExpActs, firstWeekActs, currentActs, metrics);
+        const baseline = baselineRaw !== null ? fmtFn(baselineRaw) : null;
+        const current = currentRaw !== null ? fmtFn(currentRaw) : null;
+        let trend: IndicatorRow['trend'] = 'unknown';
+        if (currentRaw !== null) {
+          if (baselineRaw === null || currentRaw === baselineRaw) {
+            trend = 'flat';
+          } else {
+            const valueWentUp = currentRaw > baselineRaw;
+            const isGood = ind.direction === 'increasing' ? valueWentUp : !valueWentUp;
+            trend = isGood ? 'up' : 'down';
+          }
         }
-        return { name, baselineValue, currentValue, arrowUp, color };
+        return { name, baseline, current, trend };
       });
+
+      if (experimentRules.length && this.experiment.startDate) {
+        const completionsMap = new Map<number, Map<string, boolean>>();
+        for (const rule of experimentRules) {
+          const completions = await this.ruleCompletionService.archiveAndGetCompletions(rule);
+          const map = new Map<string, boolean>();
+          for (const c of completions) map.set(c.periodStart, c.met === 1);
+          completionsMap.set(rule.id, map);
+        }
+        const thirtyOneDaysAgo = format(subDays(new Date(), 31), 'yyyy-MM-dd');
+        const uptimeFrom = [thirtyOneDaysAgo, this.experiment.startDate, ...experimentRules.map(r => r.startDate)]
+          .filter(Boolean)
+          .sort()[0] as string;
+        const uptimeActs = await this.activityService.getAllEnrichedForRules(uptimeFrom, currentEnd);
+
+        this.ruleItems = experimentRules.map(rule => {
+          let subjectName = '';
+          if (rule.subjectType === 'action') subjectName = actions.find(a => a.id === rule.subjectId)?.name ?? '';
+          else if (rule.subjectType === 'tag') subjectName = tags.find(t => t.id === rule.subjectId)?.name ?? '';
+          else subjectName = items.find(i => i.id === rule.subjectId)?.name ?? '';
+          const name = this.ruleService.buildName(rule, subjectName);
+          const [periodStart, periodEnd] = getPeriodRange(today, rule.period);
+          const periodActs = uptimeActs.filter(a => a.date >= periodStart && a.date <= periodEnd);
+          const currentlyMet = isRulePeriodMet(rule, periodActs);
+          return { name, currentlyMet };
+        });
+
+        this.uptime = computeExperimentUptime(
+          experimentRules,
+          uptimeActs,
+          completionsMap,
+          this.experiment.startDate,
+          currentEnd,
+          today,
+        );
+      }
+
+      this.lineCountChange.emit(Math.min(this.indicators.length, 3) + Math.min(this.ruleItems.length, 3));
     } catch (e) {
       this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
       this.logService.error('ExperimentDashboardWidgetComponent.load', e);
@@ -145,7 +201,8 @@ export class ExperimentDashboardWidgetComponent {
 
   private resolveValues(
     ind: IExperimentIndicator,
-    baselineActs: IActivity[],
+    preExpActs: IActivity[],
+    firstWeekActs: IActivity[],
     currentActs: IActivity[],
     metrics: IMetric[],
   ): { baselineRaw: number | null; currentRaw: number | null; fmtFn: (v: number) => string } {
@@ -156,7 +213,8 @@ export class ExperimentDashboardWidgetComponent {
         const vals = acts.flatMap(a => a.metricRecords.filter(r => r.metricId === ind.subjectId)).map(r => r.value);
         return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
       };
-      return { baselineRaw: avg(baselineActs), currentRaw: avg(currentActs), fmtFn: v => `${Math.round(v * 10) / 10}${unit}` };
+      const baselineRaw = avg(preExpActs) ?? avg(firstWeekActs);
+      return { baselineRaw, currentRaw: avg(currentActs), fmtFn: v => `${Math.round(v * 10) / 10}${unit}` };
     }
     const minPerDay = (acts: IActivity[]) => {
       const matching = acts.filter(a => {
@@ -172,7 +230,8 @@ export class ExperimentDashboardWidgetComponent {
       }, 0);
       return total > 0 ? Math.round((total / 7) * 10) / 10 : null;
     };
-    return { baselineRaw: minPerDay(baselineActs), currentRaw: minPerDay(currentActs), fmtFn: v => `${v} min/day` };
+    const baselineRaw = minPerDay(preExpActs) ?? minPerDay(firstWeekActs);
+    return { baselineRaw, currentRaw: minPerDay(currentActs), fmtFn: v => `${v} min/day` };
   }
 
   navigate(): void {

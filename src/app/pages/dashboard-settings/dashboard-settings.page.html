@@ -7,16 +7,16 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollY]="hasExcessWidgets">
   <div class="rows">
     @for (slot of rowSlots; track slot.rowStart) {
       @if (slot.type === 'empty') {
-        <div class="row-slot empty" [class.span2]="slot.rowSpan === 2" (click)="onEmptySlotTap()">
+        <div class="row-slot empty" [class.span2]="slot.rowSpan === 2" [class.span3]="slot.rowSpan === 3" [class.span4]="slot.rowSpan === 4" [class.excess]="slot.excess" (click)="onEmptySlotTap()">
           <ion-icon name="add-outline"></ion-icon>
           <span>{{ 'TK_ADD_WIDGET' | translate }}</span>
         </div>
       } @else {
-        <div class="row-slot widget" [class.span2]="slot.rowSpan === 2">
+        <div class="row-slot widget" [class.span2]="slot.rowSpan === 2" [class.span3]="slot.rowSpan === 3" [class.span4]="slot.rowSpan === 4" [class.excess]="slot.excess">
           <div class="widget-info">
             <ion-icon [name]="getWidgetIcon(slot.widget!)"></ion-icon>
             <div class="widget-text">

@@ -1,9 +1,13 @@
-<ion-card button (click)="navigate()" [style.--background]="color">
-  <div class="inner">
-    <div class="icon-btn">
-      <ion-icon [name]="icon"></ion-icon>
-    </div>
-    <span class="title">{{ label | translate }}</span>
-    <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
-  </div>
-</ion-card>
+<button class="tl-cta" [style.background]="color || null" (click)="navigate()">
+  <span class="tl-cta-plus">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5.5v13M5.5 12h13"/>
+    </svg>
+  </span>
+  <span class="tl-cta-label">{{ label | translate }}</span>
+  <span class="tl-cta-chev">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6l6 6-6 6"/>
+    </svg>
+  </span>
+</button>

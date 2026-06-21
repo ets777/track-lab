@@ -1,55 +1,78 @@
-<ion-card button (click)="navigate()">
-  <ion-card-content>
-    @if (isLoading) {
-      <ion-skeleton-text animated class="title-skeleton"></ion-skeleton-text>
-      <ion-skeleton-text animated class="bar-skeleton"></ion-skeleton-text>
-      <ion-skeleton-text animated class="ind-skeleton"></ion-skeleton-text>
-      <ion-skeleton-text animated class="ind-skeleton"></ion-skeleton-text>
-    } @else if (!experiment) {
-      <div class="widget-header">
-        <ion-icon name="flask-outline"></ion-icon>
-        <span class="title">{{ config.experimentTitle }}</span>
-      </div>
-      <p class="no-data">{{ 'TK_NO_EXPERIMENTS' | translate }}</p>
+<div class="xw" (click)="navigate()">
+  @if (isLoading) {
+    <div class="xw-hd">
+      <ion-skeleton-text animated class="skel-title"></ion-skeleton-text>
+      <ion-skeleton-text animated class="skel-pct"></ion-skeleton-text>
+    </div>
+    <ion-skeleton-text animated class="skel-bar"></ion-skeleton-text>
+    <ion-skeleton-text animated class="skel-row"></ion-skeleton-text>
+    <ion-skeleton-text animated class="skel-row skel-row--short"></ion-skeleton-text>
+  } @else if (!experiment) {
+    <div class="xw-hd">
+      <span class="xw-title">{{ config.experimentTitle }}</span>
+    </div>
+    <p class="xw-empty">{{ 'TK_NO_EXPERIMENTS' | translate }}</p>
+  } @else {
+    <div class="xw-hd">
+      <span class="xw-title">{{ experiment.title }}</span>
+      @if (experiment.isSuccess === null) {
+        <span class="xw-pct">{{ progressPercent }}%</span>
+      }
+    </div>
+    @if (experiment.isSuccess === 1) {
+      <div class="xw-status xw-status--success">{{ 'TK_EXPERIMENT_SUCCESS' | translate }}</div>
+    } @else if (experiment.isSuccess === 0) {
+      <div class="xw-status xw-status--failed">{{ 'TK_EXPERIMENT_FAILED' | translate }}</div>
     } @else {
-      <div class="widget-header">
-        <span class="title">{{ experiment.title }}</span>
-        @if (experiment.isSuccess === null) {
-          <span class="percent">{{ progressPercent }}%</span>
-        }
-      </div>
-      @if (experiment.isSuccess === 1) {
-        <div class="status-banner status-banner--success">{{ 'TK_EXPERIMENT_SUCCESS' | translate }}</div>
-      } @else if (experiment.isSuccess === 0) {
-        <div class="status-banner status-banner--failed">{{ 'TK_EXPERIMENT_FAILED' | translate }}</div>
-      } @else {
-        <div class="progress-bar">
-          <div class="progress-bar__fill" [style.width]="progressPercent + '%'"></div>
+      <div class="xw-bar"><i [style.width]="progressPercent + '%'"></i></div>
+    }
+    <div class="xw-rows">
+      @for (ind of indicators; track ind.name) {
+        <div class="xw-row">
+          <span class="xw-label">{{ ind.name }}</span>
+          <span class="xw-val" [attr.data-trend]="ind.trend">
+            @if (ind.trend === 'unknown') {
+              <span class="xv-dim">??</span>
+            } @else if (ind.trend === 'flat') {
+              <span class="xv-dim">{{ ind.current }}</span>
+            } @else if (ind.trend === 'up') {
+              @if (ind.baseline) {
+                <span class="xv-dim">{{ ind.baseline }}</span>
+              }
+              <span class="xv-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+              </span>
+              <span class="xv-strong">{{ ind.current }}</span>
+            } @else {
+              <span class="xv-strong">{{ ind.current }}</span>
+              <span class="xv-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+              </span>
+              @if (ind.baseline) {
+                <span class="xv-dim">{{ ind.baseline }}</span>
+              }
+            }
+          </span>
         </div>
       }
-      <ul class="indicators">
-        @for (ind of indicators; track ind.name) {
-          <li>
-            <span class="ind-name">{{ ind.name }}</span>
-            <span class="ind-stats">
-              @if (ind.baselineValue) {
-                <span class="ind-baseline">{{ ind.baselineValue }}</span>
-              }
-              <ion-icon
-                [name]="ind.arrowUp === null ? 'arrow-forward-outline' : (ind.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline')"
-                [class.ind-success]="ind.color === 'success'"
-                [class.ind-danger]="ind.color === 'danger'"
-              ></ion-icon>
-              @if (ind.currentValue !== null) {
-                <span class="ind-value" [class.ind-success]="ind.color === 'success'" [class.ind-danger]="ind.color === 'danger'">{{ ind.currentValue }}</span>
+      @if (!indicators.length) {
+        <div class="xw-row"><span class="xw-no-ind">{{ 'TK_INDICATORS' | translate }}: —</span></div>
+      }
+      @if (ruleItems.length) {
+        <div class="xw-divider"></div>
+        @for (rule of ruleItems.slice(0, 3); track rule.name) {
+          <div class="xw-row xw-row-rule">
+            <span class="xw-label">{{ rule.name }}</span>
+            <span class="xw-val">
+              @if (rule.currentlyMet) {
+                <span class="xv-check">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </span>
               }
             </span>
-          </li>
+          </div>
         }
-        @if (!indicators.length) {
-          <li class="no-indicators">{{ 'TK_INDICATORS' | translate }}: —</li>
-        }
-      </ul>
-    }
-  </ion-card-content>
-</ion-card>
+      }
+    </div>
+  }
+</div>

@@ -22,6 +22,8 @@ import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
+import { ExperimentIndicatorService } from 'src/app/services/experiment-indicator.service';
+import { ExperimentRuleService } from 'src/app/services/experiment-rule.service';
 import { ListService } from 'src/app/services/list.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { LogService } from 'src/app/services/log.service';
@@ -41,7 +43,8 @@ interface RowSlot {
   widget?: DashboardWidget;
   widgetIndex?: number;
   rowStart: number;
-  rowSpan: 1 | 2;
+  rowSpan: 1 | 2 | 3 | 4;
+  excess: boolean;
 }
 
 type ModalStep = 'type' | 'form';
@@ -85,6 +88,8 @@ export class DashboardSettingsPage {
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
   private experimentService = inject(ExperimentService);
+  private experimentIndicatorService = inject(ExperimentIndicatorService);
+  private experimentRuleService = inject(ExperimentRuleService);
   private listService = inject(ListService);
   private toastService = inject(ToastService);
   private logService = inject(LogService);
@@ -140,8 +145,17 @@ export class DashboardSettingsPage {
     return parseInt(localStorage.getItem('dashboard_rules_count') ?? '4', 10);
   }
 
-  private widgetHeight(config: WidgetConfig): 1 | 2 {
-    return getWidgetHeight(config, config.type === 'rules' ? this.storedRuleCount : undefined);
+  private readonly EXP_LINES_KEY_PREFIX = 'exp_widget_lines_';
+
+  private widgetHeight(widget: DashboardWidget): 1 | 2 | 3 | 4 {
+    const config = widget.config;
+    if (config.type === 'rules') return getWidgetHeight(config, this.storedRuleCount);
+    if (config.type === 'experiment') {
+      const stored = localStorage.getItem(this.EXP_LINES_KEY_PREFIX + widget.id);
+      const lineCount = stored ? parseInt(stored, 10) : undefined;
+      return getWidgetHeight(config, undefined, lineCount);
+    }
+    return getWidgetHeight(config);
   }
 
   get maxRows(): number {
@@ -149,40 +163,50 @@ export class DashboardSettingsPage {
   }
 
   get remainingRows(): number {
-    const used = this.widgets.reduce((sum, w) => sum + this.widgetHeight(w.config), 0);
+    const used = this.widgets.reduce((sum, w) => sum + this.widgetHeight(w), 0);
     return this.maxRows - used;
   }
 
   get effectiveRemainingRows(): number {
     if (this.modalEditingId) {
       const editing = this.widgets.find(w => w.id === this.modalEditingId);
-      if (editing) return this.remainingRows + this.widgetHeight(editing.config);
+      if (editing) return this.remainingRows + this.widgetHeight(editing);
     }
     return this.remainingRows;
   }
 
   get navMaxLinks(): number {
-    return this.effectiveRemainingRows <= 1 ? 3 : 6;
+    return 6;
+  }
+
+  get hasExcessWidgets(): boolean {
+    return this.rowSlots.some(s => s.excess);
   }
 
   get widgetTypeOptions() {
-    if (this.remainingRows >= 2) return WIDGET_TYPE_OPTIONS;
-    const twoRowTypes: WidgetType[] = ['rules', 'metric-graph', 'library-graph', 'experiment'];
-    return WIDGET_TYPE_OPTIONS.filter(opt => !twoRowTypes.includes(opt.type));
+    const r = this.effectiveRemainingRows;
+    return WIDGET_TYPE_OPTIONS.filter(opt => {
+      if (opt.type === 'metric-graph' || opt.type === 'library-graph') return r >= 4;
+      if (opt.type === 'experiment') return r >= 2;
+      if (opt.type === 'navigation') return r >= 2;
+      if (opt.type === 'rules') return r >= getWidgetHeight({ type: 'rules' }, this.storedRuleCount);
+      return true; // action-button: 1 row
+    });
   }
 
   get rowSlots(): RowSlot[] {
-    const max = this.maxRows;
+    const screenMax = this.maxRows;
     const slots: RowSlot[] = [];
     let currentRow = 1;
     for (const widget of this.widgets) {
-      const rowSpan = this.widgetHeight(widget.config);
-      slots.push({ type: 'widget', widget, rowStart: currentRow, rowSpan });
+      const rowSpan = this.widgetHeight(widget);
+      const excess = currentRow + rowSpan - 1 > screenMax;
+      slots.push({ type: 'widget', widget, rowStart: currentRow, rowSpan, excess });
       currentRow += rowSpan;
     }
-    while (currentRow <= max) {
-      slots.push({ type: 'empty', rowStart: currentRow, rowSpan: 1 });
-      currentRow++;
+    while (currentRow <= screenMax) {
+      slots.push({ type: 'empty', rowStart: currentRow, rowSpan: 1, excess: false });
+      currentRow += 1;
     }
     return slots;
   }
@@ -381,7 +405,28 @@ export class DashboardSettingsPage {
     }
 
     this.widgets = await this.configService.getWidgets();
+
+    if (config.type === 'experiment') {
+      const experimentId = (config as ExperimentWidgetConfig).experimentId;
+      const widgetId = this.modalEditingId
+        ?? this.widgets.find(w => w.config.type === 'experiment' && (w.config as ExperimentWidgetConfig).experimentId === experimentId)?.id;
+      if (widgetId) await this.cacheExperimentLineCount(widgetId, experimentId);
+    }
+
     this.closeModal();
+  }
+
+  private async cacheExperimentLineCount(widgetId: string, experimentId: number): Promise<void> {
+    try {
+      const [indicators, ruleLinks] = await Promise.all([
+        this.experimentIndicatorService.getByExperimentId(experimentId),
+        this.experimentRuleService.getByExperimentId(experimentId),
+      ]);
+      const lineCount = Math.min(indicators.length, 3) + Math.min(ruleLinks.length, 3);
+      localStorage.setItem(this.EXP_LINES_KEY_PREFIX + widgetId, String(lineCount));
+    } catch (e) {
+      this.logService.error('DashboardSettingsPage.cacheExperimentLineCount', e);
+    }
   }
 
   private buildConfig(): WidgetConfig | null {

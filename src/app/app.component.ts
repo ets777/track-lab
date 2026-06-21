@@ -22,6 +22,7 @@ import { NavigationService } from './services/navigation.service';
 import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ExperimentNotificationComponent } from './components/experiment-notification/experiment-notification.component';
+import { ExperimentService } from './services/experiment.service';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit {
   private platform = inject(Platform);
   private backupService = inject(BackupService);
   private activityService = inject(ActivityService);
+  private experimentService = inject(ExperimentService);
   private router = inject(Router);
   private navigationService = inject(NavigationService);
 
@@ -56,6 +58,7 @@ export class AppComponent implements OnInit {
 
     await this.platform.ready();
     await this.achievementService.init();
+    await this.experimentService.checkAndUpdateStatusesIfNeeded();
     await this.checkLongBreak();
     await this.autoBackup();
 

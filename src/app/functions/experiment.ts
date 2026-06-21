@@ -33,8 +33,10 @@ export function averageMinutesPerDay(
 }
 
 /**
- * Percentage of days within [startDate, endDate] where every rule was met.
- * Days equal to excludeDate (typically today, still incomplete) are not counted.
+ * Average of per-rule uptimes within [startDate, endDate].
+ * Each rule is evaluated on its own period granularity (day/week/month).
+ * Periods still in progress (ending on or after `today`) are excluded from counting.
+ * Returns null when no completed periods exist for any rule.
  */
 export function computeExperimentUptime(
   rules: IRule[],
@@ -42,35 +44,46 @@ export function computeExperimentUptime(
   completionsMap: Map<number, Map<string, boolean>>,
   startDate: string,
   endDate: string,
-  excludeDate?: string,
+  today?: string,
 ): number | null {
   if (!rules.length || endDate < startDate) return null;
 
-  const days = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
-    .map(d => format(d, 'yyyy-MM-dd'));
+  const ruleUptimes: number[] = [];
 
-  const periodCache = new Map<string, boolean>();
+  for (const rule of rules) {
+    const effectiveStart = startDate > rule.startDate ? startDate : rule.startDate;
+    if (effectiveStart > endDate) continue;
 
-  const isRuleMetForDay = (rule: IRule, day: string): boolean => {
-    if (day < rule.startDate) return true;
-    const [periodStart, periodEnd] = getPeriodRange(day, rule.period);
-    const cacheKey = `${rule.id}:${periodStart}`;
-    if (periodCache.has(cacheKey)) return periodCache.get(cacheKey)!;
-    const ruleMap = completionsMap.get(rule.id);
-    let result: boolean;
-    if (ruleMap?.has(periodStart)) {
-      result = ruleMap.get(periodStart)!;
-    } else {
-      const periodActs = allActivities.filter(a => a.date >= periodStart && a.date <= periodEnd);
-      result = isRulePeriodMet(rule, periodActs);
+    const periodStartsSet = new Set<string>();
+    for (const d of eachDayOfInterval({ start: parseISO(effectiveStart), end: parseISO(endDate) })) {
+      const [ps] = getPeriodRange(format(d, 'yyyy-MM-dd'), rule.period);
+      periodStartsSet.add(ps);
     }
-    periodCache.set(cacheKey, result);
-    return result;
-  };
 
-  const countedDays = days.filter(d => d !== excludeDate);
-  if (!countedDays.length) return null;
+    let metCount = 0;
+    let completedCount = 0;
 
-  const goodCount = countedDays.filter(day => rules.every(rule => isRuleMetForDay(rule, day))).length;
-  return Math.round((goodCount / countedDays.length) * 100);
+    for (const periodStart of periodStartsSet) {
+      const [, periodEnd] = getPeriodRange(periodStart, rule.period);
+      if (today && periodEnd >= today) continue;
+
+      completedCount++;
+      const ruleMap = completionsMap.get(rule.id);
+      let met: boolean;
+      if (ruleMap?.has(periodStart)) {
+        met = ruleMap.get(periodStart)!;
+      } else {
+        const periodActs = allActivities.filter(a => a.date >= periodStart && a.date <= periodEnd);
+        met = isRulePeriodMet(rule, periodActs);
+      }
+      if (met) metCount++;
+    }
+
+    if (completedCount > 0) {
+      ruleUptimes.push(Math.round((metCount / completedCount) * 100));
+    }
+  }
+
+  if (!ruleUptimes.length) return null;
+  return Math.round(ruleUptimes.reduce((a, b) => a + b, 0) / ruleUptimes.length);
 }

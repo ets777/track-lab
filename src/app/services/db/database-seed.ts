@@ -1,4 +1,4 @@
-import { format, subDays } from 'date-fns';
+import { format, subDays, addDays } from 'date-fns';
 import { SQLiteService } from './sqlite.service';
 
 function d(n: number) { return format(subDays(new Date(), n), 'yyyy-MM-dd'); }
@@ -466,4 +466,57 @@ export async function seedDatabase(sqlite: SQLiteService) {
   await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES (627,1),(628,1),(629,1),(630,1),(631,1),(632,1),(633,1);`);
   await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES (627,1,4),(628,1,4),(629,1,3),(630,1,5),(631,1,4),(632,1,3),(633,1,4);`);
   await sqlite.execute(`INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES (4, 3, 2),(5, 3, 8);`);
+
+  // ── Widget layout test experiments 4–9 ───────────────────────────────────
+  // Purpose: test widget appearance with 1 to 6 lines of content.
+  // Lines = indicators + (rules section: uptime + up to 2 rule names).
+  const fu = (n: number) => format(addDays(new Date(), n), 'yyyy-MM-dd');
+
+  await sqlite.run(
+    `INSERT OR REPLACE INTO experiments (id, title, startDate, endDate, factEndDate, isSuccess, resultData) VALUES
+      (4, 'Focus tracker',     ?, ?, NULL, NULL, NULL),
+      (5, 'Energy boost',      ?, ?, NULL, NULL, NULL),
+      (6, 'Triple indicator',  ?, ?, NULL, NULL, NULL),
+      (7, 'Morning routine',   ?, ?, NULL, NULL, NULL),
+      (8, 'Active lifestyle',  ?, ?, NULL, NULL, NULL),
+      (9, 'Ultimate wellness', ?, ?, NULL, NULL, NULL)`,
+    [
+      d(20), fu(10),
+      d(15), fu(15),
+      d(25), fu(5),
+      d(20), fu(10),
+      d(18), fu(12),
+      d(28), fu(2),
+    ],
+  );
+
+  // Exp 4: 1 ind, 0 rules → 1 line
+  // Exp 5: 2 ind, 0 rules → 2 lines
+  // Exp 6: 3 ind, 0 rules → 3 lines
+  // Exp 7: 2 ind, 1 rule  → 4 lines (2 ind + uptime + 1 rule)
+  // Exp 8: 2 ind, 2 rules → 5 lines (2 ind + uptime + 2 rules)
+  // Exp 9: 3 ind, 3 rules → 6 lines (3 ind + uptime + 2 rules capped)
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentIndicators (id, experimentId, subjectType, subjectId, direction) VALUES
+      (6,  4, 'action', 3,  'increasing'),
+      (7,  5, 'metric', 1,  'increasing'),
+      (8,  5, 'action', 1,  'increasing'),
+      (9,  6, 'metric', 1,  'increasing'),
+      (10, 6, 'metric', 2,  'increasing'),
+      (11, 6, 'action', 4,  'increasing'),
+      (12, 7, 'metric', 1,  'increasing'),
+      (13, 7, 'action', 1,  'increasing'),
+      (14, 8, 'metric', 2,  'increasing'),
+      (15, 8, 'action', 4,  'increasing'),
+      (16, 9, 'metric', 1,  'increasing'),
+      (17, 9, 'metric', 2,  'increasing'),
+      (18, 9, 'action', 13, 'increasing');
+  `);
+
+  await sqlite.execute(`
+    INSERT OR REPLACE INTO experimentRules (id, experimentId, ruleId) VALUES
+      (6,  7, 1),
+      (7,  8, 1), (8,  8, 2),
+      (9,  9, 1), (10, 9, 7), (11, 9, 8);
+  `);
 }

@@ -38,6 +38,10 @@
   "TK_ADD_SHORT": "Добав.",
   "TK_ADD_YOUR_FIRST_ACTIVITY": "Добавить первую активность",
   "TK_ADD": "Добавить",
+  "TK_ADD_ACTIVITY": "Добавить активность",
+  "TK_ADD_AN_ACTION": "Добавить действие...",
+  "TK_ADD_DETAILS": "Добавить детали",
+  "TK_OPTIONAL": "Необязательно",
   "TK_AMOUNT_PER_DAY": "Количество за день",
   "TK_AN_ERROR_OCCURRED": "Произошла ошибка. Для подробной информации смотри логи.",
   "TK_AN_ERROR_OCCURRED_WHILE_IMPORTING_THE_FILE": "Во время импорта произошла ошибка.",
@@ -146,6 +150,7 @@
   "TK_EXERCISED": "Делал упражнения",
   "TK_EXPLAINED": "Объяснял",
   "TK_EXPORT_MD": "Экспортировать MD",
+  "TK_ALL": "Все",
   "TK_FAILED": "Провалился",
   "TK_FEARLESS": "Бесстрашный",
   "TK_FED_PETS": "Кормил животных",
@@ -519,5 +524,7 @@
   "TK_ACTION_NEW_ACTIVITY": "Новая активность",
   "TK_ACTION_NEW_ACTION": "Новое действие",
   "TK_ACTION_NEW_TAG": "Новый тег",
-  "TK_WIDGET_COLOR": "Цвет"
+  "TK_WIDGET_COLOR": "Цвет",
+  "TK_COPIED": "Скопировано в буфер обмена",
+  "TK_RULES_UPTIME": "Эффективность правил"
 }

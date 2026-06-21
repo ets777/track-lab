@@ -1,161 +1,218 @@
 :host {
   display: block;
   height: 100%;
-  overflow: hidden;
 }
 
-ion-card {
-  margin: 0;
+.xw {
   height: 100%;
+  box-sizing: border-box;
+  padding: var(--tl-pad);
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 
-  ion-card-content {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 8px;
-    --padding-bottom: 8px;
+  &:active {
+    opacity: 0.82;
   }
 }
 
-.widget-header {
+// ── Header ──────────────────────────────────────────────────────────
+
+.xw-hd {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
 
-  .title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--ion-color-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.xw-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .percent {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--ion-color-medium);
-    flex-shrink: 0;
+.xw-pct {
+  font-family: var(--tl-font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--tl-text-faint);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  letter-spacing: 0.08em;
+}
+
+// ── Progress bar ────────────────────────────────────────────────────
+
+.xw-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--tl-line-2);
+  overflow: hidden;
+  flex-shrink: 0;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--tl-accent);
   }
 }
 
-.status-banner {
-  font-size: 12px;
+// ── Status banner (finished experiments) ────────────────────────────
+
+.xw-status {
+  font-size: 11px;
   font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  padding: 3px 8px;
+  border-radius: var(--tl-radius-sm);
   text-align: center;
+  flex-shrink: 0;
 
   &--success {
-    background: var(--ion-color-success-tint);
-    color: var(--ion-color-success-shade);
+    background: var(--tl-good);
+    color: #ffffff;
   }
 
   &--failed {
-    background: var(--ion-color-danger-tint);
-    color: var(--ion-color-danger-shade);
+    background: var(--tl-bad);
+    color: #ffffff;
   }
 }
 
-.progress-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ion-color-light);
-  margin-bottom: 12px;
+// ── Rows ────────────────────────────────────────────────────────────
+
+.xw-rows {
+  margin-top: 4px;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
-
-  &__fill {
-    height: 100%;
-    background: var(--ion-color-primary);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-  }
-}
-
-.indicators {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-
-  li {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    gap: 8px;
-
-    .ind-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--ion-color-medium);
-    }
-
-    .ind-stats {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      flex-shrink: 0;
-
-      ion-icon {
-        font-size: 12px;
-        color: var(--ion-color-medium);
-      }
-    }
-
-    .ind-baseline {
-      font-size: 12px;
-      color: var(--ion-color-medium);
-    }
-
-    .ind-value {
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    .ind-success {
-      color: var(--ion-color-success);
-    }
-
-    .ind-danger {
-      color: var(--ion-color-danger);
-    }
-  }
-
-  .no-indicators {
-    color: var(--ion-color-medium);
-    font-size: 13px;
-  }
+  justify-content: space-evenly;
 }
 
-.title-skeleton {
-  height: 18px;
-  width: 60%;
-  margin-bottom: 10px;
-  border-radius: 4px;
+.xw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
 }
 
-.bar-skeleton {
-  height: 6px;
-  border-radius: 3px;
-  margin-bottom: 12px;
+.xw-label {
+  color: var(--tl-text-dim);
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ind-skeleton {
-  height: 16px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-  width: 80%;
+.xw-no-ind {
+  color: var(--tl-text-faint);
+  font-size: 13.5px;
 }
 
-.no-data {
-  color: var(--ion-color-medium);
+.xw-val {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
   font-size: 13px;
+}
+
+.xv-dim {
+  color: var(--tl-text-faint);
+}
+
+.xv-strong {
+  font-weight: 700;
+  color: var(--tl-text);
+}
+
+.xv-arrow {
+  display: inline-flex;
+  color: var(--tl-text-faint);
+}
+
+.xw-val[data-trend="up"] {
+  .xv-arrow,
+  .xv-strong { color: var(--tl-good); }
+}
+
+.xw-val[data-trend="down"] {
+  .xv-arrow,
+  .xv-strong { color: var(--tl-bad); }
+}
+
+// ── Divider between indicators and rules ────────────────────────────
+
+.xw-divider {
+  height: 1px;
+  background: var(--tl-line);
+}
+
+// ── Rule rows ───────────────────────────────────────────────────────
+
+.xw-row-rule .xw-label {
+  font-weight: 400;
+}
+
+.xv-check {
+  display: inline-flex;
+  color: var(--tl-good);
+}
+
+// ── Empty state ─────────────────────────────────────────────────────
+
+.xw-empty {
+  margin: 0;
+  color: var(--tl-text-faint);
+  font-size: 13.5px;
+}
+
+// ── Skeleton ────────────────────────────────────────────────────────
+
+.skel-title {
+  height: 11px;
+  width: 55%;
+  border-radius: 4px;
+}
+
+.skel-pct {
+  height: 11px;
+  width: 28px;
+  border-radius: 4px;
+}
+
+.skel-bar {
+  height: 5px;
+  border-radius: 3px;
+}
+
+.skel-row {
+  height: 14px;
+  border-radius: 4px;
+  margin-top: 14px;
+  width: 80%;
+
+  &--short {
+    width: 60%;
+  }
 }

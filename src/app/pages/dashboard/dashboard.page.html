@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ 'TK_DASHBOARD' | translate }}</ion-title>
+    <ion-title>{{ 'TK_DASHBOARD' | translate }} ({{ maxRows }})</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openSettings()">
         <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
@@ -11,8 +11,8 @@
 
 <ion-content [scrollY]="false">
   <div class="dashboard" [style.grid-template-rows]="dashboardGridRows">
-    @for (widget of widgets; track widget.id) {
-      <div class="widget-cell" [style.grid-row]="'span ' + getWidgetHeight(widget.config)">
+    @for (widget of displayedWidgets; track widget.id) {
+      <div class="widget-cell" [style.grid-row]="'span ' + widgetHeight(widget)">
         @switch (widget.config.type) {
 
           @case ('action-button') {
@@ -45,7 +45,10 @@
           }
 
           @case ('experiment') {
-            <app-experiment-dashboard-widget [config]="asExperimentConfig(widget.config)"></app-experiment-dashboard-widget>
+            <app-experiment-dashboard-widget
+              [config]="asExperimentConfig(widget.config)"
+              (lineCountChange)="onExperimentLineCount(widget.id, $event)"
+            ></app-experiment-dashboard-widget>
           }
 
         }

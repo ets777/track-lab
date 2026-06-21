@@ -38,6 +38,10 @@
   "TK_ADD_SHORT": "Add",
   "TK_ADD_YOUR_FIRST_ACTIVITY": "Add your first activity",
   "TK_ADD": "Add",
+  "TK_ADD_ACTIVITY": "Add activity",
+  "TK_ADD_AN_ACTION": "Add an action...",
+  "TK_ADD_DETAILS": "Add details",
+  "TK_OPTIONAL": "Optional",
   "TK_AMOUNT_PER_DAY": "Amount per day",
   "TK_AN_ERROR_OCCURRED": "An error occurred. See logs for more details.",
   "TK_AN_ERROR_OCCURRED_WHILE_IMPORTING_THE_FILE": "An error occurred while importing the file.",
@@ -146,6 +150,7 @@
   "TK_EXERCISED": "Exercised",
   "TK_EXPLAINED": "Explained",
   "TK_EXPORT_MD": "Export MD",
+  "TK_ALL": "All",
   "TK_FAILED": "Failed",
   "TK_FEARLESS": "Fearless",
   "TK_FED_PETS": "Fed pets",
@@ -519,5 +524,7 @@
   "TK_ACTION_NEW_ACTIVITY": "New activity",
   "TK_ACTION_NEW_ACTION": "New action",
   "TK_ACTION_NEW_TAG": "New tag",
-  "TK_WIDGET_COLOR": "Color"
+  "TK_WIDGET_COLOR": "Color",
+  "TK_COPIED": "Copied to clipboard",
+  "TK_RULES_UPTIME": "Rules uptime"
 }

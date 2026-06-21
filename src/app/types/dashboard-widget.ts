@@ -63,13 +63,26 @@ export interface DashboardWidget {
   config: WidgetConfig;
 }
 
-export function getWidgetHeight(config: WidgetConfig, ruleCount?: number): 1 | 2 {
-  if (config.type === 'action-button') return 1;
-  if (config.type === 'rules') return (ruleCount ?? 4) <= 2 ? 1 : 2;
-  if (config.type === 'navigation') {
-    return (config as NavigationWidgetConfig).links.length <= 4 ? 1 : 2;
-  }
+export function experimentLinesToHeight(lineCount: number): 1 | 2 | 3 | 4 {
+  if (lineCount >= 5) return 4;
+  if (lineCount >= 3) return 3;
   return 2;
+}
+
+export function getWidgetHeight(config: WidgetConfig, ruleCount?: number, experimentLineCount?: number): 1 | 2 | 3 | 4 {
+  if (config.type === 'action-button') return 1;
+  if (config.type === 'rules') {
+    const n = ruleCount ?? 4;
+    return n <= 1 ? 2 : n === 2 ? 3 : 4;
+  }
+  if (config.type === 'navigation') {
+    const n = (config as NavigationWidgetConfig).links.length;
+    return n <= 3 ? 2 : 4;
+  }
+  if (config.type === 'experiment') {
+    return experimentLinesToHeight(experimentLineCount ?? 6);
+  }
+  return 4;
 }
 
 export function getNextColor(widgets: DashboardWidget[]): string {
@@ -85,13 +98,17 @@ export function getNextColor(widgets: DashboardWidget[]): string {
   return WIDGET_COLORS.find(c => !used.has(c)) ?? WIDGET_COLORS[0];
 }
 
-export const MAX_DASHBOARD_ROWS = 7;
+export const MAX_DASHBOARD_ROWS = 12;
 
 export function getMaxDashboardRows(screenHeight: number): number {
-  if (screenHeight < 700) return 5;
-  if (screenHeight < 800) return 6;
-  if (screenHeight < 900) return 7;
-  return 8;
+  if (screenHeight < 500) return 5;
+  if (screenHeight < 575) return 6;
+  if (screenHeight < 650) return 7;
+  if (screenHeight < 725) return 8;
+  if (screenHeight < 800) return 9;
+  if (screenHeight < 875) return 10;
+  if (screenHeight < 950) return 11;
+  return 12;
 }
 
 export interface NavigationLinkOption {

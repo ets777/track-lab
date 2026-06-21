@@ -70,18 +70,29 @@ export class DashboardPage {
   private router = inject(Router);
 
   private readonly RULES_COUNT_KEY = 'dashboard_rules_count';
+  private readonly EXP_LINES_KEY_PREFIX = 'exp_widget_lines_';
 
   widgets: DashboardWidget[] = [];
-  getWidgetHeight(config: WidgetConfig): 1 | 2 {
-    if (config.type === 'rules') {
-      const count = this.checklistLoading ? this.checklistSkeletonCount : this.checklistItems.length;
-      return getWidgetHeight(config, count);
-    }
-    return getWidgetHeight(config);
-  }
+  experimentLineCounts = new Map<string, number>();
   checklistLoading = true;
   checklistItems: ChecklistItem[] = [];
   checklistSkeletonCount = parseInt(localStorage.getItem(this.RULES_COUNT_KEY) ?? '4', 10);
+
+  widgetHeight(widget: DashboardWidget): 1 | 2 | 3 | 4 {
+    if (widget.config.type === 'rules') {
+      const count = this.checklistLoading ? this.checklistSkeletonCount : this.checklistItems.length;
+      return getWidgetHeight(widget.config, count);
+    }
+    if (widget.config.type === 'experiment') {
+      return getWidgetHeight(widget.config, undefined, this.experimentLineCounts.get(widget.id));
+    }
+    return getWidgetHeight(widget.config);
+  }
+
+  onExperimentLineCount(widgetId: string, lineCount: number): void {
+    this.experimentLineCounts.set(widgetId, lineCount);
+    localStorage.setItem(this.EXP_LINES_KEY_PREFIX + widgetId, String(lineCount));
+  }
 
   private widgetsReady = false;
   private viewReady = false;
@@ -90,8 +101,25 @@ export class DashboardPage {
     addIcons({ settingsOutline });
   }
 
+  get maxRows(): number {
+    return getMaxDashboardRows(window.innerHeight);
+  }
+
+  get displayedWidgets(): DashboardWidget[] {
+    const max = getMaxDashboardRows(window.innerHeight);
+    const result: DashboardWidget[] = [];
+    let usedRows = 0;
+    for (const widget of this.widgets) {
+      const h = this.widgetHeight(widget);
+      if (usedRows + h > max) break;
+      result.push(widget);
+      usedRows += h;
+    }
+    return result;
+  }
+
   get dashboardGridRows(): string {
-    return `repeat(${getMaxDashboardRows(window.innerHeight)}, 1fr)`;
+    return `repeat(${this.maxRows}, 1fr)`;
   }
 
   ionViewWillEnter(): void {
@@ -102,6 +130,13 @@ export class DashboardPage {
 
     this.configService.getWidgets().then(widgets => {
       this.widgets = widgets;
+      this.experimentLineCounts = new Map();
+      for (const w of widgets) {
+        if (w.config.type === 'experiment') {
+          const stored = localStorage.getItem(this.EXP_LINES_KEY_PREFIX + w.id);
+          if (stored) this.experimentLineCounts.set(w.id, parseInt(stored, 10));
+        }
+      }
       this.widgetsReady = true;
       if (this.viewReady) this.startRulesLoad();
     });
