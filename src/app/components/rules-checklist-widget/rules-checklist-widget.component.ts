@@ -4,7 +4,7 @@ import { IonIcon, IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { addIcons } from 'ionicons';
-import { shieldCheckmarkOutline, checkmarkCircle, ellipseOutline } from 'ionicons/icons';
+import { shieldCheckmarkOutline, checkmark, ellipseOutline } from 'ionicons/icons';
 
 export interface ChecklistItem {
   name: string;
@@ -37,7 +37,7 @@ export class RulesChecklistWidgetComponent {
   private navigationService = inject(NavigationService);
 
   constructor() {
-    addIcons({ shieldCheckmarkOutline, checkmarkCircle, ellipseOutline });
+    addIcons({ shieldCheckmarkOutline, checkmark, ellipseOutline });
   }
 
   get visibleItems(): ChecklistItem[] {
