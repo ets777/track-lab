@@ -1,6 +1,6 @@
-<ion-card button [style.--icon-color]="color" (click)="navigate()">
-  <ion-card-content>
+<button class="tl-navtile" (click)="navigate()">
+  <span class="tl-navtile-ic">
     <ion-icon [name]="icon"></ion-icon>
-    <span>{{ label | translate }}</span>
-  </ion-card-content>
-</ion-card>
+  </span>
+  <span class="tl-navtile-label">{{ label | translate }}</span>
+</button>

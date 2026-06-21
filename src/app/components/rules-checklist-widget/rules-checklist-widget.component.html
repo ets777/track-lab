@@ -1,49 +1,71 @@
-<ion-card button (click)="navigate()">
-  <ion-card-content>
-    <div class="widget-header">
-      <span class="title">{{ 'TK_RULES' | translate }}</span>
-      @if (!isLoading && items.length > 0) {
-        <span class="counts">
-          {{ totalCount }} {{ 'TK_TOTAL' | translate }} · {{ doneCount }} {{ 'TK_DONE' | translate }}
-        </span>
-      }
-    </div>
-
-    @if (isLoading) {
-      <ul class="checklist">
-        @for (_ of skeletonItems; track $index) {
-          <li>
-            <ion-skeleton-text animated class="icon-skeleton"></ion-skeleton-text>
-            <ion-skeleton-text animated class="text-skeleton"></ion-skeleton-text>
-            <ion-skeleton-text animated class="progress-skeleton"></ion-skeleton-text>
-          </li>
-        }
-      </ul>
-      @if (showMoreSkeleton) {
-        <p class="more">
-          <ion-skeleton-text animated class="more-skeleton"></ion-skeleton-text>
-        </p>
-      }
-    } @else if (items.length === 0) {
-      <p class="empty-desc">{{ 'TK_RULES_DESCRIPTION' | translate }}</p>
-      <button class="add-rule-link" (click)="navigateToAddRule($event)">
-        {{ 'TK_NEW_RULE' | translate }} →
-      </button>
-    } @else {
-      <ul class="checklist">
-        @for (item of visibleItems; track item.name) {
-          <li>
-            <ion-icon [name]="item.met ? 'checkmark-circle' : 'ellipse-outline'" [class.met]="item.met"></ion-icon>
-            <span class="rule-name">{{ item.name }}</span>
-            @if (item.progress) {
-              <span class="progress">{{ item.progress }}</span>
-            }
-          </li>
-        }
-      </ul>
-      @if (hiddenCount > 0) {
-        <p class="more">{{ 'TK_AND_MORE' | translate: { count: hiddenCount } }}</p>
-      }
+<div class="tl-widget tl-w-rules" (click)="navigate()">
+  <div class="tl-widget-hd">
+    <span class="tl-widget-title">{{ 'TK_RULES' | translate }}</span>
+    @if (!isLoading && items.length > 0) {
+      <span class="tl-widget-meta">
+        <b>{{ totalCount }}</b> {{ 'TK_TOTAL' | translate }}
+        <span class="tl-dot-sep">·</span>
+        <b>{{ doneCount }}</b> {{ 'TK_DONE' | translate }}
+      </span>
     }
-  </ion-card-content>
-</ion-card>
+  </div>
+
+  @if (isLoading) {
+    <ul class="tl-rulelist">
+      @for (_ of skeletonItems; track $index) {
+        <li class="tl-rule">
+          <span class="tl-rule-check">
+            <ion-skeleton-text animated class="icon-skeleton"></ion-skeleton-text>
+          </span>
+          <span class="tl-rule-body">
+            <ion-skeleton-text animated class="text-skeleton"></ion-skeleton-text>
+            <span class="tl-rule-meter"><span class="tl-rule-fill" style="width: 0%"></span></span>
+          </span>
+          <ion-skeleton-text animated class="progress-skeleton"></ion-skeleton-text>
+        </li>
+      }
+    </ul>
+    @if (showMoreSkeleton) {
+      <ion-skeleton-text animated class="more-skeleton"></ion-skeleton-text>
+    }
+  } @else if (items.length === 0) {
+    <p class="empty-desc">{{ 'TK_RULES_DESCRIPTION' | translate }}</p>
+    <button class="tl-rule-more" (click)="navigateToAddRule($event)">
+      {{ 'TK_NEW_RULE' | translate }}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  } @else {
+    <ul class="tl-rulelist">
+      @for (item of visibleItems; track item.name) {
+        <li class="tl-rule">
+          <span class="tl-rule-check" [class.is-done]="item.met">
+            @if (item.met) {
+              <ion-icon name="checkmark" size="small"></ion-icon>
+            } @else {
+              <span class="tl-rule-ring"></span>
+            }
+          </span>
+          <span class="tl-rule-body">
+            <span class="tl-rule-line">
+              <span class="tl-rule-name">{{ item.name }}</span>
+            </span>
+            <span class="tl-rule-meter">
+              <span class="tl-rule-fill" [style.width.%]="getProgressPct(item)"></span>
+            </span>
+          </span>
+          @if (item.progress) {
+            <span class="tl-rule-prog">
+              {{ item.progress.split('/')[0] }}<span class="tl-rule-slash">/</span>{{ item.progress.split('/')[1] }}
+            </span>
+          }
+        </li>
+      }
+    </ul>
+    @if (hiddenCount > 0) {
+      <button class="tl-rule-more" (click)="navigate()">
+        {{ 'TK_AND_MORE' | translate: { count: hiddenCount } }}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    }
+  }
+</div>

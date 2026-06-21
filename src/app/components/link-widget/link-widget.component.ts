@@ -1,7 +1,7 @@
 import { Component, Input, HostBinding, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { IonCard, IonCardContent, IonIcon } from '@ionic/angular/standalone';
+import { IonIcon } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import {
@@ -14,7 +14,7 @@ import {
   selector: 'app-link-widget',
   templateUrl: './link-widget.component.html',
   styleUrl: './link-widget.component.scss',
-  imports: [IonCard, IonCardContent, IonIcon, TranslateModule],
+  imports: [IonIcon, TranslateModule],
 })
 export class LinkWidgetComponent {
   @Input() icon = '';

@@ -1,6 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonCard, IonCardContent, IonIcon, IonSkeletonText } from '@ionic/angular/standalone';
+import { IonIcon, IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { addIcons } from 'ionicons';
@@ -12,13 +12,13 @@ export interface ChecklistItem {
   progress: string | null;
 }
 
-const VISIBLE_COUNT = 4;
+const VISIBLE_COUNT = 3;
 
 @Component({
   selector: 'app-rules-checklist-widget',
   templateUrl: './rules-checklist-widget.component.html',
   styleUrl: './rules-checklist-widget.component.scss',
-  imports: [IonCard, IonCardContent, IonIcon, IonSkeletonText, TranslateModule],
+  imports: [IonIcon, IonSkeletonText, TranslateModule],
 })
 export class RulesChecklistWidgetComponent {
   @Input() items: ChecklistItem[] = [];
@@ -64,5 +64,12 @@ export class RulesChecklistWidgetComponent {
   navigateToAddRule(event: Event) {
     event.stopPropagation();
     this.router.navigate(['/rule/add']);
+  }
+
+  getProgressPct(item: ChecklistItem): number {
+    if (!item.progress) return item.met ? 100 : 0;
+    const [a, b] = item.progress.split('/').map(Number);
+    if (!b) return 0;
+    return Math.min(100, Math.round((a / b) * 100));
   }
 }

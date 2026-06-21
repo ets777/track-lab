@@ -1,11 +1,15 @@
-<div class="section-label">{{ 'TK_NAVIGATE' | translate }}</div>
-<div class="nav-grid">
-  @for (link of config.links; track link.route) {
-    <app-link-widget
-      [icon]="link.icon"
-      [label]="link.label"
-      [route]="link.route"
-      [compact]="true"
-    ></app-link-widget>
-  }
+<div class="tl-widget tl-w-nav">
+  <div class="tl-widget-hd">
+    <span class="tl-widget-title">{{ 'TK_NAVIGATE' | translate }}</span>
+  </div>
+  <div class="tl-navgrid">
+    @for (link of config.links; track link.route) {
+      <app-link-widget
+        [icon]="link.icon"
+        [label]="link.label"
+        [route]="link.route"
+        [compact]="true"
+      ></app-link-widget>
+    }
+  </div>
 </div>
