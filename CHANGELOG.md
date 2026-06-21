@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.2] - 2026-06-21
+
+### Improved
+
+- Dashboard redesign
+
+### Fixed
+
+- Experiment status check
+- Experiment widget displaying wrong initial values
+
 ## [0.7.1] - 2026-06-13
 
 ### Added
@@ -172,7 +183,6 @@
 - Graph width issues
 - Overlap between the three-dots menu and activity title
 - Toasts appearing simultaneously with achievements
-
 
 ## [0.4.0] - 2025-10-17
 
