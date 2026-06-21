@@ -1,14 +1,104 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
 
+// ── TrackLab design tokens — Clinical skin ──────────────────────────────────
+
 :root {
-    --text-color: #000000;
-    --text-color-grey: #aaaaaa;
+  --tl-font-sans: 'Hanken Grotesk', system-ui, sans-serif;
+  --tl-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  // Layout
+  --tl-radius: 16px;
+  --tl-radius-sm: 11px;
+  --tl-pad: 18px;
+  --tl-gap: 14px;
+  --tl-screen-pad: 18px;
+
+  // Clinical light tokens
+  --tl-bg: #fbfcfd;
+  --tl-surface: #ffffff;
+  --tl-surface-2: #f4f7f9;
+  --tl-line: #e7ebef;
+  --tl-line-2: #dbe1e7;
+  --tl-text: #0f1722;
+  --tl-text-dim: #5a6775;
+  --tl-text-faint: #9aa6b4;
+  --tl-accent: #2563eb;
+  --tl-accent-ink: #ffffff;
+  --tl-accent-soft: rgba(37, 99, 235, 0.1);
+  --tl-good: #16a34a;
+  --tl-good-bg: rgba(22, 163, 74, 0.06);
+  --tl-good-line: rgba(22, 163, 74, 0.22);
+  --tl-bad: #dc2626;
+  --tl-bad-bg: rgba(220, 38, 38, 0.05);
+  --tl-bad-line: rgba(220, 38, 38, 0.22);
+
+  // Map to Ionic variables
+  --ion-font-family: var(--tl-font-sans);
+  --ion-background-color: var(--tl-bg);
+  --ion-background-color-rgb: 251, 252, 253;
+  --ion-text-color: var(--tl-text);
+  --ion-text-color-rgb: 15, 23, 34;
+  --ion-color-primary: var(--tl-accent);
+  --ion-color-primary-rgb: 37, 99, 235;
+  --ion-color-primary-contrast: var(--tl-accent-ink);
+  --ion-color-primary-shade: #1d56d3;
+  --ion-color-primary-tint: #3b6eef;
+  --ion-color-medium: var(--tl-text-dim);
+  --ion-color-medium-rgb: 90, 103, 117;
+  --ion-color-success: var(--tl-good);
+  --ion-color-success-rgb: 22, 163, 74;
+  --ion-color-danger: var(--tl-bad);
+  --ion-color-danger-rgb: 220, 38, 38;
+  --ion-card-background: var(--tl-surface);
+  --ion-item-background: var(--tl-surface);
+  --ion-toolbar-background: var(--tl-surface);
+  --ion-tab-bar-background: var(--tl-surface);
+  --ion-border-color: var(--tl-line);
+
+  --text-color: var(--tl-text);
+  --text-color-grey: var(--tl-text-faint);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --text-color: #ffffff;
-        --text-color-grey: #aaaaaa;
-    }
+  :root {
+    // Clinical dark tokens
+    --tl-bg: #0b0f14;
+    --tl-surface: #11161d;
+    --tl-surface-2: #161d25;
+    --tl-line: rgba(255, 255, 255, 0.07);
+    --tl-line-2: rgba(255, 255, 255, 0.13);
+    --tl-text: #eef2f6;
+    --tl-text-dim: #97a3b0;
+    --tl-text-faint: #5c6873;
+    --tl-accent: #3b82f6;
+    --tl-accent-soft: rgba(59, 130, 246, 0.16);
+    --tl-good: #22c55e;
+    --tl-good-bg: rgba(34, 197, 94, 0.08);
+    --tl-good-line: rgba(34, 197, 94, 0.25);
+    --tl-bad: #ef4444;
+    --tl-bad-bg: rgba(239, 68, 68, 0.07);
+    --tl-bad-line: rgba(239, 68, 68, 0.25);
+
+    --ion-background-color: var(--tl-bg);
+    --ion-background-color-rgb: 11, 15, 20;
+    --ion-text-color: var(--tl-text);
+    --ion-text-color-rgb: 238, 242, 246;
+    --ion-color-primary: var(--tl-accent);
+    --ion-color-primary-rgb: 59, 130, 246;
+    --ion-color-medium: var(--tl-text-dim);
+    --ion-color-medium-rgb: 151, 163, 176;
+    --ion-color-success: var(--tl-good);
+    --ion-color-success-rgb: 34, 197, 94;
+    --ion-color-danger: var(--tl-bad);
+    --ion-color-danger-rgb: 239, 68, 68;
+    --ion-card-background: var(--tl-surface);
+    --ion-item-background: var(--tl-surface);
+    --ion-toolbar-background: var(--tl-surface);
+    --ion-tab-bar-background: var(--tl-surface);
+    --ion-border-color: var(--tl-line);
+
+    --text-color: var(--tl-text);
+    --text-color-grey: var(--tl-text-faint);
+  }
 }

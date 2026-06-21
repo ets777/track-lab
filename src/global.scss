@@ -88,8 +88,33 @@ ion-header::after {
 ion-toolbar {
     --box-shadow: none;
     box-shadow: none !important;
+    --border-color: var(--tl-line);
 }
 
 ion-header {
     box-shadow: none !important;
+    border-bottom: 1px solid var(--tl-line);
+}
+
+// Typography
+h1, h2, h3, p, span, div {
+    font-family: var(--tl-font-sans);
+    letter-spacing: -0.01em;
+}
+
+ion-title {
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--tl-text);
+}
+
+ion-menu-button {
+    --padding-start: 16px;
+    --padding-end: 0;
+}
+
+ion-tab-bar {
+    border-top: 1px solid var(--tl-line);
+    --border: none;
 }

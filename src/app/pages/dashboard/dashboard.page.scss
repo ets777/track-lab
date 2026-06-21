@@ -2,9 +2,16 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   height: 100%;
-  gap: 4px;
-  padding: 4px 16px 8px;
+  gap: var(--tl-gap);
+  padding: var(--tl-screen-pad);
   box-sizing: border-box;
+}
+
+@media (max-height: 749px) {
+  .dashboard {
+    gap: 8px;
+    padding: var(--tl-gap);
+  }
 }
 
 .widget-cell {
