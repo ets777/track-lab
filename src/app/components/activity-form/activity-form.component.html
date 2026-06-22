@@ -68,7 +68,6 @@
                     [style.--bar-background-active]="getRangeColor(metric)"
                     [style.--knob-background]="getRangeColor(metric)"
                     (ionChange)="onRangeChange(metric.id)"
-                    (pointerdown)="onRangeChange(metric.id)"
                   >
                     <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
                   </ion-range>
@@ -120,7 +119,6 @@
                     [style.--bar-background-active]="getRangeColor(metric)"
                     [style.--knob-background]="getRangeColor(metric)"
                     (ionChange)="onRangeChange(metric.id)"
-                    (pointerdown)="onRangeChange(metric.id)"
                   >
                     <ion-label class="range-value" slot="end">{{ metricsForm.get('metric_' + metric.id)?.value }}</ion-label>
                   </ion-range>

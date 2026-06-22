@@ -7,7 +7,7 @@ import { add, close, searchOutline } from 'ionicons/icons';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
-import { addDays, format } from 'date-fns';
+import { format } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
@@ -282,12 +282,14 @@ export class ActivityFormComponent implements OnInit {
 
   onMetricsGroupChange(event: any) {
     if (!this.hasAnyMetrics) return;
+    if ((event.target as HTMLElement).tagName !== 'ION-ACCORDION-GROUP') return;
     this.metricsGroupOpen = !!event.detail.value;
     this.saveGroupState('metrics', this.metricsGroupOpen);
   }
 
   onListsGroupChange(event: any) {
     if (!this.hasAnyLists) return;
+    if ((event.target as HTMLElement).tagName !== 'ION-ACCORDION-GROUP') return;
     this.listsGroupOpen = !!event.detail.value;
     this.saveGroupState('lists', this.listsGroupOpen);
   }
@@ -612,7 +614,6 @@ export class ActivityFormComponent implements OnInit {
 
   async getLastActivityData() {
     const currentDate = format(new Date(), 'yyyy-MM-dd');
-    const yesterday = format(addDays(new Date(currentDate), -1), 'yyyy-MM-dd');
     const lastActivity = await this.activityService.getLastEnriched();
 
     if (!lastActivity) {
@@ -620,27 +621,14 @@ export class ActivityFormComponent implements OnInit {
     }
 
     let startTime = this.currentTime;
-    let date = currentDate;
 
     if (lastActivity.date == currentDate && lastActivity.endTime) {
       startTime = lastActivity.endTime;
     }
 
-    if (
-      lastActivity.date
-      && yesterday == lastActivity.date
-      && lastActivity.endTime
-    ) {
-      startTime = lastActivity.endTime;
-
-      if (lastActivity.endTime > lastActivity.startTime) {
-        date = lastActivity.date;
-      }
-    }
-
     return {
       startTime,
-      date,
+      date: currentDate,
     };
   }
 

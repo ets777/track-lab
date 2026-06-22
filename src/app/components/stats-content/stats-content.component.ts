@@ -81,7 +81,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   activitiesGroupedByDate: {
     date: string,
     activities: IActivity[],
-    avgValues: { metric: IMetric, value: number }[],
+    avgValues: { metric: IMetric, value: number | null }[],
   }[] = [];
 
   chartData!: ChartConfiguration<'line'>['data'];
@@ -227,10 +227,13 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       return {
         date,
         activities: activitiesAtDate,
-        avgValues: this.selectedMetrics.map(metric => ({
-          metric,
-          value: this.getAverageValue(this.normalizeWithInterpolation(activitiesAtDate, metric)),
-        })),
+        avgValues: this.selectedMetrics.map(metric => {
+          const hasData = activitiesAtDate.some(a => a.metricRecords.some(r => r.metricId === metric.id));
+          return {
+            metric,
+            value: hasData ? this.getAverageValue(this.normalizeWithInterpolation(activitiesAtDate, metric)) : null,
+          };
+        }),
       };
     });
 
@@ -265,7 +268,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       const datasets = this.selectedMetrics.map(metric => ({
         data: this.interpolateZeros(this.activitiesGroupedByDate.map(day => {
           const entry = day.avgValues.find(v => v.metric.id === metric.id);
-          return entry?.value ?? 0;
+          return entry?.value ?? null;
         })),
         label: avg + ' ' + this.translate.instant(metric.name),
         ...colorProps,
@@ -279,7 +282,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       const cutoff = lastNonNullIdx >= 0 ? lastNonNullIdx + 1 : dates.length;
       const slicedDatasets = datasets.map(ds => ({ ...ds, data: ds.data.slice(0, cutoff) }));
 
-      const allValues = slicedDatasets.flatMap(ds => ds.data).filter((v): v is number => v !== null && v !== 0);
+      const allValues = slicedDatasets.flatMap(ds => ds.data).filter((v): v is number => v !== null);
       const dataMin = allValues.length ? Math.min(...allValues) : 0;
       const dataMax = allValues.length ? Math.max(...allValues) : 10;
 
@@ -393,7 +396,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
   getTotalAverageValue(metric: IMetric) {
     const daysWithValue = this.activitiesGroupedByDate.filter(day =>
-      day.avgValues.some(v => v.metric.id === metric.id && v.value !== 0)
+      day.avgValues.some(v => v.metric.id === metric.id && v.value !== null)
     );
 
     if (!daysWithValue.length) {
@@ -419,20 +422,20 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     return sum / normalizedData.length;
   }
 
-  interpolateZeros(data: number[]): (number | null)[] {
+  interpolateZeros(data: (number | null)[]): (number | null)[] {
     const result: (number | null)[] = [...data];
 
     for (let i = 0; i < result.length; i++) {
-      if (result[i] !== 0) continue;
+      if (result[i] !== null) continue;
 
       let leftIdx = -1;
       for (let j = i - 1; j >= 0; j--) {
-        if (result[j] !== 0 && result[j] !== null) { leftIdx = j; break; }
+        if (result[j] !== null) { leftIdx = j; break; }
       }
 
       let rightIdx = -1;
       for (let j = i + 1; j < result.length; j++) {
-        if (result[j] !== 0 && result[j] !== null) { rightIdx = j; break; }
+        if (result[j] !== null) { rightIdx = j; break; }
       }
 
       if (leftIdx !== -1 && rightIdx !== -1) {
@@ -543,7 +546,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     const cells: ({ date: string; dayNumber: number; avg: number | null } | null)[] = Array(offset).fill(null);
     for (const day of this.activitiesGroupedByDate) {
       const entry = metric ? day.avgValues.find(v => v.metric.id === metric.id) : null;
-      const avg = entry && entry.value !== 0 ? entry.value : null;
+      const avg = entry && entry.value !== null ? entry.value : null;
       cells.push({ date: day.date, dayNumber: +day.date.slice(8), avg });
     }
     return cells;
@@ -558,8 +561,8 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     return `hsla(${Math.round(hue)}, 65%, 50%, 0.38)`;
   }
 
-  hasAnyValue(day: { avgValues: { metric: IMetric, value: number }[] }): boolean {
-    return day.avgValues.some(entry => entry.value !== 0);
+  hasAnyValue(day: { avgValues: { metric: IMetric, value: number | null }[] }): boolean {
+    return day.avgValues.some(entry => entry.value !== null);
   }
 
   hideMetricSuggestions() {

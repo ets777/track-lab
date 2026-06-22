@@ -65,7 +65,7 @@ export interface DashboardWidget {
 
 export function experimentLinesToHeight(lineCount: number): 1 | 2 | 3 | 4 {
   if (lineCount >= 5) return 4;
-  if (lineCount >= 3) return 3;
+  if (lineCount >= 2) return 3;
   return 2;
 }
 

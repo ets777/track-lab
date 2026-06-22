@@ -115,9 +115,9 @@ export class ExperimentService extends DatabaseService<'experiments'> {
         }
       }
 
-      // Uptime check: experiment-period uptime below 50% → failed
+      // Uptime check: experiment-period uptime below 50% → failed (skip during first week)
       const uptime = await this.computeUptime(experiment, today);
-      if (uptime !== null && uptime < UPTIME_FAIL_THRESHOLD) {
+      if (uptime !== null && uptime < UPTIME_FAIL_THRESHOLD && today >= firstWeekEnd) {
         await this.update(experiment.id, {
           isSuccess: 0,
           factEndDate: today,

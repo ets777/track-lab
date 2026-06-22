@@ -1,15 +1,19 @@
 # Changelog
 
-## [0.7.2] - 2026-06-21
+## [0.7.2] - 2026-06-22
 
 ### Improved
 
 - Dashboard redesign
+- Activity form always defaults to today's date
 
 ### Fixed
 
 - Experiment status check
 - Experiment widget displaying wrong initial values
+- Experiment not marked as failed due to low uptime during its first week
+- Zero metric values now correctly appear in stats graph and calendar
+- Scrolling the activity form no longer accidentally activates range metric checkboxes
 
 ## [0.7.1] - 2026-06-13
 
