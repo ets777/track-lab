@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { addDays, format, parseISO } from 'date-fns';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons } from "@ionic/angular/standalone";
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
@@ -102,8 +103,18 @@ export class ActivityAddPage implements OnInit {
   }
 
   async resetForm() {
-    this.getForm()?.get('endTime')?.markAsUntouched();
+    const form = this.getForm();
+    const date = form?.get('date')?.value;
+    const startTime = form?.get('startTime')?.value;
+    const endTime = form?.get('endTime')?.value;
+    const crossedMidnight = date && startTime && endTime && endTime < startTime;
+    const nextDate = crossedMidnight ? format(addDays(parseISO(date), 1), 'yyyy-MM-dd') : date;
+    form?.get('endTime')?.markAsUntouched();
     await this.addFormRef?.setDefaultData();
+    this.getForm()?.patchValue({
+      ...(nextDate ? { date: nextDate } : {}),
+      ...(endTime ? { startTime: endTime, endTime } : {}),
+    });
     await this.addFormRef?.fetchAllSuggestions();
   }
 

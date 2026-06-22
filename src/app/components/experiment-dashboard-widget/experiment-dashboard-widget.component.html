@@ -44,13 +44,13 @@
               </span>
               <span class="xv-strong">{{ ind.current }}</span>
             } @else {
-              <span class="xv-strong">{{ ind.current }}</span>
-              <span class="xv-arrow">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-              </span>
               @if (ind.baseline) {
                 <span class="xv-dim">{{ ind.baseline }}</span>
               }
+              <span class="xv-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+              </span>
+              <span class="xv-strong">{{ ind.current }}</span>
             }
           </span>
         </div>

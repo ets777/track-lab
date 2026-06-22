@@ -117,12 +117,14 @@ export class ExperimentDashboardWidgetComponent {
         const { baselineRaw, currentRaw, fmtFn } = this.resolveValues(ind, preExpActs, firstWeekActs, currentActs, metrics);
         const baseline = baselineRaw !== null ? fmtFn(baselineRaw) : null;
         const current = currentRaw !== null ? fmtFn(currentRaw) : null;
+        const baselineDisp = baseline !== null ? parseFloat(baseline) : null;
+        const currentDisp = current !== null ? parseFloat(current) : null;
         let trend: IndicatorRow['trend'] = 'unknown';
-        if (currentRaw !== null) {
-          if (baselineRaw === null || currentRaw === baselineRaw) {
+        if (currentDisp !== null) {
+          if (baselineDisp === null || currentDisp === baselineDisp) {
             trend = 'flat';
           } else {
-            const valueWentUp = currentRaw > baselineRaw;
+            const valueWentUp = currentDisp > baselineDisp;
             const isGood = ind.direction === 'increasing' ? valueWentUp : !valueWentUp;
             trend = isGood ? 'up' : 'down';
           }
