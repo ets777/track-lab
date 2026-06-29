@@ -20,7 +20,7 @@
           <div class="widget-info">
             <ion-icon [name]="getWidgetIcon(slot.widget!)"></ion-icon>
             <div class="widget-text">
-              <span class="widget-type">{{ getWidgetTypeKey(slot.widget!.config.type) | translate }}</span>
+              <span class="widget-type">{{ getWidgetSubtitle(slot.widget!) }}</span>
               <span class="widget-label">{{ getWidgetLabel(slot.widget!) }}</span>
             </div>
           </div>
@@ -33,173 +33,256 @@
   </div>
 </ion-content>
 
-<ion-modal #configModal [isOpen]="modalOpen" (didDismiss)="closeModal()" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+<ion-modal #configModal class="cwt-modal" [isOpen]="modalOpen" (didDismiss)="closeModal()">
   <ng-template>
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>
+    <div class="cwt-sheet">
+      <div class="cwt-head">
+        <div class="cwt-head-title">
           @if (modalStep === 'type') {
             {{ 'TK_CHOOSE_WIDGET_TYPE' | translate }}
           } @else {
             {{ modalFormTitle | translate }}
           }
-        </ion-title>
-        <ion-buttons slot="end">
-          @if (modalStep === 'form') {
-            <ion-button [disabled]="!canSave()" (click)="saveWidget()">
-              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-            </ion-button>
+        </div>
+        @if (modalStep === 'form') {
+          <button class="cwt-head-check" [class.is-on]="canSave()" [disabled]="!canSave()" (click)="saveWidget()">
+            <ion-icon name="checkmark-outline"></ion-icon>
+          </button>
+        }
+        <button class="cwt-head-x" (click)="modalBack()">
+          <ion-icon [name]="(modalStep === 'form' && !modalEditingId) ? 'arrow-back-outline' : 'close-outline'"></ion-icon>
+        </button>
+      </div>
+
+      <div class="cwt-body">
+        @if (modalStep === 'type') {
+          <ul class="cwt-list">
+            @for (opt of widgetTypeOptions; track opt.type) {
+              <li>
+                <button class="cwt-row" (click)="selectWidgetType(opt.type)">
+                  <span class="cwt-row-ico"><ion-icon [name]="opt.icon"></ion-icon></span>
+                  <span class="cwt-row-name">{{ opt.labelKey | translate }}</span>
+                  <span class="cwt-row-chev"><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="cwt-config">
+            <div class="cwt-form">
+              @switch (selectedWidgetType) {
+
+                @case ('action-button') {
+                  <div class="cwt-sect">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_ACTION' | translate }}</span>
+                    <div class="cwt-opts" role="radiogroup">
+                      <button type="button" role="radio" class="cwt-opt" [class.is-on]="actionAction === 'new-activity'" (click)="actionAction = 'new-activity'">
+                        <span class="cwt-opt-name">{{ 'TK_ACTION_NEW_ACTIVITY' | translate }}</span>
+                        <span class="cwt-radio"></span>
+                      </button>
+                      <button type="button" role="radio" class="cwt-opt" [class.is-on]="actionAction === 'new-action'" (click)="actionAction = 'new-action'">
+                        <span class="cwt-opt-name">{{ 'TK_ACTION_NEW_ACTION' | translate }}</span>
+                        <span class="cwt-radio"></span>
+                      </button>
+                      <button type="button" role="radio" class="cwt-opt" [class.is-on]="actionAction === 'new-tag'" (click)="actionAction = 'new-tag'">
+                        <span class="cwt-opt-name">{{ 'TK_ACTION_NEW_TAG' | translate }}</span>
+                        <span class="cwt-radio"></span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="cwt-sect cwt-sect-last">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_COLOR' | translate }}</span>
+                    <div class="cwt-colors">
+                      @for (c of widgetColors; track c) {
+                        <button type="button" class="cwt-swatch" [class.is-on]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @case ('navigation') {
+                  <div class="cwt-sect cwt-sect-last">
+                    <span class="cwt-sect-lbl">{{ 'TK_SELECT_PAGES' | translate }}</span>
+                    <div class="cwt-pages">
+                      @for (link of availableNavLinks; track link.route) {
+                        <button
+                          type="button"
+                          class="cwt-page"
+                          [class.is-on]="isNavLinkSelected(link.route)"
+                          [disabled]="!isNavLinkSelected(link.route) && navSelectedRoutes.size >= navMaxLinks"
+                          (click)="toggleNavLink(link.route)"
+                        >
+                          <span class="cwt-page-ico"><ion-icon [name]="link.icon"></ion-icon></span>
+                          <span class="cwt-page-name">{{ link.label | translate }}</span>
+                          <span class="cwt-pcheck"><ion-icon name="checkmark-outline"></ion-icon></span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @case ('metric-graph') {
+                  <div class="cwt-sect">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_METRIC' | translate }}</span>
+                    @if (!metricSuggestions.length) {
+                      <p class="cwt-no-data">{{ 'TK_NO_METRICS_AVAILABLE' | translate }}</p>
+                    } @else {
+                      <button type="button" class="cwt-picker" (click)="openPicker('metric')">
+                        <span class="cwt-picker-val" [class.is-empty]="!selectedMetric">
+                          {{ selectedMetric ? (selectedMetric.name | translate) : ('TK_WIDGET_METRIC' | translate) }}
+                        </span>
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                      </button>
+                    }
+                  </div>
+                  <div class="cwt-sect">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_PERIOD' | translate }}</span>
+                    <div class="cwt-tabs" role="group">
+                      @for (p of periods; track p.value) {
+                        <button type="button" class="cwt-tab" [class.is-on]="metricPeriod === p.value" (click)="metricPeriod = p.value">{{ p.labelKey | translate }}</button>
+                      }
+                    </div>
+                  </div>
+                  <div class="cwt-sect cwt-sect-last">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_COLOR' | translate }}</span>
+                    <div class="cwt-colors">
+                      @for (c of widgetColors; track c) {
+                        <button type="button" class="cwt-swatch" [class.is-on]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @case ('library-graph') {
+                  <div class="cwt-sect">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_ITEM' | translate }}</span>
+                    @if (!itemSuggestions.length) {
+                      <p class="cwt-no-data">{{ 'TK_NO_ITEMS_AVAILABLE' | translate }}</p>
+                    } @else {
+                      <button type="button" class="cwt-picker" (click)="openPicker('item')">
+                        <span class="cwt-picker-val" [class.is-empty]="!selectedItem">
+                          {{ selectedItem ? selectedItem.name : ('TK_WIDGET_ITEM' | translate) }}
+                        </span>
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                      </button>
+                    }
+                  </div>
+                  <div class="cwt-sect">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_PERIOD' | translate }}</span>
+                    <div class="cwt-tabs" role="group">
+                      @for (p of periods; track p.value) {
+                        <button type="button" class="cwt-tab" [class.is-on]="itemPeriod === p.value" (click)="itemPeriod = p.value">{{ p.labelKey | translate }}</button>
+                      }
+                    </div>
+                  </div>
+                  <div class="cwt-sect cwt-sect-last">
+                    <span class="cwt-sect-lbl">{{ 'TK_WIDGET_COLOR' | translate }}</span>
+                    <div class="cwt-colors">
+                      @for (c of widgetColors; track c) {
+                        <button type="button" class="cwt-swatch" [class.is-on]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @case ('experiment') {
+                  <div class="cwt-sect cwt-sect-last">
+                    @if (!experimentSuggestions.length) {
+                      <p class="cwt-no-data">{{ 'TK_NO_EXPERIMENTS_AVAILABLE' | translate }}</p>
+                    } @else {
+                      <button type="button" class="cwt-picker" (click)="openPicker('experiment')">
+                        <span class="cwt-picker-val" [class.is-empty]="!selectedExperiment">
+                          {{ selectedExperiment ? selectedExperiment.title : ('TK_EXPERIMENT' | translate) }}
+                        </span>
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                      </button>
+                    }
+                  </div>
+                }
+
+              }
+            </div>
+
+            <div class="cwt-foot">
+              <button class="cwt-save" [class.is-off]="!canSave()" [disabled]="!canSave()" (click)="saveWidget()">
+                {{ 'TK_SAVE' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+<!-- metric / item search picker (activity-form style) -->
+<ion-modal class="cwt-modal cwt-picker-modal" [isOpen]="pickerOpen" (didDismiss)="closePicker()">
+  <ng-template>
+    <div class="cwt-sheet">
+      <div class="cwt-head">
+        <div class="cwt-search">
+          <ion-icon name="search-outline"></ion-icon>
+          <input
+            class="cwt-search-input"
+            [placeholder]="'TK_SEARCH' | translate"
+            [(ngModel)]="pickerQuery"
+          />
+        </div>
+        <button class="cwt-head-x" (click)="closePicker()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+      <div class="cwt-body">
+        <ul class="cwt-list">
+          @for (res of pickerResults; track res.num) {
+            <li>
+              <button class="cwt-row" (click)="selectPickerResult(res)">
+                <span class="cwt-row-text">
+                  <span class="cwt-row-name">{{ res.title }}</span>
+                  @if (res.subtitle) {
+                    <span class="cwt-row-sub">{{ res.subtitle }}</span>
+                  }
+                </span>
+              </button>
+            </li>
+          } @empty {
+            <li><div class="cwt-empty">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</div></li>
           }
-          <ion-button (click)="closeModal()">
-            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+        </ul>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
 
-    <ion-content>
-      @if (modalStep === 'type') {
-        <ion-list>
-          @for (opt of widgetTypeOptions; track opt.type) {
-            <ion-item button (click)="selectWidgetType(opt.type)">
-              <ion-icon [name]="opt.icon" slot="start"></ion-icon>
-              <ion-label>{{ opt.labelKey | translate }}</ion-label>
-            </ion-item>
-          }
-        </ion-list>
-      } @else {
-        <div class="form-content">
-          @switch (selectedWidgetType) {
-
-            @case ('action-button') {
-              <p class="form-label">{{ 'TK_WIDGET_ACTION' | translate }}</p>
-              <ion-radio-group [(ngModel)]="actionAction">
-                <ion-list>
-                  <ion-item>
-                    <ion-radio value="new-activity">{{ 'TK_ACTION_NEW_ACTIVITY' | translate }}</ion-radio>
-                  </ion-item>
-                  <ion-item>
-                    <ion-radio value="new-action">{{ 'TK_ACTION_NEW_ACTION' | translate }}</ion-radio>
-                  </ion-item>
-                  <ion-item>
-                    <ion-radio value="new-tag">{{ 'TK_ACTION_NEW_TAG' | translate }}</ion-radio>
-                  </ion-item>
-                </ion-list>
-              </ion-radio-group>
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
-                <div class="color-picker">
-                  @for (c of widgetColors; track c) {
-                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
-                  }
-                </div>
-              </div>
-            }
-
-            @case ('navigation') {
-              <p class="form-label">{{ 'TK_SELECT_PAGES' | translate }}</p>
-              <ion-list>
-                @for (link of availableNavLinks; track link.route) {
-                  <ion-item>
-                    <ion-icon [name]="link.icon" slot="start"></ion-icon>
-                    <ion-label>{{ link.label | translate }}</ion-label>
-                    <ion-checkbox
-                      slot="end"
-                      [checked]="isNavLinkSelected(link.route)"
-                      [disabled]="!isNavLinkSelected(link.route) && navSelectedRoutes.size >= navMaxLinks"
-                      (ionChange)="toggleNavLink(link.route)"
-                    ></ion-checkbox>
-                  </ion-item>
-                }
-              </ion-list>
-            }
-
-            @case ('metric-graph') {
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_METRIC' | translate }}</p>
-                @if (!metricSuggestions.length) {
-                  <p class="no-data">{{ 'TK_NO_METRICS_AVAILABLE' | translate }}</p>
-                } @else {
-                  <app-select-search
-                    [suggestions]="metricSuggestions"
-                    [label]="'TK_WIDGET_METRIC' | translate"
-                    [(ngModel)]="selectedMetric"
-                  ></app-select-search>
-                }
-              </div>
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_PERIOD' | translate }}</p>
-                <ion-segment [(ngModel)]="metricPeriod">
-                  @for (p of periods; track p.value) {
-                    <ion-segment-button [value]="p.value">{{ p.labelKey | translate }}</ion-segment-button>
-                  }
-                </ion-segment>
-              </div>
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
-                <div class="color-picker">
-                  @for (c of widgetColors; track c) {
-                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
-                  }
-                </div>
-              </div>
-            }
-
-            @case ('library-graph') {
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_ITEM' | translate }}</p>
-                @if (!itemSuggestions.length) {
-                  <p class="no-data">{{ 'TK_NO_ITEMS_AVAILABLE' | translate }}</p>
-                } @else {
-                  <app-select-search
-                    [suggestions]="itemSuggestions"
-                    [label]="'TK_WIDGET_ITEM' | translate"
-                    [(ngModel)]="selectedItem"
-                  ></app-select-search>
-                }
-              </div>
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_PERIOD' | translate }}</p>
-                <ion-segment [(ngModel)]="itemPeriod">
-                  @for (p of periods; track p.value) {
-                    <ion-segment-button [value]="p.value">{{ p.labelKey | translate }}</ion-segment-button>
-                  }
-                </ion-segment>
-              </div>
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_WIDGET_COLOR' | translate }}</p>
-                <div class="color-picker">
-                  @for (c of widgetColors; track c) {
-                    <button class="color-swatch" [class.selected]="selectedColor === c" [style.background-color]="c" (click)="selectedColor = c"></button>
-                  }
-                </div>
-              </div>
-            }
-
-            @case ('experiment') {
-              <div class="form-field">
-                <p class="form-label">{{ 'TK_EXPERIMENT' | translate }}</p>
-                @if (!experimentSuggestions.length) {
-                  <p class="no-data">{{ 'TK_NO_EXPERIMENTS_AVAILABLE' | translate }}</p>
-                } @else {
-                  <app-select-search
-                    [suggestions]="experimentSuggestions"
-                    [label]="'TK_EXPERIMENT' | translate"
-                    [(ngModel)]="selectedExperiment"
-                  ></app-select-search>
-                }
-              </div>
-            }
-
-          }
-
-          <div class="save-btn-wrap">
-            <ion-button expand="block" [disabled]="!canSave()" (click)="saveWidget()">
-              {{ 'TK_SAVE' | translate }}
-            </ion-button>
+<ion-modal class="menu-sheet" [isOpen]="!!menuWidget" (didDismiss)="closeMenu()">
+  <ng-template>
+    @if (menuWidget) {
+      <div class="menu-sheet-content">
+        <div class="menu-hd">
+          <ion-icon [name]="getWidgetIcon(menuWidget)"></ion-icon>
+          <div class="menu-hd-text">
+            <span class="menu-hd-cat">{{ getWidgetSubtitle(menuWidget) }}</span>
+            <span class="menu-hd-name">{{ getWidgetLabel(menuWidget) }}</span>
           </div>
         </div>
-      }
-    </ion-content>
+        <div class="menu-acts">
+          @if (menuWidget.config.type !== 'rules') {
+            <button class="menu-act" (click)="menuEdit()">
+              <ion-icon name="create-outline"></ion-icon>{{ 'TK_EDIT' | translate }}
+            </button>
+          }
+          <button class="menu-act" (click)="menuMove('up')">
+            <ion-icon name="arrow-up-outline"></ion-icon>{{ 'TK_MOVE_UP' | translate }}
+          </button>
+          <button class="menu-act" (click)="menuMove('down')">
+            <ion-icon name="arrow-down-outline"></ion-icon>{{ 'TK_MOVE_DOWN' | translate }}
+          </button>
+          <div class="menu-divider"></div>
+          <button class="menu-act danger" (click)="menuDelete()">
+            <ion-icon name="trash-outline"></ion-icon>{{ 'TK_DELETE' | translate }}
+          </button>
+        </div>
+      </div>
+    }
   </ng-template>
 </ion-modal>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonMenuButton, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { searchOutline } from 'ionicons/icons';
+import { searchOutline, eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ListService } from 'src/app/services/list.service';
@@ -29,7 +29,7 @@ export class ListsPage {
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
-  constructor() { addIcons({ searchOutline }); }
+  constructor() { addIcons({ searchOutline, eyeOutline, createOutline, trashOutline }); }
 
   lists: IList[] | null = null;
   searchQuery = '';
@@ -55,13 +55,14 @@ export class ListsPage {
 
   getListActionSheetButtons(list: IList) {
     const buttons: any[] = [
-      { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+      { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+      { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
     ];
 
     if (!list.isBase) {
       buttons.push({
         text: this.translate.instant('TK_DELETE'),
+        icon: 'trash-outline',
         role: 'destructive',
         data: { action: 'delete' },
       });

@@ -501,6 +501,7 @@
   "TK_CHOOSE_WIDGET_TYPE": "Выберите тип виджета",
   "TK_WIDGET_ACTION_BUTTON": "Кнопка действия",
   "TK_WIDGET_RULES": "Правила",
+  "TK_WIDGET_RULES_SUBTITLE": "Список дел",
   "TK_WIDGET_NAVIGATION": "Навигация",
   "TK_WIDGET_METRIC_GRAPH": "График метрики",
   "TK_WIDGET_LIBRARY_GRAPH": "График библиотеки",

@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { IonInput, IonItem, IonLabel, IonList, IonIcon, IonRange, IonCheckbox, IonButton, IonModal, IonHeader, IonContent, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { IonInput, IonItem, IonLabel, IonList, IonIcon, IonRange, IonCheckbox, IonButton, IonModal, IonHeader, IonContent, IonToolbar, IonButtons } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, close, searchOutline } from 'ionicons/icons';
+import { add, close, closeOutline, searchOutline } from 'ionicons/icons';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { Time } from 'src/app/Time';
@@ -66,7 +66,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonTitle, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonIcon, IonList, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
+  imports: [IonButton, IonButtons, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonIcon, IonList, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -127,7 +127,7 @@ export class ActivityFormComponent implements OnInit {
   private currentTime: string = '00:00';
 
   constructor() {
-    addIcons({ add, close, searchOutline });
+    addIcons({ add, close, closeOutline, searchOutline });
     this.activityForm = this.formBuilder.group({
       actions: ['', [Validators.required, duplicatedItemsValidator]],
       startTime: ['', [Validators.required, timeFormatValidator]],

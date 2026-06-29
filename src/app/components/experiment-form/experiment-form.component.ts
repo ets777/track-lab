@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonItem, IonLabel, IonInput, IonButton, IonIcon, IonList, IonAccordion, IonAccordionGroup, IonSegment, IonSegmentButton, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonInput, IonButton, IonIcon, IonList, IonAccordion, IonAccordionGroup, IonSegment, IonSegmentButton, IonModal, IonHeader, IonToolbar, IonButtons, IonContent } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,7 @@ import { ExperimentDirection } from 'src/app/db/models/experiment-metric';
 import { CommonItem } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { addIcons } from 'ionicons';
-import { add, close } from 'ionicons/icons';
+import { add, close, closeOutline } from 'ionicons/icons';
 import { format, addMonths, subDays, parseISO } from 'date-fns';
 
 export type ExperimentForm = {
@@ -44,7 +44,7 @@ type EntryItem = { commonItem: CommonItem; displayName: string; subtitle: string
   imports: [
     IonItem, IonLabel, IonInput, IonButton, IonIcon, IonList,
     IonAccordion, IonAccordionGroup, IonSegment, IonSegmentButton,
-    IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent,
+    IonModal, IonHeader, IonToolbar, IonButtons, IonContent,
     FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective,
     CommonModule, DatePeriodInputComponent,
   ],
@@ -84,7 +84,7 @@ export class ExperimentFormComponent implements OnInit {
   private allMetrics: IMetric[] = [];
 
   constructor() {
-    addIcons({ add, close });
+    addIcons({ add, close, closeOutline });
   }
 
   get hasEntries(): boolean {

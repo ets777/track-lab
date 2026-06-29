@@ -100,3 +100,8 @@ ion-accordion::part(content) {
   }
 }
 
+
+// titleless modal — offset content by menu item height
+ion-modal ion-content {
+  --padding-top: 54px;
+}

@@ -118,3 +118,116 @@ ion-tab-bar {
     border-top: 1px solid var(--tl-line);
     --border: none;
 }
+
+// ── Rounded corners for every modal (no exceptions) ──
+ion-modal {
+    --border-radius: 22px;
+}
+
+// ── Bottom sheets that fit their content (auto-height) ──
+ion-modal.menu-sheet,
+ion-modal.cwt-modal {
+    --height: auto;
+    --width: 100%;
+    --border-radius: 22px 22px 0 0;
+    --background: var(--tl-surface);
+    align-items: flex-end;
+}
+
+// ── Clinical action sheets (all modal menus) ──
+ion-action-sheet {
+    --background: var(--tl-surface);
+    --color: var(--tl-text);
+    --button-background: var(--tl-surface);
+    --button-background-activated: var(--tl-surface-2);
+    --button-background-selected: var(--tl-surface-2);
+    --button-color: var(--tl-text);
+
+    .action-sheet-group {
+        background: var(--tl-surface);
+        border-radius: 22px 22px 0 0;
+        overflow: hidden;
+
+        &.action-sheet-group-cancel {
+            border-radius: var(--tl-radius);
+            margin: 8px;
+            border: 1px solid var(--tl-line);
+        }
+    }
+
+    .action-sheet-title {
+        padding-top: 20px;
+        padding-bottom: 16px;
+        font-family: var(--tl-font-sans);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--tl-text-dim);
+        border-bottom: 1px solid var(--tl-line);
+    }
+
+    .action-sheet-button {
+        font-family: var(--tl-font-sans);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        contain: content;
+
+        // separators between rows
+        &::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 0;
+            height: 1px;
+            background: var(--tl-line);
+        }
+
+        &:last-child::after {
+            display: none;
+        }
+
+        .action-sheet-icon {
+            color: var(--tl-text-dim);
+            font-size: 21px;
+        }
+
+        &.action-sheet-destructive {
+            --button-color: var(--tl-bad);
+
+            .action-sheet-icon {
+                color: var(--tl-bad);
+            }
+        }
+    }
+
+    .action-sheet-group-cancel .action-sheet-button::after {
+        display: none;
+    }
+}
+
+// ── Clinical alert ──
+.tl-alert {
+    .alert-wrapper {
+        border-radius: var(--tl-radius);
+        border: 1px solid var(--tl-line);
+        background: var(--tl-surface);
+    }
+
+    .alert-title,
+    .alert-message {
+        font-family: var(--tl-font-sans);
+        color: var(--tl-text);
+    }
+
+    .alert-button {
+        font-family: var(--tl-font-sans);
+        font-weight: 600;
+        color: var(--tl-accent);
+
+        &.alert-button-role-destructive {
+            color: var(--tl-bad);
+        }
+    }
+}

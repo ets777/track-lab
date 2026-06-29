@@ -33,7 +33,6 @@
             </ion-buttons>
             <ion-action-sheet
               trigger="open-action-sheet-metric-{{metric.id}}"
-              header="{{ 'TK_ACTIONS' | translate }}"
               [buttons]="getMetricActionSheetButtons(metric)"
               (didDismiss)="doMetricAction($event, metric.id)"
             ></ion-action-sheet>

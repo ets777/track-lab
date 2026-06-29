@@ -3,9 +3,8 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-  IonModal, IonList, IonItem, IonLabel, IonRadioGroup, IonRadio,
-  IonCheckbox, IonSegment, IonSegmentButton, IonBackButton,
-  ActionSheetController, AlertController,
+  IonModal, IonBackButton,
+  AlertController,
 } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
@@ -14,8 +13,9 @@ import {
   addCircleOutline, shieldCheckmarkOutline, navigateOutline, analyticsOutline,
   libraryOutline, flaskOutline, timeOutline, barChartOutline, settingsOutline,
   trophyOutline, listOutline, pricetagOutline,
+  createOutline, arrowUpOutline, arrowDownOutline, trashOutline,
+  chevronForwardOutline, arrowBackOutline, searchOutline,
 } from 'ionicons/icons';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { DashboardConfigService } from 'src/app/services/dashboard-config.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionService } from 'src/app/services/action.service';
@@ -74,9 +74,8 @@ const WIDGET_ICONS: Record<WidgetType, string> = {
   imports: [
     FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-    IonModal, IonList, IonItem, IonLabel, IonRadioGroup, IonRadio,
-    IonCheckbox, IonSegment, IonSegmentButton, IonBackButton,
-    TranslateModule, SelectSearchComponent,
+    IonModal, IonBackButton,
+    TranslateModule,
   ],
 })
 export class DashboardSettingsPage {
@@ -94,11 +93,13 @@ export class DashboardSettingsPage {
   private toastService = inject(ToastService);
   private logService = inject(LogService);
   private translate = inject(TranslateService);
-  private actionSheetCtrl = inject(ActionSheetController);
   private alertCtrl = inject(AlertController);
   private router = inject(Router);
 
   widgets: DashboardWidget[] = [];
+
+  // three-dot menu sheet
+  menuWidget: DashboardWidget | null = null;
 
   // modal state
   modalOpen = false;
@@ -117,6 +118,11 @@ export class DashboardSettingsPage {
   itemSuggestions: Selectable<CommonItem>[] = [];
   selectedItem: CommonItem | null = null;
   itemPeriod: WidgetPeriod = '1w';
+
+  // metric / item / experiment search picker (activity-form style)
+  pickerOpen = false;
+  pickerType: 'metric' | 'item' | 'experiment' = 'metric';
+  pickerQuery = '';
   experimentSuggestions: Selectable<IExperiment>[] = [];
   selectedExperiment: IExperiment | null = null;
 
@@ -134,6 +140,8 @@ export class DashboardSettingsPage {
       addCircleOutline, shieldCheckmarkOutline, navigateOutline, analyticsOutline,
       libraryOutline, flaskOutline, timeOutline, barChartOutline, settingsOutline,
       trophyOutline, listOutline, pricetagOutline,
+      createOutline, arrowUpOutline, arrowDownOutline, trashOutline,
+      chevronForwardOutline, arrowBackOutline, searchOutline,
     });
   }
 
@@ -217,7 +225,7 @@ export class DashboardSettingsPage {
       const actionKey = `TK_ACTION_${(cfg as ActionButtonWidgetConfig).action.replace(/-/g, '_').toUpperCase()}`;
       return this.translate.instant(actionKey);
     }
-    if (cfg.type === 'rules') return this.translate.instant('TK_WIDGET_RULES');
+    if (cfg.type === 'rules') return this.translate.instant('TK_WIDGET_RULES_SUBTITLE');
     if (cfg.type === 'navigation') {
       const links = (cfg as NavigationWidgetConfig).links.length;
       return `${this.translate.instant('TK_WIDGET_NAVIGATION')} (${links})`;
@@ -239,31 +247,31 @@ export class DashboardSettingsPage {
     this.modalOpen = true;
   }
 
-  async onWidgetMenuTap(widget: DashboardWidget, event: Event): Promise<void> {
+  onWidgetMenuTap(widget: DashboardWidget, event: Event): void {
     event.stopPropagation();
-    const sheet = await this.actionSheetCtrl.create({
-      buttons: [
-        ...(widget.config.type !== 'rules' ? [{
-          text: this.translate.instant('TK_EDIT'),
-          handler: () => this.openEditModal(widget),
-        }] : []),
-        {
-          text: this.translate.instant('TK_MOVE_UP'),
-          handler: () => this.moveWidget(widget.id, 'up'),
-        },
-        {
-          text: this.translate.instant('TK_MOVE_DOWN'),
-          handler: () => this.moveWidget(widget.id, 'down'),
-        },
-        {
-          text: this.translate.instant('TK_DELETE'),
-          role: 'destructive',
-          handler: () => this.confirmDelete(widget),
-        },
-        { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
-      ],
-    });
-    await sheet.present();
+    this.menuWidget = widget;
+  }
+
+  closeMenu(): void {
+    this.menuWidget = null;
+  }
+
+  menuEdit(): void {
+    const w = this.menuWidget;
+    this.menuWidget = null;
+    if (w) this.openEditModal(w);
+  }
+
+  menuMove(dir: 'up' | 'down'): void {
+    const w = this.menuWidget;
+    this.menuWidget = null;
+    if (w) this.moveWidget(w.id, dir);
+  }
+
+  menuDelete(): void {
+    const w = this.menuWidget;
+    this.menuWidget = null;
+    if (w) this.confirmDelete(w);
   }
 
   private openEditModal(widget: DashboardWidget): void {
@@ -370,6 +378,39 @@ export class DashboardSettingsPage {
       this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
       this.logService.error('DashboardSettingsPage.loadFormData', e);
     }
+  }
+
+  openPicker(type: 'metric' | 'item' | 'experiment'): void {
+    this.pickerType = type;
+    this.pickerQuery = '';
+    this.pickerOpen = true;
+  }
+
+  closePicker(): void {
+    this.pickerOpen = false;
+  }
+
+  get pickerResults(): Selectable<IMetric | CommonItem | IExperiment>[] {
+    const list: Selectable<IMetric | CommonItem | IExperiment>[] =
+      this.pickerType === 'metric' ? this.metricSuggestions
+      : this.pickerType === 'item' ? this.itemSuggestions
+      : this.experimentSuggestions;
+    const q = this.pickerQuery.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(s =>
+      s.title.toLowerCase().includes(q) || (s.subtitle?.toLowerCase().includes(q) ?? false),
+    );
+  }
+
+  selectPickerResult(res: Selectable<IMetric | CommonItem | IExperiment>): void {
+    if (this.pickerType === 'metric') {
+      this.selectedMetric = res.item as IMetric;
+    } else if (this.pickerType === 'item') {
+      this.selectedItem = res.item as CommonItem;
+    } else {
+      this.selectedExperiment = res.item as IExperiment;
+    }
+    this.pickerOpen = false;
   }
 
   isNavLinkSelected(route: string): boolean {
@@ -480,6 +521,7 @@ export class DashboardSettingsPage {
   private async confirmDelete(widget: DashboardWidget): Promise<void> {
     const alert = await this.alertCtrl.create({
       header: this.translate.instant('TK_ARE_YOU_SURE'),
+      cssClass: 'tl-alert',
       buttons: [
         { text: this.translate.instant('TK_CANCEL'), role: 'cancel' },
         {
@@ -498,6 +540,16 @@ export class DashboardSettingsPage {
 
   closeModal(): void {
     this.modalOpen = false;
+  }
+
+  // X button doubles as "back to type list" while configuring a new widget
+  modalBack(): void {
+    if (this.modalStep === 'form' && !this.modalEditingId) {
+      this.modalStep = 'type';
+      this.selectedWidgetType = null;
+    } else {
+      this.closeModal();
+    }
   }
 
   private resetModalState(): void {
@@ -522,6 +574,13 @@ export class DashboardSettingsPage {
 
   getWidgetTypeKey(type: WidgetType): string {
     return `TK_WIDGET_${type.replace(/-/g, '_').toUpperCase()}`;
+  }
+
+  getWidgetSubtitle(widget: DashboardWidget): string {
+    const key = widget.config.type === 'rules'
+      ? 'TK_WIDGET_RULES'
+      : this.getWidgetTypeKey(widget.config.type);
+    return this.translate.instant(key);
   }
 
   get modalFormTitle(): string {

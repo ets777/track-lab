@@ -10,7 +10,7 @@ import { IMetric } from 'src/app/db/models/metric';
 import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
 import { addIcons } from 'ionicons';
-import { searchOutline } from 'ionicons/icons';
+import { searchOutline, eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
@@ -26,7 +26,7 @@ export class MetricListPage {
   private router = inject(Router);
   private translate = inject(TranslateService);
 
-  constructor() { addIcons({ searchOutline }); }
+  constructor() { addIcons({ searchOutline, eyeOutline, createOutline, trashOutline }); }
 
   metrics: IMetric[] = [];
   isLoading = true;
@@ -39,13 +39,14 @@ export class MetricListPage {
 
   getMetricActionSheetButtons(metric: IMetric) {
     const buttons: any[] = [
-      { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+      { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+      { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
     ];
 
     if (!metric.isBase) {
       buttons.push({
         text: this.translate.instant('TK_DELETE'),
+        icon: 'trash-outline',
         role: 'destructive',
         data: { action: 'delete' },
       });

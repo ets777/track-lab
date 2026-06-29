@@ -11,6 +11,8 @@ import { IItem } from 'src/app/db/models/item';
 import { IList } from 'src/app/db/models/list';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { addIcons } from 'ionicons';
+import { eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 
 interface IItemWithList extends IItem {
   listName: string;
@@ -32,10 +34,12 @@ export class ItemListPage {
 
   items: IItemWithList[] = [];
 
+  constructor() { addIcons({ eyeOutline, createOutline, trashOutline }); }
+
   public itemActionSheetButtons = [
-    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
-    { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+    { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
+    { text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } },
   ];
 
   async ionViewDidEnter() {

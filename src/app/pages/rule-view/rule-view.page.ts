@@ -89,8 +89,8 @@ export class RuleViewPage {
   async openMenu() {
     const sheet = await this.actionSheetCtrl.create({
       buttons: [
-        { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
-        { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+        { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
+        { text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } },
       ],
     });
     await sheet.present();

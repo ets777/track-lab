@@ -23,6 +23,11 @@ import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ExperimentNotificationComponent } from './components/experiment-notification/experiment-notification.component';
 import { ExperimentService } from './services/experiment.service';
+import { addIcons } from 'ionicons';
+import {
+  eyeOutline, createOutline, trashOutline, swapHorizontalOutline,
+  shieldCheckmarkOutline, checkmarkOutline, closeOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
@@ -42,6 +47,10 @@ export class AppComponent implements OnInit {
   @ViewChild(IonRouterOutlet, { static: true }) routerOutlet!: IonRouterOutlet;
 
   constructor() {
+    addIcons({
+      eyeOutline, createOutline, trashOutline, swapHorizontalOutline,
+      shieldCheckmarkOutline, checkmarkOutline, closeOutline,
+    });
     this.setAdaptiveStatusBarColor();
   }
 

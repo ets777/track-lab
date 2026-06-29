@@ -11,6 +11,7 @@ import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { formatGraphDate } from 'src/app/functions/date';
+import { styledLineChartOptions, LINE_DATASET_STYLE, lineDatasetColor } from 'src/app/functions/chart';
 import { Router } from '@angular/router';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { DatePeriod } from 'src/app/types/date-period';
@@ -85,10 +86,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   }[] = [];
 
   chartData!: ChartConfiguration<'line'>['data'];
-  chartOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    scales: { y: { beginAtZero: false } },
-  };
+  chartOptions: ChartConfiguration<'line'>['options'] = styledLineChartOptions();
   filterForm: FormGroup;
   selectedCalendarMetricIndex = 0;
   private initialized = false;
@@ -118,7 +116,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
   ngOnInit() {
     if (this.fillHeight) {
-      this.chartOptions = { ...this.chartOptions, maintainAspectRatio: false };
+      this.chartOptions = styledLineChartOptions({ fillHeight: true });
     }
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
     this.allMetricSuggestions = this.allMetrics.map(m => m.name);
@@ -244,11 +242,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
     const avg = this.translate.instant('TK_AVG');
 
-    const colorProps = this.chartColor ? {
-      borderColor: this.chartColor,
-      backgroundColor: this.chartColor + '33',
-      pointBackgroundColor: this.chartColor,
-    } : {};
+    const colorProps = this.chartColor ? lineDatasetColor(this.chartColor) : {};
 
     if (dates.length === 1) {
       const datasets = this.selectedMetrics.map(metric => {
@@ -256,6 +250,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
         return {
           data: normalizedData.map((data) => data.value || 0),
           label: avg + ' ' + this.translate.instant(metric.name),
+          ...LINE_DATASET_STYLE,
           ...colorProps,
         };
       });
@@ -271,6 +266,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
           return entry?.value ?? null;
         })),
         label: avg + ' ' + this.translate.instant(metric.name),
+        ...LINE_DATASET_STYLE,
         ...colorProps,
       }));
 
@@ -303,11 +299,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       if (hardMins.length) yMin = Math.max(yMin, Math.min(...hardMins));
       if (hardMaxes.length) yMax = Math.min(yMax, Math.max(...hardMaxes));
 
-      this.chartOptions = {
-        responsive: true,
-        maintainAspectRatio: !this.fillHeight,
-        scales: { y: { beginAtZero: false, min: yMin, max: yMax } },
-      };
+      this.chartOptions = styledLineChartOptions({ fillHeight: this.fillHeight, yMin, yMax });
 
       this.chartData = {
         labels: dates.slice(0, cutoff).map(d => formatGraphDate(d, this.translate.currentLang || 'en')),
@@ -316,7 +308,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    this.chartOptions = { responsive: true, maintainAspectRatio: !this.fillHeight, scales: { y: { beginAtZero: false } } };
+    this.chartOptions = styledLineChartOptions({ fillHeight: this.fillHeight });
   }
 
   normalizeWithInterpolation(activities: IActivity[], metric: IMetric): NormalizedPoint[] {

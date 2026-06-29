@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { searchOutline } from 'ionicons/icons';
+import { searchOutline, eyeOutline, createOutline, swapHorizontalOutline, trashOutline } from 'ionicons/icons';
 import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
@@ -29,7 +29,7 @@ export class LibraryPage {
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
 
-  constructor() { addIcons({ searchOutline }); }
+  constructor() { addIcons({ searchOutline, eyeOutline, createOutline, swapHorizontalOutline, trashOutline }); }
 
   actions: IAction[] = [];
   isLoading = true;
@@ -41,10 +41,10 @@ export class LibraryPage {
   }
 
   public actionActionSheetButtons = [
-    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
-    { text: this.translate.instant('TK_REPLACE'), data: { action: 'replace' } },
-    { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+    { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
+    { text: this.translate.instant('TK_REPLACE'), icon: 'swap-horizontal-outline', data: { action: 'replace' } },
+    { text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } },
   ];
 
   ionViewWillEnter() {

@@ -1,4 +1,7 @@
-<form [formGroup]="activityForm" class="nf-screen">
+<form [formGroup]="activityForm" class="nf-screen nf-screen--cards">
+
+  <!-- MAIN INFO CARD: actions · when · add details -->
+  <div class="nf-card">
 
   <!-- ACTIONS -->
   <div class="nf-field">
@@ -38,20 +41,11 @@
   </div>
 
   <!-- ADD DETAILS: progressive disclosure pills -->
-  <div class="nf-disc nf-disc--pills">
+  <div class="nf-detail">
     <div class="nf-disc-hd">{{ 'TK_ADD_DETAILS' | translate }}</div>
     <div class="nf-pills">
       <button type="button" class="nf-pill" [attr.data-on]="metricsGroupOpen ? '1' : '0'"
               (click)="metricsGroupOpen = !metricsGroupOpen; saveGroupState('metrics', metricsGroupOpen)">
-        @if (metricsGroupOpen) {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        } @else {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 8h10M18 8h2M4 16h2M10 16h10"/>
           <circle cx="16" cy="8" r="2.3"/>
@@ -61,15 +55,6 @@
       </button>
       <button type="button" class="nf-pill" [attr.data-on]="listsGroupOpen ? '1' : '0'"
               (click)="listsGroupOpen = !listsGroupOpen; saveGroupState('lists', listsGroupOpen)">
-        @if (listsGroupOpen) {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        } @else {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 6h12M8 12h12M8 18h12"/>
           <circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/>
@@ -80,15 +65,6 @@
       </button>
       <button type="button" class="nf-pill" [attr.data-on]="noteOpen ? '1' : '0'"
               (click)="noteOpen = !noteOpen">
-        @if (noteOpen) {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        } @else {
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-            <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 4h14v16l-4-3H5z"/>
           <path d="M9 9h6M9 13h4"/>
@@ -97,10 +73,11 @@
       </button>
     </div>
   </div>
+  </div>
 
-  <!-- METRICS SECTION -->
+  <!-- METRICS CARD -->
   @if (metricsGroupOpen) {
-    <div class="nf-disc">
+    <div class="nf-card">
       <div class="nf-sec2">
         <span class="nf-sec-title">{{ 'TK_METRICS' | translate }}</span>
         <span class="nf-sec-spacer"></span>
@@ -132,7 +109,6 @@
                   [snaps]="true"
                   class="nf-slider"
                   (ionChange)="onRangeChange(metric.id)"
-                  (pointerdown)="onRangeChange(metric.id)"
                 ></ion-range>
               } @else {
                 <div class="number-input">
@@ -172,7 +148,6 @@
                   [snaps]="true"
                   class="nf-slider"
                   (ionChange)="onRangeChange(metric.id)"
-                  (pointerdown)="onRangeChange(metric.id)"
                 ></ion-range>
               } @else {
                 <div class="number-input">
@@ -198,9 +173,9 @@
     </div>
   }
 
-  <!-- LISTS + TAGS SECTION -->
+  <!-- LISTS + TAGS CARD -->
   @if (listsGroupOpen) {
-    <div class="nf-disc">
+    <div class="nf-card">
       <div class="nf-sec2">
         <span class="nf-sec-title">{{ 'TK_LISTS' | translate }}</span>
         <span class="nf-sec-spacer"></span>
@@ -239,9 +214,9 @@
     </div>
   }
 
-  <!-- NOTE SECTION -->
+  <!-- NOTE CARD -->
   @if (noteOpen) {
-    <div class="nf-disc">
+    <div class="nf-card">
       <div class="nf-field" style="border-bottom: none">
         <label class="nf-label">{{ 'TK_COMMENT' | translate }}</label>
         <textarea
@@ -259,11 +234,12 @@
 <!-- Add metric / list modal -->
 <ion-modal [isOpen]="isAddLibraryModalOpen" (didDismiss)="isAddLibraryModalOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
   <ng-template>
-    <ion-header>
+    <ion-header class="ion-no-border">
       <ion-toolbar>
-        <ion-title>{{ (modalFilterType === 'metric' ? 'TK_METRICS' : 'TK_LISTS') | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="isAddLibraryModalOpen = false">{{ 'TK_CLOSE' | translate }}</ion-button>
+          <ion-button (click)="isAddLibraryModalOpen = false">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>

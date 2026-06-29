@@ -171,9 +171,9 @@ export class ExperimentViewPage {
     const isFinished = !!this.experiment?.factEndDate;
     const buttons = [];
     if (!isFinished) {
-      buttons.push({ text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } });
+      buttons.push({ text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } });
     }
-    buttons.push({ text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } });
+    buttons.push({ text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } });
 
     const sheet = await this.actionSheetCtrl.create({ buttons });
     await sheet.present();

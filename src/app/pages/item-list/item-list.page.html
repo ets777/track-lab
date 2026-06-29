@@ -21,7 +21,6 @@
         </ion-buttons>
         <ion-action-sheet
           trigger="open-action-sheet-item-{{item.id}}"
-          header="{{ 'TK_ITEMS' | translate }}"
           [buttons]="itemActionSheetButtons"
           (didDismiss)="doItemAction($event, item.id)"
         ></ion-action-sheet>

@@ -372,6 +372,34 @@ export async function seedDatabase(sqlite: SQLiteService) {
     }
   }
 
+  // ── Recent demo history: dense last 30 days for graph widgets ─────────────
+  // Bulk history above stops 35 days ago, leaving the 1w/2w/1m widget windows
+  // sparse. Add a daily Cycling (action 5) activity with Mood (1) + Energy (2)
+  // metrics so the metric-graph (Mood) and library-graph (Cycling) widgets have
+  // rich, smooth recent data to render.
+  {
+    const recActs: string[] = [];
+    const recActions: string[] = [];
+    const recMetrics: string[] = [];
+    const recItems: string[] = [];
+    let rid = 700;
+    for (let day = 0; day <= 29; day++) {
+      const date = d(day);
+      const mood   = Math.max(1, Math.min(10, Math.round(5.5 + 3 * Math.sin(day / 4))));
+      const energy = Math.max(1, Math.min(10, Math.round(5.5 + 3 * Math.cos(day / 5))));
+      recActs.push(`(${rid}, '${date}', '18:00', '19:00', 'Cycling route')`);
+      recActions.push(`(${rid}, 5)`);
+      recMetrics.push(`(${rid}, 1, ${mood})`);
+      recMetrics.push(`(${rid}, 2, ${energy})`);
+      recItems.push(`(${rid}, 1)`); // Happy
+      rid++;
+    }
+    await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime, comment) VALUES ${recActs.join(',')};`);
+    await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${recActions.join(',')};`);
+    await sqlite.execute(`INSERT OR REPLACE INTO activityMetrics (activityId, metricId, value) VALUES ${recMetrics.join(',')};`);
+    await sqlite.execute(`INSERT OR REPLACE INTO activityItems (activityId, itemId) VALUES ${recItems.join(',')};`);
+  }
+
   // ── Rules 1–8 ─────────────────────────────────────────────────────────────
   await sqlite.run(
     `INSERT OR REPLACE INTO rules (id, subjectType, subjectId, metric, operator, value, period, startDate) VALUES

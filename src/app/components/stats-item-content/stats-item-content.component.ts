@@ -13,6 +13,7 @@ import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { DatePeriod } from 'src/app/types/date-period';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { ChartConfiguration } from 'chart.js';
+import { styledBarChartOptions, BAR_DATASET_STYLE, barDatasetColor } from 'src/app/functions/chart';
 import { BaseChartDirective } from 'ng2-charts';
 import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
@@ -68,7 +69,7 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
   suggestions: Selectable<CommonItem>[] = [];
   minutesChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
   amountChartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
-  minutesChartOptions: ChartConfiguration<'bar'>['options'] = { responsive: true };
+  minutesChartOptions: ChartConfiguration<'bar'>['options'] = styledBarChartOptions();
   totalAmount = 0;
   totalDuration = 0;
   averageAmountPerDay = 0;
@@ -121,7 +122,7 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     if (this.fillHeight) {
-      this.minutesChartOptions = { responsive: true, maintainAspectRatio: false };
+      this.minutesChartOptions = styledBarChartOptions({ fillHeight: true });
     }
     this.activities = this.initialActivities;
     this.suggestions = this.initialSuggestions;
@@ -253,21 +254,18 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
     const lang = this.translate.currentLang || 'en';
     const displayDates = dates.map(d => formatDisplayDate(d, lang));
 
-    const colorProps = this.chartColor ? {
-      backgroundColor: this.chartColor + 'AA',
-      borderColor: this.chartColor,
-    } : {};
+    const colorProps = this.chartColor ? barDatasetColor(this.chartColor) : {};
 
     this.minutesChartData = {
       labels: displayDates,
       datasets: [
-        { data: durationMinutes, label: timeLabel, ...colorProps },
+        { data: durationMinutes, label: timeLabel, ...BAR_DATASET_STYLE, ...colorProps },
       ],
     };
 
     this.amountChartData = {
       labels: displayDates,
-      datasets: [{ data: amount, label: timesLabel, ...colorProps }],
+      datasets: [{ data: amount, label: timesLabel, ...BAR_DATASET_STYLE, ...colorProps }],
     };
   }
 

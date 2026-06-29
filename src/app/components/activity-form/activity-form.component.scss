@@ -169,22 +169,53 @@
   margin-top: 1px;
 }
 
-// ── Disclosure section ─────────────────────────────────────────────────────
+// ── Card blocks ────────────────────────────────────────────────────────────
 
-.nf-disc {
-  padding: 8px 0 4px;
-  border-bottom: 1px solid var(--tl-line);
+.nf-screen--cards {
+  padding-top: 14px;
+}
 
-  &:last-child {
-    border-bottom: none;
+.nf-card {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 15px var(--tl-pad);
+  margin-bottom: 13px;
+
+  // The card owns the outer gutter; edge children contribute none.
+  > :first-child {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  > :last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
   }
 }
 
-.nf-disc--pills {
-  border-bottom: none;
+.nf-screen--cards > .nf-card:last-child {
+  margin-bottom: 6px;
+}
 
-  .nf-disc-hd::after {
-    display: none;
+// Inside a card the nf-detail border-top supplies the divider; drop the
+// when-row bottom border so they don't stack into a double hairline.
+.nf-card .nf-when {
+  border-bottom: none;
+}
+
+// "Add details" group inside the main-info card — divider above it
+.nf-detail {
+  margin-top: 2px;
+  padding-top: 13px;
+  border-top: 1px solid var(--tl-line);
+
+  .nf-disc-hd {
+    margin-bottom: 9px;
+  }
+
+  .nf-pills {
+    padding-bottom: 0;
   }
 }
 
@@ -199,13 +230,6 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
-
-  &::after {
-    content: '';
-    flex: 1 1 auto;
-    height: 1px;
-    background: var(--tl-line);
-  }
 }
 
 // ── Progressive disclosure pills row ──────────────────────────────────────
@@ -466,3 +490,8 @@ ion-range.nf-slider::part(tick-active) {
 
 // ── ion-range slider override ──────────────────────────────────────────────
 
+
+// titleless modal — offset content by menu item height
+ion-modal ion-content {
+  --padding-top: 54px;
+}

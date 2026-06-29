@@ -52,10 +52,10 @@ export class ActivityListComponent implements OnChanges {
   getActivityButtons(activity: IActivity) {
     const rule = this.getActivityRule(activity);
     const buttons = [
-      { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-      ...(rule ? [{ text: this.translate.instant('TK_VIEW_RULE'), data: { action: 'view-rule', ruleId: rule.id } }] : []),
-      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
-      { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+      { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+      ...(rule ? [{ text: this.translate.instant('TK_VIEW_RULE'), icon: 'shield-checkmark-outline', data: { action: 'view-rule', ruleId: rule.id } }] : []),
+      { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
+      { text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } },
     ];
     return buttons;
   }
@@ -102,10 +102,12 @@ export class ActivityListComponent implements OnChanges {
       buttons: [
         {
           text: this.translate.instant('TK_YES'),
+          icon: 'checkmark-outline',
           role: 'confirm',
         },
         {
           text: this.translate.instant('TK_NO'),
+          icon: 'close-outline',
           role: 'cancel',
         },
       ],

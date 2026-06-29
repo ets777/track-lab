@@ -501,6 +501,7 @@
   "TK_CHOOSE_WIDGET_TYPE": "Choose widget type",
   "TK_WIDGET_ACTION_BUTTON": "Action button",
   "TK_WIDGET_RULES": "Rules",
+  "TK_WIDGET_RULES_SUBTITLE": "TODO list",
   "TK_WIDGET_NAVIGATION": "Navigation",
   "TK_WIDGET_METRIC_GRAPH": "Metric graph",
   "TK_WIDGET_LIBRARY_GRAPH": "Library graph",

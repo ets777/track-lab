@@ -45,17 +45,17 @@ export class ListViewPage {
   constructor() { addIcons({ searchOutline }); }
 
   itemActionSheetButtons = [
-    { text: this.translate.instant('TK_VIEW'), data: { action: 'view' } },
-    { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
-    { text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } },
+    { text: this.translate.instant('TK_VIEW'), icon: 'eye-outline', data: { action: 'view' } },
+    { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
+    { text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } },
   ];
 
   getListActionSheetButtons() {
     const buttons: any[] = [
-      { text: this.translate.instant('TK_EDIT'), data: { action: 'edit' } },
+      { text: this.translate.instant('TK_EDIT'), icon: 'create-outline', data: { action: 'edit' } },
     ];
     if (!this.list?.isBase) {
-      buttons.push({ text: this.translate.instant('TK_DELETE'), role: 'destructive', data: { action: 'delete' } });
+      buttons.push({ text: this.translate.instant('TK_DELETE'), icon: 'trash-outline', role: 'destructive', data: { action: 'delete' } });
     }
     return buttons;
   }
