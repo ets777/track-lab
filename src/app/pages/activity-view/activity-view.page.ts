@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { calendarOutline, timeOutline } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, IonList, IonItem, IonLabel, ActionSheetController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IActivity } from 'src/app/db/models/activity';
 import { IMetric } from 'src/app/db/models/metric';
@@ -10,10 +10,10 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ListService } from 'src/app/services/list.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
-import { TagsComponent } from 'src/app/components/tags/tags.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { entitiesToString, getTimeString } from 'src/app/functions/string';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
+import { formatDisplayDate } from 'src/app/functions/date';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { IList } from 'src/app/db/models/list';
@@ -32,7 +32,7 @@ import { ActivityRuleResult, computeRuleResultsForActivity } from 'src/app/funct
   templateUrl: './activity-view.page.html',
   styleUrls: ['./activity-view.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, IonList, IonItem, IonLabel, CommonModule, TranslateModule, BackButtonComponent, TagsComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, TranslateModule, NavButtonComponent],
 })
 export class ActivityViewPage {
   private route = inject(ActivatedRoute);
@@ -69,6 +69,16 @@ export class ActivityViewPage {
   constructor() {
     addIcons({ calendarOutline, timeOutline });
     this.activityId = Number(this.route.snapshot.paramMap.get('id'));
+  }
+
+  getDisplayDate(): string {
+    if (!this.activity) return '';
+    return formatDisplayDate(this.activity.date, this.translate.currentLang);
+  }
+
+  getWeekday(): string {
+    if (!this.activity) return '';
+    return format(parseISO(this.activity.date), 'EEE');
   }
 
   async openMenu() {

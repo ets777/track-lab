@@ -20,13 +20,13 @@ import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { CommonItem } from 'src/app/types/selectable';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 
 @Component({
   selector: 'app-metric-view',
   templateUrl: './metric-view.page.html',
   styleUrls: ['./metric-view.page.scss'],
-  imports: [IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, BackButtonComponent, DatePeriodInputComponent],
+  imports: [IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, NavButtonComponent, DatePeriodInputComponent],
 })
 export class MetricViewPage {
   private route = inject(ActivatedRoute);

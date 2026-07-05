@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     @if (showBackButton) {
-      <app-back-button slot="start"></app-back-button>
+      <app-nav-button slot="start"></app-nav-button>
     }
     <ion-title>{{ 'TK_HISTORY' | translate }}</ion-title>
   </ion-toolbar>
@@ -16,7 +16,7 @@
   <ion-buttons class="date-nav">
     <ion-button (click)="goToPreviousDay()"><ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon></ion-button>
     <div class="date-center">
-      <ion-text class="date-text" (click)="openDatePicker()">{{ displayDate }}</ion-text>
+      <ion-text class="date-text" (click)="openDatePicker()">{{ displayDate }}<span class="date-weekday">{{ displayWeekday }}</span></ion-text>
     </div>
     <ion-button (click)="goToNextDay()"><ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon></ion-button>
   </ion-buttons>

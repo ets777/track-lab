@@ -7,14 +7,14 @@ import { ITag } from 'src/app/db/models/tag';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TagService } from 'src/app/services/tag.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-tag-edit',
   templateUrl: './tag-edit.page.html',
   styleUrls: ['./tag-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, TagFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, TagFormComponent],
 })
 export class TagEditPage {
   private route = inject(ActivatedRoute);

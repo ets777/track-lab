@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActionForm, ActionFormComponent } from 'src/app/components/action-form/action-form.component';
 import { IAction } from 'src/app/db/models/action';
@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-action-edit',
   templateUrl: './action-edit.page.html',
   styleUrls: ['./action-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, ActionFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, ActionFormComponent],
 })
 export class ActionEditPage {
   private route = inject(ActivatedRoute);

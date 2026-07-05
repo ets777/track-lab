@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonMenuButton, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonText, IonButton, IonActionSheet, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline, eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ListService } from 'src/app/services/list.service';
 import { IList } from 'src/app/db/models/list';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -19,7 +19,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-lists',
   templateUrl: './lists.page.html',
   styleUrls: ['./lists.page.scss'],
-  imports: [IonInput, IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, DefaultSkeletonComponent, BackButtonComponent],
+  imports: [IonInput, IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, DefaultSkeletonComponent, NavButtonComponent],
 })
 export class ListsPage {
   private listService = inject(ListService);

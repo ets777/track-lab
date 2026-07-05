@@ -9,7 +9,7 @@ import { BackupService } from 'src/app/services/backup.service';
 
 const ALL_TABLES: TableName[] = [
   'activities', 'actions', 'activityActions', 'activityTags', 'activityItems', 'activityMetrics',
-  'tags', 'actionTags', 'actionLists', 'actionMetrics',
+  'tags', 'actionTags', 'listLinks', 'actionMetrics',
   'items', 'lists', 'metrics', 'tagMetrics', 'itemMetrics',
   'achievements', 'rules', 'ruleCompletions',
 ];

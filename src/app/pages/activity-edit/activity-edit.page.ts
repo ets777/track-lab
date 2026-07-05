@@ -8,7 +8,7 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ActivityItemService } from 'src/app/services/activity-item.service';
@@ -19,7 +19,7 @@ import { HookService } from 'src/app/services/hook.service';
   templateUrl: './activity-edit.page.html',
   styleUrls: ['./activity-edit.page.scss'],
   standalone: true,
-  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule, BackButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ActivityFormComponent, TranslateModule, NavButtonComponent],
 })
 export class ActivityEditPage {
   private route = inject(ActivatedRoute);

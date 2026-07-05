@@ -1,8 +1,13 @@
-import { Component, ElementRef, EventEmitter, Output, ViewChild, forwardRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output, ViewChild, forwardRef, Input, OnInit, OnChanges, OnDestroy, SimpleChanges, inject } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemService } from 'src/app/services/item.service';
+
+export interface ListInputSuggestion {
+  name: string;
+  subtitle?: string;
+}
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule, TranslateModule],
@@ -17,24 +22,28 @@ import { ItemService } from 'src/app/services/item.service';
     },
   ],
 })
-export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
+export class ListInputComponent implements ControlValueAccessor, OnInit, OnChanges, OnDestroy {
   private itemService = inject(ItemService);
   private translate = inject(TranslateService);
 
-  @Input() listId!: number;
+  @Input() listId?: number;
   @Input() label: string = '';
   @Input() removable = false;
+  /** When provided, these suggestions are used instead of loading items by listId. */
+  @Input() suggestions?: ListInputSuggestion[];
+  /** When true, only existing suggestions can be added — free text is rejected. */
+  @Input() strict = false;
   @Output() removed = new EventEmitter<void>();
 
   @ViewChild('inputEl') private inputEl?: ElementRef<HTMLInputElement>;
 
   innerControl = new FormControl('');
   inputText = '';
-  suggestions: string[] = [];
+  filteredSuggestions: ListInputSuggestion[] = [];
   isFocused = false;
   private blurTimeout: any;
 
-  private allSuggestionNames: string[] = [];
+  private allSuggestions: ListInputSuggestion[] = [];
   private onChange = (_: any) => {};
   private onTouched = () => {};
 
@@ -46,9 +55,20 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   }
 
   async ngOnInit() {
-    const items = await this.itemService.getAllWhereEquals('listId', this.listId);
-    this.allSuggestionNames = items.map(item => item.name);
+    if (this.suggestions) {
+      this.allSuggestions = this.suggestions;
+    } else if (this.listId != null) {
+      const items = await this.itemService.getAllWhereEquals('listId', this.listId);
+      this.allSuggestions = items.map(item => ({ name: item.name }));
+    }
     this.updateSuggestions();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['suggestions'] && this.suggestions) {
+      this.allSuggestions = this.suggestions;
+      this.updateSuggestions();
+    }
   }
 
   ngOnDestroy() {
@@ -64,11 +84,18 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   }
 
   get showDropdown(): boolean {
-    return this.isFocused && this.suggestions.length > 0;
+    return this.isFocused && this.filteredSuggestions.length > 0;
   }
 
   get canConfirm(): boolean {
-    return this.inputText.trim().length > 0;
+    const trimmed = this.inputText.trim();
+    if (!trimmed) return false;
+    if (this.strict) return this.matchSuggestion(trimmed) !== undefined;
+    return true;
+  }
+
+  private matchSuggestion(name: string): ListInputSuggestion | undefined {
+    return this.allSuggestions.find(s => s.name.toLowerCase() === name.toLowerCase());
   }
 
   writeValue(value: string): void {
@@ -80,8 +107,13 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   registerOnTouched(fn: any): void { this.onTouched = fn; }
 
   addChip(name: string, closeDropdown = false) {
-    const trimmed = name.trim();
+    let trimmed = name.trim();
     if (!trimmed) return;
+    if (this.strict) {
+      const match = this.matchSuggestion(trimmed);
+      if (!match) return;
+      trimmed = match.name;
+    }
     const current = this.chips;
     if (!current.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
       current.push(trimmed);
@@ -132,8 +164,8 @@ export class ListInputComponent implements ControlValueAccessor, OnInit, OnDestr
   updateSuggestions() {
     const query = this.inputText.toLowerCase().trim();
     const currentChips = new Set(this.chips.map(c => c.toLowerCase()));
-    this.suggestions = this.allSuggestionNames
-      .filter(s => !currentChips.has(s.toLowerCase()) && (!query || s.toLowerCase().includes(query)))
+    this.filteredSuggestions = this.allSuggestions
+      .filter(s => !currentChips.has(s.name.toLowerCase()) && (!query || s.name.toLowerCase().includes(query)))
       .slice(0, 6);
   }
 }

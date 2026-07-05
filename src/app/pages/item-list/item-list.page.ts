@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonMenuButton, IonNote } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonNote } from '@ionic/angular/standalone';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ItemService } from 'src/app/services/item.service';
 import { ListService } from 'src/app/services/list.service';
@@ -22,7 +23,7 @@ interface IItemWithList extends IItem {
   selector: 'app-item-list',
   templateUrl: './item-list.page.html',
   styleUrls: ['./item-list.page.scss'],
-  imports: [IonNote, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonMenuButton],
+  imports: [NavButtonComponent, IonNote, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule],
 })
 export class ItemListPage {
   private itemService = inject(ItemService);

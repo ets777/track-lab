@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonMenuButton, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,7 +9,7 @@ import { IExperiment } from 'src/app/db/models/experiment';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { Router } from '@angular/router';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -25,8 +25,8 @@ type Filter = 'all' | 'progress' | 'success' | 'failed';
   imports: [
     IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList,
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
-    TranslateModule, IonMenuButton, IonButton, IonActionSheet, IonText, IonInput,
-    BackButtonComponent,
+    TranslateModule, IonButton, IonActionSheet, IonText, IonInput,
+    NavButtonComponent,
   ],
 })
 export class ExperimentListPage {

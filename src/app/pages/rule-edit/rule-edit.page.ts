@@ -7,14 +7,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RuleForm, RuleFormComponent } from 'src/app/components/rule-form/rule-form.component';
 import { RuleService } from 'src/app/services/rule.service';
 import { IRule } from 'src/app/db/models/rule';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-rule-edit',
   templateUrl: './rule-edit.page.html',
   styleUrls: ['./rule-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, RuleFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, RuleFormComponent],
 })
 export class RuleEditPage {
   private route = inject(ActivatedRoute);

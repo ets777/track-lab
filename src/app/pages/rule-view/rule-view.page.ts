@@ -9,7 +9,7 @@ import { ellipsisVertical } from 'ionicons/icons';
 import { IRule, RuleMetric, RulePeriod } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
 import { RuleCompletionService } from 'src/app/services/rule-completion.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
@@ -34,7 +34,7 @@ const PERIOD_KEY: Record<RulePeriod, string> = {
   selector: 'app-rule-view',
   templateUrl: './rule-view.page.html',
   styleUrls: ['./rule-view.page.scss'],
-  imports: [IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, TranslateModule, BackButtonComponent, RuleCalendarComponent],
+  imports: [IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, TranslateModule, NavButtonComponent, RuleCalendarComponent],
 })
 export class RuleViewPage {
   private route = inject(ActivatedRoute);

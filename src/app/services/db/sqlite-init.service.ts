@@ -12,7 +12,7 @@ import { ActivityTagService } from '../activity-tag.service';
 import { Preferences } from '@capacitor/preferences';
 import { DatabaseRouter } from './database-router.service';
 import { ToastService } from '../toast.service';
-import { ActionListService } from '../action-list.service';
+import { ListLinkService } from '../list-link.service';
 import { ActionMetricService } from '../action-metric.service';
 import { ActivityItemService } from '../activity-item.service';
 import { ActivityMetricService } from '../activity-metric.service';
@@ -34,7 +34,7 @@ export class SQLiteInitService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionListService = inject(ActionListService);
+  private listLinkService = inject(ListLinkService);
   private actionMetricService = inject(ActionMetricService);
   private activityItemService = inject(ActivityItemService);
   private activityMetricService = inject(ActivityMetricService);
@@ -105,6 +105,7 @@ export class SQLiteInitService {
       DROP TABLE IF EXISTS itemMetrics;
       DROP TABLE IF EXISTS termMetrics;
       DROP TABLE IF EXISTS actionMetrics;
+      DROP TABLE IF EXISTS listLinks;
       DROP TABLE IF EXISTS actionLists;
       DROP TABLE IF EXISTS actionDictionaries;
       DROP TABLE IF EXISTS actionTags;
@@ -187,7 +188,7 @@ export class SQLiteInitService {
     const actionTags = await this.actionTagService.getAll();
     const activityTags = await this.activityTagService.getAll();
 
-    const actionLists = await this.actionListService.getAll();
+    const listLinks = await this.listLinkService.getAll();
     const actionMetrics = await this.actionMetricService.getAll();
     const activityItems = await this.activityItemService.getAll();
     const activityMetrics = await this.activityMetricService.getAll();
@@ -306,12 +307,12 @@ export class SQLiteInitService {
         );
       }
 
-      if (actionLists.length) {
-        await this.sqliteService.run('DELETE FROM actionLists');
+      if (listLinks.length) {
+        await this.sqliteService.run('DELETE FROM listLinks');
         await this.insertArrayChunked(
-          'actionLists',
-          actionLists,
-          ['id', 'actionId', 'listId'],
+          'listLinks',
+          listLinks,
+          ['id', 'listId', 'subjectType', 'subjectId'],
         );
       }
 

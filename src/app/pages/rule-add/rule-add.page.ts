@@ -7,13 +7,13 @@ import { RuleForm, RuleFormComponent } from 'src/app/components/rule-form/rule-f
 import { RuleService } from 'src/app/services/rule.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { HookService } from 'src/app/services/hook.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 
 @Component({
   selector: 'app-rule-add',
   templateUrl: './rule-add.page.html',
   styleUrls: ['./rule-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, RuleFormComponent, BackButtonComponent],
+  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, RuleFormComponent, NavButtonComponent],
 })
 export class RuleAddPage {
   private ruleService = inject(RuleService);

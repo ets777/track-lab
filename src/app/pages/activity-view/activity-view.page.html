@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <app-back-button slot="start"></app-back-button>
+    <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_ACTIVITY' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openMenu()">
@@ -12,71 +12,104 @@
 
 <ion-content class="ion-padding">
   @if (activity) {
-    <div class="info-row">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <span>{{ activity.date }}</span>
-    </div>
-    <div class="info-row">
-      <ion-icon name="time-outline"></ion-icon>
-      <span>
-        {{ activity.startTime }}
-        @if (activity.endTime) {
-          — {{ activity.endTime }} ({{ getTimeString(getDurationMinutes()) }})
-        }
-      </span>
-    </div>
-
-    @if (activity.actions.length) {
-      <h2>{{ 'TK_ACTIONS' | translate }}</h2>
-      <ion-list>
-        @for (action of activity.actions; track action.id) {
-          <ion-item button (click)="router.navigate(['/action', action.id])">
-            <ion-label>{{ action.name }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
-    }
-
-    @if (itemsGroupedByList.length) {
-      @for (group of itemsGroupedByList; track group.list.id) {
-        <h2>{{ group.list.name | translate }}</h2>
-        <ion-list>
-          @for (item of group.items; track item.id) {
-            <ion-item button (click)="router.navigate(['/item', item.id])">
-              <ion-label>{{ item.name }}</ion-label>
-            </ion-item>
+    <div class="av-screen">
+      <!-- When -->
+      <section class="tl-widget av-when">
+        <div class="av-when-row">
+          <span class="av-when-ico"><ion-icon name="calendar-outline"></ion-icon></span>
+          <span class="av-when-date">{{ getDisplayDate() }}</span>
+          <span class="av-when-day">{{ getWeekday() }}</span>
+        </div>
+        <div class="av-when-row">
+          <span class="av-when-ico"><ion-icon name="time-outline"></ion-icon></span>
+          <span class="av-when-time">
+            <b>{{ activity.startTime }}</b>
+            @if (activity.endTime) {
+              <span class="av-when-dash">—</span><b>{{ activity.endTime }}</b>
+            }
+          </span>
+          @if (activity.endTime) {
+            <span class="av-when-dur">{{ getTimeString(getDurationMinutes()) }}</span>
           }
-        </ion-list>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      @if (activity.actions.length) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_ACTIONS' | translate }}</span></div>
+          <div class="av-items">
+            @for (action of activity.actions; track action.id) {
+              <button class="av-item av-item-action" (click)="router.navigate(['/action', action.id])">{{ action.name }}</button>
+            }
+          </div>
+        </section>
       }
-    }
 
-    @if (activity.comment) {
-      <p>{{ activity.comment }}</p>
-    }
-
-    @if (activity.metricRecords.length) {
-      <h2>{{ 'TK_METRICS' | translate }}</h2>
-      @for (record of activity.metricRecords; track record.metricId) {
-        <p>
-          {{ getMetricName(record.metricId) | translate }}: {{ record.value }}{{ getMetricUnit(record.metricId) ? ' ' + getMetricUnit(record.metricId) : '' }}
-        </p>
+      <!-- Lists -->
+      @for (group of itemsGroupedByList; track group.list.id) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ group.list.name | translate }}</span></div>
+          <div class="av-items">
+            @for (item of group.items; track item.id) {
+              <button class="av-item" (click)="router.navigate(['/item', item.id])">{{ item.name }}</button>
+            }
+          </div>
+        </section>
       }
-    }
 
-    @if (getAllTags().length) {
-      <h2>{{ 'TK_TAGS' | translate }}</h2>
-      <app-tags [tags]="getAllTags()"></app-tags>
-    }
+      <!-- Tags -->
+      @if (getAllTags().length) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_TAGS' | translate }}</span></div>
+          <div class="av-items">
+            @for (tag of getAllTags(); track tag.id) {
+              <span class="av-item">{{ tag.name }}</span>
+            }
+          </div>
+        </section>
+      }
 
-    @if (triggeredRules.length) {
-      <h2>{{ 'TK_RULES' | translate }}</h2>
-      <ion-list>
-        @for (result of triggeredRules; track result.rule.id) {
-          <ion-item button (click)="router.navigate(['/rule', result.rule.id])" [class.rule-green]="result.color === 'green'" [class.rule-red]="result.color === 'red'">
-            <ion-label>{{ getRuleName(result) }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
-    }
+      <!-- Note -->
+      @if (activity.comment) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_NOTE' | translate }}</span></div>
+          <p class="av-note">{{ activity.comment }}</p>
+        </section>
+      }
+
+      <!-- Metrics -->
+      @if (activity.metricRecords.length) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_METRICS' | translate }}</span></div>
+          <div class="av-metrics">
+            @for (record of activity.metricRecords; track record.metricId) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ getMetricName(record.metricId) | translate }}</span>
+                <span class="av-metric-v">
+                  {{ record.value }}@if (getMetricUnit(record.metricId)) {<span class="av-metric-u">{{ getMetricUnit(record.metricId) }}</span>}
+                </span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Rules -->
+      @if (triggeredRules.length) {
+        <section class="tl-widget">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_RULES' | translate }}</span></div>
+          <ul class="av-rules">
+            @for (result of triggeredRules; track result.rule.id) {
+              <li class="av-rule" [attr.data-status]="result.color"
+                  (click)="router.navigate(['/rule', result.rule.id])">
+                <span class="av-rule-rail"></span>
+                <span class="av-rule-name">{{ getRuleName(result) }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
   }
 </ion-content>

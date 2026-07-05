@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { addDays, format, parseISO } from 'date-fns';
 import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonFooter } from "@ionic/angular/standalone";
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivityForm, ActivityFormComponent } from "src/app/components/activity-form/activity-form.component";
 import { Time } from 'src/app/Time';
@@ -18,7 +18,7 @@ import { HookService } from 'src/app/services/hook.service';
   selector: 'app-activity-add',
   templateUrl: './activity-add.page.html',
   styleUrl: './activity-add.page.scss',
-  imports: [IonFooter, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule, BackButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonToolbar, IonTitle, FormsModule, ReactiveFormsModule, ActivityFormComponent, TranslateModule, NavButtonComponent],
 })
 export class ActivityAddPage implements OnInit {
   private activityService = inject(ActivityService);

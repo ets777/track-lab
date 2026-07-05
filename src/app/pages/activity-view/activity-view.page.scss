@@ -1,21 +1,242 @@
-.rule-green {
-  border-left: 3px solid var(--ion-color-success);
-  --background: rgba(var(--ion-color-success-rgb), 0.06);
+// ── Activity detail — clinical skin ─────────────────────────────────────────
+
+.av-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-gap);
 }
 
-.rule-red {
-  border-left: 3px solid var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
 }
 
-.info-row {
+.tl-widget-hd {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 6px 0;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.tl-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+}
+
+// ── When ──
+
+.av-when {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.av-when-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.av-when-ico {
+  flex: 0 0 auto;
+  color: var(--tl-text-faint);
+  display: grid;
+  place-items: center;
 
   ion-icon {
-    font-size: 18px;
-    flex-shrink: 0;
+    font-size: 17px;
   }
+}
+
+.av-when-date {
+  font-family: var(--tl-font-mono);
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--tl-text);
+  letter-spacing: 0.01em;
+}
+
+.av-when-day {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--tl-text-faint);
+  letter-spacing: 0.01em;
+}
+
+.av-when-time {
+  font-family: var(--tl-font-mono);
+  font-size: 15.5px;
+  color: var(--tl-text-dim);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+
+  b {
+    color: var(--tl-text);
+    font-weight: 600;
+  }
+}
+
+.av-when-dash {
+  margin: 0 6px;
+  color: var(--tl-text-faint);
+}
+
+.av-when-dur {
+  margin-left: 9px;
+  padding-left: 11px;
+  border-left: 1px solid var(--tl-line-2);
+  font-family: var(--tl-font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tl-accent);
+  letter-spacing: 0.01em;
+}
+
+// ── Item chips (actions / lists / tags) ──
+
+.av-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.av-item {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tl-text-dim);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line-2);
+  letter-spacing: -0.005em;
+}
+
+button.av-item {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.av-item-action {
+  color: var(--tl-accent);
+  background: var(--tl-accent-soft);
+  border-color: color-mix(in srgb, var(--tl-accent) 24%, transparent);
+}
+
+// ── Note ──
+
+.av-note {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--tl-text-dim);
+  letter-spacing: -0.005em;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+// ── Metrics ──
+
+.av-metrics {
+  display: flex;
+  flex-direction: column;
+}
+
+.av-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--tl-line);
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.av-metric-k {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tl-text-dim);
+  letter-spacing: -0.005em;
+}
+
+.av-metric-v {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-family: var(--tl-font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tl-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.av-metric-u {
+  font-size: 11.5px;
+  color: var(--tl-text-faint);
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+// ── Rules ──
+
+.av-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.av-rule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 12px 14px 12px 20px;
+  border-radius: var(--tl-radius-sm);
+  background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  cursor: pointer;
+  --rail-c: var(--tl-line-2);
+
+  &[data-status='green'] {
+    --rail-c: var(--tl-good);
+    background: var(--tl-good-bg);
+    border-color: var(--tl-good-line);
+  }
+
+  &[data-status='red'] {
+    --rail-c: var(--tl-bad);
+    background: var(--tl-bad-bg);
+    border-color: var(--tl-bad-line);
+  }
+}
+
+.av-rule-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rail-c);
+  border-radius: var(--tl-radius-sm) 0 0 var(--tl-radius-sm);
+}
+
+.av-rule-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tl-text);
+  min-width: 0;
 }

@@ -29,7 +29,7 @@ import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ListService } from 'src/app/services/list.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 import { ExperimentViewContentComponent } from 'src/app/components/experiment-view-content/experiment-view-content.component';
 import { ToastService } from 'src/app/services/toast.service';
@@ -43,7 +43,7 @@ import { filterUniqueElements } from 'src/app/functions/item';
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon,
     CommonModule, TranslateModule,
-    BackButtonComponent, DefaultSkeletonComponent, ExperimentViewContentComponent,
+    NavButtonComponent, DefaultSkeletonComponent, ExperimentViewContentComponent,
   ],
 })
 export class ExperimentViewPage {

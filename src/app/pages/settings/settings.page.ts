@@ -2,9 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonIcon, IonSelect, IonSelectOption, IonCheckbox, IonLabel } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { AlertController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
@@ -30,7 +30,7 @@ export enum autoBackupOption {
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption, IonCheckbox, BackButtonComponent],
+  imports: [IonIcon, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonSelect, IonSelectOption, IonCheckbox, NavButtonComponent],
 })
 export class SettingsPage implements OnInit {
   private translate = inject(TranslateService);

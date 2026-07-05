@@ -1,3 +1,11 @@
+ion-popover {
+    --border-radius: var(--tl-radius);
+
+    &::part(content) {
+        border-radius: var(--tl-radius);
+    }
+}
+
 .validation-tooltip {
-    padding: 5px 10px;
+    padding: 12px 16px;
 }

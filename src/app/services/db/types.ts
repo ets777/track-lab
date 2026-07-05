@@ -1,6 +1,6 @@
 import { IAchievementCreateDto, IAchievementDb } from "src/app/db/models/achievement";
 import { IActionCreateDto, IActionDb } from "src/app/db/models/action";
-import { IActionListCreateDto, IActionListDb } from "src/app/db/models/action-list";
+import { IListLinkCreateDto, IListLinkDb } from "src/app/db/models/list-link";
 import { IActionMetricCreateDto, IActionMetricDb } from "src/app/db/models/action-metric";
 import { IActionTagCreateDto, IActionTagDb } from "src/app/db/models/action-tag";
 import { IActivityCreateDto, IActivityDb } from "src/app/db/models/activity";
@@ -30,7 +30,7 @@ export interface ITable {
     activityTags: IActivityTagDb;
     activityActions: IActivityActionDb;
     actionTags: IActionTagDb;
-    actionLists: IActionListDb;
+    listLinks: IListLinkDb;
     actionMetrics: IActionMetricDb;
     activityItems: IActivityItemDb;
     activityMetrics: IActivityMetricDb;
@@ -56,7 +56,7 @@ export interface ICreateDto {
     activityTags: IActivityTagCreateDto | IActivityTagDb;
     activityActions: IActivityActionCreateDto | IActivityActionDb;
     actionTags: IActionTagCreateDto | IActionTagDb;
-    actionLists: IActionListDb | IActionListCreateDto;
+    listLinks: IListLinkDb | IListLinkCreateDto;
     actionMetrics: IActionMetricDb | IActionMetricCreateDto;
     activityItems: IActivityItemDb | IActivityItemCreateDto;
     activityMetrics: IActivityMetricDb | IActivityMetricCreateDto;

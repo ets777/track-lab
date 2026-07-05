@@ -46,12 +46,12 @@ export class MetricService extends DatabaseService<'metrics'> {
       showPreviousValue: form.showPreviousValue ?? false,
     });
 
-    if (form.term?.type === 'action' && form.term.itemId) {
-      await this.actionMetricService.add({ actionId: form.term.itemId, metricId });
-    } else if (form.term?.type === 'tag' && form.term.itemId) {
-      await this.tagMetricService.add({ tagId: form.term.itemId, metricId });
-    } else if (form.term?.itemId) {
-      await this.itemMetricService.add({ itemId: form.term.itemId, metricId });
+    if (form.item?.type === 'action' && form.item.itemId) {
+      await this.actionMetricService.add({ actionId: form.item.itemId, metricId });
+    } else if (form.item?.type === 'tag' && form.item.itemId) {
+      await this.tagMetricService.add({ tagId: form.item.itemId, metricId });
+    } else if (form.item?.itemId) {
+      await this.itemMetricService.add({ itemId: form.item.itemId, metricId });
     }
 
     this.hookService.emit({ type: 'metric.added', payload: {} });

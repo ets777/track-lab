@@ -63,7 +63,7 @@ export type MetricForm = {
   minValue: number;
   maxValue: number;
   showPreviousValue: boolean;
-  term: CommonItem;
+  item: CommonItem;
 };
 
 @Component({
@@ -109,7 +109,7 @@ export class MetricFormComponent implements OnInit {
       maxValue: [5, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
       isHidden: [false],
       showPreviousValue: [false],
-      term: [null as CommonItem | null],
+      item: [null as CommonItem | null],
     }, { validators: minMaxValidator() });
 
     await this.loadSuggestions();
@@ -120,13 +120,13 @@ export class MetricFormComponent implements OnInit {
         this.tagMetricService.getAllWhereEquals('metricId', this.metric.id),
         this.itemMetricService.getAllWhereEquals('metricId', this.metric.id),
       ]);
-      let term: CommonItem | null = null;
+      let item: CommonItem | null = null;
       if (actionMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === actionMetrics[0].actionId)?.item ?? null;
+        item = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === actionMetrics[0].actionId)?.item ?? null;
       } else if (tagMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type === 'tag' && s.item.itemId === tagMetrics[0].tagId)?.item ?? null;
+        item = this.suggestions.find(s => s.item.type === 'tag' && s.item.itemId === tagMetrics[0].tagId)?.item ?? null;
       } else if (itemMetrics.length > 0) {
-        term = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.itemId === itemMetrics[0].itemId)?.item ?? null;
+        item = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.itemId === itemMetrics[0].itemId)?.item ?? null;
       }
 
       this.metricForm.patchValue({
@@ -139,7 +139,7 @@ export class MetricFormComponent implements OnInit {
         maxValue: this.metric.maxValue,
         isHidden: this.metric.isHidden,
         showPreviousValue: this.metric.showPreviousValue ?? false,
-        term,
+        item,
       });
     }
 
@@ -204,7 +204,7 @@ export class MetricFormComponent implements OnInit {
       minValue: 0,
       maxValue: 10,
       isHidden: false,
-      term: null,
+      item: null,
     });
   }
 

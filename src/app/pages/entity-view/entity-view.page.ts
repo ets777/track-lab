@@ -19,7 +19,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { LogService } from 'src/app/services/log.service';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TagsComponent } from 'src/app/components/tags/tags.component';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
@@ -39,7 +39,7 @@ export type EntityType = 'action' | 'tag' | 'item';
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon,
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
-    ActivityListComponent, BackButtonComponent, TagsComponent,
+    ActivityListComponent, NavButtonComponent, TagsComponent,
     DatePeriodInputComponent, BaseChartDirective, DefaultSkeletonComponent,
   ],
 })

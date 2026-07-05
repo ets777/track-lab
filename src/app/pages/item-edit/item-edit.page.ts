@@ -1,50 +1,47 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonItem, IonInput, IonLabel } from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ItemService } from 'src/app/services/item.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { IItem } from 'src/app/db/models/item';
+import { ItemForm, ItemFormComponent } from 'src/app/components/item-form/item-form.component';
 
 @Component({
   selector: 'app-item-edit',
   templateUrl: './item-edit.page.html',
   styleUrls: ['./item-edit.page.scss'],
-  imports: [IonLabel, IonInput, IonItem, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BackButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, ItemFormComponent],
 })
 export class ItemEditPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private itemService = inject(ItemService);
   private toastService = inject(ToastService);
-  private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
-  private itemId = Number(this.route.snapshot.paramMap.get('id'));
-  private listId?: number;
+  @ViewChild('updateFormRef') updateFormRef!: ItemFormComponent;
 
-  form = this.fb.group({
-    name: ['', Validators.required],
-  });
+  itemId = Number(this.route.snapshot.paramMap.get('id'));
+  item?: IItem;
 
   async ionViewDidEnter() {
-    const item = await this.itemService.getById(this.itemId);
-    if (item) {
-      this.listId = item.listId;
-      this.form.patchValue({ name: item.name });
-    }
+    this.item = await this.itemService.getById(this.itemId);
+    this.cdr.detectChanges();
   }
 
   async save() {
-    if (this.form.invalid) return;
+    if (!(await this.updateFormRef.validate())) {
+      return;
+    }
 
-    await this.itemService.update(this.itemId, { name: this.form.value.name! });
+    const itemFormValue = this.updateFormRef.itemForm.value as ItemForm;
+
+    await this.itemService.update(this.itemId, { name: itemFormValue.name });
     this.toastService.enqueue({ title: 'TK_ITEM_UPDATED_SUCCESSFULLY', type: 'success' });
-    await this.router.navigate(['/library', this.listId]);
-  }
-
-  isFormValid() {
-    return this.form.valid;
+    await this.router.navigate(['/library', this.item?.listId]);
   }
 }

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.component';
 import { StatsItemContentComponent } from 'src/app/components/stats-item-content/stats-item-content.component';
@@ -19,7 +20,7 @@ import { addDays, addMonths, format } from 'date-fns';
   selector: 'app-stats-item',
   templateUrl: './stats-item.page.html',
   styleUrls: ['./stats-item.page.scss'],
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, TranslateModule, StatsSkeletonComponent, StatsItemContentComponent],
+  imports: [NavButtonComponent, IonContent, IonHeader, IonTitle, IonToolbar, TranslateModule, StatsSkeletonComponent, StatsItemContentComponent],
 })
 export class StatsItemPage {
   private listService = inject(ListService);

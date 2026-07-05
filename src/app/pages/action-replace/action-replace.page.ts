@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonCheckbox, IonItem } from '@ionic/angular/standalone';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IAction } from 'src/app/db/models/action';
@@ -21,7 +21,7 @@ import { LogService } from 'src/app/services/log.service';
   selector: 'app-action-replace',
   templateUrl: './action-replace.page.html',
   styleUrls: ['./action-replace.page.scss'],
-  imports: [IonItem, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, BackButtonComponent, TranslateModule, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective, IonCheckbox],
+  imports: [IonItem, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, FormsModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective, IonCheckbox],
 })
 export class ActionReplacePage implements OnInit {
   private route = inject(ActivatedRoute);

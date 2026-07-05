@@ -1,0 +1,19 @@
+:host {
+    display: block;
+}
+
+// single source of position/hitbox for both back arrow and burger.
+// symmetric padding => left gap (toolbar pad is 0) == right gap (title left
+// pad is zeroed in global.scss when this button is present). 1.5x base (12).
+.nb {
+    --color: var(--text-color);
+    --padding-start: 18px;
+    --padding-end: 18px;
+    --padding-top: 18px;
+    --padding-bottom: 18px;
+    --background-hover: transparent;
+    --background-activated: transparent;
+    --box-shadow: none;
+    min-width: 0;
+    margin: 0;
+}

@@ -103,8 +103,8 @@ export async function seedDatabase(sqlite: SQLiteService) {
 
   // action 2 (Meditation) → list 2 (Places)
   await sqlite.execute(`
-    INSERT OR REPLACE INTO actionLists (actionId, listId) VALUES
-      (2, 2);
+    INSERT OR REPLACE INTO listLinks (listId, subjectType, subjectId) VALUES
+      (2, 'action', 2);
   `);
 
   // ── Original activities 1–17 ──────────────────────────────────────────────

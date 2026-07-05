@@ -288,4 +288,20 @@ export const databaseUpgrades = [
       `DROP TABLE IF EXISTS streaks;`,
     ],
   },
+  {
+    toVersion: 13,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS listLinks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listId INTEGER NOT NULL,
+        subjectType TEXT NOT NULL DEFAULT 'action',
+        subjectId INTEGER NOT NULL,
+        FOREIGN KEY(listId) REFERENCES lists(id) ON DELETE CASCADE,
+        UNIQUE(listId, subjectType, subjectId)
+      );`,
+      `INSERT INTO listLinks (listId, subjectType, subjectId)
+        SELECT listId, 'action', actionId FROM actionLists;`,
+      `DROP TABLE IF EXISTS actionLists;`,
+    ],
+  },
 ];

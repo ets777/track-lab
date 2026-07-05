@@ -1,12 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      @if (showBackButton) {
-        <app-back-button></app-back-button>
-      } @else {
-        <ion-menu-button menu="stats-menu"></ion-menu-button>
-      }
-    </ion-buttons>
+    <app-nav-button slot="start" [showBack]="showBackButton" menu="stats-menu"></app-nav-button>
     <ion-title>{{ 'TK_ACHIEVEMENTS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>

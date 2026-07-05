@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular';
 import { MetricService } from 'src/app/services/metric.service';
@@ -17,7 +18,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-metric-list',
   templateUrl: './metric-list.page.html',
   styleUrls: ['./metric-list.page.scss'],
-  imports: [IonActionSheet, IonButton, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonMenuButton, TranslateModule, IonText, IonInput, DefaultSkeletonComponent],
+  imports: [NavButtonComponent, IonActionSheet, IonButton, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonText, IonInput, DefaultSkeletonComponent],
 })
 export class MetricListPage {
   private metricService = inject(MetricService);

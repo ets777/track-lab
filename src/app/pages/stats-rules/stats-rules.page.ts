@@ -2,9 +2,9 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { startOfMonth, subDays, format } from 'date-fns';
 import { RuleService } from 'src/app/services/rule.service';
@@ -27,10 +27,10 @@ import { AggregateRuleCalendarComponent } from 'src/app/components/aggregate-rul
   templateUrl: './stats-rules.page.html',
   styleUrls: ['./stats-rules.page.scss'],
   imports: [
-    IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton,
+    IonContent, IonHeader, IonTitle, IonToolbar,
     IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton,
     CommonModule, FormsModule, TranslateModule,
-    DefaultSkeletonComponent, AggregateRuleCalendarComponent, BackButtonComponent,
+    DefaultSkeletonComponent, AggregateRuleCalendarComponent, NavButtonComponent,
   ],
 })
 export class StatsRulesPage {

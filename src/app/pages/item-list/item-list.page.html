@@ -1,8 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button menu="lab-menu"></ion-menu-button>
-    </ion-buttons>
+    <app-nav-button slot="start" [showBack]="false" menu="lab-menu"></app-nav-button>
     <ion-title>{{ 'TK_ITEMS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>

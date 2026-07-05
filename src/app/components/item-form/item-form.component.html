@@ -1,25 +1,23 @@
-<form [formGroup]="itemForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+<form [formGroup]="itemForm" class="lf-card">
+  <!-- NAME -->
+  <div class="lf-field lf-field--last">
+    <div class="lf-label">{{ 'TK_NAME' | translate }}</div>
     <ion-input
-      appValidationError
+      class="lf-name"
+      [class.lf-name--invalid]="showNameError"
       formControlName="name"
       name="name"
+      [placeholder]="'TK_ITEM_NAME_PLACEHOLDER' | translate"
     ></ion-input>
-  </ion-item>
-
-  <ion-item>
-    <ion-checkbox
-      labelPlacement="end"
-      formControlName="isHidden"
-      name="isHidden"
-    >{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
-  </ion-item>
-
-  <app-select-search
-    appValidationError
-    formControlName="item"
-    label="TK_ITEM"
-    [suggestions]="suggestions"
-  ></app-select-search>
+    @if (showNameError) {
+      <div class="lf-error">
+        @for (msg of nameErrors; track msg) {
+          <div class="lf-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </form>

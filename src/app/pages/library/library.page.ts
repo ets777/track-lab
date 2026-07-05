@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonList, IonItem, IonIcon, IonButtons, IonButton, IonActionSheet, IonFab, IonFabButton, IonInput } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline, eyeOutline, createOutline, swapHorizontalOutline, trashOutline } from 'ionicons/icons';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionService } from 'src/app/services/action.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -19,7 +19,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-library',
   templateUrl: './library.page.html',
   styleUrls: ['./library.page.scss'],
-  imports: [IonInput, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonInput, IonFabButton, IonFab, IonActionSheet, IonButton, IonButtons, IonIcon, IonItem, IonList, IonLabel, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, DefaultSkeletonComponent],
 })
 export class LibraryPage {
   private actionService = inject(ActionService);

@@ -24,7 +24,7 @@ import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { ActivityTagService } from './activity-tag.service';
 import { FileService } from './file.service';
-import { IActionListDb } from '../db/models/action-list';
+import { IListLinkDb } from '../db/models/list-link';
 import { IActionMetricDb } from '../db/models/action-metric';
 import { IActivityItemDb } from '../db/models/activity-item';
 import { IActivityMetricDb } from '../db/models/activity-metric';
@@ -33,7 +33,7 @@ import { IListDb } from '../db/models/list';
 import { IMetricDb } from '../db/models/metric';
 import { ITagMetricDb } from '../db/models/tag-metric';
 import { IItemMetricDb } from '../db/models/item-metric';
-import { ActionListService } from './action-list.service';
+import { ListLinkService } from './list-link.service';
 import { ActionMetricService } from './action-metric.service';
 import { ActivityItemService } from './activity-item.service';
 import { ActivityMetricService } from './activity-metric.service';
@@ -67,7 +67,9 @@ type Backup = {
   tags: ITagDb[],
   actionTags: IActionTagDb[],
   activityTags: IActivityTagDb[],
-  actionLists: IActionListDb[],
+  listLinks?: IListLinkDb[],
+  /** Legacy (pre-1.0.0): action→list links, superseded by listLinks. */
+  actionLists?: { id: number, actionId: number, listId: number }[],
   actionMetrics: IActionMetricDb[],
   activityItems: IActivityItemDb[],
   activityMetrics: IActivityMetricDb[],
@@ -221,7 +223,7 @@ const helperRevision1 = {
       });
     });
 
-    backup.actionLists = [];
+    backup.listLinks = [];
     backup.actionMetrics = [];
 
     return backup;
@@ -247,7 +249,7 @@ export class BackupService {
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
   private activityTagService = inject(ActivityTagService);
-  private actionListService = inject(ActionListService);
+  private listLinkService = inject(ListLinkService);
   private actionMetricService = inject(ActionMetricService);
   private activityItemService = inject(ActivityItemService);
   private activityMetricService = inject(ActivityMetricService);
@@ -288,7 +290,7 @@ export class BackupService {
       actionTags: await this.actionTagService.getAll(),
       activityTags: await this.activityTagService.getAll(),
 
-      actionLists: await this.actionListService.getAll(),
+      listLinks: await this.listLinkService.getAll(),
       actionMetrics: await this.actionMetricService.getAll(),
       activityItems: await this.activityItemService.getAll(),
       activityMetrics: await this.activityMetricService.getAll(),
@@ -402,7 +404,14 @@ export class BackupService {
       this.loadingService.show('TK_RESTORING_LISTS');
       await this.listService.bulkAdd(backup.lists);
       await this.actionTagService.bulkAdd(backup.actionTags);
-      await this.actionListService.bulkAdd(backup.actionLists);
+      // listLinks superseded action-only actionLists in 1.0.0; map legacy backups forward.
+      const listLinks = backup.listLinks
+        ?? (backup.actionLists ?? []).map((al) => ({
+          listId: al.listId,
+          subjectType: 'action',
+          subjectId: al.actionId,
+        }));
+      await this.listLinkService.bulkAdd(listLinks);
 
       this.loadingService.show('TK_RESTORING_METRICS');
       await this.metricService.bulkAdd(backup.metrics);
@@ -449,7 +458,7 @@ export class BackupService {
     await this.tagMetricService.clear();
     await this.itemMetricService.clear();
     await this.actionMetricService.clear();
-    await this.actionListService.clear();
+    await this.listLinkService.clear();
     await this.actionTagService.clear();
 
     const lists = await this.listService.getAll();

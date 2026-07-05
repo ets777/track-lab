@@ -1,12 +1,131 @@
-.input-readonly {
-  opacity: 0.3;
+.lf-card {
+  display: block;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 4px var(--tl-pad);
 }
 
-.basic-badge {
-  --background: #999;
-  --color: #fff;
-  --padding-start: 10px;
-  --padding-end: 10px;
-  border-radius: 999px;
+.lf-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--last {
+    border-bottom: none;
+  }
+}
+
+.lf-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 4px;
+
+  &--items {
+    margin-bottom: 12px;
+  }
+}
+
+.lf-help {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--tl-line-2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tl-text-dim);
   font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tl-surface-2);
+    color: var(--tl-text);
+  }
+}
+
+.lf-badge {
+  --background: var(--tl-surface-2);
+  --color: var(--tl-text-dim);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lf-name {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --highlight-height: 0;
+  --placeholder-color: var(--tl-text-faint);
+  --placeholder-opacity: 1;
+  font-family: var(--tl-font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tl-text);
+
+  &--readonly {
+    opacity: 0.4;
+  }
+
+  &--invalid {
+    --color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+  }
+}
+
+.lf-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.lf-error-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
+}
+
+.lf-field--row {
+  ion-checkbox {
+    --size: 22px;
+    width: 100%;
+  }
+}
+
+.lf-check-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
+}
+
+.lf-check-sub {
+  font-size: 12px;
+  color: var(--tl-text-dim);
+  margin-top: 2px;
+  white-space: normal;
 }

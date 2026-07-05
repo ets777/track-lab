@@ -1,9 +1,7 @@
 <ion-header>
   <ion-toolbar>
     @if (showBackButton) {
-      <ion-buttons slot="start">
-        <app-back-button></app-back-button>
-      </ion-buttons>
+      <app-nav-button slot="start"></app-nav-button>
     }
     <ion-title>{{ 'TK_SETTINGS' | translate }}</ion-title>
   </ion-toolbar>

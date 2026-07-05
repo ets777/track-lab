@@ -1,8 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <app-back-button></app-back-button>
-    </ion-buttons>
+    <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ list?.name | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openListMenu()">

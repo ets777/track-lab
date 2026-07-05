@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { IonHeader, IonContent, IonToolbar, IonTitle, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import { IonHeader, IonContent, IonToolbar, IonTitle } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { StatsSkeletonComponent } from 'src/app/skeletons/stats/stats-skeleton.component';
 import { StatsContentComponent } from 'src/app/components/stats-content/stats-content.component';
@@ -14,7 +14,7 @@ import { addDays, addMonths, format } from 'date-fns';
 
 @Component({
   selector: 'app-stats',
-  imports: [IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, TranslateModule, StatsSkeletonComponent, StatsContentComponent, BackButtonComponent],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, TranslateModule, StatsSkeletonComponent, StatsContentComponent, NavButtonComponent],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
 })

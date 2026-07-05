@@ -11,7 +11,7 @@ import { ListService } from 'src/app/services/list.service';
 import { ItemService } from 'src/app/services/item.service';
 import { IList } from 'src/app/db/models/list';
 import { IItem } from 'src/app/db/models/item';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
@@ -20,7 +20,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-list-view',
   templateUrl: './list-view.page.html',
   styleUrls: ['./list-view.page.scss'],
-  imports: [IonInput, IonActionSheet, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonButton, CommonModule, FormsModule, TranslateModule, BackButtonComponent, DefaultSkeletonComponent],
+  imports: [IonInput, IonActionSheet, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonButton, CommonModule, FormsModule, TranslateModule, NavButtonComponent, DefaultSkeletonComponent],
 })
 export class ListViewPage {
   private route = inject(ActivatedRoute);

@@ -1,12 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-buttons slot="start">
-      @if (showBackButton) {
-        <app-back-button></app-back-button>
-      } @else {
-        <ion-menu-button menu="lab-menu"></ion-menu-button>
-      }
-    </ion-buttons>
+    <app-nav-button slot="start" [showBack]="showBackButton" menu="lab-menu"></app-nav-button>
     <ion-title>{{ 'TK_LIBRARY' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>

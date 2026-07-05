@@ -9,7 +9,7 @@ import { ExperimentService } from 'src/app/services/experiment.service';
 import { ExperimentIndicatorService } from 'src/app/services/experiment-indicator.service';
 import { ExperimentRuleService } from 'src/app/services/experiment-rule.service';
 import { IExperiment } from 'src/app/db/models/experiment';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { LogService } from 'src/app/services/log.service';
 
@@ -17,7 +17,7 @@ import { LogService } from 'src/app/services/log.service';
   selector: 'app-experiment-edit',
   templateUrl: './experiment-edit.page.html',
   styleUrls: ['./experiment-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, ExperimentFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, ExperimentFormComponent],
 })
 export class ExperimentEditPage {
   private route = inject(ActivatedRoute);

@@ -10,7 +10,7 @@ import { ActionMetricService } from 'src/app/services/action-metric.service';
 import { TagMetricService } from 'src/app/services/tag-metric.service';
 import { ItemMetricService } from 'src/app/services/item-metric.service';
 import { IMetric } from 'src/app/db/models/metric';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivityMetricService } from 'src/app/services/activity-metric.service';
 import { AlertController } from '@ionic/angular';
@@ -19,7 +19,7 @@ import { AlertController } from '@ionic/angular';
   selector: 'app-metric-edit',
   templateUrl: './metric-edit.page.html',
   styleUrls: ['./metric-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, BackButtonComponent, MetricFormComponent],
+  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, MetricFormComponent],
 })
 export class MetricEditPage {
   private route = inject(ActivatedRoute);
@@ -91,12 +91,12 @@ export class MetricEditPage {
     await this.actionMetricService.delete({ metricId: this.metricId });
     await this.tagMetricService.delete({ metricId: this.metricId });
     await this.itemMetricService.delete({ metricId: this.metricId });
-    if (form.term?.type === 'action' && form.term.itemId) {
-      await this.actionMetricService.add({ actionId: form.term.itemId, metricId: this.metricId });
-    } else if (form.term?.type === 'tag' && form.term.itemId) {
-      await this.tagMetricService.add({ tagId: form.term.itemId, metricId: this.metricId });
-    } else if (form.term?.itemId) {
-      await this.itemMetricService.add({ itemId: form.term.itemId, metricId: this.metricId });
+    if (form.item?.type === 'action' && form.item.itemId) {
+      await this.actionMetricService.add({ actionId: form.item.itemId, metricId: this.metricId });
+    } else if (form.item?.type === 'tag' && form.item.itemId) {
+      await this.tagMetricService.add({ tagId: form.item.itemId, metricId: this.metricId });
+    } else if (form.item?.itemId) {
+      await this.itemMetricService.add({ itemId: form.item.itemId, metricId: this.metricId });
     }
 
     this.toastService.enqueue({ title: 'TK_METRIC_UPDATED_SUCCESSFULLY', type: 'success' });

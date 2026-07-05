@@ -7,7 +7,7 @@ import { IAchievementCreateDto, IAchievementDb } from './models/achievement';
 import { IActivityTagCreateDto, IActivityTagDb } from './models/activity-tag';
 import { IActionTagCreateDto, IActionTagDb } from './models/action-tag';
 import { ITagCreateDto, ITagDb } from './models/tag';
-import { IActionListCreateDto, IActionListDb } from './models/action-list';
+import { IListLinkCreateDto, IListLinkDb } from './models/list-link';
 import { IActionMetricCreateDto, IActionMetricDb } from './models/action-metric';
 import { IActivityItemCreateDto, IActivityItemDb } from './models/activity-item';
 import { IActivityMetricCreateDto, IActivityMetricDb } from './models/activity-metric';
@@ -28,7 +28,7 @@ export class MyAppDatabase extends Dexie {
   actionTags!: Table<IActionTagDb, number, IActionTagCreateDto>;
   activityTags!: Table<IActivityTagDb, number, IActivityTagCreateDto>;
 
-  actionLists!: Table<IActionListDb, number, IActionListCreateDto>;
+  listLinks!: Table<IListLinkDb, number, IListLinkCreateDto>;
   actionMetrics!: Table<IActionMetricDb, number, IActionMetricCreateDto>;
   activityItems!: Table<IActivityItemDb, number, IActivityItemCreateDto>;
   activityMetrics!: Table<IActivityMetricDb, number, IActivityMetricCreateDto>;
@@ -187,6 +187,20 @@ export class MyAppDatabase extends Dexie {
 
     this.version(8).stores({
       appConfig: '++id, &key',
+    });
+
+    this.version(9).stores({
+      listLinks: '++id, listId, [subjectType+subjectId], [listId+subjectType+subjectId]',
+      actionLists: null,
+    }).upgrade(async (tx) => {
+      const oldLinks = await tx.table('actionLists').toArray();
+      for (const link of oldLinks) {
+        await tx.table('listLinks').add({
+          listId: link.listId,
+          subjectType: 'action',
+          subjectId: link.actionId,
+        });
+      }
     });
   }
 }

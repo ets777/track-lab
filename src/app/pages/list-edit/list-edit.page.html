@@ -1,14 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <app-back-button slot="start"></app-back-button>
+    <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_EDIT' | translate }}
       {{ 'TK_LIST' | translate | lowercase }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="updateList()"
-        [disabled]="!isValid"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -17,7 +11,18 @@
     <app-list-form
       #updateFormRef
       [list]="list"
-      (validityChange)="isValid = $event"
     ></app-list-form>
   }
 </ion-content>
+
+<ion-footer>
+  <div class="nf-actionbar">
+    <button
+      type="button"
+      class="nf-submit"
+      (click)="updateList()"
+    >
+      {{ 'TK_SAVE' | translate }}
+    </button>
+  </div>
+</ion-footer>

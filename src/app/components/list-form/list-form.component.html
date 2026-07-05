@@ -1,27 +1,57 @@
-<form [formGroup]="listForm">
-  @if (list?.isBase) {
-    <ion-item (click)="onNameClick()">
-      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-      <ion-input class="input-readonly" [value]="listForm.get('name')?.value | translate" [readonly]="true"></ion-input>
-      <ion-badge slot="end" class="basic-badge">{{ 'TK_BASIC' | translate }}</ion-badge>
-    </ion-item>
-  } @else {
-    <ion-item>
-      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+<form [formGroup]="listForm" class="lf-card">
+  <!-- NAME -->
+  <div class="lf-field">
+    <div class="lf-label">
+      {{ 'TK_NAME' | translate }}
+      @if (list?.isBase) {
+        <ion-badge class="lf-badge">{{ 'TK_BASIC' | translate }}</ion-badge>
+      }
+    </div>
+    @if (list?.isBase) {
       <ion-input
-        appValidationError
+        class="lf-name lf-name--readonly"
+        [value]="listForm.get('name')?.value | translate"
+        [readonly]="true"
+        (click)="onNameClick()"
+      ></ion-input>
+    } @else {
+      <ion-input
+        class="lf-name"
+        [class.lf-name--invalid]="showNameError"
         formControlName="name"
         name="name"
+        [placeholder]="'TK_LIST_NAME_PLACEHOLDER' | translate"
       ></ion-input>
-    </ion-item>
-  }
-  <ion-item>
-    <ion-checkbox formControlName="isHidden" labelPlacement="end">{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
-  </ion-item>
+      @if (showNameError) {
+        <div class="lf-error">
+          @for (msg of nameErrors; track msg) {
+            <div class="lf-error-line">
+              <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
 
-  <app-select-search
-    formControlName="item"
-    label="TK_ITEM"
-    [suggestions]="suggestions"
-  ></app-select-search>
+  <!-- HIDDEN -->
+  <div class="lf-field lf-field--row">
+    <ion-checkbox formControlName="isHidden" labelPlacement="end">
+      <div class="lf-check-title">{{ 'TK_HIDDEN' | translate }}</div>
+    </ion-checkbox>
+  </div>
+
+  <!-- ITEMS -->
+  <div class="lf-field lf-field--last">
+    <div class="lf-label lf-label--items">
+      {{ 'TK_ITEMS' | translate }}
+      <button type="button" class="lf-help" (click)="showItemsTip($event)" aria-label="Help">?</button>
+    </div>
+    <app-list-input
+      formControlName="links"
+      [suggestions]="linkSuggestions"
+      [strict]="true"
+    ></app-list-input>
+  </div>
 </form>

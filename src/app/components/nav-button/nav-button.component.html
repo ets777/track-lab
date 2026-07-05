@@ -1,0 +1,7 @@
+@if (showBack) {
+  <ion-button fill="clear" class="nb" (click)="back()" aria-label="Back">
+    <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+  </ion-button>
+} @else {
+  <ion-menu-button class="nb" [menu]="menu"></ion-menu-button>
+}

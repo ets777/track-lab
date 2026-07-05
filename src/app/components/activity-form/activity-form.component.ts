@@ -35,9 +35,9 @@ import { tagsValidator } from 'src/app/validators/tags.validator';
 import { duplicatedItemsValidator } from 'src/app/validators/duplicated-items.validator';
 import { TagInputComponent } from '../../form-elements/tag-input/tag-input.component';
 import { ListService } from 'src/app/services/list.service';
-import { ActionListService } from 'src/app/services/action-list.service';
+import { ListLinkService } from 'src/app/services/list-link.service';
 import { IList } from 'src/app/db/models/list';
-import { IActionListDb } from 'src/app/db/models/action-list';
+import { IListLinkDb } from 'src/app/db/models/list-link';
 import { ListInputComponent } from '../../form-elements/list-input/list-input.component';
 import { ActionInputComponent } from '../../form-elements/action-input/action-input.component';
 
@@ -87,7 +87,7 @@ export class ActivityFormComponent implements OnInit {
   private itemMetricService = inject(ItemMetricService);
   private itemService = inject(ItemService);
   private listService = inject(ListService);
-  private actionListService = inject(ActionListService);
+  private listLinkService = inject(ListLinkService);
   private allMetrics: IMetric[] = [];
   private allActionMetrics: IActionMetricDb[] = [];
   private allTagMetrics: ITagMetricDb[] = [];
@@ -96,7 +96,7 @@ export class ActivityFormComponent implements OnInit {
   private allTags: ITagDb[] = [];
   private allActions: IActionDb[] = [];
   private allLists: IList[] = [];
-  private allActionLists: IActionListDb[] = [];
+  private allListLinks: IListLinkDb[] = [];
   // listId -> (lowerCaseName -> itemId)
   private itemLookup = new Map<number, Map<string, number>>();
 
@@ -303,7 +303,10 @@ export class ActivityFormComponent implements OnInit {
       this.updateVisibleMetrics();
       this.updateVisibleLists();
     });
-    this.activityForm.get('tags')!.valueChanges.subscribe(() => this.updateVisibleMetrics());
+    this.activityForm.get('tags')!.valueChanges.subscribe(() => {
+      this.updateVisibleMetrics();
+      this.updateVisibleLists();
+    });
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -491,9 +494,9 @@ export class ActivityFormComponent implements OnInit {
     }
 
     const allItems = await this.itemService.getAll();
-    [this.allLists, this.allActionLists] = await Promise.all([
+    [this.allLists, this.allListLinks] = await Promise.all([
       this.listService.getAll(),
-      this.actionListService.getAll(),
+      this.listLinkService.getAll(),
     ]);
 
     this.itemLookup = new Map();
@@ -526,13 +529,25 @@ export class ActivityFormComponent implements OnInit {
       this.allActions.filter(a => selectedActionNames.has(a.name.toLowerCase())).map(a => a.id)
     );
 
-    const actionLinkedIds = new Set(this.allActionLists.map(al => al.listId));
+    const tagsText = this.activityForm.get('tags')?.value ?? '';
+    const selectedTagNames = new Set(
+      tagsText.split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean)
+    );
+    const selectedTagIds = new Set(
+      this.allTags.filter(t => selectedTagNames.has(t.name.toLowerCase())).map(t => t.id)
+    );
+
+    const linkedIds = new Set(this.allListLinks.map(link => link.listId));
+
+    const linkMatchesSelection = (link: IListLinkDb) =>
+      (link.subjectType === 'action' && selectedActionIds.has(link.subjectId))
+      || (link.subjectType === 'tag' && selectedTagIds.has(link.subjectId));
 
     const prevLen = this.standaloneLists.length;
     this.standaloneLists = this.allLists.filter(l => {
       if (l.isHidden) return false;
-      if (!actionLinkedIds.has(l.id)) return true;
-      return this.allActionLists.some(al => al.listId === l.id && selectedActionIds.has(al.actionId));
+      if (!linkedIds.has(l.id)) return true;
+      return this.allListLinks.some(link => link.listId === l.id && linkMatchesSelection(link));
     });
     if (this.standaloneLists.length > 0 && prevLen === 0) {
       this.listsGroupOpen = true;

@@ -1,13 +1,15 @@
-<div class="nf-list-hd">
-  <span class="nf-list-name">{{ translatedLabel }}</span>
-  @if (removable) {
-    <button type="button" class="nf-list-x" (click)="removed.emit()" aria-label="Remove list">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </button>
-  }
-</div>
+@if (label || removable) {
+  <div class="nf-list-hd">
+    <span class="nf-list-name">{{ translatedLabel }}</span>
+    @if (removable) {
+      <button type="button" class="nf-list-x" (click)="removed.emit()" aria-label="Remove list">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    }
+  </div>
+}
 <div class="nf-ti">
   <div class="nf-ti-field">
     @for (chip of chips; track chip; let i = $index) {
@@ -37,13 +39,18 @@
   </div>
   @if (showDropdown) {
     <div class="nf-ti-drop">
-      @for (s of suggestions; track s) {
+      @for (s of filteredSuggestions; track s.name) {
         <button type="button" class="nf-ti-opt"
-                (mousedown)="$event.preventDefault()" (click)="addChip(s, true)">
+                (mousedown)="$event.preventDefault()" (click)="addChip(s.name, true)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          {{ s }}
+          <span class="nf-ti-opt-main">
+            <span class="nf-ti-opt-name">{{ s.name }}</span>
+            @if (s.subtitle) {
+              <span class="nf-ti-opt-sub">{{ s.subtitle }}</span>
+            }
+          </span>
         </button>
       }
     </div>

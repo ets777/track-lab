@@ -109,9 +109,11 @@ ion-title {
     color: var(--tl-text);
 }
 
-ion-menu-button {
-    --padding-start: 16px;
-    --padding-end: 0;
+// Ionic md gives ion-title a built-in 20px start padding. Remove it only when the
+// nav button is present so its two side gaps stay equal; titles without the button
+// keep the default padding.
+app-nav-button + ion-title {
+    padding-inline-start: 0 !important;
 }
 
 ion-tab-bar {
@@ -147,6 +149,10 @@ ion-action-sheet {
         background: var(--tl-surface);
         border-radius: 22px 22px 0 0;
         overflow: hidden;
+
+        &:first-child {
+            padding-top: 20px !important;
+        }
 
         &.action-sheet-group-cancel {
             border-radius: var(--tl-radius);

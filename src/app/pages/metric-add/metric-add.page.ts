@@ -6,13 +6,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MetricForm, MetricFormComponent } from 'src/app/components/metric-form/metric-form.component';
 import { MetricService } from 'src/app/services/metric.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 
 @Component({
   selector: 'app-metric-add',
   templateUrl: './metric-add.page.html',
   styleUrls: ['./metric-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, MetricFormComponent, BackButtonComponent],
+  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, MetricFormComponent, NavButtonComponent],
 })
 export class MetricAddPage {
   private metricService = inject(MetricService);

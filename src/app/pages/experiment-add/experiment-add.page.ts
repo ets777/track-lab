@@ -6,14 +6,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentForm, ExperimentFormComponent } from 'src/app/components/experiment-form/experiment-form.component';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { LogService } from 'src/app/services/log.service';
 
 @Component({
   selector: 'app-experiment-add',
   templateUrl: './experiment-add.page.html',
   styleUrls: ['./experiment-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ExperimentFormComponent, BackButtonComponent],
+  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ExperimentFormComponent, NavButtonComponent],
 })
 export class ExperimentAddPage {
   private experimentService = inject(ExperimentService);

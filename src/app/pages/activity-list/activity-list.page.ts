@@ -5,7 +5,7 @@ import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { addDays, format } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { formatDisplayDate } from 'src/app/functions/date';
 import { IActivity } from 'src/app/db/models/activity';
@@ -16,7 +16,7 @@ import { ListService } from 'src/app/services/list.service';
 import { IList } from 'src/app/db/models/list';
 import { IRule } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
-import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 
@@ -24,7 +24,7 @@ import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-pick
   selector: 'app-activity-list-page',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton, BackButtonComponent, DatePickerComponent],
+  imports: [IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton, NavButtonComponent, DatePickerComponent],
 })
 export class ActivityListPage {
   private activityService = inject(ActivityService);
@@ -114,6 +114,12 @@ export class ActivityListPage {
 
   get displayDate(): string {
     return formatDisplayDate(this.currentDate, this.translate.currentLang || 'en');
+  }
+
+  get displayWeekday(): string {
+    if (!this.currentDate) return '';
+    const d = parseISO(this.currentDate);
+    return isNaN(d.getTime()) ? '' : format(d, 'EEE');
   }
 
   get showBackButton(): boolean {

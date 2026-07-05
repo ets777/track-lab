@@ -2,8 +2,8 @@ import { Component, ViewChild, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-  IonModal, IonBackButton,
+  IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon,
+  IonModal,
   AlertController,
 } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -16,6 +16,7 @@ import {
   createOutline, arrowUpOutline, arrowDownOutline, trashOutline,
   chevronForwardOutline, arrowBackOutline, searchOutline,
 } from 'ionicons/icons';
+import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { DashboardConfigService } from 'src/app/services/dashboard-config.service';
 import { MetricService } from 'src/app/services/metric.service';
 import { ActionService } from 'src/app/services/action.service';
@@ -73,9 +74,10 @@ const WIDGET_ICONS: Record<WidgetType, string> = {
   styleUrl: './dashboard-settings.page.scss',
   imports: [
     FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
-    IonModal, IonBackButton,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon,
+    IonModal,
     TranslateModule,
+    NavButtonComponent,
   ],
 })
 export class DashboardSettingsPage {
