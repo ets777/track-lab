@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.3] - 2026-07-09
+
+### Fixed
+
+- Experiments can now span longer than a month (removed the 31-day period limit)
+
 ## [0.7.2] - 2026-06-22
 
 ### Improved
