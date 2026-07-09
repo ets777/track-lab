@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, Input, forwardRef, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, Input, OnInit, forwardRef, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { TooltipService } from 'src/app/services/tooltip.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -35,7 +35,7 @@ export type PeriodName = 'week' | '2weeks' | 'month';
     },
   ],
 })
-export class DatePeriodInputComponent implements ControlValueAccessor, Validator, AfterViewInit {
+export class DatePeriodInputComponent implements ControlValueAccessor, Validator, OnInit, AfterViewInit {
   private formBuilder = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
@@ -47,6 +47,8 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
   @Input() defaultPeriod: PeriodName = 'week';
   @Input() minDate?: string;
   @Input() maxDate?: string;
+  // Max allowed range length in days. null disables the limit (e.g. experiments).
+  @Input() maxRangeDays: number | null = MAX_DATE_RANGE_DAYS;
 
   public form: ModelFormGroup<DatePeriod>;
   selectedPeriod: PeriodName | null = 'week';
@@ -59,16 +61,20 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
         endDate: ['', [Validators.required, dateFormatValidator]],
       },
       {
-        validators: [
-          dateRangeValidator,
-          maxDateRangeValidator(MAX_DATE_RANGE_DAYS),
-        ]
+        validators: [dateRangeValidator]
       },
     );
 
     this.form.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.onUserInput());
+  }
+
+  ngOnInit() {
+    if (this.maxRangeDays !== null) {
+      this.form.addValidators(maxDateRangeValidator(this.maxRangeDays));
+      this.form.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   ngAfterViewInit() {
