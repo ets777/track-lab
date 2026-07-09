@@ -2,12 +2,6 @@
   <ion-toolbar>
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_EDIT_RULE' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="saveRule()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -19,3 +13,17 @@
     ></app-rule-form>
   }
 </ion-content>
+
+@if (rule) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        (click)="saveRule()"
+      >
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

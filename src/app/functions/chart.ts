@@ -83,3 +83,9 @@ export const BAR_DATASET_STYLE = { borderRadius: 3, borderSkipped: false as cons
 export function barDatasetColor(color: string) {
   return { backgroundColor: color, borderColor: color };
 }
+
+/** Resolve the current theme accent colour from CSS custom properties. */
+export function accentColor(): string {
+  if (typeof getComputedStyle === 'undefined') return '#2563eb';
+  return getComputedStyle(document.documentElement).getPropertyValue('--tl-accent').trim() || '#2563eb';
+}

@@ -1,7 +1,7 @@
 import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { RuleForm, RuleFormComponent } from 'src/app/components/rule-form/rule-form.component';
 import { RuleService } from 'src/app/services/rule.service';
@@ -13,7 +13,7 @@ import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.com
   selector: 'app-rule-add',
   templateUrl: './rule-add.page.html',
   styleUrls: ['./rule-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, RuleFormComponent, NavButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, RuleFormComponent, NavButtonComponent],
 })
 export class RuleAddPage {
   private ruleService = inject(RuleService);
@@ -23,7 +23,7 @@ export class RuleAddPage {
   @ViewChild('addFormRef') addFormRef!: RuleFormComponent;
 
   async addRule(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!(await this.addFormRef.validate())) {
       return;
     }
 
@@ -37,10 +37,6 @@ export class RuleAddPage {
       title: 'TK_RULE_ADDED_SUCCESSFULLY',
       type: 'success',
     });
-  }
-
-  isFormValid() {
-    return this.addFormRef?.ruleForm?.valid;
   }
 
   resetForm() {

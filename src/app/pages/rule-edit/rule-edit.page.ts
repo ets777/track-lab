@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RuleForm, RuleFormComponent } from 'src/app/components/rule-form/rule-form.component';
@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-rule-edit',
   templateUrl: './rule-edit.page.html',
   styleUrls: ['./rule-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, RuleFormComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, RuleFormComponent],
 })
 export class RuleEditPage {
   private route = inject(ActivatedRoute);
@@ -37,12 +37,8 @@ export class RuleEditPage {
     this.cdr.detectChanges();
   }
 
-  isFormValid() {
-    return this.editFormRef?.ruleForm?.valid;
-  }
-
   async saveRule() {
-    if (!this.isFormValid()) return;
+    if (!(await this.editFormRef.validate())) return;
 
     const form = this.editFormRef.ruleForm.value as RuleForm;
     await this.ruleService.updateFromForm(this.ruleId, form);

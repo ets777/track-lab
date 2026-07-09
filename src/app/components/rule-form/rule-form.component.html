@@ -1,67 +1,109 @@
-<form [formGroup]="ruleForm">
-  <div class="rule-preview">
+<form [formGroup]="ruleForm" class="rf-card">
+  <!-- PREVIEW -->
+  <div class="rf-preview">
     @if (previewName) {
-      <ion-text class="rule-preview__name">{{ previewName }}</ion-text>
+      <span class="rf-preview-name">{{ previewName }}</span>
     } @else {
-      <ion-text class="rule-preview__placeholder">{{ 'TK_RULE_NAME_PLACEHOLDER' | translate }}</ion-text>
+      <span class="rf-preview-ph">{{ 'TK_RULE_NAME_PLACEHOLDER' | translate }}</span>
     }
   </div>
-  <app-date-picker
-    appValidationError
-    formControlName="startDate"
-    label="TK_START_DATE"
-  ></app-date-picker>
-  <app-select-search
-    appValidationError
-    formControlName="subject"
-    label="TK_ITEM"
-    [suggestions]="suggestions"
-  ></app-select-search>
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_MEASURE' | translate }}</ion-label>
-    <ion-segment formControlName="metric">
+
+  <!-- START DATE -->
+  <div class="rf-field">
+    <app-date-picker formControlName="startDate" label="TK_START_DATE"></app-date-picker>
+    @if (showError('startDate')) {
+      <div class="rf-error">
+        @for (msg of fieldErrors('startDate'); track msg) {
+          <div class="rf-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ITEM -->
+  <div class="rf-field">
+    <app-select-search formControlName="subject" label="TK_ITEM" [suggestions]="suggestions"></app-select-search>
+    @if (showError('subject')) {
+      <div class="rf-error">
+        @for (msg of fieldErrors('subject'); track msg) {
+          <div class="rf-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- MEASURE -->
+  <div class="rf-field">
+    <div class="rf-label">{{ 'TK_MEASURE' | translate }}</div>
+    <ion-segment class="rf-seg" formControlName="metric">
       <ion-segment-button value="count">{{ 'TK_COUNT' | translate }}</ion-segment-button>
       <ion-segment-button value="duration">{{ 'TK_TOTAL_DURATION' | translate }}</ion-segment-button>
     </ion-segment>
-  </ion-item>
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_CONDITION' | translate }}</ion-label>
-    <ion-segment formControlName="operator">
+  </div>
+
+  <!-- CONDITION -->
+  <div class="rf-field">
+    <div class="rf-label">{{ 'TK_CONDITION' | translate }}</div>
+    <ion-segment class="rf-seg" formControlName="operator">
       <ion-segment-button value=">=">{{ 'TK_AT_LEAST' | translate }}</ion-segment-button>
       <ion-segment-button value="<=">{{ 'TK_AT_MOST' | translate }}</ion-segment-button>
     </ion-segment>
-  </ion-item>
-  <app-count-wheel
-    formControlName="value"
-    [min]="0"
-    [max]="1000"
-    [unitLabel]="unitLabel"
-  ></app-count-wheel>
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_PERIOD' | translate }}</ion-label>
-    <ion-segment formControlName="period">
+  </div>
+
+  <!-- VALUE -->
+  <div class="rf-field">
+    <app-count-wheel formControlName="value" [min]="0" [max]="1000" [unitLabel]="unitLabel"></app-count-wheel>
+    @if (showError('value')) {
+      <div class="rf-error">
+        @for (msg of fieldErrors('value'); track msg) {
+          <div class="rf-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- PERIOD -->
+  <div class="rf-field">
+    <div class="rf-label">{{ 'TK_PERIOD' | translate }}</div>
+    <ion-segment class="rf-seg" formControlName="period">
       <ion-segment-button value="day">{{ 'TK_DAILY' | translate }}</ion-segment-button>
       <ion-segment-button value="week">{{ 'TK_WEEKLY' | translate }}</ion-segment-button>
       <ion-segment-button value="month">{{ 'TK_MONTHLY' | translate }}</ion-segment-button>
     </ion-segment>
-  </ion-item>
-  <ion-item>
+  </div>
+
+  <!-- TIME -->
+  <div class="rf-field" [class.rf-field--last]="!timeEnabled">
     <ion-checkbox formControlName="timeEnabled" labelPlacement="start" justify="space-between">
-      {{ 'TK_TIME' | translate }}
+      <span class="rf-check-title">{{ 'TK_TIME' | translate }}</span>
     </ion-checkbox>
-  </ion-item>
+  </div>
+
   @if (timeEnabled) {
-    <div class="time-row">
-      <app-time-wheel
-        appValidationError
-        formControlName="startTime"
-        label="TK_START_TIME"
-      ></app-time-wheel>
-      <app-time-wheel
-        appValidationError
-        formControlName="endTime"
-        label="TK_END_TIME"
-      ></app-time-wheel>
+    <div class="rf-field rf-field--last">
+      <div class="rf-time-row">
+        <app-time-wheel formControlName="startTime" label="TK_START_TIME"></app-time-wheel>
+        <app-time-wheel formControlName="endTime" label="TK_END_TIME"></app-time-wheel>
+      </div>
+      @if (showError('startTime') || showError('endTime')) {
+        <div class="rf-error">
+          @for (msg of fieldErrors('startTime').concat(fieldErrors('endTime')); track msg) {
+            <div class="rf-error-line">
+              <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+              <span>{{ msg }}</span>
+            </div>
+          }
+        </div>
+      }
     </div>
   }
 </form>

@@ -1,80 +1,123 @@
-<form [formGroup]="metricForm">
-  @if (metric?.isBase) {
-    <ion-item (click)="onNameClick()">
-      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
-      <ion-input class="input-readonly" [value]="metricForm.get('name')?.value" [readonly]="true"></ion-input>
-      <ion-badge slot="end" class="basic-badge">{{ 'TK_BASIC' | translate }}</ion-badge>
-    </ion-item>
-  } @else {
-    <ion-item>
-      <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+<form [formGroup]="metricForm" class="mf-card">
+  <!-- NAME + UNIT -->
+  <div class="mf-row mf-row--name">
+    <div class="mf-col mf-col--name">
+      <div class="mf-label">
+        {{ 'TK_NAME' | translate }}
+        @if (metric?.isBase) {
+          <ion-badge class="mf-badge">{{ 'TK_BASIC' | translate }}</ion-badge>
+        }
+      </div>
+      @if (metric?.isBase) {
+        <ion-input
+          class="mf-name mf-name--readonly"
+          [value]="metricForm.get('name')?.value"
+          [readonly]="true"
+          (click)="onNameClick()"
+        ></ion-input>
+      } @else {
+        <ion-input
+          class="mf-name"
+          [class.mf-name--invalid]="showError('name')"
+          formControlName="name"
+          name="name"
+          [placeholder]="'TK_METRIC_NAME_PLACEHOLDER' | translate"
+        ></ion-input>
+      }
+    </div>
+    <div class="mf-col mf-col--unit">
+      <div class="mf-label">{{ 'TK_UNIT' | translate }}</div>
       <ion-input
-        appValidationError
-        formControlName="name"
-        name="name"
+        class="mf-name mf-unit"
+        formControlName="unit"
+        name="unit"
+        [placeholder]="'TK_UNIT_PLACEHOLDER' | translate"
       ></ion-input>
-    </ion-item>
+    </div>
+  </div>
+  @if (showError('name')) {
+    <div class="mf-error mf-error--name">
+      @for (msg of fieldErrors('name'); track msg) {
+        <div class="mf-error-line">
+          <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+          <span>{{ msg }}</span>
+        </div>
+      }
+    </div>
   }
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_UNIT' | translate }}</ion-label>
-    <ion-input
-      formControlName="unit"
-      name="unit"
-    ></ion-input>
-  </ion-item>
+  <!-- MIN + MAX + STEP -->
+  <div class="mf-row">
+    <div class="mf-col">
+      <div class="mf-label">{{ 'TK_MIN_VALUE' | translate }}</div>
+      <ion-input
+        class="mf-input"
+        [class.mf-input--invalid]="showError('minValue')"
+        formControlName="minValue"
+        name="minValue"
+        inputmode="decimal"
+      ></ion-input>
+    </div>
+    <div class="mf-col">
+      <div class="mf-label">{{ 'TK_MAX_VALUE' | translate }}</div>
+      <ion-input
+        class="mf-input"
+        [class.mf-input--invalid]="showError('maxValue')"
+        formControlName="maxValue"
+        name="maxValue"
+        inputmode="decimal"
+      ></ion-input>
+    </div>
+    <div class="mf-col">
+      <div class="mf-label">{{ 'TK_STEP' | translate }}</div>
+      <ion-select
+        class="mf-select"
+        interface="action-sheet"
+        formControlName="step"
+        [interfaceOptions]="{ cssClass: 'mf-step-sheet' }"
+        [cancelText]="'TK_CANCEL' | translate"
+      >
+        <ion-select-option [value]="1">1</ion-select-option>
+        <ion-select-option [value]="0.1">0.1</ion-select-option>
+        <ion-select-option [value]="0.01">0.01</ion-select-option>
+      </ion-select>
+    </div>
+  </div>
+  @if (showError('minValue') || showError('maxValue') || showError('step')) {
+    <div class="mf-error mf-error--row">
+      @for (msg of rangeErrors(); track msg) {
+        <div class="mf-error-line">
+          <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+          <span>{{ msg }}</span>
+        </div>
+      }
+    </div>
+  }
 
-  <ion-item>
-    <ion-select
-      appValidationError
-      label="{{ 'TK_STEP' | translate }}"
-      label-placement="stacked"
-      formControlName="step"
-    >
-      <ion-select-option [value]="1">1</ion-select-option>
-      <ion-select-option [value]="0.1">0.1</ion-select-option>
-      <ion-select-option [value]="0.01">0.01</ion-select-option>
-    </ion-select>
-  </ion-item>
+  <!-- HIDDEN -->
+  <div class="mf-field mf-field--row">
+    <ion-checkbox formControlName="isHidden" name="isHidden" labelPlacement="end">
+      <div class="mf-check-title">{{ 'TK_HIDDEN' | translate }}</div>
+    </ion-checkbox>
+  </div>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_MIN_VALUE' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      formControlName="minValue"
-      name="minValue"
-    ></ion-input>
-  </ion-item>
+  <!-- SHOW PREVIOUS VALUE -->
+  <div class="mf-field mf-field--row">
+    <ion-checkbox formControlName="showPreviousValue" name="showPreviousValue" labelPlacement="end">
+      <div class="mf-check-title">{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</div>
+    </ion-checkbox>
+  </div>
 
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_MAX_VALUE' | translate }}</ion-label>
-    <ion-input
-      appValidationError
-      formControlName="maxValue"
-      name="maxValue"
-    ></ion-input>
-  </ion-item>
-
-  <ion-item>
-    <ion-checkbox
-      labelPlacement="end"
-      formControlName="isHidden"
-      name="isHidden"
-    >{{ 'TK_HIDDEN' | translate }}</ion-checkbox>
-  </ion-item>
-
-  <ion-item>
-    <ion-checkbox
-      labelPlacement="end"
-      formControlName="showPreviousValue"
-      name="showPreviousValue"
-    >{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</ion-checkbox>
-  </ion-item>
-
-  <app-select-search
-    appValidationError
-    formControlName="item"
-    label="TK_ITEM"
-    [suggestions]="suggestions"
-  ></app-select-search>
+  <!-- ITEMS -->
+  <div class="mf-field mf-field--last">
+    <div class="mf-label mf-label--items">
+      {{ 'TK_ITEMS' | translate }}
+      <button type="button" class="mf-help" (click)="showItemsTip($event)" aria-label="Help">?</button>
+    </div>
+    <app-list-input
+      formControlName="links"
+      [suggestions]="linkSuggestions"
+      [strict]="true"
+    ></app-list-input>
+  </div>
 </form>

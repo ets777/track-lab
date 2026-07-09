@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, inject, OnInit } from '@angular
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
-import { IonItem, IonLabel, IonInput, IonCheckbox, IonSelect, IonSelectOption, IonBadge } from "@ionic/angular/standalone";
+import { IonInput, IonCheckbox, IonSelect, IonSelectOption, IonBadge, IonIcon } from "@ionic/angular/standalone";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IList } from 'src/app/db/models/list';
 import { IMetric } from 'src/app/db/models/metric';
@@ -16,12 +16,12 @@ import { TagMetricService } from 'src/app/services/tag-metric.service';
 import { ItemMetricService } from 'src/app/services/item-metric.service';
 import { IItem } from 'src/app/db/models/item';
 import { filterUniqueElements } from 'src/app/functions/item';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
+import { ListInputComponent, ListInputSuggestion } from 'src/app/form-elements/list-input/list-input.component';
 import { existingEntityValidator } from 'src/app/validators-async/existing-entity.validator';
 import { reservedMetricNameValidator } from 'src/app/validators-async/reserved-metric-name.validator';
 import { reservedPrefixValidator } from 'src/app/validators/reserved-prefix.validator';
 import { ToastService } from 'src/app/services/toast.service';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
+import { TooltipService } from 'src/app/services/tooltip.service';
 
 function setOrClearError(control: AbstractControl | null, key: string, error: ValidationErrors | null) {
   if (!control) return;
@@ -63,14 +63,14 @@ export type MetricForm = {
   minValue: number;
   maxValue: number;
   showPreviousValue: boolean;
-  item: CommonItem;
+  links: string;
 };
 
 @Component({
   selector: 'app-metric-form',
   templateUrl: './metric-form.component.html',
   styleUrls: ['./metric-form.component.scss'],
-  imports: [IonCheckbox, IonLabel, IonItem, FormsModule, ReactiveFormsModule, TranslateModule, IonInput, IonSelect, IonSelectOption, IonBadge, SelectSearchComponent, ValidationErrorDirective],
+  imports: [IonCheckbox, FormsModule, ReactiveFormsModule, TranslateModule, IonInput, IonSelect, IonSelectOption, IonBadge, IonIcon, ListInputComponent],
 })
 export class MetricFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -85,12 +85,15 @@ export class MetricFormComponent implements OnInit {
   private itemMetricService = inject(ItemMetricService);
   private translate = inject(TranslateService);
   private toastService = inject(ToastService);
+  private tooltip = inject(TooltipService);
 
   @Input() metric?: IMetric;
   @Output() validityChange = new EventEmitter<boolean>();
 
   public suggestions: Selectable<CommonItem>[] = [];
+  public linkSuggestions: ListInputSuggestion[] = [];
   public metricForm!: ModelFormGroup<MetricForm>;
+  public submitted = false;
 
   constructor() { }
 
@@ -106,10 +109,10 @@ export class MetricFormComponent implements OnInit {
       unit: [''],
       step: [1],
       minValue: [1, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
-      maxValue: [5, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
+      maxValue: [10, [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]],
       isHidden: [false],
       showPreviousValue: [false],
-      item: [null as CommonItem | null],
+      links: [''],
     }, { validators: minMaxValidator() });
 
     await this.loadSuggestions();
@@ -120,14 +123,12 @@ export class MetricFormComponent implements OnInit {
         this.tagMetricService.getAllWhereEquals('metricId', this.metric.id),
         this.itemMetricService.getAllWhereEquals('metricId', this.metric.id),
       ]);
-      let item: CommonItem | null = null;
-      if (actionMetrics.length > 0) {
-        item = this.suggestions.find(s => s.item.type === 'action' && s.item.itemId === actionMetrics[0].actionId)?.item ?? null;
-      } else if (tagMetrics.length > 0) {
-        item = this.suggestions.find(s => s.item.type === 'tag' && s.item.itemId === tagMetrics[0].tagId)?.item ?? null;
-      } else if (itemMetrics.length > 0) {
-        item = this.suggestions.find(s => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.itemId === itemMetrics[0].itemId)?.item ?? null;
-      }
+
+      const linkedNames = [
+        ...actionMetrics.map((am) => this.findName('action', am.actionId)),
+        ...tagMetrics.map((tm) => this.findName('tag', tm.tagId)),
+        ...itemMetrics.map((im) => this.findItemName(im.itemId)),
+      ].filter((name): name is string => !!name);
 
       this.metricForm.patchValue({
         name: this.metric.isBase
@@ -139,7 +140,7 @@ export class MetricFormComponent implements OnInit {
         maxValue: this.metric.maxValue,
         isHidden: this.metric.isHidden,
         showPreviousValue: this.metric.showPreviousValue ?? false,
-        item,
+        links: linkedNames.join(', '),
       });
     }
 
@@ -156,6 +157,77 @@ export class MetricFormComponent implements OnInit {
       title: 'TK_METRIC_NAME_CANNOT_BE_CHANGED',
       type: 'error',
     });
+  }
+
+  showItemsTip(event: Event) {
+    event.preventDefault();
+    this.tooltip.show(event, this.translate.instant('TK_METRIC_ITEMS_TIP'));
+  }
+
+  /** Validate-on-submit: mark submitted, resolve pending async checks, return validity. */
+  async validate(): Promise<boolean> {
+    this.submitted = true;
+    this.metricForm.markAllAsTouched();
+
+    if (this.metricForm.pending) {
+      await new Promise<void>((resolve) => {
+        const sub = this.metricForm.statusChanges.subscribe((status) => {
+          if (status !== 'PENDING') {
+            sub.unsubscribe();
+            resolve();
+          }
+        });
+      });
+    }
+
+    return this.metricForm.valid;
+  }
+
+  /** Show a field's validation sign only after submit was attempted. */
+  showError(name: string): boolean {
+    return this.submitted && !!this.metricForm?.get(name)?.invalid;
+  }
+
+  /** Translate a single control's errors into user-facing messages. */
+  fieldErrors(name: string): string[] {
+    return this.messagesFor(this.metricForm?.get(name)?.errors ?? null);
+  }
+
+  /** Combined messages for the min / max / step range block. */
+  rangeErrors(): string[] {
+    const merged = {
+      ...this.metricForm?.get('minValue')?.errors,
+      ...this.metricForm?.get('maxValue')?.errors,
+      ...this.metricForm?.get('step')?.errors,
+    };
+    return this.messagesFor(Object.keys(merged).length ? merged : null);
+  }
+
+  private messagesFor(errors: ValidationErrors | null): string[] {
+    if (!errors) return [];
+
+    const messages: string[] = [];
+    if (errors['required']) messages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
+    if (errors['pattern']) messages.push(this.translate.instant('TK_VALUE_MUST_BE_A_NUMBER'));
+    for (const key of Object.keys(errors)) {
+      if (errors[key]?.message) {
+        messages.push(this.translate.instant(errors[key].message, errors[key].params));
+      }
+    }
+
+    return [...new Set(messages)];
+  }
+
+  /** Resolve the entered comma-separated names back to their linked subjects. */
+  getResolvedLinks(): CommonItem[] {
+    return (this.metricForm.get('links')?.value ?? '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((name) => this.suggestions.find(
+        (s) => s.title.toLowerCase() === name.toLowerCase(),
+      )?.item)
+      .filter((item): item is CommonItem => !!item);
   }
 
   async loadSuggestions() {
@@ -194,18 +266,35 @@ export class MetricFormComponent implements OnInit {
         : this.translate.instant(item.type),
       item,
     }));
+    this.linkSuggestions = this.suggestions.map((s) => ({
+      name: s.title,
+      subtitle: s.subtitle,
+    }));
+  }
+
+  private findName(type: 'action' | 'tag', itemId: number): string | undefined {
+    return this.suggestions.find((s) => s.item.type === type && s.item.itemId === itemId)?.title;
+  }
+
+  private findItemName(itemId: number): string | undefined {
+    return this.suggestions.find(
+      (s) => s.item.type !== 'action' && s.item.type !== 'tag' && s.item.itemId === itemId,
+    )?.title;
   }
 
   setDefaultData() {
+    this.submitted = false;
     this.metricForm.reset({
       name: '',
       unit: '',
       step: 1,
-      minValue: 0,
+      minValue: 1,
       maxValue: 10,
       isHidden: false,
-      item: null,
+      showPreviousValue: false,
+      links: '',
     });
+    this.metricForm.markAsUntouched();
   }
 
   getItemType(item: IItem) {

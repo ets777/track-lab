@@ -158,7 +158,7 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   async ngAfterViewInit() {
-    // DatePeriodInputComponent emits via valueChanges for preset periods (week/2weeks/month),
+    // DatePeriodInputComponent emits via valueChanges for preset periods (week/month),
     // triggering loadStats automatically. For custom periods it does not emit, so we trigger here.
     if (this.filterForm.valid && !this.lastLoadedState) {
       await this.loadStats();

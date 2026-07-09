@@ -15,7 +15,7 @@ import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { dateRangeValidator } from 'src/app/validators/date-range.validator';
 import { MAX_DATE_RANGE_DAYS, maxDateRangeValidator } from 'src/app/validators/max-date-range.validator';
 
-export type PeriodName = 'week' | '2weeks' | 'month';
+export type PeriodName = 'week' | 'month';
 
 @Component({
   selector: 'app-date-period-input',
@@ -135,17 +135,6 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
         newStartDate = format(addDays(new Date(this.maxDate), -6), 'yyyy-MM-dd');
         if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
       }
-    } else if (this.selectedPeriod === '2weeks') {
-      newStartDate = format(addDays(new Date(startDate), shift * 14), 'yyyy-MM-dd');
-      newEndDate = format(addDays(new Date(endDate), shift * 14), 'yyyy-MM-dd');
-      if (this.minDate && newStartDate < this.minDate) {
-        newStartDate = this.minDate;
-        newEndDate = format(addDays(new Date(this.minDate), 13), 'yyyy-MM-dd');
-      } else if (this.maxDate && newEndDate > this.maxDate) {
-        newEndDate = this.maxDate;
-        newStartDate = format(addDays(new Date(this.maxDate), -13), 'yyyy-MM-dd');
-        if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
-      }
     } else if (this.selectedPeriod === 'month') {
       newStartDate = format(addMonths(new Date(startDate), shift), 'yyyy-MM-dd');
       newEndDate = format(addMonths(new Date(endDate), shift), 'yyyy-MM-dd');
@@ -186,8 +175,6 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
 
     if (this.selectedPeriod === 'week') {
       startDate = format(addDays(new Date(endDate), -6), 'yyyy-MM-dd');
-    } else if (this.selectedPeriod === '2weeks') {
-      startDate = format(addDays(new Date(endDate), -13), 'yyyy-MM-dd');
     } else {
       startDate = format(addMonths(new Date(endDate), -1), 'yyyy-MM-dd');
     }

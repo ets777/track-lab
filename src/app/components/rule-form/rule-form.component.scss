@@ -1,22 +1,137 @@
-.rule-preview {
-  padding: 16px;
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+.rf-card {
+  display: block;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 4px var(--tl-pad);
+}
 
-  &__name {
-    font-size: 1.1rem;
-    font-weight: 500;
-  }
+.rf-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
 
-  &__placeholder {
-    color: var(--ion-color-medium);
-    font-style: italic;
+  &--last {
+    border-bottom: none;
   }
 }
 
-.time-row {
+.rf-label {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 10px;
+}
+
+// ── Preview banner ──
+.rf-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 14px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--tl-line);
+}
+
+.rf-preview-name {
+  font-family: var(--tl-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tl-text);
+}
+
+.rf-preview-ph {
+  font-size: 15px;
+  color: var(--tl-text-faint);
+}
+
+// ── Shared wheel/picker/select elements: strip the native ion-item chrome ──
+.rf-card ::ng-deep {
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --min-height: auto;
+    --border-width: 0;
+    --inner-border-width: 0;
+  }
+
+  app-date-picker .dp-trigger {
+    padding: 0;
+    border-bottom: none;
+  }
+}
+
+// ── Segmented control — clinical skin ──
+.rf-seg {
+  --background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius-sm);
+  padding: 3px;
+
+  ion-segment-button {
+    --background-checked: var(--tl-surface);
+    --indicator-color: var(--tl-surface);
+    --color: var(--tl-text-dim);
+    --color-checked: var(--tl-text);
+    --border-radius: 8px;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    min-height: 34px;
+    font-family: var(--tl-font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-transform: none;
+  }
+}
+
+// ── Time checkbox row ──
+.rf-check-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
+}
+
+ion-checkbox {
+  --size: 22px;
+  width: 100%;
+}
+
+.rf-time-row {
+  display: flex;
+  gap: 18px;
+
+  app-time-wheel {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+// ── Errors ──
+.rf-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.rf-error-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
 }

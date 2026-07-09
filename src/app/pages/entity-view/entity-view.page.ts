@@ -7,7 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { addDays, format } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { IActivity } from 'src/app/db/models/activity';
 import { ITag } from 'src/app/db/models/tag';
 import { ActionService } from 'src/app/services/action.service';
@@ -24,6 +24,7 @@ import { TagsComponent } from 'src/app/components/tags/tags.component';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
+import { styledBarChartOptions, BAR_DATASET_STYLE, barDatasetColor, accentColor } from 'src/app/functions/chart';
 import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 import { IRule } from 'src/app/db/models/rule';
@@ -71,6 +72,7 @@ export class EntityViewPage {
   activitiesGroupedByDate: { date: string; activities: IActivity[] }[] = [];
   rules: IRule[] = [];
   chartData: ChartConfiguration<'bar'>['data'] | undefined = undefined;
+  chartOptions: ChartConfiguration<'bar'>['options'] = styledBarChartOptions();
 
   filterForm = this.formBuilder.group({ datePeriod: [null as any] });
 
@@ -324,9 +326,13 @@ export class EntityViewPage {
     const timeLabel = this.translate.instant('TK_TIME') + ' ' + units;
 
     this.chartData = {
-      labels: dates,
-      datasets: [{ data: durationData, label: timeLabel }],
+      labels: dates.map(date => this.formatGroupDate(date)),
+      datasets: [{ data: durationData, label: timeLabel, ...BAR_DATASET_STYLE, ...barDatasetColor(accentColor()) }],
     };
+  }
+
+  formatGroupDate(date: string): string {
+    return format(parseISO(date), 'MMM d');
   }
 
   getTimeString(minutes: number) {

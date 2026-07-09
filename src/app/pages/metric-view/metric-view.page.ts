@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
@@ -21,12 +21,15 @@ import { ItemService } from 'src/app/services/item.service';
 import { IMetric } from 'src/app/db/models/metric';
 import { CommonItem } from 'src/app/types/selectable';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
+import { LogService } from 'src/app/services/log.service';
+import { styledLineChartOptions, LINE_DATASET_STYLE, lineDatasetColor, accentColor } from 'src/app/functions/chart';
 
 @Component({
   selector: 'app-metric-view',
   templateUrl: './metric-view.page.html',
   styleUrls: ['./metric-view.page.scss'],
-  imports: [IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, NavButtonComponent, DatePeriodInputComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, NavButtonComponent, DatePeriodInputComponent, DefaultSkeletonComponent],
 })
 export class MetricViewPage {
   private route = inject(ActivatedRoute);
@@ -44,15 +47,14 @@ export class MetricViewPage {
   private itemService = inject(ItemService);
   private translate = inject(TranslateService);
   private actionSheetCtrl = inject(ActionSheetController);
+  private logService = inject(LogService);
 
+  isLoading = true;
   metricId: number;
   metric?: IMetric;
   linkedItem?: CommonItem;
   chartData?: ChartConfiguration<'line'>['data'];
-  chartOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    scales: { y: { beginAtZero: false } },
-  };
+  chartOptions: ChartConfiguration<'line'>['options'] = styledLineChartOptions();
   filterForm = this.formBuilder.group({ datePeriod: [null as any] });
 
   constructor() {
@@ -65,8 +67,20 @@ export class MetricViewPage {
   }
 
   async ionViewDidEnter() {
-    this.metric = await this.metricService.getById(this.metricId);
-    await this.loadLinkedItem();
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
+    try {
+      this.metric = await this.metricService.getById(this.metricId);
+      await this.loadLinkedItem();
+    } catch (error) {
+      await this.logService.error('MetricViewPage.ionViewDidEnter', error);
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+    } finally {
+      this.isLoading = false;
+    }
+    if (this.filterForm.valid) {
+      await this.loadChart();
+    }
   }
 
   async loadLinkedItem() {
@@ -164,7 +178,13 @@ export class MetricViewPage {
 
     this.chartData = {
       labels: dates,
-      datasets: [{ data: dataPoints as (number | null)[], label: metricName, spanGaps: true }],
+      datasets: [{
+        data: dataPoints as (number | null)[],
+        label: metricName,
+        spanGaps: true,
+        ...LINE_DATASET_STYLE,
+        ...lineDatasetColor(accentColor()),
+      }],
     };
   }
 }

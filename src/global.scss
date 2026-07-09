@@ -213,6 +213,38 @@ ion-action-sheet {
     }
 }
 
+// ── Step select action sheet (metric form) ──
+ion-action-sheet.mf-step-sheet {
+    --background: var(--tl-surface);
+
+    // no header → hide the empty title strip that draws a top border line
+    .action-sheet-title {
+        display: none;
+    }
+
+    // drop the per-button separator lines (incl. the selected option's dark line)
+    .action-sheet-button::after {
+        display: none !important;
+    }
+
+    .action-sheet-group {
+        border-top: none;
+
+        &:first-child {
+            border-top: none;
+            padding-top: 8px !important;
+        }
+    }
+
+    // white area around the cancel button (was grey)
+    .action-sheet-group-cancel {
+        background: var(--tl-surface);
+        border: none;
+        margin: 0;
+        border-radius: 0;
+    }
+}
+
 // ── Clinical alert ──
 .tl-alert {
     .alert-wrapper {

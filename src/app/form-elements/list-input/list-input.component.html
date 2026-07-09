@@ -22,7 +22,7 @@
       #inputEl
       class="nf-ti-input"
       [value]="inputText"
-      [placeholder]="chips.length === 0 ? ('TK_ADD_ITEM' | translate) : 'Add…'"
+      [placeholder]="chips.length === 0 ? ('TK_ADD_ITEM' | translate) : ('TK_ADD_MORE' | translate)"
       (input)="onTextInput($event)"
       (keydown)="onKeydown($event)"
       (focus)="onFocus()"

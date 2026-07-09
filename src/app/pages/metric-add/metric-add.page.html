@@ -2,15 +2,22 @@
   <ion-toolbar>
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_NEW_METRIC' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="addMetric()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_ADD' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <app-metric-form #addFormRef></app-metric-form>
 </ion-content>
+
+<ion-footer>
+  <div class="nf-actionbar">
+    <button
+      type="button"
+      class="nf-submit"
+      (click)="addMetric()"
+    >
+      <span class="nf-submit-plus">+</span>
+      {{ 'TK_ADD' | translate }}
+    </button>
+  </div>
+</ion-footer>

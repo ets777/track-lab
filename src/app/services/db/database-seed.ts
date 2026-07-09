@@ -400,6 +400,38 @@ export async function seedDatabase(sqlite: SQLiteService) {
     await sqlite.execute(`INSERT OR REPLACE INTO activityItems (activityId, itemId) VALUES ${recItems.join(',')};`);
   }
 
+  // ── Item view demo: records for otherwise-unused items ────────────────────
+  // Items 2 (Sad), 5 (Anxious), 6 (Home), 7 (Office), 8 (Gym) have no activity
+  // records elsewhere, so their item view pages would be empty. Attach a handful
+  // of recent activities to each so every item opens with a populated list+chart.
+  // Places items (6-8) use Meditation (action 2, linked to Places list);
+  // emotion items (2, 5) use Reading (action 3).
+  {
+    const demo: { item: number; action: number; days: number[] }[] = [
+      { item: 2, action: 3, days: [1, 4, 6, 9, 12] },  // Sad
+      { item: 5, action: 3, days: [2, 5, 8, 11, 13] }, // Anxious
+      { item: 6, action: 2, days: [0, 3, 6, 10, 14] }, // Home
+      { item: 7, action: 2, days: [1, 3, 7, 9, 12] },  // Office
+      { item: 8, action: 2, days: [2, 4, 8, 11, 13] }, // Gym
+    ];
+
+    const dActs: string[] = [];
+    const dActions: string[] = [];
+    const dItems: string[] = [];
+    let did = 800;
+    for (const { item, action, days } of demo) {
+      for (const day of days) {
+        dActs.push(`(${did}, '${d(day)}', '12:00', '12:30')`);
+        dActions.push(`(${did}, ${action})`);
+        dItems.push(`(${did}, ${item})`);
+        did++;
+      }
+    }
+    await sqlite.execute(`INSERT OR REPLACE INTO activities (id, date, startTime, endTime) VALUES ${dActs.join(',')};`);
+    await sqlite.execute(`INSERT OR REPLACE INTO activityActions (activityId, actionId) VALUES ${dActions.join(',')};`);
+    await sqlite.execute(`INSERT OR REPLACE INTO activityItems (activityId, itemId) VALUES ${dItems.join(',')};`);
+  }
+
   // ── Rules 1–8 ─────────────────────────────────────────────────────────────
   await sqlite.run(
     `INSERT OR REPLACE INTO rules (id, subjectType, subjectId, metric, operator, value, period, startDate) VALUES

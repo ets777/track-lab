@@ -71,14 +71,12 @@ export class StatsItemPage {
       return savedPeriodJson ? JSON.parse(savedPeriodJson) : null;
     }
 
-    const periodType = (periodTypeStr ?? 'week') as 'week' | '2weeks' | 'month';
+    const periodType = (periodTypeStr ?? 'week') as 'week' | 'month';
     const savedPeriod = savedPeriodJson ? JSON.parse(savedPeriodJson) as DatePeriod : null;
     const endDate = savedPeriod?.endDate ?? format(new Date(), 'yyyy-MM-dd');
 
     let startDate: string;
-    if (periodType === '2weeks') {
-      startDate = format(addDays(new Date(endDate), -13), 'yyyy-MM-dd');
-    } else if (periodType === 'month') {
+    if (periodType === 'month') {
       startDate = format(addMonths(new Date(endDate), -1), 'yyyy-MM-dd');
     } else {
       startDate = format(addDays(new Date(endDate), -6), 'yyyy-MM-dd');

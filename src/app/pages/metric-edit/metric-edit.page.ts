@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MetricForm, MetricFormComponent } from 'src/app/components/metric-form/metric-form.component';
@@ -19,7 +19,7 @@ import { AlertController } from '@ionic/angular';
   selector: 'app-metric-edit',
   templateUrl: './metric-edit.page.html',
   styleUrls: ['./metric-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, MetricFormComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, MetricFormComponent],
 })
 export class MetricEditPage {
   private route = inject(ActivatedRoute);
@@ -38,7 +38,6 @@ export class MetricEditPage {
 
   metricId: number;
   metric?: IMetric;
-  isValid = false;
 
   constructor() {
     this.metricId = Number(this.route.snapshot.paramMap.get('id'));
@@ -50,7 +49,7 @@ export class MetricEditPage {
   }
 
   async saveMetric() {
-    if (!this.isValid) return;
+    if (!(await this.editFormRef.validate())) return;
 
     const form = this.editFormRef.metricForm.value as MetricForm;
     const newMin = Number(form.minValue);
@@ -91,13 +90,7 @@ export class MetricEditPage {
     await this.actionMetricService.delete({ metricId: this.metricId });
     await this.tagMetricService.delete({ metricId: this.metricId });
     await this.itemMetricService.delete({ metricId: this.metricId });
-    if (form.item?.type === 'action' && form.item.itemId) {
-      await this.actionMetricService.add({ actionId: form.item.itemId, metricId: this.metricId });
-    } else if (form.item?.type === 'tag' && form.item.itemId) {
-      await this.tagMetricService.add({ tagId: form.item.itemId, metricId: this.metricId });
-    } else if (form.item?.itemId) {
-      await this.itemMetricService.add({ itemId: form.item.itemId, metricId: this.metricId });
-    }
+    await this.metricService.linkItems(this.metricId, this.editFormRef.getResolvedLinks());
 
     this.toastService.enqueue({ title: 'TK_METRIC_UPDATED_SUCCESSFULLY', type: 'success' });
     await this.router.navigate(['/metric']);

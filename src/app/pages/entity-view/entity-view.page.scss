@@ -1,0 +1,131 @@
+// ── Entity detail (action / tag / item) — clinical skin ─────────────────────
+
+.av-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-gap);
+}
+
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
+}
+
+.tl-widget-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.tl-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+}
+
+// keep the filter control flush inside the card
+form {
+  margin: 0;
+}
+
+// ── Stats ──
+
+.av-metrics {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 6px;
+}
+
+.av-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--tl-line);
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.av-metric-k {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tl-text-dim);
+  letter-spacing: -0.005em;
+}
+
+.av-metric-v {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-family: var(--tl-font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tl-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+canvas {
+  margin-top: 4px;
+}
+
+.av-empty {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--tl-text-faint);
+  letter-spacing: -0.005em;
+}
+
+// ── Activities — grouped by day ──
+
+.tl-agenda-grp {
+  margin-top: 18px;
+
+  &:first-child {
+    margin-top: 4px;
+  }
+}
+
+.tl-agenda-hd {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--tl-line);
+  }
+}
+
+.tl-agenda-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tl-text);
+}
+
+// ── Item view: borderless activity cards — keep only the left rail ──
+
+.entity-view--item ::ng-deep app-activity-list {
+  .tl-eg-card,
+  .tl-eg-row[data-status] .tl-eg-card {
+    background: transparent;
+    border-color: transparent;
+  }
+}

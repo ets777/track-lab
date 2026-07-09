@@ -5,6 +5,7 @@ import { ActionMetricService } from './action-metric.service';
 import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
 import { HookService } from './hook.service';
+import { CommonItem } from '../types/selectable';
 
 @Injectable({ providedIn: 'root' })
 export class MetricService extends DatabaseService<'metrics'> {
@@ -35,7 +36,7 @@ export class MetricService extends DatabaseService<'metrics'> {
     return all.filter((m) => !m.isHidden && !linkedIds.has(m.id));
   }
 
-  async addFromForm(form: MetricForm): Promise<number> {
+  async addFromForm(form: MetricForm, links: CommonItem[] = []): Promise<number> {
     const metricId = await this.add({
       name: form.name,
       isHidden: form.isHidden ?? false,
@@ -46,16 +47,24 @@ export class MetricService extends DatabaseService<'metrics'> {
       showPreviousValue: form.showPreviousValue ?? false,
     });
 
-    if (form.item?.type === 'action' && form.item.itemId) {
-      await this.actionMetricService.add({ actionId: form.item.itemId, metricId });
-    } else if (form.item?.type === 'tag' && form.item.itemId) {
-      await this.tagMetricService.add({ tagId: form.item.itemId, metricId });
-    } else if (form.item?.itemId) {
-      await this.itemMetricService.add({ itemId: form.item.itemId, metricId });
-    }
+    await this.linkItems(metricId, links);
 
     this.hookService.emit({ type: 'metric.added', payload: {} });
 
     return metricId;
+  }
+
+  /** Attach the resolved subjects (actions / tags / items) to a metric. */
+  async linkItems(metricId: number, links: CommonItem[]): Promise<void> {
+    for (const link of links) {
+      if (!link.itemId) continue;
+      if (link.type === 'action') {
+        await this.actionMetricService.add({ actionId: link.itemId, metricId });
+      } else if (link.type === 'tag') {
+        await this.tagMetricService.add({ tagId: link.itemId, metricId });
+      } else {
+        await this.itemMetricService.add({ itemId: link.itemId, metricId });
+      }
+    }
   }
 }

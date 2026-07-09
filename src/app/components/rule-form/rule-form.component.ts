@@ -1,7 +1,7 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IonItem, IonLabel, IonSegment, IonSegmentButton, IonText, IonCheckbox } from '@ionic/angular/standalone';
+import { IonSegment, IonSegmentButton, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
 import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
 import { CountWheelComponent } from 'src/app/form-elements/count-wheel/count-wheel.component';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
@@ -14,7 +14,6 @@ import { IItem } from 'src/app/db/models/item';
 import { IList } from 'src/app/db/models/list';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
@@ -40,9 +39,9 @@ export type RuleForm = {
   templateUrl: './rule-form.component.html',
   styleUrls: ['./rule-form.component.scss'],
   imports: [
-    IonItem, IonLabel, IonSegment, IonSegmentButton, IonText, IonCheckbox,
+    IonSegment, IonSegmentButton, IonCheckbox, IonIcon,
     FormsModule, ReactiveFormsModule, TranslateModule,
-    SelectSearchComponent, ValidationErrorDirective, TimeWheelComponent, CountWheelComponent, DatePickerComponent,
+    SelectSearchComponent, TimeWheelComponent, CountWheelComponent, DatePickerComponent,
   ],
 })
 export class RuleFormComponent implements OnInit {
@@ -57,6 +56,7 @@ export class RuleFormComponent implements OnInit {
 
   private lists: IList[] = [];
   public suggestions: Selectable<CommonItem>[] = [];
+  public submitted = false;
 
   public ruleForm!: ModelFormGroup<RuleForm>;
 
@@ -188,7 +188,39 @@ export class RuleFormComponent implements OnInit {
     return !!this.ruleForm?.get('timeEnabled')?.value;
   }
 
+  /** Validate-on-submit: mark submitted, mark all touched, return validity. */
+  async validate(): Promise<boolean> {
+    this.submitted = true;
+    this.ruleForm.markAllAsTouched();
+    return this.ruleForm.valid;
+  }
+
+  /** Show a field's validation error only after submit was attempted. */
+  showError(name: string): boolean {
+    return this.submitted && !!this.ruleForm?.get(name)?.invalid;
+  }
+
+  /** Translate a single control's errors into user-facing messages. */
+  fieldErrors(name: string): string[] {
+    return this.messagesFor(this.ruleForm?.get(name)?.errors ?? null);
+  }
+
+  private messagesFor(errors: ValidationErrors | null): string[] {
+    if (!errors) return [];
+
+    const messages: string[] = [];
+    if (errors['required']) messages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
+    if (errors['pattern']) messages.push(this.translate.instant('TK_VALUE_MUST_BE_A_NUMBER'));
+    for (const key of Object.keys(errors)) {
+      if (errors[key]?.message) {
+        messages.push(this.translate.instant(errors[key].message, errors[key].params));
+      }
+    }
+    return [...new Set(messages)];
+  }
+
   setDefaultData() {
+    this.submitted = false;
     this.ruleForm.patchValue({
       startDate: new Date().toISOString().slice(0, 10),
       subject: null,

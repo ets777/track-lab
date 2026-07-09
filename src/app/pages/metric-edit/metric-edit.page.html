@@ -2,17 +2,25 @@
   <ion-toolbar>
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_EDIT_METRIC' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="saveMetric()"
-        [disabled]="!isValid"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   @if (metric) {
-    <app-metric-form #editFormRef [metric]="metric" (validityChange)="isValid = $event"></app-metric-form>
+    <app-metric-form #editFormRef [metric]="metric"></app-metric-form>
   }
 </ion-content>
+
+@if (metric) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        (click)="saveMetric()"
+      >
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

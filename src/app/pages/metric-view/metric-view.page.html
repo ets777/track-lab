@@ -11,67 +11,77 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form [formGroup]="filterForm">
-    <app-date-period-input formControlName="datePeriod" storageKey="metric-view"></app-date-period-input>
-  </form>
+  @if (isLoading) {
+    <app-default-skeleton></app-default-skeleton>
+  } @else {
+    <div class="av-screen">
+      <section class="tl-widget av-block">
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_PERIOD' | translate }}</span></div>
+        <form [formGroup]="filterForm">
+          <app-date-period-input formControlName="datePeriod" storageKey="metric-view"></app-date-period-input>
+        </form>
+      </section>
 
-  @if (chartData) {
-    <canvas
-      baseChart
-      [data]="chartData"
-      [options]="chartOptions"
-      type="line"
-    ></canvas>
-  }
-
-  @if (metric) {
-    <ion-list>
-      @if (linkedItem) {
-        <ion-item>
-          <ion-label>{{ 'TK_ITEM' | translate }}</ion-label>
-          <ion-note slot="end">{{ linkedItem.name }}</ion-note>
-        </ion-item>
+      @if (chartData) {
+        <section class="tl-widget av-block">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_STATS' | translate }}</span></div>
+          <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
+        </section>
       }
 
-      @if (metric.unit) {
-        <ion-item>
-          <ion-label>{{ 'TK_UNIT' | translate }}</ion-label>
-          <ion-note slot="end">{{ metric.unit }}</ion-note>
-        </ion-item>
-      }
+      @if (metric) {
+        <section class="tl-widget av-block">
+          <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_DETAILS' | translate }}</span></div>
+          <div class="av-metrics">
+            @if (linkedItem) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_ITEM' | translate }}</span>
+                <span class="av-metric-v">{{ linkedItem.name }}</span>
+              </div>
+            }
 
-      <ion-item>
-        <ion-label>{{ 'TK_STEP' | translate }}</ion-label>
-        <ion-note slot="end">{{ metric.step }}</ion-note>
-      </ion-item>
+            @if (metric.unit) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_UNIT' | translate }}</span>
+                <span class="av-metric-v">{{ metric.unit }}</span>
+              </div>
+            }
 
-      @if (metric.minValue != null) {
-        <ion-item>
-          <ion-label>{{ 'TK_MIN_VALUE' | translate }}</ion-label>
-          <ion-note slot="end">{{ metric.minValue }}</ion-note>
-        </ion-item>
-      }
+            <div class="av-metric">
+              <span class="av-metric-k">{{ 'TK_STEP' | translate }}</span>
+              <span class="av-metric-v">{{ metric.step }}</span>
+            </div>
 
-      @if (metric.maxValue != null) {
-        <ion-item>
-          <ion-label>{{ 'TK_MAX_VALUE' | translate }}</ion-label>
-          <ion-note slot="end">{{ metric.maxValue }}</ion-note>
-        </ion-item>
-      }
+            @if (metric.minValue != null) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_MIN_VALUE' | translate }}</span>
+                <span class="av-metric-v">{{ metric.minValue }}</span>
+              </div>
+            }
 
-      @if (metric.isHidden) {
-        <ion-item>
-          <ion-label>{{ 'TK_HIDDEN' | translate }}</ion-label>
-          <ion-note slot="end">{{ 'TK_YES' | translate }}</ion-note>
-        </ion-item>
-      }
+            @if (metric.maxValue != null) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_MAX_VALUE' | translate }}</span>
+                <span class="av-metric-v">{{ metric.maxValue }}</span>
+              </div>
+            }
 
-      @if (metric.showPreviousValue) {
-        <ion-item>
-          <ion-label>{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</ion-label>
-          <ion-note slot="end">{{ 'TK_YES' | translate }}</ion-note>
-        </ion-item>
+            @if (metric.isHidden) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_HIDDEN' | translate }}</span>
+                <span class="av-metric-v">{{ 'TK_YES' | translate }}</span>
+              </div>
+            }
+
+            @if (metric.showPreviousValue) {
+              <div class="av-metric">
+                <span class="av-metric-k">{{ 'TK_SHOW_PREVIOUS_VALUE' | translate }}</span>
+                <span class="av-metric-v">{{ 'TK_YES' | translate }}</span>
+              </div>
+            }
+          </div>
+        </section>
       }
-    </ion-list>
+    </div>
   }
 </ion-content>

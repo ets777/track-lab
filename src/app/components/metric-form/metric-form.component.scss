@@ -1,12 +1,211 @@
-.input-readonly {
-  opacity: 0.3;
+.mf-card {
+  display: block;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 4px var(--tl-pad);
 }
 
-.basic-badge {
-  --background: #999;
-  --color: #fff;
-  --padding-start: 10px;
-  --padding-end: 10px;
-  border-radius: 999px;
+.mf-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--last {
+    border-bottom: none;
+  }
+}
+
+// ── Inputs side by side ──
+.mf-row {
+  display: flex;
+  gap: 18px;
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--name {
+    align-items: flex-start;
+  }
+}
+
+.mf-col {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+// Name takes the row, unit a quarter of it
+.mf-col--name {
+  flex: 1 1 auto;
+}
+
+.mf-col--unit {
+  flex: 0 0 25%;
+  min-width: 0;
+}
+
+.mf-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 4px;
+
+  &--items {
+    margin-bottom: 12px;
+  }
+}
+
+.mf-help {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--tl-line-2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tl-text-dim);
   font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tl-surface-2);
+    color: var(--tl-text);
+  }
+}
+
+.mf-badge {
+  --background: var(--tl-surface-2);
+  --color: var(--tl-text-dim);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// ── Big title-style name input ──
+.mf-name {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --highlight-height: 0;
+  --placeholder-color: var(--tl-text-faint);
+  --placeholder-opacity: 1;
+  font-family: var(--tl-font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tl-text);
+
+  &--readonly {
+    opacity: 0.4;
+  }
+
+  &--invalid {
+    --color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+  }
+}
+
+// ── Standard clinical inputs (unit / min / max) ──
+.mf-input {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --highlight-height: 0;
+  --placeholder-color: var(--tl-text-faint);
+  --placeholder-opacity: 1;
+  font-family: var(--tl-font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tl-text);
+
+  &--invalid {
+    --color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+  }
+}
+
+// ── Step select styled like a plain field, no bottom border ──
+.mf-select {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --border-color: transparent;
+  --highlight-height: 0;
+  min-height: auto;
+  padding-top: 9px;
+  border: none;
+  font-family: var(--tl-font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tl-text);
+
+  &::part(icon) {
+    color: var(--tl-text-dim);
+    opacity: 1;
+  }
+
+  &::part(container) {
+    border: none;
+  }
+}
+
+.mf-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+
+  &--row {
+    margin-top: -6px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--tl-line);
+  }
+
+  &--name {
+    margin-top: 8px;
+    padding-bottom: 12px;
+  }
+}
+
+.mf-error-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
+}
+
+.mf-field--row {
+  ion-checkbox {
+    --size: 22px;
+    width: 100%;
+  }
+}
+
+.mf-check-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
 }
