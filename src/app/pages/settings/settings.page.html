@@ -8,129 +8,124 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <div class="av-screen">
 
-  <h2>{{ 'TK_LANGUAGE' | translate }}</h2>
-  <ion-list>
-    <ion-item (click)="changeLanguage('en')">
-      {{ 'TK_ENGLISH' | translate }}
-      @if (getLanguage() === 'en') {
-        <ion-icon
-          class="check"
-          src="assets/icon/check.svg"
-        ></ion-icon>
-      }
-    </ion-item>
-    <ion-item (click)="changeLanguage('ru')">
-      {{ 'TK_RUSSIAN' | translate }}
-      @if (getLanguage() === 'ru') {
-        <ion-icon
-          class="check"
-          src="assets/icon/check.svg"
-        ></ion-icon>
-      }
-    </ion-item>
-  </ion-list>
+    <section class="tl-widget">
+      <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_LANGUAGE' | translate }}</span></div>
+      <ion-list lines="full">
+        <ion-item button (click)="changeLanguage('en')">
+          {{ 'TK_ENGLISH' | translate }}
+          @if (getLanguage() === 'en') {
+            <ion-icon class="check" src="assets/icon/check.svg" slot="end"></ion-icon>
+          }
+        </ion-item>
+        <ion-item button (click)="changeLanguage('ru')">
+          {{ 'TK_RUSSIAN' | translate }}
+          @if (getLanguage() === 'ru') {
+            <ion-icon class="check" src="assets/icon/check.svg" slot="end"></ion-icon>
+          }
+        </ion-item>
+      </ion-list>
+    </section>
 
-  <h2>{{ 'TK_DATABASE' | translate }}</h2>
-  <ion-list>
-    <ion-item
-      (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
+    <section class="tl-widget">
+      <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_DATABASE' | translate }}</span></div>
+      <ion-list lines="full">
+        <ion-item button (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
 
-    <ion-item
-      (click)="txtFileInput.click()">{{ 'TK_RESTORE_DATABASE' | translate }}</ion-item>
+        <ion-item button (click)="txtFileInput.click()">{{ 'TK_RESTORE_DATABASE' | translate }}</ion-item>
 
-    <ion-item>
-      <ion-select
-        label="{{ 'TK_AUTOBACKUP' | translate }}"
-        label-placement="fixed"
-        [(ngModel)]="autoBackupPeriod"
-        (ionChange)="setAutobackupPeriod($event)"
-      >
-        <ion-select-option
-          [value]="autoBackupOption.none">{{ autoBackupOption.none | translate }}</ion-select-option>
-        <ion-select-option
-          [value]="autoBackupOption.daily">{{ autoBackupOption.daily | translate }}</ion-select-option>
-        <ion-select-option
-          [value]="autoBackupOption.weekly">{{ autoBackupOption.weekly | translate }}</ion-select-option>
-        <ion-select-option
-          [value]="autoBackupOption.monthly">{{ autoBackupOption.monthly | translate}}</ion-select-option>
-      </ion-select>
-    </ion-item>
+        <ion-item>
+          <ion-select
+            label="{{ 'TK_AUTOBACKUP' | translate }}"
+            label-placement="fixed"
+            [(ngModel)]="autoBackupPeriod"
+            (ionChange)="setAutobackupPeriod($event)"
+          >
+            <ion-select-option [value]="autoBackupOption.none">{{ autoBackupOption.none | translate }}</ion-select-option>
+            <ion-select-option [value]="autoBackupOption.daily">{{ autoBackupOption.daily | translate }}</ion-select-option>
+            <ion-select-option [value]="autoBackupOption.weekly">{{ autoBackupOption.weekly | translate }}</ion-select-option>
+            <ion-select-option [value]="autoBackupOption.monthly">{{ autoBackupOption.monthly | translate}}</ion-select-option>
+          </ion-select>
+        </ion-item>
 
-    @if (password) {
-      <ion-item
-        (click)="changePassword(false)">{{ 'TK_CHANGE_PASSWORD' | translate }}</ion-item>
-    } @else {
-      <ion-item
-        (click)="changePassword(true)">{{ 'TK_SET_PASSWORD_INFINITIVE' | translate }}</ion-item>
+        @if (password) {
+          <ion-item button (click)="changePassword(false)">{{ 'TK_CHANGE_PASSWORD' | translate }}</ion-item>
+        } @else {
+          <ion-item button (click)="changePassword(true)">{{ 'TK_SET_PASSWORD_INFINITIVE' | translate }}</ion-item>
+        }
+
+        <ion-item>
+          {{ 'TK_LAST_BACKUP_DATE' | translate }}:
+          @if (lastBackupDate) {
+            {{ formatDisplayDate(lastBackupDate, getLanguage()) }}
+          } @else {
+            {{ 'TK_NEVER' | translate }}
+          }
+        </ion-item>
+
+        <ion-item class="danger-text" button (click)="resetDatabase()">{{ 'TK_RESET_DATABASE' | translate }}</ion-item>
+        <ion-item button (click)="clearCache()">{{ 'TK_CLEAR_CACHE' | translate }}</ion-item>
+      </ion-list>
+    </section>
+
+    <input
+      #txtFileInput
+      type="file"
+      accept=".txt"
+      hidden
+      (change)="onTxtFileSelected($event)"
+    >
+
+    @if (!environment.production) {
+      <section class="tl-widget">
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_DEVELOPMENT' | translate }}</span></div>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-checkbox
+              labelPlacement="end"
+              [(ngModel)]="resetDatabaseOnReload"
+              (ionChange)="setResetDatabaseOnReload($event)"
+            >{{ 'TK_RESET_DATABASE_ON_RELOAD' | translate }}</ion-checkbox>
+          </ion-item>
+          <ion-item>
+            <ion-checkbox
+              labelPlacement="end"
+              [(ngModel)]="unlockAllAchievements"
+              (ionChange)="setUnlockAllAchievements($event)"
+            >{{ 'TK_UNLOCK_ALL_ACHIEVEMENTS' | translate }}</ion-checkbox>
+          </ion-item>
+          <ion-item>
+            <ion-checkbox
+              labelPlacement="end"
+              [(ngModel)]="cacheEnabled"
+              (ionChange)="setCacheEnabled($event)"
+            >{{ 'TK_CACHE_ENABLED' | translate }}</ion-checkbox>
+          </ion-item>
+          <ion-item button (click)="goToDatabase()">Database</ion-item>
+        </ion-list>
+      </section>
     }
 
-    <ion-item>
-      {{ 'TK_LAST_BACKUP_DATE' | translate }}:
-      @if (lastBackupDate) {
-        {{ formatDisplayDate(lastBackupDate, getLanguage()) }}
-      } @else {
-        {{ 'TK_NEVER' | translate }}
-      }
-    </ion-item>
+    <section class="tl-widget">
+      <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_APP_INFO' | translate}}</span></div>
+      <ion-list lines="full">
+        <ion-item>
+          {{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}
+        </ion-item>
+        <ion-item>
+          {{ 'TK_STORAGE' | translate }}: {{ currentDatabase }}@if (currentDatabase === 'SQLite') { (db version {{ dbVersion }})}
+        </ion-item>
+        <ion-item>
+          <a
+            href="https://etsbox.com/track-lab"
+            (click)="visitHomePage($event)"
+          >
+            {{ 'TK_HOME_PAGE' | translate }}
+          </a>
+        </ion-item>
+      </ion-list>
+    </section>
 
-    <ion-item class="danger-text" (click)="resetDatabase()">{{ 'TK_RESET_DATABASE' | translate }}</ion-item>
-    <ion-item button (click)="clearCache()">{{ 'TK_CLEAR_CACHE' | translate }}</ion-item>
-  </ion-list>
-
-  <input
-    #txtFileInput
-    type="file"
-    accept=".txt"
-    hidden
-    (change)="onTxtFileSelected($event)"
-  >
-
-  @if (!environment.production) {
-    <h2>{{ 'TK_DEVELOPMENT' | translate }}</h2>
-    <ion-list>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          [(ngModel)]="resetDatabaseOnReload"
-          (ionChange)="setResetDatabaseOnReload($event)"
-        >{{ 'TK_RESET_DATABASE_ON_RELOAD' | translate }}</ion-checkbox>
-      </ion-item>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          [(ngModel)]="unlockAllAchievements"
-          (ionChange)="setUnlockAllAchievements($event)"
-        >{{ 'TK_UNLOCK_ALL_ACHIEVEMENTS' | translate }}</ion-checkbox>
-      </ion-item>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          [(ngModel)]="cacheEnabled"
-          (ionChange)="setCacheEnabled($event)"
-        >{{ 'TK_CACHE_ENABLED' | translate }}</ion-checkbox>
-      </ion-item>
-      <ion-item button (click)="goToDatabase()">Database</ion-item>
-    </ion-list>
-  }
-
-  <h2>{{ 'TK_APP_INFO' | translate}}</h2>
-  <ion-list>
-    <ion-item>
-      {{ 'TK_VERSION' | translate }}: {{ appVersion }} {{env}}
-    </ion-item>
-    <ion-item>
-      {{ 'TK_STORAGE' | translate }}: {{ currentDatabase }}@if (currentDatabase === 'SQLite') { (db version {{ dbVersion }})}
-
-    </ion-item>
-    <ion-item>
-      <a
-        href="https://etsbox.com/track-lab"
-        (click)="visitHomePage($event)"
-      >
-        {{ 'TK_HOME_PAGE' | translate }}
-      </a>
-    </ion-item>
-  </ion-list>
-
+  </div>
 </ion-content>

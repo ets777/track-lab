@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TagForm, TagFormComponent } from 'src/app/components/tag-form/tag-form.component';
 import { ITag } from 'src/app/db/models/tag';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-tag-edit',
   templateUrl: './tag-edit.page.html',
   styleUrls: ['./tag-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, TagFormComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, TagFormComponent],
 })
 export class TagEditPage {
   private route = inject(ActivatedRoute);
@@ -38,7 +38,7 @@ export class TagEditPage {
   }
 
   async updateTag(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!(await this.updateFormRef.validate())) {
       return;
     }
 
@@ -51,9 +51,5 @@ export class TagEditPage {
     });
 
     await this.router.navigate(['/tag-list']);
-  }
-
-  isFormValid() {
-    return this.updateFormRef?.tagForm?.valid;
   }
 }

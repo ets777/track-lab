@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActionForm, ActionFormComponent } from 'src/app/components/action-form/action-form.component';
@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-action-edit',
   templateUrl: './action-edit.page.html',
   styleUrls: ['./action-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, ActionFormComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, ActionFormComponent],
 })
 export class ActionEditPage {
   private route = inject(ActivatedRoute);
@@ -38,7 +38,7 @@ export class ActionEditPage {
   }
 
   async updateAction(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!(await this.updateFormRef.validate())) {
       return;
     }
 
@@ -51,9 +51,5 @@ export class ActionEditPage {
     });
 
     await this.router.navigate(['/actions']);
-  }
-
-  isFormValid() {
-    return this.updateFormRef?.actionForm?.valid;
   }
 }

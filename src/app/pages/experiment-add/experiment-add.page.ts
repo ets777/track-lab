@@ -1,7 +1,7 @@
 import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentForm, ExperimentFormComponent } from 'src/app/components/experiment-form/experiment-form.component';
 import { ExperimentService } from 'src/app/services/experiment.service';
@@ -13,7 +13,7 @@ import { LogService } from 'src/app/services/log.service';
   selector: 'app-experiment-add',
   templateUrl: './experiment-add.page.html',
   styleUrls: ['./experiment-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ExperimentFormComponent, NavButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, ExperimentFormComponent, NavButtonComponent],
 })
 export class ExperimentAddPage {
   private experimentService = inject(ExperimentService);
@@ -23,7 +23,7 @@ export class ExperimentAddPage {
   @ViewChild('addFormRef') addFormRef!: ExperimentFormComponent;
 
   async addExperiment(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!(await this.addFormRef.validate())) {
       return;
     }
 
@@ -36,10 +36,6 @@ export class ExperimentAddPage {
       this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
       this.logService.error('ExperimentAddPage.addExperiment', e);
     }
-  }
-
-  isFormValid() {
-    return this.addFormRef?.experimentForm?.valid;
   }
 
   resetForm() {

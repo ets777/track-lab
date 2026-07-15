@@ -8,8 +8,7 @@ import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { IList } from 'src/app/db/models/list';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
+import { ItemInputComponent } from 'src/app/form-elements/item-input/item-input.component';
 import { DatePeriod } from 'src/app/types/date-period';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { ChartConfiguration } from 'chart.js';
@@ -34,7 +33,7 @@ export type FilterForm = {
   selector: 'app-stats-item-content',
   templateUrl: './stats-item-content.component.html',
   styleUrls: ['./stats-item-content.component.scss'],
-  imports: [IonLabel, IonItem, IonList, CommonModule, FormsModule, TranslateModule, SelectSearchComponent, ValidationErrorDirective, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
+  imports: [IonLabel, IonItem, IonList, CommonModule, FormsModule, TranslateModule, ItemInputComponent, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
 })
 export class StatsItemContentComponent implements OnInit, OnChanges {
   private activityService = inject(ActivityService);
@@ -64,6 +63,11 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
 
   @HostBinding('class.fill-height') get isFillHeight() { return this.fillHeight; }
 
+  /** True on the standalone library stats page; false when embedded (experiment graph, dashboard widget). Gates the clinical card chrome. */
+  get standalone(): boolean {
+    return !this.fixedItem && !this.fillHeight;
+  }
+
   activities: IActivity[] = [];
   filterForm: ModelFormGroup<FilterForm>;
   suggestions: Selectable<CommonItem>[] = [];
@@ -81,6 +85,8 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
       datePeriod: [null as DatePeriod | null, Validators.required],
       item: [null as CommonItem | null, Validators.required],
     });
+
+    this.filterForm.get('item')?.valueChanges.subscribe(() => this.onItemSelected());
 
     this.filterForm.get('datePeriod')?.valueChanges.subscribe(async () => {
       if (!this.filterForm.controls['datePeriod'].valid) return;

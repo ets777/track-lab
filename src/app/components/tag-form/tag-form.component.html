@@ -1,19 +1,30 @@
-<form [formGroup]="tagForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+<form [formGroup]="tagForm" class="tf-card">
+  <!-- NAME -->
+  <div class="tf-field">
+    <div class="tf-label">{{ 'TK_NAME' | translate }}</div>
     <ion-input
-      appValidationError
+      class="tf-name"
+      [class.tf-name--invalid]="showError('name')"
       formControlName="name"
       name="name"
+      [placeholder]="'TK_TAG_NAME_PLACEHOLDER' | translate"
     ></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-checkbox
-      labelPlacement="end"
-      formControlName="isHidden"
-      name="isHidden"
-    >
-      {{ 'TK_HIDE_FROM_SEARCH' | translate }}
+    @if (showError('name')) {
+      <div class="tf-error">
+        @for (msg of fieldErrors('name'); track msg) {
+          <div class="tf-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- HIDE FROM SEARCH -->
+  <div class="tf-field tf-field--last tf-field--row">
+    <ion-checkbox formControlName="isHidden" name="isHidden" labelPlacement="start" justify="space-between">
+      <span class="tf-check-title">{{ 'TK_HIDE_FROM_SEARCH' | translate }}</span>
     </ion-checkbox>
-  </ion-item>
+  </div>
 </form>

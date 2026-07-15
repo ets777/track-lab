@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -28,7 +28,7 @@ import { AggregateRuleCalendarComponent } from 'src/app/components/aggregate-rul
   styleUrls: ['./stats-rules.page.scss'],
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar,
-    IonList, IonItem, IonLabel, IonText, IonSegment, IonSegmentButton,
+    IonSegment, IonSegmentButton,
     CommonModule, FormsModule, TranslateModule,
     DefaultSkeletonComponent, AggregateRuleCalendarComponent, NavButtonComponent,
   ],

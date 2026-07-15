@@ -1,0 +1,98 @@
+.af-card {
+  display: block;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 4px var(--tl-pad);
+}
+
+.af-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--last {
+    border-bottom: none;
+  }
+}
+
+.af-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 4px;
+}
+
+// ── Big title-style name input ──
+.af-name {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --highlight-height: 0;
+  --placeholder-color: var(--tl-text-faint);
+  --placeholder-opacity: 1;
+  font-family: var(--tl-font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tl-text);
+
+  &--invalid {
+    --color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+  }
+}
+
+// ── Strip native ion-item chrome from projected form elements ──
+.af-card ::ng-deep {
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --min-height: auto;
+    --border-width: 0;
+    --inner-border-width: 0;
+  }
+}
+
+// ── Errors ──
+.af-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.af-error-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
+}
+
+// ── Hide-from-search checkbox row ──
+.af-field--row {
+  ion-checkbox {
+    --size: 22px;
+    width: 100%;
+  }
+}
+
+.af-check-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
+}

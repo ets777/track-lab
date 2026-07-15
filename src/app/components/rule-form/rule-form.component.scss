@@ -27,6 +27,69 @@
   margin-bottom: 10px;
 }
 
+// ── Start date + item on one row ──
+.rf-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.rf-col {
+  flex: 1 1 0;
+  min-width: 0;
+
+  & + .rf-col {
+    padding-left: 16px;
+    border-left: 1px solid var(--tl-line);
+  }
+}
+
+// tappable item picker — opens search modal (library-graph widget style)
+.rf-picker {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--tl-font-sans);
+  text-align: left;
+}
+
+.rf-picker-label {
+  font-size: 12px;
+  line-height: normal;
+  color: var(--tl-text-dim);
+}
+
+.rf-picker-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: normal;
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 16px;
+    color: var(--tl-text-faint);
+  }
+}
+
+.rf-picker-val {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 16px;
+  line-height: normal;
+  color: var(--tl-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.is-empty { color: var(--tl-text-faint); }
+}
+
 // ── Preview banner ──
 .rf-preview {
   display: flex;
@@ -79,7 +142,7 @@
   ion-segment-button {
     --background-checked: var(--tl-surface);
     --indicator-color: var(--tl-surface);
-    --color: var(--tl-text-dim);
+    --color: var(--tl-text-faint);
     --color-checked: var(--tl-text);
     --border-radius: 8px;
     --padding-top: 0;
@@ -103,6 +166,20 @@
 ion-checkbox {
   --size: 22px;
   width: 100%;
+}
+
+.rf-enddate-row {
+  align-items: center;
+  min-height: 64px;
+
+  .rf-enddate-check-col {
+    display: flex;
+    align-items: center;
+  }
+
+  .rf-enddate-check {
+    width: auto;
+  }
 }
 
 .rf-time-row {
@@ -134,4 +211,134 @@ ion-checkbox {
     font-size: 14px;
     flex: 0 0 auto;
   }
+}
+
+// ── item search picker modal (library-graph widget style) ──
+.cwt-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  background: var(--tl-surface);
+}
+
+.cwt-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 14px 14px 20px;
+  border-bottom: 1px solid var(--tl-line);
+  flex: 0 0 auto;
+}
+
+.cwt-head-x {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 9px;
+  color: var(--tl-text-dim);
+
+  ion-icon { font-size: 20px; }
+
+  &:active {
+    background: var(--tl-surface-2);
+    color: var(--tl-text);
+  }
+}
+
+.cwt-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 19px;
+    color: var(--tl-text-faint);
+  }
+}
+
+.cwt-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--tl-font-sans);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--tl-text);
+
+  &::placeholder {
+    color: var(--tl-text-faint);
+    font-weight: 400;
+  }
+}
+
+.cwt-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cwt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 calc(10px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.cwt-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 17px 20px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--tl-line);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--tl-font-sans);
+  transition: background 0.12s ease;
+
+  &:active { background: var(--tl-surface-2); }
+}
+
+.cwt-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cwt-row-name {
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--tl-text);
+}
+
+.cwt-row-sub {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--tl-text-faint);
+}
+
+.cwt-empty {
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--tl-text-faint);
+  font-size: 14px;
 }

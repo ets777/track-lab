@@ -1,0 +1,4 @@
+// Actionsheet-like sheet: no header, tight top padding.
+ion-modal.selection-modal ion-content {
+  --padding-top: 8px;
+}

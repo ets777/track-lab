@@ -17,18 +17,24 @@ export class RuleService extends DatabaseService<'rules'> {
     if (rule.value === 0) {
       return this.translate.instant('TK_RULE_NO_SUBJECT', { subject: subjectName }) + timeSuffix;
     }
+    const condition = this.buildCondition(rule);
+    const period = this.translate.instant(`TK_RULE_PER_${rule.period.toUpperCase()}`);
+    return `${subjectName} ${condition} ${period}${timeSuffix}`;
+  }
+
+  buildCondition(rule: Pick<IRuleDb, 'operator' | 'value' | 'metric'>): string {
     const operator = this.translate.instant(rule.operator === '>=' ? 'TK_AT_LEAST' : 'TK_AT_MOST').toLowerCase();
     const singular = rule.value === 1;
     const unit = rule.metric === 'totalDuration'
       ? this.translate.instant(singular ? 'TK_RULE_MINUTE' : 'TK_RULE_MINUTES')
       : this.translate.instant(singular ? 'TK_RULE_TIME' : 'TK_RULE_TIMES');
-    const period = this.translate.instant(`TK_RULE_PER_${rule.period.toUpperCase()}`);
-    return `${subjectName} ${operator} ${rule.value} ${unit} ${period}${timeSuffix}`;
+    return `${operator} ${rule.value} ${unit}`;
   }
 
   async updateFromForm(id: number, formData: RuleForm): Promise<void> {
     const changes: IRuleCreateDto = {
       startDate: formData.startDate,
+      endDate: formData.endDateEnabled ? formData.endDate : null,
       subjectType: formData.subject.type as any,
       subjectId: formData.subject.itemId,
       metric: this.resolveMetric(formData),
@@ -44,6 +50,7 @@ export class RuleService extends DatabaseService<'rules'> {
   async addFromForm(formData: RuleForm): Promise<number> {
     const dto: IRuleCreateDto = {
       startDate: formData.startDate,
+      endDate: formData.endDateEnabled ? formData.endDate : null,
       subjectType: formData.subject.type as any,
       subjectId: formData.subject.itemId,
       metric: this.resolveMetric(formData),

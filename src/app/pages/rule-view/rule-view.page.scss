@@ -1,0 +1,88 @@
+// ── Rule detail — clinical skin (mirrors metric/entity view) ────────────────
+
+.av-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-gap);
+}
+
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
+}
+
+.tl-widget-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.tl-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+}
+
+// ── Detail rows ──
+
+.av-metrics {
+  display: flex;
+  flex-direction: column;
+}
+
+.av-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--tl-line);
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.av-metric-k {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tl-text-dim);
+  letter-spacing: -0.005em;
+}
+
+.av-metric-v {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--tl-font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tl-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.av-metric--link {
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 15px;
+    color: var(--tl-text-dim);
+  }
+}

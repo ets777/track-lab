@@ -2,12 +2,6 @@
   <ion-toolbar>
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_EDIT_EXPERIMENT' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="saveExperiment()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -21,3 +15,17 @@
     ></app-experiment-form>
   }
 </ion-content>
+
+@if (experiment) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        (click)="saveExperiment()"
+      >
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { IonItem, IonLabel, IonList, IonText, IonInput, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import { IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ActivityService } from 'src/app/services/activity.service';
@@ -16,9 +16,8 @@ import { Router } from '@angular/router';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { DatePeriod } from 'src/app/types/date-period';
 import { IMetric } from 'src/app/db/models/metric';
-import { getPartIndex } from 'src/app/functions/string';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { LoadingService } from 'src/app/services/loading.service';
+import { MetricInputComponent } from 'src/app/form-elements/metric-input/metric-input.component';
 
 const MAX_METRICS = 3;
 
@@ -45,7 +44,7 @@ interface NormalizedPoint {
   selector: 'app-stats-content',
   templateUrl: './stats-content.component.html',
   styleUrl: './stats-content.component.scss',
-  imports: [ValidationErrorDirective, IonInput, IonText, IonList, IonLabel, IonItem, IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent],
+  imports: [IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent, MetricInputComponent],
 })
 export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   private activityService = inject(ActivityService);
@@ -69,13 +68,13 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
   @HostBinding('class.fill-height') get isFillHeight() { return this.fillHeight; }
 
-  @ViewChild('metricInput') metricInput!: IonInput;
+  /** True on the standalone metrics stats page; false when embedded (experiment graph, dashboard widget). Gates the clinical card chrome. */
+  get standalone(): boolean {
+    return !this.fixedMetricName && !this.fillHeight;
+  }
+
   metricInputText = '';
-  metricInputCaretPosition = 0;
   metricsControl = new FormControl('', [maxMetricsValidator, duplicateMetricsValidator]);
-  filteredMetricSuggestions: string[] = [];
-  showMetricSuggestions = false;
-  private allMetricSuggestions: string[] = [];
   selectedMetrics: IMetric[] = [];
 
   activities: IActivity[] = [];
@@ -119,7 +118,6 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
       this.chartOptions = styledLineChartOptions({ fillHeight: true });
     }
     const visibleMetrics = this.allMetrics.filter(m => !m.isHidden);
-    this.allMetricSuggestions = this.allMetrics.map(m => m.name);
 
     let defaultMetrics: string;
     if (this.fixedMetricName) {
@@ -140,6 +138,12 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     this.metricInputText = defaultMetrics;
     this.metricsControl.setValue(defaultMetrics, { emitEvent: false });
     this.initialized = true;
+
+    // Metric chips changed → resync text and reload the chart.
+    this.metricsControl.valueChanges.subscribe(async (value) => {
+      this.metricInputText = value ?? '';
+      if (this.metricsControl.valid) await this.loadStats();
+    });
 
     if (!this.hidePeriodSelector && this.savedPeriod) {
       this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
@@ -460,76 +464,6 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     );
   }
 
-  async updateMetricCaretAndText(event: any) {
-    const indexBefore = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
-
-    this.metricInputText = event.target.value ?? '';
-    const nativeInput = await this.metricInput.getInputElement();
-    this.metricInputCaretPosition = nativeInput.selectionStart ?? 0;
-    const indexAfter = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
-
-    if (indexBefore !== indexAfter) {
-      this.hideMetricSuggestions();
-    }
-  }
-
-  async onMetricInput(event: any) {
-    await this.updateMetricCaretAndText(event);
-
-    const parts = this.metricInputText
-      .split(',')
-      .map((s: string) => s.toLowerCase().trim());
-
-    const nonEmpty = parts.filter(Boolean);
-
-    this.metricsControl.setValue(this.metricInputText, { emitEvent: false });
-
-    if (this.metricsControl.invalid) {
-      this.hideMetricSuggestions();
-      return;
-    }
-
-    const currentIndex = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
-    const current = parts[currentIndex];
-
-    const otherParts = [...parts];
-    otherParts.splice(currentIndex, 1);
-
-    if (current.length > 0) {
-      this.filteredMetricSuggestions = this.allMetricSuggestions
-        .filter(name => {
-          const translated = this.translate.instant(name).toLowerCase();
-          return translated.includes(current) && !otherParts.includes(translated);
-        })
-        .slice(0, 5);
-      this.showMetricSuggestions = this.filteredMetricSuggestions.length > 0;
-    } else {
-      this.hideMetricSuggestions();
-    }
-
-    const allPartsMatch = nonEmpty.length > 0
-      && nonEmpty.length === parts.length
-      && nonEmpty.every(part =>
-        this.allMetrics.some(m => this.translate.instant(m.name).toLowerCase() === part)
-      );
-
-    if (allPartsMatch) {
-      await this.loadStats();
-    }
-  }
-
-  selectMetricSuggestion(suggestion: string) {
-    const currentIndex = getPartIndex(this.metricInputText, this.metricInputCaretPosition);
-    const parts = this.metricInputText.split(',');
-
-    parts[currentIndex] = ' ' + this.translate.instant(suggestion);
-    this.metricInputText = parts.join(',').trim();
-    this.metricsControl.setValue(this.metricInputText, { emitEvent: false });
-
-    this.hideMetricSuggestions();
-    this.loadStats();
-  }
-
   get calendarCells(): ({ date: string; dayNumber: number; avg: number | null } | null)[] {
     if (!this.activitiesGroupedByDate.length) return [];
     const metric = this.selectedMetrics[this.selectedCalendarMetricIndex];
@@ -555,9 +489,5 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
 
   hasAnyValue(day: { avgValues: { metric: IMetric, value: number | null }[] }): boolean {
     return day.avgValues.some(entry => entry.value !== null);
-  }
-
-  hideMetricSuggestions() {
-    setTimeout(() => (this.showMetricSuggestions = false), 200);
   }
 }

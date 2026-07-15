@@ -14,6 +14,7 @@ export interface IRuleDb {
   value: number;
   period: RulePeriod;
   startDate: string;
+  endDate: string | null;
   startTime: string | null;
   endTime: string | null;
 }

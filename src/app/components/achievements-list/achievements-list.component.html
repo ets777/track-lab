@@ -1,13 +1,17 @@
-<ion-list>
-  @for (achievement of achievements; track achievement.id) {
-    <ion-item class="achievement">
-      <div class="icon">{{ achievement.icon }}</div>
-      <div class="body">
-        <div class="title">{{ achievement.title | translate }}</div>
-        <div class="description">{{ achievement.description | translate }}</div>
-      </div>
-    </ion-item>
-  } @empty {
-    <ion-text>{{ 'TK_NO_ACHIEVEMENTS_UNLOCKED_YET' | translate }}</ion-text>
+<section class="tl-widget">
+  @if (achievements.length) {
+    <div class="ach-list">
+      @for (achievement of achievements; track achievement.id) {
+        <div class="ach-row">
+          <div class="ach-icon">{{ achievement.icon }}</div>
+          <div class="ach-body">
+            <div class="ach-title">{{ achievement.title | translate }}</div>
+            <div class="ach-desc">{{ achievement.description | translate }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <p class="ach-empty">{{ 'TK_NO_ACHIEVEMENTS_UNLOCKED_YET' | translate }}</p>
   }
-</ion-list>
+</section>

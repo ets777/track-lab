@@ -1,23 +1,45 @@
-<form [formGroup]="actionForm">
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_NAME' | translate }}</ion-label>
+<form [formGroup]="actionForm" class="af-card">
+  <!-- NAME -->
+  <div class="af-field">
+    <div class="af-label">{{ 'TK_NAME' | translate }}</div>
     <ion-input
-      appValidationError
+      class="af-name"
+      [class.af-name--invalid]="showError('name')"
       formControlName="name"
       name="name"
+      [placeholder]="'TK_ACTION_NAME_PLACEHOLDER' | translate"
     ></ion-input>
-  </ion-item>
-  <app-tag-input
-    appValidationError
-    formControlName="tags"
-  ></app-tag-input>
-  <ion-item>
-    <ion-checkbox
-      labelPlacement="end"
-      formControlName="isHidden"
-      name="isHidden"
-    >
-      {{ 'TK_HIDE_FROM_SEARCH' | translate }}
+    @if (showError('name')) {
+      <div class="af-error">
+        @for (msg of fieldErrors('name'); track msg) {
+          <div class="af-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- TAGS -->
+  <div class="af-field">
+    <app-tag-input formControlName="tags"></app-tag-input>
+    @if (showError('tags')) {
+      <div class="af-error">
+        @for (msg of fieldErrors('tags'); track msg) {
+          <div class="af-error-line">
+            <ion-icon src="assets/icon/warning-sign.svg"></ion-icon>
+            <span>{{ msg }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- HIDE FROM SEARCH -->
+  <div class="af-field af-field--last af-field--row">
+    <ion-checkbox formControlName="isHidden" name="isHidden" labelPlacement="start" justify="space-between">
+      <span class="af-check-title">{{ 'TK_HIDE_FROM_SEARCH' | translate }}</span>
     </ion-checkbox>
-  </ion-item>
+  </div>
 </form>

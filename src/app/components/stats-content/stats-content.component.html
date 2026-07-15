@@ -1,80 +1,83 @@
-@if (!hidePeriodSelector) {
-  <form [formGroup]="filterForm">
-    <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
-  </form>
-}
+<div [class.av-screen]="standalone">
 
-@if (!fixedMetricName) {
-  <ion-item>
-    <ion-label position="stacked">{{ 'TK_METRICS' | translate }}</ion-label>
-    <ion-input
-      #metricInput
-      appValidationError
-      [formControl]="metricsControl"
-      (ionInput)="onMetricInput($event)"
-      (ionBlur)="hideMetricSuggestions()"
-      (click)="updateMetricCaretAndText($event)"
-      (keyup)="updateMetricCaretAndText($event)"
-    ></ion-input>
-  </ion-item>
-}
+  @if (!fixedMetricName) {
+    <section [class.tl-widget]="standalone">
+      @if (standalone) {
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_METRICS' | translate }}</span></div>
+      }
+      <app-metric-input [formControl]="metricsControl" [max]="3"></app-metric-input>
+    </section>
+  }
 
-@if (showMetricSuggestions) {
-  <ion-list class="suggestions" lines="none">
-    @for (suggestion of filteredMetricSuggestions; track suggestion) {
-      <ion-item button (click)="selectMetricSuggestion(suggestion)">
-        {{ suggestion | translate }}
-      </ion-item>
-    }
-  </ion-list>
-}
+  @if (!hidePeriodSelector) {
+    <section [class.tl-widget]="standalone">
+      @if (standalone) {
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_PERIOD' | translate }}</span></div>
+      }
+      <form [formGroup]="filterForm">
+        <app-date-period-input formControlName="datePeriod" storageKey="stats"></app-date-period-input>
+      </form>
+    </section>
+  }
 
-<div [class.chart-fill]="fillHeight">
   @if (chartData && selectedMetrics.length) {
-    <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
-  }
-</div>
-
-@if (!fillHeight && activitiesGroupedByDate.length && selectedMetrics.length && !hideCalendar) {
-  <div class="calendar-block">
-  @if (selectedMetrics.length > 1) {
-    <ion-segment [value]="selectedCalendarMetricIndex" (ionChange)="selectedCalendarMetricIndex = +$any($event).detail.value">
-      @for (metric of selectedMetrics; track metric.id; let i = $index) {
-        <ion-segment-button [value]="i">{{ metric.name | translate }}</ion-segment-button>
+    <section [class.tl-widget]="standalone">
+      @if (standalone) {
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_STATS' | translate }}</span></div>
       }
-    </ion-segment>
+      <div [class.chart-fill]="fillHeight">
+        <canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas>
+      </div>
+    </section>
   }
 
-  <div class="metric-calendar">
-    <div class="metric-calendar__weekdays">
-      @for (wd of weekdays; track wd) {
-        <div class="metric-calendar__weekday">{{ wd | translate }}</div>
+  @if (!fillHeight && activitiesGroupedByDate.length && selectedMetrics.length && !hideCalendar) {
+    <section [class.tl-widget]="standalone">
+      @if (standalone) {
+        <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_CALENDAR' | translate }}</span></div>
       }
-    </div>
-    <div class="metric-calendar__grid">
-      @for (cell of calendarCells; track $index) {
-        @if (cell === null) {
-          <div class="metric-calendar__empty"></div>
-        } @else {
-          <div
-            class="metric-calendar__day"
-            [style.background-color]="cell.avg !== null ? getDayBgColor(cell.avg) : ''"
-            (click)="goToDay(cell.date)"
-          >
-            <span class="metric-calendar__day-num">{{ cell.dayNumber }}</span>
-            @if (cell.avg !== null) {
-              <span class="metric-calendar__day-avg">{{ cell.avg | number:'1.1-1' }}</span>
+      @if (selectedMetrics.length > 1) {
+        <ion-segment class="sc-seg" [value]="selectedCalendarMetricIndex" (ionChange)="selectedCalendarMetricIndex = +$any($event).detail.value">
+          @for (metric of selectedMetrics; track metric.id; let i = $index) {
+            <ion-segment-button [value]="i">{{ metric.name | translate }}</ion-segment-button>
+          }
+        </ion-segment>
+      }
+
+      <div class="metric-calendar">
+        <div class="metric-calendar__weekdays">
+          @for (wd of weekdays; track wd) {
+            <div class="metric-calendar__weekday">{{ wd | translate }}</div>
+          }
+        </div>
+        <div class="metric-calendar__grid">
+          @for (cell of calendarCells; track $index) {
+            @if (cell === null) {
+              <div class="metric-calendar__empty"></div>
+            } @else {
+              <div
+                class="metric-calendar__day"
+                [style.background-color]="cell.avg !== null ? getDayBgColor(cell.avg) : ''"
+                (click)="goToDay(cell.date)"
+              >
+                <span class="metric-calendar__day-num">{{ cell.dayNumber }}</span>
+                @if (cell.avg !== null) {
+                  <span class="metric-calendar__day-avg">{{ cell.avg | number:'1.1-1' }}</span>
+                }
+              </div>
             }
-          </div>
-        }
-      }
-    </div>
-    <div class="metric-calendar__total">
-      {{ 'TK_AVG' | translate }} {{ selectedMetrics[selectedCalendarMetricIndex]?.name | translate }}:
-      {{ getTotalAverageValue(selectedMetrics[selectedCalendarMetricIndex]) | number:'1.1-1' }}
-    </div>
-  </div>
-  </div>
-} @else if (!fillHeight && !activitiesGroupedByDate.length) {
-  <ion-text>{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}</ion-text>
-}
+          }
+        </div>
+        <div class="metric-calendar__total">
+          {{ 'TK_AVG' | translate }} {{ selectedMetrics[selectedCalendarMetricIndex]?.name | translate }}:
+          {{ getTotalAverageValue(selectedMetrics[selectedCalendarMetricIndex]) | number:'1.1-1' }}
+        </div>
+      </div>
+    </section>
+  } @else if (!fillHeight && !activitiesGroupedByDate.length) {
+    <section [class.tl-widget]="standalone">
+      <p class="sc-empty">{{ 'TK_THERE_ARE_NO_ACTIVITIES_IN_SELECTED_PERIOD' | translate }}</p>
+    </section>
+  }
+
+</div>

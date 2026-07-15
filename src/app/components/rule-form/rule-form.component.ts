@@ -1,7 +1,9 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IonSegment, IonSegmentButton, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
+import { IonSegment, IonSegmentButton, IonCheckbox, IonIcon, IonModal } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { chevronForwardOutline, searchOutline, closeOutline } from 'ionicons/icons';
 import { TimeWheelComponent } from 'src/app/form-elements/time-wheel/time-wheel.component';
 import { CountWheelComponent } from 'src/app/form-elements/count-wheel/count-wheel.component';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
@@ -13,7 +15,6 @@ import { ListService } from 'src/app/services/list.service';
 import { IItem } from 'src/app/db/models/item';
 import { IList } from 'src/app/db/models/list';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
@@ -24,6 +25,8 @@ export type RuleFormMetric = 'count' | 'duration';
 
 export type RuleForm = {
   startDate: string;
+  endDateEnabled: boolean;
+  endDate: string;
   subject: CommonItem;
   metric: RuleFormMetric;
   operator: RuleOperator;
@@ -39,9 +42,9 @@ export type RuleForm = {
   templateUrl: './rule-form.component.html',
   styleUrls: ['./rule-form.component.scss'],
   imports: [
-    IonSegment, IonSegmentButton, IonCheckbox, IonIcon,
+    IonSegment, IonSegmentButton, IonCheckbox, IonIcon, IonModal,
     FormsModule, ReactiveFormsModule, TranslateModule,
-    SelectSearchComponent, TimeWheelComponent, CountWheelComponent, DatePickerComponent,
+    TimeWheelComponent, CountWheelComponent, DatePickerComponent,
   ],
 })
 export class RuleFormComponent implements OnInit {
@@ -58,12 +61,21 @@ export class RuleFormComponent implements OnInit {
   public suggestions: Selectable<CommonItem>[] = [];
   public submitted = false;
 
+  public pickerOpen = false;
+  public pickerQuery = '';
+
+  constructor() {
+    addIcons({ chevronForwardOutline, searchOutline, closeOutline });
+  }
+
   public ruleForm!: ModelFormGroup<RuleForm>;
 
   async ngOnInit() {
     const today = new Date().toISOString().slice(0, 10);
     this.ruleForm = this.formBuilder.group({
       startDate: [today, [Validators.required, dateFormatValidator]],
+      endDateEnabled: [false],
+      endDate: [today, [Validators.required, dateFormatValidator]],
       subject: [null as CommonItem | null, Validators.required],
       metric: ['count' as RuleFormMetric, Validators.required],
       operator: ['>=' as RuleOperator, Validators.required],
@@ -91,6 +103,8 @@ export class RuleFormComponent implements OnInit {
 
     this.ruleForm.patchValue({
       startDate: rule.startDate,
+      endDateEnabled: !!rule.endDate,
+      endDate: rule.endDate ?? new Date().toISOString().slice(0, 10),
       subject,
       metric,
       operator: rule.operator,
@@ -188,11 +202,55 @@ export class RuleFormComponent implements OnInit {
     return !!this.ruleForm?.get('timeEnabled')?.value;
   }
 
+  get endDateEnabled(): boolean {
+    return !!this.ruleForm?.get('endDateEnabled')?.value;
+  }
+
+  get startDateValue(): string {
+    return this.ruleForm?.get('startDate')?.value ?? '';
+  }
+
+  /** End date must not precede start date. */
+  get endBeforeStart(): boolean {
+    if (!this.endDateEnabled) return false;
+    const start = this.ruleForm?.get('startDate')?.value;
+    const end = this.ruleForm?.get('endDate')?.value;
+    return !!start && !!end && end < start;
+  }
+
+  get selectedSubject(): CommonItem | null {
+    return this.ruleForm?.get('subject')?.value ?? null;
+  }
+
+  get pickerResults(): Selectable<CommonItem>[] {
+    const q = this.pickerQuery.trim().toLowerCase();
+    if (!q) return this.suggestions;
+    return this.suggestions.filter(
+      s => s.title.toLowerCase().includes(q) || (s.subtitle?.toLowerCase().includes(q) ?? false),
+    );
+  }
+
+  openPicker(): void {
+    this.pickerQuery = '';
+    this.pickerOpen = true;
+  }
+
+  closePicker(): void {
+    this.pickerOpen = false;
+  }
+
+  selectSubject(res: Selectable<CommonItem>): void {
+    const subject = this.ruleForm.get('subject');
+    subject?.setValue(res.item);
+    subject?.markAsTouched();
+    this.pickerOpen = false;
+  }
+
   /** Validate-on-submit: mark submitted, mark all touched, return validity. */
   async validate(): Promise<boolean> {
     this.submitted = true;
     this.ruleForm.markAllAsTouched();
-    return this.ruleForm.valid;
+    return this.ruleForm.valid && !this.endBeforeStart;
   }
 
   /** Show a field's validation error only after submit was attempted. */
@@ -223,6 +281,8 @@ export class RuleFormComponent implements OnInit {
     this.submitted = false;
     this.ruleForm.patchValue({
       startDate: new Date().toISOString().slice(0, 10),
+      endDateEnabled: false,
+      endDate: new Date().toISOString().slice(0, 10),
       subject: null,
       metric: 'count' as RuleFormMetric,
       operator: '>=',

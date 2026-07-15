@@ -232,34 +232,11 @@
 </form>
 
 <!-- Add metric / list modal -->
-<ion-modal [isOpen]="isAddLibraryModalOpen" (didDismiss)="isAddLibraryModalOpen = false" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
-  <ng-template>
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-buttons slot="end">
-          <ion-button (click)="isAddLibraryModalOpen = false">
-            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <ion-item>
-        <ion-input [placeholder]="'TK_SEARCH' | translate" [value]="librarySearchQuery" (ionInput)="onLibrarySearch($event)">
-          <ion-icon slot="start" name="search-outline" style="color: var(--ion-color-medium)"></ion-icon>
-        </ion-input>
-      </ion-item>
-      <ion-list lines="full">
-        @for (item of librarySearchResults; track item.type + item.id) {
-          <ion-item button detail="false" (click)="selectLibraryItem(item)">
-            <ion-label>{{ item.name | translate }}</ion-label>
-          </ion-item>
-        } @empty {
-          <ion-item lines="none">
-            <ion-label class="ion-text-center">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+<app-selection-sheet
+  [isOpen]="isAddLibraryModalOpen"
+  [items]="libraryModalItems"
+  [searchValue]="librarySearchQuery"
+  (searchChange)="onLibrarySheetSearch($event)"
+  (selected)="onLibrarySheetSelect($event)"
+  (dismissed)="isAddLibraryModalOpen = false"
+></app-selection-sheet>

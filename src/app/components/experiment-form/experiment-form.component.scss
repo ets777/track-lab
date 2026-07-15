@@ -1,107 +1,272 @@
-ion-accordion::part(content) {
-  overflow: visible;
+// ── Experiment form — mirrors activity-form card design ────────────────────
+
+.nf-screen {
+  display: block;
 }
 
-.group-header-content {
+// ── Card blocks ──
+
+.nf-card {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 15px var(--tl-pad);
+  margin-bottom: 13px;
+
+  > :first-child {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  > :last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+.nf-screen--cards > .nf-card:last-child {
+  margin-bottom: 6px;
+}
+
+// ── Labelled field ──
+
+.nf-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--last {
+    border-bottom: none;
+  }
+}
+
+.nf-label {
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 6px;
+}
+
+// Date-period pickers sit inside the card — drop their underline separator
+::ng-deep app-date-period-input .dp-trigger {
+  border-bottom: none !important;
+}
+
+// ── Title input ──
+
+.nf-title {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --border-width: 0;
+  --highlight-height: 0;
+  --placeholder-color: var(--tl-text-faint);
+  --placeholder-opacity: 1;
+  font-family: var(--tl-font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tl-text);
+
+  &--invalid {
+    --color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+  }
+}
+
+// ── Field errors ──
+
+.nf-error {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nf-error-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--tl-bad);
+
+  ion-icon {
+    font-size: 13px;
+    flex: 0 0 auto;
+  }
+}
+
+// ── Section heading (Indicators / Rules) ──
+
+.nf-sec2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 8px;
+}
+
+.nf-sec-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tl-text);
+  letter-spacing: -0.01em;
+}
+
+.nf-sec-spacer {
+  flex: 1 1 auto;
+}
+
+.nf-sec-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 7px;
+  border: 1px solid var(--tl-accent-soft);
+  border-radius: 999px;
+  background: var(--tl-accent-soft);
+  color: var(--tl-accent);
+  font-family: var(--tl-font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--tl-accent) 16%, transparent);
+  }
+}
+
+// ── Remove button (shared) ──
+
+.nf-remove-btn {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: var(--tl-surface-2);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--tl-text-faint);
+  flex: 0 0 auto;
+
+  &:hover {
+    background: var(--tl-bad-bg);
+    color: var(--tl-bad);
+  }
+}
+
+// ── Indicator rows ──
+
+.nf-ind {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.nf-ind-hd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nf-ind-label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   gap: 2px;
 }
 
-.group-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ion-text-color, inherit);
-}
-
-.header-add-btn {
-  --padding-start: 4px;
-  --padding-end: 4px;
-
-  ion-icon {
-    font-size: 22px;
-  }
-}
-
-.remove-btn {
-  align-self: center;
-  --padding-start: 4px;
-  --padding-end: 4px;
-  color: var(--ion-color-danger);
-
-  ion-icon {
-    font-size: 22px;
-  }
-}
-
-.entry-item {
-  --min-height: auto;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  --inner-padding-top: 0;
-  --inner-padding-bottom: 0;
-}
-
-.entry-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.entry-inner {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 6px 8px;
-  box-sizing: border-box;
+.nf-ind-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--tl-text);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.entry-initial-value {
-  font-size: 0.75rem;
-  color: var(--ion-color-medium);
-  margin: 0;
-  padding: 0 8px 6px 44px;
+.nf-ind-sub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tl-text-faint);
 }
 
-.entry-label {
-  flex: 0 0 50%;
-  min-width: 0;
-  padding: 0 8px;
-
-  .entry-title {
-    display: block;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .entry-subtitle {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--ion-color-medium);
-  }
-}
-
-.metric-direction {
-  flex: 1;
-  min-width: 0;
+.nf-ind-dir {
+  margin-top: 10px;
+  --background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius-sm);
+  padding: 3px;
 
   ion-segment-button {
+    --background-checked: var(--tl-surface);
+    --indicator-color: var(--tl-surface);
+    --color: var(--tl-text-faint);
+    --color-checked: var(--tl-text);
+    --border-radius: 8px;
+    --padding-top: 0;
+    --padding-bottom: 0;
     --padding-start: 4px;
     --padding-end: 4px;
     --min-width: 0;
     min-width: 0;
+    min-height: 34px;
+
+    ion-icon {
+      font-size: 18px;
+    }
   }
 }
 
-
-// titleless modal — offset content by menu item height
-ion-modal ion-content {
-  --padding-top: 54px;
+.nf-ind-init {
+  margin: 8px 0 0;
+  font-family: var(--tl-font-mono);
+  font-size: 12px;
+  color: var(--tl-text-faint);
 }
+
+// ── Rule rows ──
+
+.nf-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.nf-rule-name {
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--tl-text);
+  letter-spacing: -0.005em;
+}
+
+// ── Empty state ──
+
+.nf-empty {
+  margin: 6px 0 2px;
+  font-size: 13px;
+  color: var(--tl-text-faint);
+}
+

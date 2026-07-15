@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { IonIcon, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonText } from '@ionic/angular/standalone';
+import { IonIcon, IonSegment, IonSegmentButton, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
-import { trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline } from 'ionicons/icons';
+import { trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline, chevronForwardOutline } from 'ionicons/icons';
 import { format, parseISO, differenceInDays, startOfMonth, subDays, addDays } from 'date-fns';
 import { IExperiment, ExperimentResultEntry, EXPERIMENT_FAIL_REASON_KEYS, ExperimentFailReason } from 'src/app/db/models/experiment';
 import { formatDisplayDate } from 'src/app/functions/date';
@@ -53,7 +53,7 @@ interface IndicatorView {
   styleUrls: ['./experiment-view-content.component.scss'],
   imports: [
     CommonModule, TranslateModule, ReactiveFormsModule,
-    IonIcon, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonText,
+    IonIcon, IonSegment, IonSegmentButton, IonLabel,
     StatsContentComponent, StatsItemContentComponent,
     AggregateRuleCalendarComponent, DatePeriodInputComponent,
   ],
@@ -91,7 +91,7 @@ export class ExperimentViewContentComponent implements OnInit {
   filterForm = this.formBuilder.group({ datePeriod: [null as DatePeriod | null] });
 
   constructor() {
-    addIcons({ trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline });
+    addIcons({ trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline, chevronForwardOutline });
   }
 
   ngOnInit() {

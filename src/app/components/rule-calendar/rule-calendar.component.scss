@@ -110,7 +110,7 @@
     }
 
     &--other-month {
-      color: var(--ion-color-medium);
+      color: color-mix(in srgb, var(--ion-color-medium) 30%, white);
       cursor: default;
     }
 

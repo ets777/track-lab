@@ -4,8 +4,6 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, Ion
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { ellipsisVertical } from 'ionicons/icons';
 import { format, subDays, parseISO } from 'date-fns';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
@@ -84,7 +82,6 @@ export class ExperimentViewPage {
 
   constructor() {
     this.experimentId = Number(this.route.snapshot.paramMap.get('id'));
-    addIcons({ ellipsisVertical });
   }
 
   async ionViewDidEnter() {

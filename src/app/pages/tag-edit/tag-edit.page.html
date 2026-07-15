@@ -2,20 +2,28 @@
     <ion-toolbar>
         <app-nav-button slot="start"></app-nav-button>
         <ion-title>{{ 'TK_EDIT' | translate }} {{ 'TK_TAG' | translate | lowercase }}</ion-title>
-        <ion-buttons slot="end">
-            <ion-button
-                (click)="updateTag()"
-                [disabled]="!isFormValid()"
-            >{{ 'TK_SAVE' | translate }}</ion-button>
-        </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
     @if (tag) {
-        <app-tag-form 
+        <app-tag-form
             #updateFormRef
             [tag]="tag"
         ></app-tag-form>
     }
 </ion-content>
+
+@if (tag) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        (click)="updateTag()"
+      >
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

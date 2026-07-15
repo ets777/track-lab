@@ -3,12 +3,6 @@
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_EDIT' | translate }}
       {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="updateAction()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_SAVE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -20,3 +14,17 @@
     ></app-action-form>
   }
 </ion-content>
+
+@if (action) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        (click)="updateAction()"
+      >
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

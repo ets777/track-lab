@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, ActionSheetController } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { ellipsisVertical } from 'ionicons/icons';
-import { IRule, RuleMetric, RulePeriod } from 'src/app/db/models/rule';
+import { chevronForwardOutline } from 'ionicons/icons';
+import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
 import { RuleCompletionService } from 'src/app/services/rule-completion.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
@@ -15,14 +15,10 @@ import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ListService } from 'src/app/services/list.service';
 import { RuleCalendarComponent } from 'src/app/components/rule-calendar/rule-calendar.component';
+import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 import { ToastService } from 'src/app/services/toast.service';
+import { LogService } from 'src/app/services/log.service';
 import { formatDisplayDate } from 'src/app/functions/date';
-
-const METRIC_KEY: Record<RuleMetric, string> = {
-  count: 'TK_COUNT',
-  totalDuration: 'TK_TOTAL_DURATION',
-  countDays: 'TK_COUNT_DAYS',
-};
 
 const PERIOD_KEY: Record<RulePeriod, string> = {
   day: 'TK_DAILY',
@@ -34,7 +30,7 @@ const PERIOD_KEY: Record<RulePeriod, string> = {
   selector: 'app-rule-view',
   templateUrl: './rule-view.page.html',
   styleUrls: ['./rule-view.page.scss'],
-  imports: [IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, TranslateModule, NavButtonComponent, RuleCalendarComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, TranslateModule, NavButtonComponent, RuleCalendarComponent, DefaultSkeletonComponent],
 })
 export class RuleViewPage {
   private route = inject(ActivatedRoute);
@@ -49,7 +45,9 @@ export class RuleViewPage {
   private actionSheetCtrl = inject(ActionSheetController);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
+  private logService = inject(LogService);
 
+  isLoading = true;
   ruleId: number;
   rule?: IRule;
   ruleName = '';
@@ -58,31 +56,40 @@ export class RuleViewPage {
 
   constructor() {
     this.ruleId = Number(this.route.snapshot.paramMap.get('id'));
-    addIcons({ ellipsisVertical });
+    addIcons({ chevronForwardOutline });
   }
 
   async ionViewDidEnter() {
-    const [rule, actions, tags, items, lists] = await Promise.all([
-      this.ruleService.getById(this.ruleId),
-      this.actionService.getAll(),
-      this.tagService.getAll(),
-      this.itemService.getAll(),
-      this.listService.getAll(),
-    ]);
+    this.isLoading = true;
+    await new Promise(resolve => setTimeout(resolve));
+    try {
+      const [rule, actions, tags, items, lists] = await Promise.all([
+        this.ruleService.getById(this.ruleId),
+        this.actionService.getAll(),
+        this.tagService.getAll(),
+        this.itemService.getAll(),
+        this.listService.getAll(),
+      ]);
 
-    this.rule = rule;
+      this.rule = rule;
 
-    if (rule) {
-      if (rule.subjectType === 'action') {
-        this.subjectName = actions.find(a => a.id === rule.subjectId)?.name ?? '';
-      } else if (rule.subjectType === 'tag') {
-        this.subjectName = tags.find(t => t.id === rule.subjectId)?.name ?? '';
-      } else {
-        const item = items.find(i => i.id === rule.subjectId);
-        this.subjectName = item?.name ?? '';
-        this.listName = lists.find(l => l.id === item?.listId)?.name ?? '';
+      if (rule) {
+        if (rule.subjectType === 'action') {
+          this.subjectName = actions.find(a => a.id === rule.subjectId)?.name ?? '';
+        } else if (rule.subjectType === 'tag') {
+          this.subjectName = tags.find(t => t.id === rule.subjectId)?.name ?? '';
+        } else {
+          const item = items.find(i => i.id === rule.subjectId);
+          this.subjectName = item?.name ?? '';
+          this.listName = lists.find(l => l.id === item?.listId)?.name ?? '';
+        }
+        this.ruleName = this.ruleService.buildName(rule, this.subjectName);
       }
-      this.ruleName = this.ruleService.buildName(rule, this.subjectName);
+    } catch (error) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('RuleViewPage.ionViewDidEnter', error);
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -131,8 +138,8 @@ export class RuleViewPage {
     return this.rule ? formatDisplayDate(this.rule.startDate, this.translate.currentLang) : '';
   }
 
-  get metricLabel(): string {
-    return this.rule ? this.translate.instant(METRIC_KEY[this.rule.metric]) : '';
+  get formattedEndDate(): string {
+    return this.rule?.endDate ? formatDisplayDate(this.rule.endDate, this.translate.currentLang) : '';
   }
 
   get periodLabel(): string {
@@ -140,8 +147,12 @@ export class RuleViewPage {
   }
 
   get conditionLabel(): string {
-    if (!this.rule) return '';
-    const op = this.translate.instant(this.rule.operator === '>=' ? 'TK_AT_LEAST' : 'TK_AT_MOST');
-    return `${op} ${this.rule.value}`;
+    return this.rule ? this.ruleService.buildCondition(this.rule) : '';
+  }
+
+  async openSubject() {
+    if (!this.rule) return;
+    const route: Record<IRule['subjectType'], string> = { action: '/action', tag: '/tag', item: '/item' };
+    await this.router.navigate([route[this.rule.subjectType], this.rule.subjectId]);
   }
 }

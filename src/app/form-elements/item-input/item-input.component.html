@@ -1,0 +1,37 @@
+<div class="nf-ti">
+  <div class="nf-ti-field">
+    @if (selected) {
+      <span class="nf-token">
+        {{ selectedTitle }}
+        <i (click)="clear()" aria-label="Remove">✕</i>
+      </span>
+    } @else {
+      <input
+        class="nf-ti-input"
+        [value]="inputText"
+        [placeholder]="placeholder | translate"
+        (input)="onTextInput($event)"
+        (focus)="onFocus()"
+        (blur)="onBlur()"
+      />
+    }
+  </div>
+  @if (showDropdown) {
+    <div class="nf-ti-drop">
+      @for (s of filteredSuggestions; track s.item.type + '-' + s.item.itemId) {
+        <button type="button" class="nf-ti-opt"
+                (mousedown)="$event.preventDefault()" (click)="select(s)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="nf-ti-opt-text">
+            {{ s.title }}
+            @if (s.subtitle) {
+              <span class="nf-ti-opt-sub">{{ s.subtitle }}</span>
+            }
+          </span>
+        </button>
+      }
+    </div>
+  }
+</div>

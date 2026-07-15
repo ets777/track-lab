@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons, IonFab, IonFabButton, IonIcon, IonButton, IonActionSheet, IonText, IonInput, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline } from 'ionicons/icons';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,7 +25,7 @@ import { IItem } from 'src/app/db/models/item';
   selector: 'app-rule-list',
   templateUrl: './rule-list.page.html',
   styleUrls: ['./rule-list.page.scss'],
-  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonButton, IonActionSheet, IonText, IonInput, NavButtonComponent],
+  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonButton, IonActionSheet, IonText, IonInput, IonSegment, IonSegmentButton, NavButtonComponent],
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);
@@ -43,10 +43,21 @@ export class RuleListPage {
 
   rules: IRule[] = [];
   searchQuery = '';
+  statusFilter: 'opened' | 'closed' | 'all' = 'opened';
+
+  /** A rule is closed once its end date has passed (before today). */
+  isClosed(rule: IRule): boolean {
+    if (!rule.endDate) return false;
+    return rule.endDate < new Date().toISOString().slice(0, 10);
+  }
 
   get filteredRules(): IRule[] {
     const q = this.searchQuery.trim().toLowerCase();
-    return q ? this.rules.filter(r => this.getRuleName(r).toLowerCase().includes(q)) : this.rules;
+    return this.rules.filter(r => {
+      if (this.statusFilter === 'opened' && this.isClosed(r)) return false;
+      if (this.statusFilter === 'closed' && !this.isClosed(r)) return false;
+      return q ? this.getRuleName(r).toLowerCase().includes(q) : true;
+    });
   }
   private actions: IActionDb[] = [];
   private tags: ITag[] = [];

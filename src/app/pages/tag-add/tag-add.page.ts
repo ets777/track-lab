@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { TagForm, TagFormComponent } from 'src/app/components/tag-form/tag-form.component';
 import { TagService } from 'src/app/services/tag.service';
@@ -12,7 +12,7 @@ import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.com
   selector: 'app-tag-add',
   templateUrl: './tag-add.page.html',
   styleUrls: ['./tag-add.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagFormComponent, ReactiveFormsModule, NavButtonComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, TagFormComponent, NavButtonComponent],
 })
 export class TagAddPage {
   private tagService = inject(TagService);
@@ -21,7 +21,7 @@ export class TagAddPage {
   @ViewChild('addFormRef') addFormRef!: TagFormComponent;
 
   async addTag(): Promise<void> {
-    if (!this.isFormValid()) {
+    if (!(await this.addFormRef.validate())) {
       return;
     }
 
@@ -34,10 +34,6 @@ export class TagAddPage {
       title: 'TK_TAG_ADDED_SUCCESSFULLY',
       type: 'success',
     });
-  }
-
-  isFormValid() {
-    return this.addFormRef?.tagForm?.valid;
   }
 
   resetForm() {

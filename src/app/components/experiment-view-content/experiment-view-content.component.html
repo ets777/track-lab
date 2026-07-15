@@ -1,4 +1,4 @@
-<div class="experiment-view">
+<div class="av-screen">
 
   <!-- Status banner -->
   @if (experiment.isSuccess === 1) {
@@ -12,70 +12,74 @@
     </div>
   }
 
-  <!-- Dates + Progress -->
-  <div class="dates-section">
-    <div class="dates-row">
-      <span class="date-label">{{ startLabel }}</span>
-      <span class="date-sep">—</span>
-      <span class="date-label">{{ endLabel }}</span>
+  <!-- Timeline + progress -->
+  <section class="tl-widget">
+    <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_PROGRESS' | translate }}</span></div>
+    <div class="ev-dates">
+      <span class="ev-date">{{ startLabel }}</span>
+      <span class="ev-date-sep">—</span>
+      <span class="ev-date">{{ endLabel }}</span>
     </div>
-    <div class="progress-bar">
-      <div class="progress-bar__fill" [style.width]="progressPercent + '%'"></div>
-    </div>
-  </div>
-
-  <!-- Period selector for graphs -->
-  <form [formGroup]="filterForm">
-    <app-date-period-input
-      formControlName="datePeriod"
-      [minDate]="experimentMinDate"
-      [maxDate]="experimentMaxDate"
-      [maxRangeDays]="null"
-    ></app-date-period-input>
-  </form>
+    <div class="ev-progress"><div class="ev-progress__fill" [style.width]="progressPercent + '%'"></div></div>
+  </section>
 
   <!-- Indicators -->
   @if (indicatorViews.length) {
-    <div class="section-title">{{ 'TK_INDICATORS' | translate }}</div>
-    <div class="indicators-list">
-      @for (ind of indicatorViews; track ind.type + ':' + ind.subjectId) {
-        <div class="indicator-row">
-          <div class="indicator-info">
-            <span class="indicator-name">{{ ind.displayName }}</span>
-            <span class="indicator-subtitle">{{ ind.subtitle }}</span>
+    <section class="tl-widget">
+      <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_INDICATORS' | translate }}</span></div>
+      <div class="ev-inds">
+        @for (ind of indicatorViews; track ind.type + ':' + ind.subjectId) {
+          <div class="ev-ind">
+            <div class="ev-ind-label">
+              <span class="ev-ind-name">{{ ind.displayName }}</span>
+              <span class="ev-ind-sub">{{ ind.subtitle }}</span>
+            </div>
+            <ion-icon [src]="getDirectionSvg(ind.direction)" class="ev-trend"></ion-icon>
           </div>
-          <div class="indicator-direction">
-            <ion-icon [src]="getDirectionSvg(ind.direction)" class="trend-icon"></ion-icon>
-          </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    </section>
   }
+
+  <!-- Period selector for graphs (under the indicators list) -->
+  <section class="tl-widget">
+    <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_PERIOD' | translate }}</span></div>
+    <form [formGroup]="filterForm">
+      <app-date-period-input
+        formControlName="datePeriod"
+        [minDate]="experimentMinDate"
+        [maxDate]="experimentMaxDate"
+        [maxRangeDays]="null"
+      ></app-date-period-input>
+    </form>
+  </section>
 
   <!-- Graphs per indicator -->
   @for (ind of indicatorViews; track ind.type + ':' + ind.subjectId) {
-    <div class="graph-section">
-      <div class="graph-title">{{ ind.displayName }}</div>
-      @if (ind.stats && (ind.stats.baseline || ind.stats.current)) {
-        <div class="indicator-stats">
-          @if (ind.stats.baseline) {
-            <span class="indicator-stats__val">{{ ind.stats.baseline }}</span>
-          }
-          <ion-icon
-            [name]="ind.stats.arrowUp === null ? 'arrow-forward-outline' : (ind.stats.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline')"
-            class="indicator-stats__arrow"
-            [class.indicator-stats--success]="ind.stats.color === 'success'"
-            [class.indicator-stats--danger]="ind.stats.color === 'danger'"
-          ></ion-icon>
-          @if (ind.stats.current) {
-            <span
-              class="indicator-stats__val"
-              [class.indicator-stats--success]="ind.stats.color === 'success'"
-              [class.indicator-stats--danger]="ind.stats.color === 'danger'"
-            >{{ ind.stats.current }}</span>
-          }
-        </div>
-      }
+    <section class="tl-widget">
+      <div class="tl-widget-hd">
+        <span class="tl-widget-title">{{ ind.displayName }}</span>
+        @if (ind.stats && (ind.stats.baseline || ind.stats.current)) {
+          <span class="ev-stats">
+            @if (ind.stats.baseline) {
+              <span class="ev-stats__val">{{ ind.stats.baseline }}</span>
+            }
+            <ion-icon
+              [name]="ind.stats.arrowUp === null ? 'arrow-forward-outline' : (ind.stats.arrowUp ? 'arrow-up-outline' : 'arrow-down-outline')"
+              class="ev-stats__arrow"
+              [class.ev-stats--success]="ind.stats.color === 'success'"
+              [class.ev-stats--danger]="ind.stats.color === 'danger'"
+            ></ion-icon>
+            @if (ind.stats.current) {
+              <span
+                class="ev-stats__val"
+                [class.ev-stats--success]="ind.stats.color === 'success'"
+                [class.ev-stats--danger]="ind.stats.color === 'danger'"
+              >{{ ind.stats.current }}</span>
+            }
+          </span>
+        }
+      </div>
       @if (ind.type === 'metric' && ind.metric) {
         <app-stats-content
           [allMetrics]="allMetrics"
@@ -95,60 +99,59 @@
           [hideDetails]="true"
         ></app-stats-item-content>
       }
-    </div>
+    </section>
   }
 
-  <!-- Rules calendar -->
+  <!-- Rules -->
   @if (rules.length) {
-    <div class="section-title">{{ 'TK_RULES' | translate }}</div>
-
-    @if (combinedUptime !== null) {
-      <div class="combined-rule-stats">
-        <div class="combined-rule-stats__item">
-          <span class="combined-rule-stats__label">{{ 'TK_UPTIME' | translate }}</span>
-          <span class="combined-rule-stats__value">{{ combinedUptime }}%</span>
-        </div>
+    <section class="tl-widget">
+      <div class="tl-widget-hd">
+        <span class="tl-widget-title">{{ 'TK_RULES' | translate }}</span>
+        @if (combinedUptime !== null) {
+          <span class="ev-uptime">{{ combinedUptime }}% {{ 'TK_UPTIME' | translate }}</span>
+        }
       </div>
-    }
 
-    @if (availablePeriods.length > 1) {
-      <ion-segment [value]="selectedRulePeriod" (ionChange)="onRulePeriodTabChange($any($event))">
-        @for (p of availablePeriods; track p) {
-          <ion-segment-button [value]="p">
-            <ion-label>{{ (p === 'day' ? 'TK_DAILY' : p === 'week' ? 'TK_WEEKLY' : 'TK_MONTHLY') | translate }}</ion-label>
-          </ion-segment-button>
-        }
-      </ion-segment>
-    }
+      @if (availablePeriods.length > 1) {
+        <ion-segment class="ev-seg" [value]="selectedRulePeriod" (ionChange)="onRulePeriodTabChange($any($event))">
+          @for (p of availablePeriods; track p) {
+            <ion-segment-button [value]="p">
+              <ion-label>{{ (p === 'day' ? 'TK_DAILY' : p === 'week' ? 'TK_WEEKLY' : 'TK_MONTHLY') | translate }}</ion-label>
+            </ion-segment-button>
+          }
+        </ion-segment>
+      }
 
-    <app-aggregate-rule-calendar
-      [rules]="filteredRules"
-      [allActivities]="allActivities"
-      [completionsMap]="completionsMap"
-      [period]="selectedRulePeriod"
-      [selectedDate]="selectedDate"
-      [minDate]="experimentMinDate"
-      [maxDate]="calendarMaxDate"
-      (daySelected)="onDaySelected($event)"
-      (monthChanged)="onMonthChanged($event)"
-    ></app-aggregate-rule-calendar>
+      <app-aggregate-rule-calendar
+        [rules]="filteredRules"
+        [allActivities]="allActivities"
+        [completionsMap]="completionsMap"
+        [period]="selectedRulePeriod"
+        [selectedDate]="selectedDate"
+        [minDate]="experimentMinDate"
+        [maxDate]="calendarMaxDate"
+        (daySelected)="onDaySelected($event)"
+        (monthChanged)="onMonthChanged($event)"
+      ></app-aggregate-rule-calendar>
 
-    @if (ruleDayStatuses.length) {
-      <ion-list>
-        @for (result of ruleDayStatuses; track result.rule.id) {
-          <ion-item
-            button
-            (click)="navigateToRule(result.rule.id)"
-            [class.rule-green]="result.color === 'green'"
-            [class.rule-red]="result.color === 'red'"
-          >
-            <ion-label>{{ getRuleName(result) }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
-    } @else {
-      <ion-text color="medium">{{ 'TK_NO_RULES' | translate }}</ion-text>
-    }
+      @if (ruleDayStatuses.length) {
+        <div class="ev-rules">
+          @for (result of ruleDayStatuses; track result.rule.id) {
+            <button
+              type="button"
+              class="ev-rule"
+              [class.ev-rule--green]="result.color === 'green'"
+              [class.ev-rule--red]="result.color === 'red'"
+              (click)="navigateToRule(result.rule.id)"
+            >
+              <span class="ev-rule-name">{{ getRuleName(result) }}</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="av-empty">{{ 'TK_NO_RULES' | translate }}</p>
+      }
+    </section>
   }
 
 </div>

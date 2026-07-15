@@ -10,6 +10,11 @@
       <ion-icon src="assets/icon/plus.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  <ion-segment class="rl-status" [(ngModel)]="statusFilter">
+    <ion-segment-button value="opened">{{ 'TK_OPENED' | translate }}</ion-segment-button>
+    <ion-segment-button value="closed">{{ 'TK_CLOSED' | translate }}</ion-segment-button>
+    <ion-segment-button value="all">{{ 'TK_ALL' | translate }}</ion-segment-button>
+  </ion-segment>
   <div class="lib-card">
     <ion-item lines="full" class="lib-search">
       <ion-icon name="search-outline" slot="start" color="medium"></ion-icon>

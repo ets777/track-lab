@@ -21,6 +21,7 @@ import { formatDisplayDate } from 'src/app/functions/date';
 export class DatePickerComponent implements ControlValueAccessor {
   @Input() label = '';
   @Input() hideTrigger = false;
+  @Input() minDate = '';
   @Output() dateSelected = new EventEmitter<string>();
 
   private translate = inject(TranslateService);
@@ -98,9 +99,17 @@ export class DatePickerComponent implements ControlValueAccessor {
   }
 
   selectDay(day: number): void {
+    if (this.isDisabled(day)) return;
     this.selectedDay = day;
     this.selectedMonth = this.viewMonth;
     this.selectedYear = this.viewYear;
+  }
+
+  isDisabled(day: number): boolean {
+    if (!this.minDate) return false;
+    const m = String(this.viewMonth + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    return `${this.viewYear}-${m}-${d}` < this.minDate;
   }
 
   isSelected(day: number): boolean {

@@ -27,6 +27,7 @@
             class="dp-cell dp-day"
             [class.dp-day--selected]="isSelected(cell)"
             [class.dp-day--today]="isToday(cell) && !isSelected(cell)"
+            [class.dp-day--disabled]="isDisabled(cell)"
             (click)="selectDay(cell)"
           >{{ cell }}</div>
         }

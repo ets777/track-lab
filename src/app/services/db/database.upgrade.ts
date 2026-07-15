@@ -304,4 +304,10 @@ export const databaseUpgrades = [
       `DROP TABLE IF EXISTS actionLists;`,
     ],
   },
+  {
+    toVersion: 14,
+    statements: [
+      `ALTER TABLE rules ADD COLUMN endDate TEXT;`,
+    ],
+  },
 ];

@@ -1,3 +1,27 @@
+.rl-status {
+  --background: var(--tl-surface-2);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius-sm);
+  padding: 3px;
+  margin-bottom: 16px;
+
+  ion-segment-button {
+    --background-checked: var(--tl-surface);
+    --indicator-color: var(--tl-surface);
+    --color: var(--tl-text-faint);
+    --color-checked: var(--tl-text);
+    --border-radius: 8px;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    min-height: 34px;
+    font-family: var(--tl-font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-transform: none;
+  }
+}
+
 .lib-card {
   background: var(--tl-surface);
   border: 1px solid var(--tl-line);

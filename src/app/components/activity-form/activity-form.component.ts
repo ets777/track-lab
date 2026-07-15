@@ -40,6 +40,7 @@ import { IList } from 'src/app/db/models/list';
 import { IListLinkDb } from 'src/app/db/models/list-link';
 import { ListInputComponent } from '../../form-elements/list-input/list-input.component';
 import { ActionInputComponent } from '../../form-elements/action-input/action-input.component';
+import { SelectionSheetComponent, SelectionSheetItem } from '../selection-sheet/selection-sheet.component';
 
 function metricRangeValidator(min?: number, max?: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -66,7 +67,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonButton, IonButtons, IonToolbar, IonContent, IonHeader, IonModal, IonRange, IonCheckbox, IonIcon, IonList, IonLabel, IonItem, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent],
+  imports: [IonRange, IonCheckbox, IonIcon, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent, SelectionSheetComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -208,11 +209,6 @@ export class ActivityFormComponent implements OnInit {
     this.updateLibrarySearch();
   }
 
-  onLibrarySearch(event: any) {
-    this.librarySearchQuery = event.detail.value ?? '';
-    this.updateLibrarySearch();
-  }
-
   updateLibrarySearch() {
     const query = this.librarySearchQuery.toLowerCase();
 
@@ -235,6 +231,23 @@ export class ActivityFormComponent implements OnInit {
         )
         .map(l => ({ type: 'list' as const, id: l.id, name: l.name }));
     }
+  }
+
+  get libraryModalItems(): SelectionSheetItem[] {
+    return this.librarySearchResults.map(r => ({
+      id: `${r.type}:${r.id}`,
+      title: this.translate.instant(r.name),
+      data: r,
+    }));
+  }
+
+  onLibrarySheetSearch(query: string) {
+    this.librarySearchQuery = query;
+    this.updateLibrarySearch();
+  }
+
+  onLibrarySheetSelect(item: SelectionSheetItem) {
+    this.selectLibraryItem(item.data as { type: 'metric' | 'list'; id: number; name: string });
   }
 
   selectLibraryItem(item: { type: 'metric' | 'list'; id: number; name: string }) {

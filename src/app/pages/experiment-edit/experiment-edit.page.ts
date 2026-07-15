@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonFooter } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentEntry, ExperimentForm, ExperimentFormComponent } from 'src/app/components/experiment-form/experiment-form.component';
@@ -17,7 +17,7 @@ import { LogService } from 'src/app/services/log.service';
   selector: 'app-experiment-edit',
   templateUrl: './experiment-edit.page.html',
   styleUrls: ['./experiment-edit.page.scss'],
-  imports: [IonButtons, IonButton, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, ExperimentFormComponent],
+  imports: [IonFooter, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, NavButtonComponent, ExperimentFormComponent],
 })
 export class ExperimentEditPage {
   private route = inject(ActivatedRoute);
@@ -57,12 +57,8 @@ export class ExperimentEditPage {
     }
   }
 
-  isFormValid() {
-    return this.editFormRef?.experimentForm?.valid;
-  }
-
   async saveExperiment() {
-    if (!this.isFormValid()) return;
+    if (!(await this.editFormRef.validate())) return;
 
     try {
       const form = this.editFormRef.experimentForm.value as ExperimentForm;

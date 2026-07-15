@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- End date for rules
+
+### Changed
+
+- Redesign
+- Metrics and items can now be referenced to multiple entities
+
+### Fixed
+
+- Minor changes and fixes
+
 ## [0.7.3] - 2026-07-09
 
 ### Fixed

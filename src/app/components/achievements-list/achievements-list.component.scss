@@ -1,19 +1,54 @@
-.achievement {
-  padding-top: 10px;
+// ── Clinical card skin ──────────────────────────────────────────────────────
 
-  .icon {
-    font-size: 2.5rem;
-    margin-right: 10px;
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
+}
+
+.ach-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tl-line);
+
+  &:first-child {
+    padding-top: 0;
   }
 
-  .body {
-    .title {
-      font-size: 1.25rem;
-    }
-
-    .description {
-      font-size: 0.85rem;
-      margin-bottom: 10px;
-    }
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
   }
+}
+
+.ach-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.ach-body {
+  min-width: 0;
+}
+
+.ach-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
+}
+
+.ach-desc {
+  font-size: 13px;
+  color: var(--tl-text-dim);
+  margin-top: 2px;
+}
+
+.ach-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tl-text-faint);
 }

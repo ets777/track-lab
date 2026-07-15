@@ -269,3 +269,20 @@ ion-action-sheet.mf-step-sheet {
         }
     }
 }
+
+// ── Segment tabs: round the tap ripple / indicator so it never flashes
+// as a rectangle. Applies to every ion-segment, current and future.
+ion-segment-button {
+    &::part(native) {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    &::part(indicator-background) {
+        border-radius: 8px;
+    }
+
+    ion-ripple-effect {
+        border-radius: 8px;
+    }
+}

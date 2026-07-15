@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonItem, IonLabel, IonInput, IonButton, IonIcon, IonList, IonAccordion, IonAccordionGroup, IonSegment, IonSegmentButton, IonModal, IonHeader, IonToolbar, IonButtons, IonContent } from '@ionic/angular/standalone';
+import { FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { IonInput, IonIcon, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { CommonModule } from '@angular/common';
+import { SelectionSheetComponent, SelectionSheetItem } from '../selection-sheet/selection-sheet.component';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { reservedPrefixValidator } from 'src/app/validators/reserved-prefix.validator';
@@ -20,8 +20,6 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { ExperimentDirection } from 'src/app/db/models/experiment-metric';
 import { CommonItem } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
-import { addIcons } from 'ionicons';
-import { add, close, closeOutline } from 'ionicons/icons';
 import { format, addMonths, subDays, parseISO } from 'date-fns';
 
 export type ExperimentForm = {
@@ -42,11 +40,9 @@ type EntryItem = { commonItem: CommonItem; displayName: string; subtitle: string
   templateUrl: './experiment-form.component.html',
   styleUrls: ['./experiment-form.component.scss'],
   imports: [
-    IonItem, IonLabel, IonInput, IonButton, IonIcon, IonList,
-    IonAccordion, IonAccordionGroup, IonSegment, IonSegmentButton,
-    IonModal, IonHeader, IonToolbar, IonButtons, IonContent,
-    FormsModule, ReactiveFormsModule, TranslateModule, ValidationErrorDirective,
-    CommonModule, DatePeriodInputComponent,
+    IonInput, IonIcon, IonSegment, IonSegmentButton,
+    FormsModule, ReactiveFormsModule, TranslateModule,
+    CommonModule, DatePeriodInputComponent, SelectionSheetComponent,
   ],
 })
 export class ExperimentFormComponent implements OnInit {
@@ -64,6 +60,7 @@ export class ExperimentFormComponent implements OnInit {
   @Input() initialEntries: ExperimentEntry[] = [];
   @Input() initialRuleIds: number[] = [];
 
+  public submitted = false;
   public experimentForm!: ModelFormGroup<ExperimentForm>;
 
   entries: ExperimentEntry[] = [];
@@ -76,23 +73,76 @@ export class ExperimentFormComponent implements OnInit {
   entryModalResults: EntryItem[] = [];
   ruleModalResults: { id: number; name: string }[] = [];
 
-  entriesGroupOpen = true;
-  rulesGroupOpen = true;
-
   private allEntryItems: EntryItem[] = [];
   private allRuleItems: { id: number; name: string }[] = [];
   private allMetrics: IMetric[] = [];
 
-  constructor() {
-    addIcons({ add, close, closeOutline });
+  get modalItems(): SelectionSheetItem[] {
+    if (this.modalType === 'entry') {
+      return this.entryModalResults.map(ei => ({
+        id: `${ei.commonItem.type}:${ei.commonItem.itemId}`,
+        title: ei.displayName,
+        subtitle: ei.subtitle,
+        data: ei,
+      }));
+    }
+    return this.ruleModalResults.map(r => ({ id: r.id, title: r.name, data: r }));
   }
 
-  get hasEntries(): boolean {
-    return this.entries.length > 0;
+  onSheetSearch(query: string) {
+    this.searchQuery = query;
+    this.updateSearch();
   }
 
-  get hasRules(): boolean {
-    return this.selectedRuleIds.length > 0;
+  onSheetSelect(item: SelectionSheetItem) {
+    if (this.modalType === 'entry') {
+      this.selectEntryItem(item.data as EntryItem);
+    } else {
+      this.selectRuleItem(item.data as { id: number; name: string });
+    }
+  }
+
+  /** Validate-on-submit: mark submitted, resolve pending async checks, return validity. */
+  async validate(): Promise<boolean> {
+    this.submitted = true;
+    this.experimentForm.markAllAsTouched();
+
+    if (this.experimentForm.pending) {
+      await new Promise<void>((resolve) => {
+        const sub = this.experimentForm.statusChanges.subscribe((status) => {
+          if (status !== 'PENDING') {
+            sub.unsubscribe();
+            resolve();
+          }
+        });
+      });
+    }
+
+    return this.experimentForm.valid;
+  }
+
+  /** Show a field's validation sign only after submit was attempted. */
+  showError(name: string): boolean {
+    return this.submitted && !!this.experimentForm?.get(name)?.invalid;
+  }
+
+  /** Translate a single control's errors into user-facing messages. */
+  fieldErrors(name: string): string[] {
+    return this.messagesFor(this.experimentForm?.get(name)?.errors ?? null);
+  }
+
+  private messagesFor(errors: ValidationErrors | null): string[] {
+    if (!errors) return [];
+
+    const messages: string[] = [];
+    if (errors['required']) messages.push(this.translate.instant('TK_VALUE_IS_REQUIRED'));
+    for (const key of Object.keys(errors)) {
+      if (errors[key]?.message) {
+        messages.push(this.translate.instant(errors[key].message, errors[key].params));
+      }
+    }
+
+    return [...new Set(messages)];
   }
 
   get selectedRuleItems(): { id: number; name: string }[] {
@@ -177,6 +227,7 @@ export class ExperimentFormComponent implements OnInit {
   }
 
   setDefaultData() {
+    this.submitted = false;
     const today = format(new Date(), 'yyyy-MM-dd');
     const endDate = format(addMonths(new Date(), 1), 'yyyy-MM-dd');
     this.experimentForm.patchValue({ title: '', datePeriod: { startDate: today, endDate } });
@@ -185,6 +236,7 @@ export class ExperimentFormComponent implements OnInit {
   }
 
   setExperimentData(experiment: IExperiment, entries: ExperimentEntry[], ruleIds: number[]) {
+    this.submitted = false;
     const datePeriod = experiment.startDate && experiment.endDate
       ? { startDate: experiment.startDate, endDate: experiment.endDate }
       : null;
@@ -200,11 +252,6 @@ export class ExperimentFormComponent implements OnInit {
     this.searchQuery = '';
     this.updateSearch();
     this.isModalOpen = true;
-  }
-
-  onEntriesGroupChange(event: any) {
-    if (!this.hasEntries) return;
-    this.entriesGroupOpen = !!event.detail.value;
   }
 
   removeEntry(entry: ExperimentEntry) {
@@ -225,19 +272,8 @@ export class ExperimentFormComponent implements OnInit {
     this.isModalOpen = true;
   }
 
-  onRulesGroupChange(event: any) {
-    if (!this.hasRules) return;
-    this.rulesGroupOpen = !!event.detail.value;
-  }
-
   removeRule(ruleId: number) {
     this.selectedRuleIds = this.selectedRuleIds.filter(id => id !== ruleId);
-  }
-
-  // Shared modal
-  onSearch(event: any) {
-    this.searchQuery = event.detail.value ?? '';
-    this.updateSearch();
   }
 
   private updateSearch() {
@@ -258,14 +294,12 @@ export class ExperimentFormComponent implements OnInit {
 
   selectEntryItem(ei: EntryItem) {
     this.entries = [...this.entries, { type: ei.commonItem.type as ExperimentEntry['type'], subjectId: ei.commonItem.itemId, direction: 'any' }];
-    this.entriesGroupOpen = true;
     this.isModalOpen = false;
     this.computeInitialValues();
   }
 
   selectRuleItem(rule: { id: number; name: string }) {
     this.selectedRuleIds = [...this.selectedRuleIds, rule.id];
-    this.rulesGroupOpen = true;
     this.isModalOpen = false;
   }
 
