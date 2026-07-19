@@ -1,0 +1,76 @@
+// ── Clinical card skin ──────────────────────────────────────────────────────
+
+.av-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-gap);
+}
+
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
+}
+
+// ── Article content ─────────────────────────────────────────────────────────
+
+.doc-body {
+  line-height: 1.5;
+  color: var(--tl-text);
+}
+
+.doc-h {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.4em 0 0.4em;
+}
+
+.doc-h:first-child {
+  margin-top: 0;
+}
+
+.doc-p {
+  margin: 0.6em 0;
+}
+
+.doc-list {
+  margin: 0.6em 0;
+  padding-inline-start: 1.4em;
+
+  li {
+    margin: 0.3em 0;
+  }
+}
+
+.doc-see {
+  display: inline-block;
+  margin: 0.6em 0;
+  color: var(--ion-color-primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.doc-table-wrap {
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    border: 1px solid var(--tl-line);
+    padding: 0.5em 0.7em;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+    background: var(--tl-surface-2);
+  }
+}

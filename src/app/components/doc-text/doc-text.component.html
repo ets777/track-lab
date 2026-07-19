@@ -1,0 +1,11 @@
+@for (seg of segments; track $index) {
+  @if (seg.slug) {
+    <a class="doc-link" (click)="open(seg.slug)">{{ seg.text }}</a>
+  } @else if (seg.route) {
+    <a class="doc-link" (click)="openRoute(seg.route)">{{ seg.text }}</a>
+  } @else if (seg.href) {
+    <a class="doc-link" [href]="seg.href" target="_blank" rel="noopener noreferrer">{{ seg.text }}</a>
+  } @else {
+    <span>{{ seg.text }}</span>
+  }
+}

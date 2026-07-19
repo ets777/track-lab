@@ -189,6 +189,24 @@
           }
         </ul>
       </div>
+
+      <!-- Pinned so the shortcuts stay reachable however long the list is. -->
+      <div class="cwt-create-bar">
+        @for (option of subjectCreateOptions; track option.type) {
+          <button type="button" class="cwt-create" (click)="openCreate(option.type)">
+            <span class="cwt-create-plus">+</span>
+            <span>{{ option.label | translate }}</span>
+          </button>
+        }
+      </div>
     </div>
   </ng-template>
 </ion-modal>
+
+<!-- Create a missing subject without leaving the rule form -->
+<app-create-entity-sheet
+  [isOpen]="createOpen"
+  [type]="createType"
+  (created)="onSubjectCreated($event)"
+  (dismissed)="closeCreate()"
+></app-create-entity-sheet>

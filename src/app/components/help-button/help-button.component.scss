@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+// Mirrors app-nav-button hitbox so the trailing help control matches the
+// leading burger/back button.
+.hb {
+  --color: var(--text-color);
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 18px;
+  --padding-bottom: 18px;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  --box-shadow: none;
+  min-width: 0;
+  margin: 0;
+}

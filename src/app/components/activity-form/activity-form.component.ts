@@ -40,7 +40,8 @@ import { IList } from 'src/app/db/models/list';
 import { IListLinkDb } from 'src/app/db/models/list-link';
 import { ListInputComponent } from '../../form-elements/list-input/list-input.component';
 import { ActionInputComponent } from '../../form-elements/action-input/action-input.component';
-import { SelectionSheetComponent, SelectionSheetItem } from '../selection-sheet/selection-sheet.component';
+import { SelectionSheetComponent, SelectionSheetItem, SelectionSheetCreateOption } from '../selection-sheet/selection-sheet.component';
+import { CreateEntitySheetComponent, CreateEntityType, CreatedEntity } from '../create-entity-sheet/create-entity-sheet.component';
 
 function metricRangeValidator(min?: number, max?: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -67,7 +68,7 @@ export type ActivityForm = {
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
   styleUrls: ['./activity-form.component.scss'],
-  imports: [IonRange, IonCheckbox, IonIcon, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent, SelectionSheetComponent],
+  imports: [IonRange, IonCheckbox, IonIcon, IonInput, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, TagInputComponent, ListInputComponent, ActionInputComponent, TimeWheelComponent, DatePickerComponent, SelectionSheetComponent, CreateEntitySheetComponent],
 })
 export class ActivityFormComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
@@ -124,6 +125,9 @@ export class ActivityFormComponent implements OnInit {
   modalFilterType: 'metric' | 'list' = 'metric';
   librarySearchQuery = '';
   librarySearchResults: { type: 'metric' | 'list'; id: number; name: string }[] = [];
+
+  isCreateEntityOpen = false;
+  createEntityType: CreateEntityType = 'metric';
 
   private currentTime: string = '00:00';
 
@@ -248,6 +252,34 @@ export class ActivityFormComponent implements OnInit {
 
   onLibrarySheetSelect(item: SelectionSheetItem) {
     this.selectLibraryItem(item.data as { type: 'metric' | 'list'; id: number; name: string });
+  }
+
+  /** "New metric" / "New list" shortcuts pinned in the picker. */
+  get librarySheetCreateOptions(): SelectionSheetCreateOption[] {
+    return this.modalFilterType === 'metric'
+      ? [{ type: 'metric', label: 'TK_NEW_METRIC' }]
+      : [{ type: 'list', label: 'TK_NEW_LIST' }];
+  }
+
+  /** Swap the picker for the create sheet; the created entity gets selected on the way back. */
+  onLibraryCreateRequested(option: SelectionSheetCreateOption) {
+    this.isAddLibraryModalOpen = false;
+    this.createEntityType = option.type as CreateEntityType;
+    this.isCreateEntityOpen = true;
+  }
+
+  async onEntityCreated(entity: CreatedEntity) {
+    this.isCreateEntityOpen = false;
+    await this.refreshMetricsAndLists();
+    if (entity.type === 'metric') {
+      this.addManualMetric(entity.id);
+    } else if (entity.type === 'list') {
+      this.addManualList(entity.id);
+    }
+  }
+
+  closeCreateEntitySheet() {
+    this.isCreateEntityOpen = false;
   }
 
   selectLibraryItem(item: { type: 'metric' | 'list'; id: number; name: string }) {

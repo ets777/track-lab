@@ -1,3 +1,23 @@
+<!-- First-run primer: experiments combine several entities, so say what they are up front. -->
+@if (showIntro) {
+  <div class="nf-intro">
+    <div class="nf-intro-hd">
+      <span class="nf-intro-title">{{ 'TK_EXPERIMENT_INTRO_TITLE' | translate }}</span>
+      <button type="button" class="nf-intro-x" (click)="dismissIntro()" [attr.aria-label]="'TK_CLOSE' | translate">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <ol class="nf-intro-steps">
+      <li>{{ 'TK_EXPERIMENT_INTRO_STEP_1' | translate }}</li>
+      <li>{{ 'TK_EXPERIMENT_INTRO_STEP_2' | translate }}</li>
+      <li>{{ 'TK_EXPERIMENT_INTRO_STEP_3' | translate }}</li>
+    </ol>
+    <p class="nf-intro-note">{{ 'TK_EXPERIMENT_INTRO_NOTE' | translate }}</p>
+  </div>
+}
+
 <form [formGroup]="experimentForm" class="nf-screen nf-screen--cards">
 
   <!-- MAIN CARD: title · period -->
@@ -39,6 +59,7 @@
   <div class="nf-card">
     <div class="nf-sec2">
       <span class="nf-sec-title">{{ 'TK_INDICATORS' | translate }}</span>
+      <button type="button" class="nf-help" (click)="showIndicatorsTip($event)" aria-label="Help">?</button>
       <span class="nf-sec-spacer"></span>
       @if (entries.length < 3) {
         <button type="button" class="nf-sec-add" (click)="openEntryModal($event)">
@@ -79,7 +100,7 @@
         }
       </div>
     } @empty {
-      <p class="nf-empty">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</p>
+      <p class="nf-empty">{{ 'TK_INDICATORS_EMPTY' | translate }}</p>
     }
   </div>
 
@@ -87,6 +108,7 @@
   <div class="nf-card">
     <div class="nf-sec2">
       <span class="nf-sec-title">{{ 'TK_RULES' | translate }}</span>
+      <button type="button" class="nf-help" (click)="showRulesTip($event)" aria-label="Help">?</button>
       <span class="nf-sec-spacer"></span>
       @if (selectedRuleIds.length < 3) {
         <button type="button" class="nf-sec-add" (click)="openRuleModal($event)">
@@ -108,7 +130,7 @@
         <span class="nf-rule-name">{{ rule.name }}</span>
       </div>
     } @empty {
-      <p class="nf-empty">{{ 'TK_THERE_ARE_NO_ENTRIES' | translate }}</p>
+      <p class="nf-empty">{{ 'TK_RULES_EMPTY' | translate }}</p>
     }
   </div>
 
@@ -119,7 +141,23 @@
   [isOpen]="isModalOpen"
   [items]="modalItems"
   [searchValue]="searchQuery"
+  [createOptions]="sheetCreateOptions"
   (searchChange)="onSheetSearch($event)"
   (selected)="onSheetSelect($event)"
+  (createRequested)="onCreateRequested($event)"
   (dismissed)="closeModal()"
 ></app-selection-sheet>
+
+<!-- Create a missing indicator / rule without leaving the form -->
+<app-create-entity-sheet
+  [isOpen]="isCreateOpen"
+  [type]="createType"
+  (created)="onEntityCreated($event)"
+  (dismissed)="closeCreateSheet()"
+></app-create-entity-sheet>
+
+<app-create-rule-sheet
+  [isOpen]="isCreateRuleOpen"
+  (created)="onRuleCreated($event)"
+  (dismissed)="closeCreateRuleSheet()"
+></app-create-rule-sheet>

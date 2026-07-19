@@ -2,12 +2,39 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+
+  // In widget mode the wrappers lack .av-screen / .tl-widget styling, so the
+  // height must be carried down explicitly for .chart-fill's flex:1 to resolve
+  // against a real height (otherwise Chart.js falls back to its default size).
+  > div {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .chart-fill {
   flex: 1;
   min-height: 0;
   position: relative;
+
+  // Take the canvas out of flow so Chart.js's inline pixel sizing can't feed
+  // back into the container height (which otherwise makes the graph grow or
+  // shrink uncontrollably). The box drives the canvas, never the reverse.
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 // ── Clinical card skin (standalone library stats page) ──────────────────────

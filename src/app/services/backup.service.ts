@@ -58,6 +58,7 @@ import { ExperimentRuleService } from './experiment-rule.service';
 import { DashboardWidget } from '../types/dashboard-widget';
 import { DashboardConfigService } from './dashboard-config.service';
 import { AppConfigService } from './app-config.service';
+import { IAppConfigDb } from '../db/models/app-config';
 
 type Backup = {
   activities: IActivityDb[],
@@ -84,6 +85,7 @@ type Backup = {
   experimentIndicators?: IExperimentIndicatorDb[],
   experimentRules?: IExperimentRuleDb[],
   dashboardWidgets?: DashboardWidget[],
+  appConfig?: IAppConfigDb[],
   version: string,
 };
 
@@ -305,6 +307,7 @@ export class BackupService {
       experimentIndicators: await this.experimentIndicatorService.getAll(),
       experimentRules: await this.experimentRuleService.getAll(),
       dashboardWidgets: await this.dashboardConfigService.getWidgets(),
+      appConfig: await this.appConfigService.getAll(),
 
       version: appVersion,
     };
@@ -435,6 +438,8 @@ export class BackupService {
       if (backup.dashboardWidgets?.length) {
         await this.dashboardConfigService.save(backup.dashboardWidgets);
       }
+
+      await this.appConfigService.bulkAdd(backup.appConfig ?? []);
     } finally {
       this.loadingService.hide();
     }

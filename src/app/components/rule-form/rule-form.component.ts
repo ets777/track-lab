@@ -20,6 +20,7 @@ import { capitalize } from 'src/app/functions/string';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { IRule, RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
+import { CreateEntitySheetComponent, CreateEntityType, CreatedEntity } from '../create-entity-sheet/create-entity-sheet.component';
 
 export type RuleFormMetric = 'count' | 'duration';
 
@@ -44,7 +45,7 @@ export type RuleForm = {
   imports: [
     IonSegment, IonSegmentButton, IonCheckbox, IonIcon, IonModal,
     FormsModule, ReactiveFormsModule, TranslateModule,
-    TimeWheelComponent, CountWheelComponent, DatePickerComponent,
+    TimeWheelComponent, CountWheelComponent, DatePickerComponent, CreateEntitySheetComponent,
   ],
 })
 export class RuleFormComponent implements OnInit {
@@ -63,6 +64,15 @@ export class RuleFormComponent implements OnInit {
 
   public pickerOpen = false;
   public pickerQuery = '';
+  public createOpen = false;
+  public createType: CreateEntityType = 'action';
+
+  /** Rules measure actions, tags and items — metrics are not valid subjects. */
+  public readonly subjectCreateOptions: { type: CreateEntityType; label: string }[] = [
+    { type: 'action', label: 'TK_NEW_ACTION' },
+    { type: 'tag', label: 'TK_NEW_TAG' },
+    { type: 'item', label: 'TK_NEW_ITEM' },
+  ];
 
   constructor() {
     addIcons({ chevronForwardOutline, searchOutline, closeOutline });
@@ -156,7 +166,11 @@ export class RuleFormComponent implements OnInit {
     if (['action', 'tag'].includes(item.type)) {
       return this.translate.instant('TK_' + item.type.toUpperCase());
     }
-    return capitalize(item.type) ?? item.type;
+    if (!item.type) {
+      return this.translate.instant('TK_ITEM');
+    }
+    // Items carry their list name as `type`, and seeded lists store that name as a translation key.
+    return capitalize(this.translate.instant(item.type)) ?? item.type;
   }
 
   get unitLabel(): string {
@@ -240,10 +254,39 @@ export class RuleFormComponent implements OnInit {
   }
 
   selectSubject(res: Selectable<CommonItem>): void {
-    const subject = this.ruleForm.get('subject');
-    subject?.setValue(res.item);
-    subject?.markAsTouched();
+    this.setSubject(res.item);
     this.pickerOpen = false;
+  }
+
+  private setSubject(item: CommonItem): void {
+    const subject = this.ruleForm.get('subject');
+    subject?.setValue(item);
+    subject?.markAsTouched();
+  }
+
+  /** Swap the picker for the create sheet; the created subject gets selected on the way back. */
+  openCreate(type: CreateEntityType): void {
+    this.createType = type;
+    this.pickerOpen = false;
+    this.createOpen = true;
+  }
+
+  closeCreate(): void {
+    this.createOpen = false;
+  }
+
+  async onSubjectCreated(entity: CreatedEntity): Promise<void> {
+    this.createOpen = false;
+    await this.loadSuggestions();
+
+    // Items carry their list name as `type`, so match them by everything but the type.
+    const created = this.suggestions.find(s => entity.type === 'item'
+      ? s.item.itemId === entity.id && !['action', 'tag'].includes(s.item.type)
+      : s.item.itemId === entity.id && s.item.type === entity.type);
+
+    if (created) {
+      this.setSubject(created.item);
+    }
   }
 
   /** Validate-on-submit: mark submitted, mark all touched, return validity. */

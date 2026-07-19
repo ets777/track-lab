@@ -5,9 +5,11 @@
   "homepage": "https://etsbox.ru/tracklab",
   "scripts": {
     "ng": "ng",
+    "docs:gen": "node tools/docs-gen/index.js",
+    "prestart": "node tools/docs-gen/index.js",
     "start": "ng serve",
     "clear-cache": "rm -rf .angular/cache node_modules/.cache node_modules/.vite",
-    "prebuild": "node tools/version-updater/index.js",
+    "prebuild": "node tools/version-updater/index.js && node tools/docs-gen/index.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "test-migration": "ng test --watch=false --include=\"src/app/db/tests/migration.spec.ts\"",

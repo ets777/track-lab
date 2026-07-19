@@ -22,6 +22,7 @@ import { NavigationService } from './services/navigation.service';
 import { LabMenuComponent } from './components/lab-menu/lab-menu.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ExperimentNotificationComponent } from './components/experiment-notification/experiment-notification.component';
+import { WelcomeModalComponent } from './components/welcome-modal/welcome-modal.component';
 import { ExperimentService } from './services/experiment.service';
 import { addIcons } from 'ionicons';
 import {
@@ -32,7 +33,7 @@ import {
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LoadingComponent, ExperimentNotificationComponent],
+  imports: [IonApp, IonRouterOutlet, TabsComponent, AchievementToastComponent, TooltipComponent, StatsMenuComponent, ToastComponent, LabMenuComponent, LoadingComponent, ExperimentNotificationComponent, WelcomeModalComponent],
 })
 export class AppComponent implements OnInit {
   private translate = inject(TranslateService);

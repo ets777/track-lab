@@ -1,0 +1,43 @@
+// ── Clinical card skin ──────────────────────────────────────────────────────
+
+.av-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-gap);
+}
+
+.tl-widget {
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: var(--tl-pad);
+  position: relative;
+}
+
+.tl-widget ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+.tl-widget ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --border-color: var(--tl-line);
+  --min-height: 56px;
+  color: var(--tl-text);
+
+  &:last-of-type {
+    --border-width: 0;
+  }
+}
+
+ion-label h2 {
+  font-weight: 600;
+  color: var(--tl-text);
+}
+
+ion-label p {
+  color: var(--tl-text-dim);
+  white-space: normal;
+}

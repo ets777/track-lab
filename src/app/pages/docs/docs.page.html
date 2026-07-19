@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <app-nav-button slot="start"></app-nav-button>
+    <ion-title>{{ 'TK_USER_GUIDE' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="av-screen">
+    <section class="tl-widget">
+      <ion-list lines="full">
+        @for (article of articles; track article.slug) {
+          <ion-item button (click)="open(article.slug)">
+            <ion-label>
+              <h2>{{ pick(article, 'title') }}</h2>
+              <p>{{ pick(article, 'summary') }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </section>
+  </div>
+</ion-content>

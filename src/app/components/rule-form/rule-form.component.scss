@@ -336,6 +336,38 @@ ion-checkbox {
   color: var(--tl-text-faint);
 }
 
+// Create shortcuts pin below the results and read as actions, not as subjects.
+.cwt-create-bar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--tl-line);
+  background: var(--tl-bg);
+}
+
+.cwt-create {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius-sm);
+  background: var(--tl-accent-soft);
+  color: var(--tl-accent);
+  font-family: var(--tl-font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cwt-create-plus {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+}
+
 .cwt-empty {
   padding: 28px 20px;
   text-align: center;

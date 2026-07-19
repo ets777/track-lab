@@ -17,6 +17,9 @@ import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 import { CacheService } from 'src/app/services/cache.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { AppConfigService } from 'src/app/services/app-config.service';
+import { LogService } from 'src/app/services/log.service';
+import { WelcomeModalComponent } from 'src/app/components/welcome-modal/welcome-modal.component';
 import { formatDisplayDate } from 'src/app/functions/date';
 
 export enum autoBackupOption {
@@ -41,6 +44,8 @@ export class SettingsPage implements OnInit {
   private databaseRouter = inject(DatabaseRouter);
   private cacheService = inject(CacheService);
   private toastService = inject(ToastService);
+  private appConfigService = inject(AppConfigService);
+  private logService = inject(LogService);
   private router = inject(Router);
   get showBackButton(): boolean {
     return this.navigationService.fromDashboard;
@@ -59,6 +64,7 @@ export class SettingsPage implements OnInit {
   resetDatabaseOnReload = false;
   unlockAllAchievements = false;
   cacheEnabled = true;
+  showWelcomeMessage = true;
 
   async ngOnInit() {
     const autobackupPeriod = (await Preferences.get({ key: 'auto-backup-period' }))?.value;
@@ -72,6 +78,13 @@ export class SettingsPage implements OnInit {
     this.resetDatabaseOnReload = (await Preferences.get({ key: 'reset-database-on-reload' }))?.value === 'true';
     this.unlockAllAchievements = (await Preferences.get({ key: 'unlock-all-achievements' }))?.value === 'true';
     this.cacheEnabled = (await Preferences.get({ key: 'cache-enabled' }))?.value !== 'false';
+
+    try {
+      const dismissed = await this.appConfigService.get(WelcomeModalComponent.DISMISSED_KEY);
+      this.showWelcomeMessage = dismissed !== 'true';
+    } catch (e) {
+      this.logService.error('SettingsPage.ngOnInit', e);
+    }
   }
 
   async onTxtFileSelected(event: Event) {
@@ -102,6 +115,10 @@ export class SettingsPage implements OnInit {
 
   goToDatabase() {
     this.router.navigate(['/database']);
+  }
+
+  goToDocs() {
+    this.router.navigate(['/docs']);
   }
 
   async backupDatabase() {
@@ -154,6 +171,17 @@ export class SettingsPage implements OnInit {
   async setCacheEnabled(event: any) {
     const value = event.detail.checked as boolean;
     await this.cacheService.setEnabled(value);
+  }
+
+  /** Toggle the first-launch welcome: checked re-arms it, unchecked opts out. */
+  async setShowWelcomeMessage(event: any) {
+    const value = event.detail.checked as boolean;
+    try {
+      await this.appConfigService.set(WelcomeModalComponent.DISMISSED_KEY, value ? 'false' : 'true');
+    } catch (e) {
+      this.toastService.emit({ title: this.translate.instant('TK_AN_ERROR_OCCURRED'), type: 'error' });
+      this.logService.error('SettingsPage.setShowWelcomeMessage', e);
+    }
   }
 
   clearCache(): void {

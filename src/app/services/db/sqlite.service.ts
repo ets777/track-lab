@@ -86,6 +86,19 @@ export class SQLiteService {
     return result;
   }
 
+  private txChain: Promise<unknown> = Promise.resolve();
+
+  /**
+   * Serializes transactional work on the single shared connection. Concurrent
+   * callers (e.g. dashboard widgets loading in parallel) would otherwise race
+   * beginTransaction and crash with "Already in transaction".
+   */
+  async runExclusive<T>(work: () => Promise<T>): Promise<T> {
+    const result = this.txChain.then(work, work);
+    this.txChain = result.then(() => undefined, () => undefined);
+    return result;
+  }
+
   async beginTransaction() {
     const isTransactionActive = await this.isTransactionActive();
 

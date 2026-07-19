@@ -1,0 +1,86 @@
+.welcome-modal {
+  --width: min(92vw, 420px);
+  --height: auto;
+  --border-radius: 16px;
+}
+
+// Self-sizing scroll region: replaces ion-content, which collapses to 0 inside
+// an auto-height modal. Caps at 80vh so long content scrolls instead of
+// overflowing the viewport.
+.welcome-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+
+.welcome-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+}
+
+.welcome-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.welcome-text {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ion-color-medium-shade);
+}
+
+.welcome-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  line-height: 1.5;
+  color: var(--ion-color-medium-shade);
+}
+
+.welcome-list li {
+  padding-left: 0.25rem;
+}
+
+.welcome-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ion-color-primary);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.welcome-btn {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-step-200, #cccccc);
+  background: transparent;
+  color: var(--ion-text-color);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.welcome-btn--primary {
+  border-color: transparent;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+}
+
+.welcome-check {
+  margin-top: 0.25rem;
+}

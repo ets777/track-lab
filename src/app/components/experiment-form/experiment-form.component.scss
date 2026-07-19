@@ -122,6 +122,80 @@
   flex: 1 1 auto;
 }
 
+.nf-help {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  margin-left: -4px;
+  border: 1px solid var(--tl-line-2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tl-text-dim);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+// ── First-run primer ──
+
+.nf-intro {
+  margin-bottom: var(--tl-gap);
+  padding: 12px var(--tl-pad) 14px;
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  background: var(--tl-accent-soft);
+}
+
+.nf-intro-hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nf-intro-title {
+  flex: 1 1 auto;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tl-text);
+}
+
+.nf-intro-x {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--tl-radius-sm);
+  background: transparent;
+  color: var(--tl-text-dim);
+  cursor: pointer;
+}
+
+.nf-intro-steps {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tl-text-dim);
+}
+
+.nf-intro-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tl-text-faint);
+}
+
 .nf-sec-add {
   display: inline-flex;
   align-items: center;

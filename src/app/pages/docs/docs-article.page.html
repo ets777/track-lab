@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <app-nav-button slot="start"></app-nav-button>
+    <ion-title>{{ article ? pick(article.title) : '' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="av-screen">
+    <section class="tl-widget doc-body">
+    @if (article) {
+      @for (block of article.blocks; track $index) {
+        @switch (block.t) {
+          @case ('h') {
+            <h2 class="doc-h">{{ pick(block.text) }}</h2>
+          }
+          @case ('p') {
+            <p class="doc-p"><app-doc-text [text]="pick(block.text)"></app-doc-text></p>
+          }
+          @case ('ul') {
+            <ul class="doc-list">
+              @for (item of asItems(block); track $index) {
+                <li><app-doc-text [text]="pick(item)"></app-doc-text></li>
+              }
+            </ul>
+          }
+          @case ('ol') {
+            <ol class="doc-list">
+              @for (item of asItems(block); track $index) {
+                <li><app-doc-text [text]="pick(item)"></app-doc-text></li>
+              }
+            </ol>
+          }
+          @case ('table') {
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead>
+                  <tr>
+                    @for (h of asHeaders(block); track $index) {
+                      <th>{{ pick(h) }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of asRows(block); track $index) {
+                    <tr>
+                      @for (cell of row; track $index) {
+                        <td><app-doc-text [text]="pick(cell)"></app-doc-text></td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @case ('see') {
+            <a class="doc-see" (click)="open(block.slug)">{{ pick(block.text) }} →</a>
+          }
+        }
+      }
+    }
+    </section>
+  </div>
+</ion-content>

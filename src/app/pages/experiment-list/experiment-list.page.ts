@@ -10,6 +10,7 @@ import { ExperimentService } from 'src/app/services/experiment.service';
 import { Router } from '@angular/router';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { HelpButtonComponent } from 'src/app/components/help-button/help-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -26,7 +27,7 @@ type Filter = 'all' | 'progress' | 'success' | 'failed';
     IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList,
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
     TranslateModule, IonButton, IonActionSheet, IonText, IonInput,
-    NavButtonComponent,
+    NavButtonComponent, HelpButtonComponent,
   ],
 })
 export class ExperimentListPage {

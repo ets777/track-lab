@@ -184,6 +184,19 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.page').then(m => m.SettingsPage)
   },
   {
+    path: 'docs',
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/docs/docs.page').then(m => m.DocsPage),
+      },
+      {
+        path: ':slug',
+        loadComponent: () => import('./pages/docs/docs-article.page').then(m => m.DocsArticlePage),
+      },
+    ],
+  },
+  {
     path: 'actions',
     loadComponent: () => import('./pages/library/library.page').then(m => m.LibraryPage)
   },

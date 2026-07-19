@@ -11,6 +11,7 @@ import { RuleCompletionService } from 'src/app/services/rule-completion.service'
 import { Router } from '@angular/router';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { HelpButtonComponent } from 'src/app/components/help-button/help-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { OverlayEventDetail } from '@ionic/core';
@@ -25,7 +26,7 @@ import { IItem } from 'src/app/db/models/item';
   selector: 'app-rule-list',
   templateUrl: './rule-list.page.html',
   styleUrls: ['./rule-list.page.scss'],
-  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonButton, IonActionSheet, IonText, IonInput, IonSegment, IonSegmentButton, NavButtonComponent],
+  imports: [IonIcon, IonFabButton, IonFab, IonButtons, IonLabel, IonItem, IonList, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, IonButton, IonActionSheet, IonText, IonInput, IonSegment, IonSegmentButton, NavButtonComponent, HelpButtonComponent],
 })
 export class RuleListPage {
   private ruleService = inject(RuleService);

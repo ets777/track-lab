@@ -39,24 +39,26 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
       return String(value);
     };
 
-    try {
-      await this.sqlite.beginTransaction();
+    return this.sqlite.runExclusive(async () => {
+      try {
+        await this.sqlite.beginTransaction();
 
-      for (let i = 0; i < rows.length; i += chunkSize) {
-        const chunk = (rows as any[]).slice(i, i + chunkSize);
-        const values = chunk
-          .map(row => `(${cols.map(col => escape(row[col])).join(',')})`)
-          .join(',');
-        await this.sqlite.execute(`INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES ${values}`);
+        for (let i = 0; i < rows.length; i += chunkSize) {
+          const chunk = (rows as any[]).slice(i, i + chunkSize);
+          const values = chunk
+            .map(row => `(${cols.map(col => escape(row[col])).join(',')})`)
+            .join(',');
+          await this.sqlite.execute(`INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES ${values}`);
+        }
+
+        await this.sqlite.commitTransaction();
+      } catch (e) {
+        await this.sqlite.rollbackTransaction();
+        throw e;
       }
 
-      await this.sqlite.commitTransaction();
-    } catch (e) {
-      await this.sqlite.rollbackTransaction();
-      throw e;
-    }
-
-    return [];
+      return [];
+    });
   }
 
   async getById<K extends TableName>(table: K, id: number): Promise<RowFor<K> | undefined> {

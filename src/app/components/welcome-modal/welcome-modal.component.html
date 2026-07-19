@@ -1,0 +1,60 @@
+<ion-modal class="welcome-modal" [backdropDismiss]="false" (didDismiss)="onDidDismiss()">
+  <ng-template>
+    <div class="welcome-scroll">
+      <div class="welcome-body">
+        <h1 class="welcome-title">{{ 'TK_WELCOME_TITLE' | translate }}</h1>
+        <p class="welcome-text">{{ 'TK_WELCOME_INTRO' | translate }}</p>
+
+        <ol class="welcome-list">
+          <li>
+            {{ 'TK_WELCOME_POINT_TRACK' | translate }}
+            <button type="button" class="welcome-link" (click)="openDoc('activities')">
+              {{ 'TK_WELCOME_READ_MORE' | translate }}
+            </button>
+          </li>
+          <li>
+            {{ 'TK_WELCOME_POINT_RULES' | translate }}
+            <button type="button" class="welcome-link" (click)="openDoc('experiments')">
+              {{ 'TK_WELCOME_READ_MORE' | translate }}
+            </button>
+          </li>
+          <li>
+            {{ 'TK_WELCOME_POINT_EXPERIMENTS' | translate }}
+            <button type="button" class="welcome-link" (click)="openDoc('experiments')">
+              {{ 'TK_WELCOME_READ_MORE' | translate }}
+            </button>
+          </li>
+        </ol>
+
+        <p class="welcome-text">
+          {{ 'TK_WELCOME_OUTRO_BEFORE' | translate }}
+          <button type="button" class="welcome-link" (click)="openDoc('getting-started')">
+            {{ 'TK_WELCOME_GETTING_STARTED' | translate }}
+          </button>
+          {{ 'TK_WELCOME_OUTRO_AFTER' | translate }}
+        </p>
+
+        <p class="welcome-text">
+          {{ 'TK_WELCOME_CONTACT_BEFORE' | translate }}
+          <button type="button" class="welcome-link" (click)="openDoc()">
+            {{ 'TK_WELCOME_DOCUMENTATION' | translate }}
+          </button>{{ 'TK_WELCOME_CONTACT_MID' | translate }}
+          <a class="welcome-link" [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
+        </p>
+
+        <div class="welcome-actions">
+          <button type="button" class="welcome-btn welcome-btn--primary" (click)="openDoc('getting-started')">
+            {{ 'TK_WELCOME_OPEN_GUIDE' | translate }}
+          </button>
+          <button type="button" class="welcome-btn" (click)="close()">
+            {{ 'TK_WELCOME_DISMISS' | translate }}
+          </button>
+        </div>
+
+        <ion-checkbox class="welcome-check" labelPlacement="end" [(ngModel)]="dontShowAgain">
+          {{ 'TK_WELCOME_DONT_SHOW_AGAIN' | translate }}
+        </ion-checkbox>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

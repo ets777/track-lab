@@ -1,0 +1,52 @@
+<ion-modal class="ces-modal" [isOpen]="isOpen" (willPresent)="onWillPresent()" (didDismiss)="dismissed.emit()" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <div class="ces-head">
+      <span class="ces-title">{{ titleKey | translate }}</span>
+      <button type="button" class="ces-head-x" (click)="dismissed.emit()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <ion-content class="ion-padding">
+      @switch (type) {
+        @case ('metric') {
+          <app-metric-form></app-metric-form>
+        }
+        @case ('action') {
+          <app-action-form></app-action-form>
+        }
+        @case ('tag') {
+          <app-tag-form></app-tag-form>
+        }
+        @case ('list') {
+          <app-list-form></app-list-form>
+        }
+        @case ('item') {
+          <div class="ces-field">
+            <div class="ces-label">{{ 'TK_LIST' | translate }}</div>
+            <ion-select
+              [(ngModel)]="listId"
+              [placeholder]="'TK_SELECT' | translate"
+              [interfaceOptions]="{ header: 'TK_LIST' | translate }"
+            >
+              @for (list of lists; track list.id) {
+                <ion-select-option [value]="list.id">{{ list.name | translate }}</ion-select-option>
+              }
+            </ion-select>
+          </div>
+          @if (listId !== null) {
+            <app-item-form [listId]="listId"></app-item-form>
+          } @else {
+            <p class="ces-hint">{{ 'TK_PICK_LIST_FIRST' | translate }}</p>
+          }
+        }
+      }
+    </ion-content>
+
+    <ion-footer class="ces-actionbar">
+      <button type="button" class="ces-submit" [disabled]="saving" (click)="save()">
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

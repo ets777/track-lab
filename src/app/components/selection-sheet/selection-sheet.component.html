@@ -23,5 +23,17 @@
         }
       </ion-list>
     </ion-content>
+
+    <!-- Pinned so the shortcuts stay reachable however long the list is. -->
+    @if (createOptions.length) {
+      <ion-footer class="ss-create-bar">
+        @for (option of createOptions; track option.type) {
+          <button type="button" class="ss-create" (click)="createRequested.emit(option)">
+            <ion-icon name="add-outline"></ion-icon>
+            <span>{{ option.label | translate }}</span>
+          </button>
+        }
+      </ion-footer>
+    }
   </ng-template>
 </ion-modal>

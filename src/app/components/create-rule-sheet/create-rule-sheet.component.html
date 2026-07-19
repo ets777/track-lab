@@ -1,0 +1,20 @@
+<ion-modal class="ces-modal" [isOpen]="isOpen" (didDismiss)="dismissed.emit()" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <div class="ces-head">
+      <span class="ces-title">{{ 'TK_NEW_RULE' | translate }}</span>
+      <button type="button" class="ces-head-x" (click)="dismissed.emit()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <ion-content class="ion-padding">
+      <app-rule-form></app-rule-form>
+    </ion-content>
+
+    <ion-footer class="ces-actionbar">
+      <button type="button" class="ces-submit" [disabled]="saving" (click)="save()">
+        {{ 'TK_SAVE' | translate }}
+      </button>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

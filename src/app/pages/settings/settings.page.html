@@ -29,6 +29,13 @@
     </section>
 
     <section class="tl-widget">
+      <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_HELP' | translate }}</span></div>
+      <ion-list lines="full">
+        <ion-item button (click)="goToDocs()">{{ 'TK_USER_GUIDE' | translate }}</ion-item>
+      </ion-list>
+    </section>
+
+    <section class="tl-widget">
       <div class="tl-widget-hd"><span class="tl-widget-title">{{ 'TK_DATABASE' | translate }}</span></div>
       <ion-list lines="full">
         <ion-item button (click)="backupDatabase()">{{ 'TK_BACKUP_DATABASE' | translate }}</ion-item>
@@ -101,6 +108,13 @@
               [(ngModel)]="cacheEnabled"
               (ionChange)="setCacheEnabled($event)"
             >{{ 'TK_CACHE_ENABLED' | translate }}</ion-checkbox>
+          </ion-item>
+          <ion-item>
+            <ion-checkbox
+              labelPlacement="end"
+              [(ngModel)]="showWelcomeMessage"
+              (ionChange)="setShowWelcomeMessage($event)"
+            >{{ 'TK_SHOW_WELCOME_MESSAGE' | translate }}</ion-checkbox>
           </ion-item>
           <ion-item button (click)="goToDatabase()">Database</ion-item>
         </ion-list>

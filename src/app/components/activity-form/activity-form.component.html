@@ -236,7 +236,17 @@
   [isOpen]="isAddLibraryModalOpen"
   [items]="libraryModalItems"
   [searchValue]="librarySearchQuery"
+  [createOptions]="librarySheetCreateOptions"
   (searchChange)="onLibrarySheetSearch($event)"
   (selected)="onLibrarySheetSelect($event)"
+  (createRequested)="onLibraryCreateRequested($event)"
   (dismissed)="isAddLibraryModalOpen = false"
 ></app-selection-sheet>
+
+<!-- Inline create metric / list -->
+<app-create-entity-sheet
+  [isOpen]="isCreateEntityOpen"
+  [type]="createEntityType"
+  (created)="onEntityCreated($event)"
+  (dismissed)="closeCreateEntitySheet()"
+></app-create-entity-sheet>

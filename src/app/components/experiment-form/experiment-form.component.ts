@@ -3,7 +3,9 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Valida
 import { IonInput, IonIcon, IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { SelectionSheetComponent, SelectionSheetItem } from '../selection-sheet/selection-sheet.component';
+import { SelectionSheetComponent, SelectionSheetItem, SelectionSheetCreateOption } from '../selection-sheet/selection-sheet.component';
+import { CreateEntitySheetComponent, CreateEntityType, CreatedEntity } from '../create-entity-sheet/create-entity-sheet.component';
+import { CreateRuleSheetComponent, CreatedRule } from '../create-rule-sheet/create-rule-sheet.component';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { reservedPrefixValidator } from 'src/app/validators/reserved-prefix.validator';
@@ -17,6 +19,10 @@ import { TagService } from 'src/app/services/tag.service';
 import { ItemService } from 'src/app/services/item.service';
 import { ListService } from 'src/app/services/list.service';
 import { ActivityService } from 'src/app/services/activity.service';
+import { AppConfigService } from 'src/app/services/app-config.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { TooltipService } from 'src/app/services/tooltip.service';
+import { LogService } from 'src/app/services/log.service';
 import { ExperimentDirection } from 'src/app/db/models/experiment-metric';
 import { CommonItem } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
@@ -43,6 +49,7 @@ type EntryItem = { commonItem: CommonItem; displayName: string; subtitle: string
     IonInput, IonIcon, IonSegment, IonSegmentButton,
     FormsModule, ReactiveFormsModule, TranslateModule,
     CommonModule, DatePeriodInputComponent, SelectionSheetComponent,
+    CreateEntitySheetComponent, CreateRuleSheetComponent,
   ],
 })
 export class ExperimentFormComponent implements OnInit {
@@ -54,13 +61,21 @@ export class ExperimentFormComponent implements OnInit {
   private itemService = inject(ItemService);
   private listService = inject(ListService);
   private activityService = inject(ActivityService);
+  private appConfigService = inject(AppConfigService);
+  private tooltip = inject(TooltipService);
+  private toastService = inject(ToastService);
+  private logService = inject(LogService);
   private translate = inject(TranslateService);
+
+  /** Set once the user dismisses the primer, so it never returns. */
+  private static readonly INTRO_DISMISSED_KEY = 'experiment.introDismissed';
 
   @Input() experiment?: IExperiment;
   @Input() initialEntries: ExperimentEntry[] = [];
   @Input() initialRuleIds: number[] = [];
 
   public submitted = false;
+  public showIntro = false;
   public experimentForm!: ModelFormGroup<ExperimentForm>;
 
   entries: ExperimentEntry[] = [];
@@ -69,6 +84,9 @@ export class ExperimentFormComponent implements OnInit {
 
   isModalOpen = false;
   modalType: 'entry' | 'rule' = 'entry';
+  isCreateOpen = false;
+  isCreateRuleOpen = false;
+  createType: CreateEntityType = 'metric';
   searchQuery = '';
   entryModalResults: EntryItem[] = [];
   ruleModalResults: { id: number; name: string }[] = [];
@@ -89,9 +107,61 @@ export class ExperimentFormComponent implements OnInit {
     return this.ruleModalResults.map(r => ({ id: r.id, title: r.name, data: r }));
   }
 
+  private static readonly ENTRY_CREATE_OPTIONS: SelectionSheetCreateOption[] = [
+    { type: 'metric', label: 'TK_NEW_METRIC' },
+    { type: 'action', label: 'TK_NEW_ACTION' },
+    { type: 'tag', label: 'TK_NEW_TAG' },
+    { type: 'item', label: 'TK_NEW_ITEM' },
+  ];
+
+  private static readonly RULE_CREATE_OPTIONS: SelectionSheetCreateOption[] = [
+    { type: 'rule', label: 'TK_NEW_RULE' },
+  ];
+
+  get sheetCreateOptions(): SelectionSheetCreateOption[] {
+    return this.modalType === 'entry'
+      ? ExperimentFormComponent.ENTRY_CREATE_OPTIONS
+      : ExperimentFormComponent.RULE_CREATE_OPTIONS;
+  }
+
   onSheetSearch(query: string) {
     this.searchQuery = query;
     this.updateSearch();
+  }
+
+  /** Swap the picker for the create sheet; the created entity gets selected on the way back. */
+  onCreateRequested(option: SelectionSheetCreateOption) {
+    this.isModalOpen = false;
+
+    if (option.type === 'rule') {
+      this.isCreateRuleOpen = true;
+      return;
+    }
+
+    this.createType = option.type as CreateEntityType;
+    this.isCreateOpen = true;
+  }
+
+  async onEntityCreated(entity: CreatedEntity) {
+    this.isCreateOpen = false;
+    await this.loadSuggestions();
+    // Experiments never offer 'list' as a create option, so the type is always an entry type.
+    this.entries = [...this.entries, { type: entity.type as ExperimentEntry['type'], subjectId: entity.id, direction: 'any' }];
+    this.computeInitialValues();
+  }
+
+  async onRuleCreated(rule: CreatedRule) {
+    this.isCreateRuleOpen = false;
+    await this.loadSuggestions();
+    this.selectRuleItem(rule);
+  }
+
+  closeCreateSheet() {
+    this.isCreateOpen = false;
+  }
+
+  closeCreateRuleSheet() {
+    this.isCreateRuleOpen = false;
   }
 
   onSheetSelect(item: SelectionSheetItem) {
@@ -171,12 +241,46 @@ export class ExperimentFormComponent implements OnInit {
     });
 
     await this.loadSuggestions();
+    await this.loadIntroState();
 
     if (this.experiment) {
       this.setExperimentData(this.experiment, this.initialEntries, this.initialRuleIds);
     } else {
       this.setDefaultData();
     }
+  }
+
+  /** The primer only helps while composing a first experiment, not while editing an existing one. */
+  private async loadIntroState() {
+    if (this.experiment) return;
+
+    try {
+      const dismissed = await this.appConfigService.get(ExperimentFormComponent.INTRO_DISMISSED_KEY);
+      this.showIntro = dismissed !== 'true';
+    } catch (e) {
+      this.logService.error('ExperimentFormComponent.loadIntroState', e);
+    }
+  }
+
+  async dismissIntro() {
+    this.showIntro = false;
+
+    try {
+      await this.appConfigService.set(ExperimentFormComponent.INTRO_DISMISSED_KEY, 'true');
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      this.logService.error('ExperimentFormComponent.dismissIntro', e);
+    }
+  }
+
+  showIndicatorsTip(event: Event) {
+    event.preventDefault();
+    this.tooltip.show(event, this.translate.instant('TK_INDICATORS_TIP'));
+  }
+
+  showRulesTip(event: Event) {
+    event.preventDefault();
+    this.tooltip.show(event, this.translate.instant('TK_RULES_TIP'));
   }
 
   private async loadSuggestions() {
@@ -314,7 +418,7 @@ export class ExperimentFormComponent implements OnInit {
     if (!value) return this.translate.instant('TK_INITIAL_VALUE_NO_DATA');
     const tkKey = entry.direction === 'increasing' ? 'TK_INITIAL_VALUE_INCREASING'
       : entry.direction === 'decreasing' ? 'TK_INITIAL_VALUE_DECREASING'
-      : 'TK_INITIAL_VALUE_ANY';
+        : 'TK_INITIAL_VALUE_ANY';
     return this.translate.instant(tkKey, { value });
   }
 

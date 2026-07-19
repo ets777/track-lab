@@ -17,6 +17,7 @@ import { IList } from 'src/app/db/models/list';
 import { IRule } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { HelpButtonComponent } from 'src/app/components/help-button/help-button.component';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
 
@@ -24,7 +25,7 @@ import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-pick
   selector: 'app-activity-list-page',
   templateUrl: './activity-list.page.html',
   styleUrl: './activity-list.page.scss',
-  imports: [IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton, NavButtonComponent, DatePickerComponent],
+  imports: [IonIcon, IonButton, IonText, IonContent, IonHeader, IonToolbar, IonTitle, CommonModule, IonButtons, TranslateModule, ActivityListComponent, IonFab, IonFabButton, NavButtonComponent, HelpButtonComponent, DatePickerComponent],
 })
 export class ActivityListPage {
   private activityService = inject(ActivityService);

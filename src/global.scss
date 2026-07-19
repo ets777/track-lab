@@ -136,6 +136,19 @@ ion-modal.cwt-modal {
     align-items: flex-end;
 }
 
+// ── Welcome modal: centered auto-height card ──
+// The delegate host (.ion-page) is created by Ionic outside the component's
+// view, so its auto-height recipe must live here, not in component scss.
+ion-modal.welcome-modal {
+    --background: var(--tl-surface);
+
+    .ion-page {
+        position: relative;
+        display: block;
+        contain: content;
+    }
+}
+
 // ── Clinical action sheets (all modal menus) ──
 ion-action-sheet {
     --background: var(--tl-surface);

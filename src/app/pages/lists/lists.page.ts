@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { searchOutline, eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { NavigationService } from 'src/app/services/navigation.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
+import { HelpButtonComponent } from 'src/app/components/help-button/help-button.component';
 import { ListService } from 'src/app/services/list.service';
 import { IList } from 'src/app/db/models/list';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -19,7 +20,7 @@ import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skel
   selector: 'app-lists',
   templateUrl: './lists.page.html',
   styleUrls: ['./lists.page.scss'],
-  imports: [IonInput, IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, DefaultSkeletonComponent, NavButtonComponent],
+  imports: [IonInput, IonActionSheet, IonButton, IonText, IonIcon, IonFabButton, IonFab, IonLabel, IonItem, IonList, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, TranslateModule, DefaultSkeletonComponent, NavButtonComponent, HelpButtonComponent],
 })
 export class ListsPage {
   private listService = inject(ListService);
