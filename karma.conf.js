@@ -40,8 +40,5 @@ module.exports = function (config) {
     browsers: ['Chrome'],
     singleRun: false,
     restartOnFileChange: true,
-    files: [
-      'node_modules/fake-indexeddb/auto.js',
-    ],
   });
 };
