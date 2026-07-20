@@ -1,15 +1,16 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0]
 
 ### Added
 
+- Documentation
 - End date for rules
+- Metrics and items can now be referenced to multiple entities
 
-### Changed
+### Improved
 
 - Redesign
-- Metrics and items can now be referenced to multiple entities
 
 ### Fixed
 
