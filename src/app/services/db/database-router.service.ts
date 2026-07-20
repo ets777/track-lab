@@ -1,29 +1,11 @@
 import { Injectable, inject } from "@angular/core";
 import { CreateDtoFor, TableName, Where } from "./types";
 import { IDatabaseAdapter } from "./database-adapter.interface";
-import { DexieAdapter } from "./dexie-adapter.service";
 import { SqliteAdapter } from "./sqlite-adapter.service";
 
 @Injectable({ providedIn: 'root' })
 export class DatabaseRouter implements IDatabaseAdapter {
-  private dexie = inject(DexieAdapter);
-  private sqlite = inject(SqliteAdapter);
-
-  private adapter!: IDatabaseAdapter;
-
-  setAdapterToSqlite() {
-    this.adapter = this.sqlite;
-  }
-
-  setAdapterToDexie() {
-    this.adapter = this.dexie;
-  }
-
-  getCurrentAdapterName(): 'SQLite' | 'IndexedDB' | 'unknown' {
-    if (this.adapter === this.sqlite) return 'SQLite';
-    if (this.adapter === this.dexie) return 'IndexedDB';
-    return 'unknown';
-  }
+  private adapter: IDatabaseAdapter = inject(SqliteAdapter);
 
   add = <K extends TableName>(table: K, row: CreateDtoFor<K>) => this.adapter.add(table, row);
   bulkAdd = <K extends TableName>(table: K, rows: CreateDtoFor<K>[]) => this.adapter.bulkAdd(table, rows);

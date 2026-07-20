@@ -13,7 +13,6 @@ import { BackupService } from 'src/app/services/backup.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
-import { DatabaseRouter } from 'src/app/services/db/database-router.service';
 import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 import { CacheService } from 'src/app/services/cache.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -41,7 +40,6 @@ export class SettingsPage implements OnInit {
   private navigationService = inject(NavigationService);
   private hookService = inject(HookService);
   private alertController = inject(AlertController);
-  private databaseRouter = inject(DatabaseRouter);
   private cacheService = inject(CacheService);
   private toastService = inject(ToastService);
   private appConfigService = inject(AppConfigService);
@@ -53,7 +51,6 @@ export class SettingsPage implements OnInit {
 
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
-  get currentDatabase() { return this.databaseRouter.getCurrentAdapterName(); }
   readonly dbVersion = databaseUpgrades[databaseUpgrades.length - 1].toVersion;
   environment = environment;
   autoBackupOption = autoBackupOption;

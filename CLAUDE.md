@@ -6,7 +6,7 @@ An Android-first activity tracking app built with Ionic + Angular (standalone co
 
 - **Framework**: Ionic + Angular (standalone components)
 - **Native**: Capacitor (Android primary target)
-- **Database**: SQLite (via `@capacitor-community/sqlite`); Dexie (IndexedDB) is deprecated (will be removed completely in v1.0.0)
+- **Database**: SQLite (via `@capacitor-community/sqlite`)
 - **Language**: TypeScript
 
 ## Project Structure
@@ -65,7 +65,7 @@ Angular injectable services (DI). Business logic, data access, and cross-compone
 
 ### `services/db/`
 
-Database layer: adapters, migrations, and the router that selects SQLite vs Dexie at runtime.
+Database layer: SQLite adapter and migrations.
 
 ### `db/`
 
