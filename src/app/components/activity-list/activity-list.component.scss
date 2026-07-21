@@ -191,11 +191,13 @@
   font-size: 11.5px;
   color: var(--tl-text-dim);
   letter-spacing: 0.01em;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 
   b {
     color: var(--tl-text);
     font-weight: 600;
+    white-space: nowrap;
   }
 }
 

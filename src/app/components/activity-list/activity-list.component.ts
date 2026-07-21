@@ -174,10 +174,12 @@ export class ActivityListComponent implements OnChanges {
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
     const mins = toMin(activity.endTime) - toMin(activity.startTime);
     if (mins <= 0) return '';
-    if (mins < 60) return `${mins} min`;
+    const minShort = this.translate.instant('TK_MIN_SHORT');
+    if (mins < 60) return `${mins} ${minShort}`;
+    const hourShort = this.translate.instant('TK_HOUR_SHORT');
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    return m ? `${h}h ${m}m` : `${h}h`;
+    return m ? `${h}${hourShort} ${m}${minShort}` : `${h}${hourShort}`;
   }
 
   isLinkedToNext(index: number): boolean {

@@ -6,17 +6,25 @@ import { ChartConfiguration } from 'chart.js';
  * solid colours, rounded bars, line with point dots).
  */
 
-export const CHART_GRID_COLOR = '#e7ebef';
-export const CHART_TICK_COLOR = '#9aa6b4';
-export const CHART_LEGEND_COLOR = '#475569';
 export const CHART_FONT = { family: "'IBM Plex Mono', ui-monospace, monospace", size: 10 };
 
-const legendPlugin = {
+/** Read a CSS custom property off :root, with a fallback if unavailable. */
+function cssVar(name: string, fallback: string): string {
+  if (typeof getComputedStyle === 'undefined') return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+/** Theme-aware chart colours, resolved at build time so they track light/dark. */
+export const chartGridColor = () => cssVar('--tl-chart-grid', '#dbe1e7');
+export const chartTickColor = () => cssVar('--tl-text-faint', '#9aa6b4');
+export const chartLegendColor = () => cssVar('--tl-text-dim', '#475569');
+
+const legendPlugin = () => ({
   legend: {
     display: true,
     position: 'top' as const,
     labels: {
-      color: CHART_LEGEND_COLOR,
+      color: chartLegendColor(),
       font: CHART_FONT,
       boxWidth: 24,
       boxHeight: 12,
@@ -25,19 +33,19 @@ const legendPlugin = {
       padding: 12,
     },
   },
-};
+});
 
 const buildScales = (beginAtZero: boolean, yExtra: Record<string, unknown>) => ({
   x: {
     grid: { display: false },
-    border: { color: CHART_GRID_COLOR },
-    ticks: { color: CHART_TICK_COLOR, font: CHART_FONT },
+    border: { color: chartGridColor() },
+    ticks: { color: chartTickColor(), font: CHART_FONT },
   },
   y: {
     beginAtZero,
-    grid: { color: CHART_GRID_COLOR },
+    grid: { color: chartGridColor() },
     border: { display: false },
-    ticks: { color: CHART_TICK_COLOR, font: CHART_FONT },
+    ticks: { color: chartTickColor(), font: CHART_FONT },
     ...yExtra,
   },
 });
@@ -55,7 +63,7 @@ function buildOptions(beginAtZero: boolean, { fillHeight, yMin, yMax }: StyledCh
   return {
     responsive: true,
     maintainAspectRatio: !fillHeight,
-    plugins: legendPlugin,
+    plugins: legendPlugin(),
     scales: buildScales(beginAtZero, yExtra),
   };
 }
@@ -66,6 +74,25 @@ export function styledLineChartOptions(options: StyledChartOptions = {}): ChartC
 
 export function styledBarChartOptions(options: StyledChartOptions = {}): ChartConfiguration<'bar'>['options'] {
   return buildOptions(true, options) as ChartConfiguration<'bar'>['options'];
+}
+
+/**
+ * Re-resolve theme-dependent grid/tick/legend colours on an existing chart's
+ * options in place. Call after a light/dark switch, then chart.update().
+ */
+export function applyChartThemeColors(options: Record<string, any> | undefined): void {
+  if (!options) return;
+  const grid = chartGridColor();
+  const tick = chartTickColor();
+  const scales = options['scales'] ?? {};
+  for (const axis of Object.values<any>(scales)) {
+    if (!axis) continue;
+    if (axis.grid) axis.grid.color = grid;
+    if (axis.border) axis.border.color = grid;
+    if (axis.ticks) axis.ticks.color = tick;
+  }
+  const legendLabels = options['plugins']?.legend?.labels;
+  if (legendLabels) legendLabels.color = chartLegendColor();
 }
 
 /** Line dataset shape: point dots, straight segments, no area fill. */

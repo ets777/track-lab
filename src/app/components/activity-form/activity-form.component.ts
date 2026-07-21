@@ -712,7 +712,7 @@ export class ActivityFormComponent implements OnInit {
     const endMins = parseInt(endMatch[1]) * 60 + parseInt(endMatch[2]);
     let diff = endMins - startMins;
     if (diff < 0) diff += 24 * 60;
-    return `${diff} min`;
+    return `${diff} ${this.translate.instant('TK_MIN_SHORT')}`;
   }
 
   setActivityData(activity: IActivity) {

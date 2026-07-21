@@ -5,9 +5,9 @@ import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { formatDisplayDate } from 'src/app/functions/date';
+import { formatDisplayDate, formatWeekday } from 'src/app/functions/date';
 import { IActivity } from 'src/app/db/models/activity';
 import { ActivityListComponent } from 'src/app/components/activity-list/activity-list.component';
 import { IMetric } from 'src/app/db/models/metric';
@@ -119,8 +119,7 @@ export class ActivityListPage {
 
   get displayWeekday(): string {
     if (!this.currentDate) return '';
-    const d = parseISO(this.currentDate);
-    return isNaN(d.getTime()) ? '' : format(d, 'EEE');
+    return formatWeekday(this.currentDate, this.translate.currentLang || 'en');
   }
 
   get showBackButton(): boolean {

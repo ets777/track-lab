@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
 import { addDays, format, parseISO } from 'date-fns';
 import { IActivity } from 'src/app/db/models/activity';
 import { ITag } from 'src/app/db/models/tag';
@@ -41,7 +42,7 @@ export type EntityType = 'action' | 'tag' | 'item';
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon,
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     ActivityListComponent, NavButtonComponent, TagsComponent,
-    DatePeriodInputComponent, BaseChartDirective, DefaultSkeletonComponent,
+    DatePeriodInputComponent, BaseChartDirective, ChartThemeDirective, DefaultSkeletonComponent,
   ],
 })
 export class EntityViewPage {

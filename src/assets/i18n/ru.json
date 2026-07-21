@@ -506,6 +506,8 @@
   "TK_PROGRESS": "Прогресс",
   "TK_CALENDAR": "Календарь",
   "TK_MINUTES": "минут",
+  "TK_MIN_SHORT": "мин",
+  "TK_HOUR_SHORT": "ч",
   "TK_RULE_TIME": "раза",
   "TK_RULE_MINUTE": "минуты",
   "TK_RULE_MINUTES": "минут",

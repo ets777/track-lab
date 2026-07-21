@@ -20,6 +20,7 @@
   --tl-surface-2: #f4f7f9;
   --tl-line: #e7ebef;
   --tl-line-2: #dbe1e7;
+  --tl-chart-grid: #dbe1e7;
   --tl-text: #0f1722;
   --tl-text-dim: #5a6775;
   --tl-text-faint: #9aa6b4;
@@ -68,6 +69,7 @@
     --tl-surface-2: #161d25;
     --tl-line: rgba(255, 255, 255, 0.07);
     --tl-line-2: rgba(255, 255, 255, 0.13);
+    --tl-chart-grid: rgba(255, 255, 255, 0.05);
     --tl-text: #eef2f6;
     --tl-text-dim: #97a3b0;
     --tl-text-faint: #5c6873;
@@ -100,5 +102,17 @@
 
     --text-color: var(--tl-text);
     --text-color-grey: var(--tl-text-faint);
+  }
+
+  // Ionic's dark palette (dark.system.css) sets toolbar/tab-bar (#1f1f1f) and
+  // item (#1e1e1e) backgrounds under `:root.md`/`:root.ios`, which out-specifies
+  // the plain `:root` tokens above. Re-assert our surface colour at the same
+  // specificity so every panel and list matches the clinical dark surface.
+  :root.md,
+  :root.ios {
+    --ion-item-background: var(--tl-surface);
+    --ion-toolbar-background: var(--tl-surface);
+    --ion-tab-bar-background: var(--tl-surface);
+    --ion-card-background: var(--tl-surface);
   }
 }

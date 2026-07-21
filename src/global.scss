@@ -299,3 +299,9 @@ ion-segment-button {
         border-radius: 8px;
     }
 }
+
+// FAB overlap fix: any content hosting a bottom FAB gets extra scroll space so
+// the last list item can scroll clear of the floating add button.
+ion-content:has(ion-fab[vertical="bottom"]) {
+    --padding-bottom: 88px;
+}

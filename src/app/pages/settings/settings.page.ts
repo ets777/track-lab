@@ -13,7 +13,6 @@ import { BackupService } from 'src/app/services/backup.service';
 import { environment } from '../../../environments/environment';
 import { HookService } from 'src/app/services/hook.service';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
-import { databaseUpgrades } from 'src/app/services/db/database.upgrade';
 import { CacheService } from 'src/app/services/cache.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { AppConfigService } from 'src/app/services/app-config.service';
@@ -51,7 +50,6 @@ export class SettingsPage implements OnInit {
 
   appVersion = appVersion;
   env = !environment.production ? '(dev)' : '';
-  readonly dbVersion = databaseUpgrades[databaseUpgrades.length - 1].toVersion;
   environment = environment;
   autoBackupOption = autoBackupOption;
   autoBackupPeriod: autoBackupOption = autoBackupOption.none;

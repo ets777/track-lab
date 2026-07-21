@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
 import { BaseChartDirective } from 'ng2-charts';
+import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
 import { ChartConfiguration } from 'chart.js';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
@@ -29,7 +30,7 @@ import { styledLineChartOptions, LINE_DATASET_STYLE, lineDatasetColor, accentCol
   selector: 'app-metric-view',
   templateUrl: './metric-view.page.html',
   styleUrls: ['./metric-view.page.scss'],
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, NavButtonComponent, DatePeriodInputComponent, DefaultSkeletonComponent],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, ChartThemeDirective, NavButtonComponent, DatePeriodInputComponent, DefaultSkeletonComponent],
 })
 export class MetricViewPage {
   private route = inject(ActivatedRoute);

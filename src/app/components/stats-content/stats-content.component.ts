@@ -7,6 +7,7 @@ import { ActivityService } from 'src/app/services/activity.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { BaseChartDirective } from 'ng2-charts';
+import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
 import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
@@ -44,7 +45,7 @@ interface NormalizedPoint {
   selector: 'app-stats-content',
   templateUrl: './stats-content.component.html',
   styleUrl: './stats-content.component.scss',
-  imports: [IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, DatePeriodInputComponent, MetricInputComponent],
+  imports: [IonSegment, IonSegmentButton, CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, BaseChartDirective, ChartThemeDirective, DatePeriodInputComponent, MetricInputComponent],
 })
 export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
   private activityService = inject(ActivityService);

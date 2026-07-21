@@ -506,6 +506,8 @@
   "TK_PROGRESS": "Progress",
   "TK_CALENDAR": "Calendar",
   "TK_MINUTES": "minutes",
+  "TK_MIN_SHORT": "min",
+  "TK_HOUR_SHORT": "h",
   "TK_RULE_TIME": "time",
   "TK_RULE_MINUTE": "minute",
   "TK_RULE_MINUTES": "minutes",

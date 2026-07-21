@@ -14,6 +14,7 @@ import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-inpu
 import { ChartConfiguration } from 'chart.js';
 import { styledBarChartOptions, BAR_DATASET_STYLE, barDatasetColor } from 'src/app/functions/chart';
 import { BaseChartDirective } from 'ng2-charts';
+import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
 import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
@@ -33,7 +34,7 @@ export type FilterForm = {
   selector: 'app-stats-item-content',
   templateUrl: './stats-item-content.component.html',
   styleUrls: ['./stats-item-content.component.scss'],
-  imports: [IonLabel, IonItem, IonList, CommonModule, FormsModule, TranslateModule, ItemInputComponent, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective],
+  imports: [IonLabel, IonItem, IonList, CommonModule, FormsModule, TranslateModule, ItemInputComponent, ReactiveFormsModule, DatePeriodInputComponent, BaseChartDirective, ChartThemeDirective],
 })
 export class StatsItemContentComponent implements OnInit, OnChanges {
   private activityService = inject(ActivityService);

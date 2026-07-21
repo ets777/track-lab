@@ -12,6 +12,13 @@ function normalizeShortDate(s: string): string {
     return s.replace(/\.(?=\s|$)/g, '');
 }
 
+export function formatWeekday(dateStr: string, lang: string): string {
+    const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return '';
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return normalizeShortDate(d.toLocaleDateString(lang, { weekday: 'short' }));
+}
+
 export function formatGraphDate(dateStr: string, lang: string): string {
     const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!m) return dateStr;
