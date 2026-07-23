@@ -305,3 +305,50 @@ ion-segment-button {
 ion-content:has(ion-fab[vertical="bottom"]) {
     --padding-bottom: 88px;
 }
+
+// ── New-form footer action bar (shared across all add/edit pages) ──
+// Bottom pad includes safe-area inset so the submit button clears the
+// Android system navigation bar.
+.nf-actionbar {
+    padding: 11px var(--tl-screen-pad) calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--tl-line);
+    background: var(--tl-bg);
+}
+
+.nf-submit {
+    width: 100%;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: var(--tl-radius);
+    background: var(--tl-accent);
+    color: var(--tl-accent-ink);
+    font-family: var(--tl-font-sans);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.nf-submit-plus {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.nf-submit-count {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.7;
+    padding-left: 8px;
+    margin-left: 4px;
+    border-left: 1px solid currentColor;
+}

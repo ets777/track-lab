@@ -7,31 +7,3 @@ ion-footer {
   position: relative;
   z-index: 1;
 }
-
-.nf-actionbar {
-  padding: 11px var(--tl-screen-pad) 12px;
-  border-top: 1px solid var(--tl-line);
-  background: var(--tl-bg);
-}
-
-.nf-submit {
-  width: 100%;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: var(--tl-radius);
-  background: var(--tl-accent);
-  color: var(--tl-accent-ink);
-  font-family: var(--tl-font-sans);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-}
