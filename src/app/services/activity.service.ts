@@ -255,7 +255,79 @@ export class ActivityService extends DatabaseService<'activities'> {
     } as IActivity;
   }
 
-  async enrichAll(activitiesDb: IActivityDb[]) {
-    return Promise.all(activitiesDb.map(a => this.enrichOne(a)));
+  async enrichAll(activitiesDb: IActivityDb[]): Promise<IActivity[]> {
+    if (!activitiesDb.length) {
+      return [];
+    }
+
+    const activityIds = new Set(activitiesDb.map(a => a.id));
+
+    // Load the four link tables once instead of per-activity (was O(N) round
+    // trips via enrichOne). Grouping happens in memory below.
+    const [activityActions, activityTags, activityItems, activityMetrics] = await Promise.all([
+      this.activityActionService.getAll(),
+      this.activityTagService.getAll(),
+      this.activityItemService.getAll(),
+      this.activityMetricService.getAll(),
+    ]);
+
+    const push = <T>(map: Map<number, T[]>, id: number, value: T) => {
+      const list = map.get(id);
+      if (list) list.push(value); else map.set(id, [value]);
+    };
+
+    const actionIdsByActivity = new Map<number, number[]>();
+    const tagIdsByActivity = new Map<number, number[]>();
+    const itemIdsByActivity = new Map<number, number[]>();
+    const metricsByActivity = new Map<number, IActivityMetric[]>();
+    const distinctActionIds = new Set<number>();
+    const distinctTagIds = new Set<number>();
+    const distinctItemIds = new Set<number>();
+
+    for (const aa of activityActions) {
+      if (!activityIds.has(aa.activityId)) continue;
+      push(actionIdsByActivity, aa.activityId, aa.actionId);
+      distinctActionIds.add(aa.actionId);
+    }
+    for (const at of activityTags) {
+      if (!activityIds.has(at.activityId)) continue;
+      push(tagIdsByActivity, at.activityId, at.tagId);
+      distinctTagIds.add(at.tagId);
+    }
+    for (const ai of activityItems) {
+      if (!activityIds.has(ai.activityId)) continue;
+      push(itemIdsByActivity, ai.activityId, ai.itemId);
+      distinctItemIds.add(ai.itemId);
+    }
+    for (const am of activityMetrics as IActivityMetric[]) {
+      if (!activityIds.has(am.activityId)) continue;
+      push(metricsByActivity, am.activityId, am);
+    }
+
+    // Resolve every referenced entity in one batch each, then index by id.
+    const [actions, tags, items] = await Promise.all([
+      this.actionService.enrichAll(await this.actionService.getAnyOf('id', [...distinctActionIds])) as Promise<IAction[]>,
+      this.tagService.getList([...distinctTagIds]) as Promise<ITag[]>,
+      this.itemService.getAnyOf('id', [...distinctItemIds]) as Promise<IItem[]>,
+    ]);
+
+    const actionById = new Map(actions.map(a => [a.id, a]));
+    const tagById = new Map(tags.map(t => [t.id, t]));
+    const itemById = new Map(items.map(i => [i.id, i]));
+
+    // Ascending-id order matches the previous getAnyOf('id', …) results.
+    const resolve = <T extends { id: number }>(ids: number[] | undefined, byId: Map<number, T>): T[] =>
+      (ids ?? [])
+        .map(id => byId.get(id))
+        .filter((e): e is T => !!e)
+        .sort((a, b) => a.id - b.id);
+
+    return activitiesDb.map(a => ({
+      ...a,
+      actions: resolve(actionIdsByActivity.get(a.id), actionById),
+      tags: resolve(tagIdsByActivity.get(a.id), tagById),
+      items: resolve(itemIdsByActivity.get(a.id), itemById),
+      metricRecords: metricsByActivity.get(a.id) ?? [],
+    })) as IActivity[];
   }
 }

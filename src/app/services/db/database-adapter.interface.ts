@@ -31,4 +31,5 @@ export interface IDatabaseAdapter {
     getLastBeforeDate<K extends TableName>(table: K, columns: string[], date: string): Promise<RowFor<K> | undefined>;
     clear<K extends TableName>(table: K): Promise<void>;
     count<K extends TableName>(table: K): Promise<number>;
+    transaction<T>(work: () => Promise<T>): Promise<T>;
 }

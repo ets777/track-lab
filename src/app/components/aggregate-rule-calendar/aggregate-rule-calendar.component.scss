@@ -32,7 +32,8 @@
 }
 
 .rule-calendar__week-row--selected {
-  box-shadow: 0 0 0 2px var(--ion-color-primary) inset;
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: -2px;
   border-radius: 16px;
 }
 

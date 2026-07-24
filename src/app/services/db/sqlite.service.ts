@@ -87,6 +87,7 @@ export class SQLiteService {
   }
 
   private txChain: Promise<unknown> = Promise.resolve();
+  private txDepth = 0;
 
   /**
    * Serializes transactional work on the single shared connection. Concurrent
@@ -97,6 +98,37 @@ export class SQLiteService {
     const result = this.txChain.then(work, work);
     this.txChain = result.then(() => undefined, () => undefined);
     return result;
+  }
+
+  /**
+   * Runs `work` inside a single atomic transaction. Nesting-aware: a nested
+   * call reuses the outer transaction (no early commit, no re-locking), so
+   * composing many writes — e.g. a full backup restore — either all commit or
+   * all roll back together. On any throw the whole transaction is rolled back.
+   */
+  async transaction<T>(work: () => Promise<T>): Promise<T> {
+    if (this.txDepth > 0) {
+      // Already inside an outer transaction: just join it.
+      return work();
+    }
+
+    return this.runExclusive(async () => {
+      this.txDepth++;
+      await this.connection.beginTransaction();
+      try {
+        const result = await work();
+        await this.connection.commitTransaction();
+        if (this.platform === 'web') {
+          await this.sqlite.saveToStore(this.databaseName);
+        }
+        return result;
+      } catch (e) {
+        await this.connection.rollbackTransaction();
+        throw e;
+      } finally {
+        this.txDepth--;
+      }
+    });
   }
 
   async beginTransaction() {

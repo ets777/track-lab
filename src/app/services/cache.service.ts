@@ -37,7 +37,16 @@ export class CacheService {
   }
 
   get<T>(key: string): T {
-    return (this.cache.get(key) as CacheEntry).data as T;
+    // Return a clone so callers mutating the result cannot corrupt the cached
+    // copy (e.g. reordering/patching rows returned from getAll).
+    return this.clone((this.cache.get(key) as CacheEntry).data) as T;
+  }
+
+  private clone<T>(data: T): T {
+    if (data === null || typeof data !== 'object') return data;
+    return typeof structuredClone === 'function'
+      ? structuredClone(data)
+      : JSON.parse(JSON.stringify(data));
   }
 
   set<T>(key: string, data: T): void {
@@ -48,6 +57,12 @@ export class CacheService {
 
   invalidate(tableName: string): void {
     this.tableVersions.set(tableName, (this.tableVersion(tableName)) + 1);
+    // Drop the now-stale entries instead of leaking them forever: version
+    // bumping alone keeps every superseded entry in the Map for the session.
+    const prefix = `${tableName}|`;
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) this.cache.delete(key);
+    }
   }
 
   invalidateAll(): void {

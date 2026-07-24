@@ -59,6 +59,30 @@ import { DashboardWidget } from '../types/dashboard-widget';
 import { DashboardConfigService } from './dashboard-config.service';
 import { AppConfigService } from './app-config.service';
 import { IAppConfigDb } from '../db/models/app-config';
+import { DatabaseRouter } from './db/database-router.service';
+import { LogService } from './log.service';
+
+/** Minimal shape every entity service exposes for backup/restore. */
+interface RestorableService {
+  getAll(): Promise<any[]>;
+  bulkAdd(rows: any[]): Promise<unknown>;
+  clear(): Promise<void>;
+}
+
+/**
+ * One entry per persisted table, in FK-safe insert order. Both backup
+ * collection and restore are driven from this single list, so adding a table
+ * means adding one entry here — not editing three methods that can drift.
+ */
+interface TableStep {
+  key: keyof Backup;
+  service: RestorableService;
+  loading?: string;
+  /** Override collection (default: service.getAll()). */
+  collect?: () => Promise<any[]>;
+  /** Override restore (default: service.bulkAdd(backup[key] ?? [])). */
+  restore?: (backup: Backup) => Promise<void>;
+}
 
 type Backup = {
   activities: IActivityDb[],
@@ -269,8 +293,64 @@ export class BackupService {
   private appConfigService = inject(AppConfigService);
   private fileService = inject(FileService);
   private loadingService = inject(LoadingService);
+  private db = inject(DatabaseRouter);
+  private logService = inject(LogService);
 
   defaultPassword = 'etsbox.com';
+
+  /**
+   * Ordered table registry — single source of truth for backup + restore.
+   * Order is FK-safe insert order and must be preserved.
+   */
+  private buildSteps(): TableStep[] {
+    return [
+      { key: 'actions', service: this.actionService, loading: 'TK_RESTORING_ACTIONS' },
+      { key: 'tags', service: this.tagService, loading: 'TK_RESTORING_TAGS' },
+      { key: 'activities', service: this.activityService, loading: 'TK_RESTORING_ACTIVITIES' },
+      { key: 'activityActions', service: this.activityActionService },
+      { key: 'activityTags', service: this.activityTagService },
+      { key: 'achievements', service: this.achievementService, loading: 'TK_RESTORING_ACHIEVEMENTS' },
+      { key: 'lists', service: this.listService, loading: 'TK_RESTORING_LISTS' },
+      { key: 'actionTags', service: this.actionTagService },
+      {
+        key: 'listLinks',
+        service: this.listLinkService,
+        // listLinks superseded action-only actionLists in 1.0.0; map legacy backups forward.
+        restore: async (backup) => {
+          const listLinks = backup.listLinks
+            ?? (backup.actionLists ?? []).map((al) => ({
+              listId: al.listId,
+              subjectType: 'action',
+              subjectId: al.actionId,
+            }));
+          await this.listLinkService.bulkAdd(listLinks);
+        },
+      },
+      { key: 'metrics', service: this.metricService, loading: 'TK_RESTORING_METRICS' },
+      { key: 'actionMetrics', service: this.actionMetricService },
+      { key: 'tagMetrics', service: this.tagMetricService },
+      { key: 'itemMetrics', service: this.itemMetricService },
+      { key: 'items', service: this.itemService, loading: 'TK_RESTORING_ITEMS' },
+      { key: 'activityItems', service: this.activityItemService },
+      { key: 'activityMetrics', service: this.activityMetricService },
+      { key: 'rules', service: this.ruleService },
+      { key: 'ruleCompletions', service: this.ruleCompletionService },
+      { key: 'experiments', service: this.experimentService, loading: 'TK_RESTORING_EXPERIMENTS' },
+      { key: 'experimentIndicators', service: this.experimentIndicatorService },
+      { key: 'experimentRules', service: this.experimentRuleService },
+      {
+        key: 'dashboardWidgets',
+        service: { getAll: () => this.dashboardConfigService.getWidgets(), bulkAdd: async () => {}, clear: async () => {} },
+        collect: () => this.dashboardConfigService.getWidgets(),
+        restore: async (backup) => {
+          if (backup.dashboardWidgets?.length) {
+            await this.dashboardConfigService.save(backup.dashboardWidgets);
+          }
+        },
+      },
+      { key: 'appConfig', service: this.appConfigService },
+    ];
+  }
 
   versionMap = [
     { version: '0.5.0', helper: helperRevision2 },
@@ -283,96 +363,90 @@ export class BackupService {
       type: 'waiting',
     });
 
-    const all: Backup = {
-      activities: await this.activityService.getAll(),
-      actions: await this.actionService.getAll(),
-      activityActions: await this.activityActionService.getAll(),
-      achievements: await this.achievementService.getAll(),
-      tags: await this.tagService.getAll(),
-      actionTags: await this.actionTagService.getAll(),
-      activityTags: await this.activityTagService.getAll(),
+    try {
+      const all = { version: appVersion } as Backup;
 
-      listLinks: await this.listLinkService.getAll(),
-      actionMetrics: await this.actionMetricService.getAll(),
-      activityItems: await this.activityItemService.getAll(),
-      activityMetrics: await this.activityMetricService.getAll(),
-      items: await this.itemService.getAll(),
-      lists: await this.listService.getAll(),
-      metrics: await this.metricService.getAll(),
-      tagMetrics: await this.tagMetricService.getAll(),
-      itemMetrics: await this.itemMetricService.getAll(),
-      rules: await this.ruleService.getAll(),
-      ruleCompletions: await this.ruleCompletionService.getAll(),
-      experiments: await this.experimentService.getAll(),
-      experimentIndicators: await this.experimentIndicatorService.getAll(),
-      experimentRules: await this.experimentRuleService.getAll(),
-      dashboardWidgets: await this.dashboardConfigService.getWidgets(),
-      appConfig: await this.appConfigService.getAll(),
+      for (const step of this.buildSteps()) {
+        (all as any)[step.key] = await (step.collect
+          ? step.collect()
+          : step.service.getAll());
+      }
 
-      version: appVersion,
-    };
+      const password = await this.getPassword();
 
-    const password = await this.getPassword();
+      if (!password) {
+        return;
+      }
 
-    if (!password) {
-      return;
+      const content = encode(all, password);
+      const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+      const dirPath = 'TrackLab/backups';
+      const fileName = `${currentDate}.txt`;
+      const mimeType = 'text/plain';
+
+      await this.fileService.saveFile(
+        content,
+        dirPath,
+        fileName,
+        mimeType,
+      );
+
+      await Preferences.set({
+        key: 'last-backup-date',
+        value: format(new Date(), 'yyyy-MM-dd'),
+      });
+
+      this.toastService.enqueue({
+        title: 'TK_BACKUP_PROCESS_FINISHED_SUCCESSFULLY',
+        type: 'success',
+      });
+
+      this.hookService.emit({
+        type: 'backup.made',
+        payload: { isPasswordSet: password !== this.defaultPassword },
+      });
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('BackupService.backup', e);
     }
-
-    const content = encode(all, password);
-    const currentDate = format(new Date(), 'yyyy-MM-dd');
-
-    const dirPath = 'TrackLab/backups';
-    const fileName = `${currentDate}.txt`;
-    const mimeType = 'text/plain';
-
-    await this.fileService.saveFile(
-      content,
-      dirPath,
-      fileName,
-      mimeType,
-    );
-
-    await Preferences.set({
-      key: 'last-backup-date',
-      value: format(new Date(), 'yyyy-MM-dd'),
-    });
-
-    this.toastService.enqueue({
-      title: 'TK_BACKUP_PROCESS_FINISHED_SUCCESSFULLY',
-      type: 'success',
-    });
-
-    this.hookService.emit({
-      type: 'backup.made',
-      payload: { isPasswordSet: password !== this.defaultPassword },
-    });
-
   }
 
   async restore(content: string) {
-    // first try with default password
-    try {
-      const decodedWithDefaultPassword = decode(content, this.defaultPassword);
+    let backup: Backup | undefined;
 
-      if (decodedWithDefaultPassword) {
-        await this.fillDatabase(decodedWithDefaultPassword);
+    // Backups made without a user password are encrypted with the default key.
+    try {
+      backup = decode(content, this.defaultPassword);
+    } catch {
+      // Not default-encrypted — fall through and ask for the user's password.
+    }
+
+    if (!backup) {
+      const password = await this.askPasswordToRestore();
+
+      if (!password) {
         return;
       }
-    } catch (e) {
-      // do nothing
-    }
 
-    const password = await this.askPasswordToRestore();
-
-    if (password) {
       try {
-        await this.fillDatabase(decode(content, password));
+        backup = decode(content, password);
       } catch (e) {
-        if ((e instanceof Error ? e.message : String(e)) == 'Malformed UTF-8 data') {
+        // Wrong password is a soft, expected outcome; anything else is a real
+        // failure and must propagate to the caller to be toasted and logged.
+        if ((e instanceof Error ? e.message : String(e)) === 'Malformed UTF-8 data') {
           await this.showMessage('TK_WRONG_PASSWORD');
+          return;
         }
+        throw e;
       }
     }
+
+    if (!backup) {
+      return;
+    }
+
+    await this.fillDatabase(backup);
   }
 
   async fillDatabase(backup: Backup) {
@@ -384,62 +458,28 @@ export class BackupService {
 
     const helper = this.getHelper(backup.version);
 
-    backup = helper.prepareBackup(backup);
+    const prepared = helper.prepareBackup(backup);
 
     try {
       this.loadingService.show('TK_CLEARING_DATABASE');
-      await this.clearDatabase();
 
-      this.loadingService.show('TK_RESTORING_ACTIONS');
-      await this.actionService.bulkAdd(backup.actions);
+      // Atomic: wipe + full restore commit together, or roll back together.
+      // A mid-restore failure can no longer leave the DB wiped-and-partial.
+      await this.db.transaction(async () => {
+        await this.clearDatabase();
 
-      this.loadingService.show('TK_RESTORING_TAGS');
-      await this.tagService.bulkAdd(backup.tags);
+        for (const step of this.buildSteps()) {
+          if (step.loading) {
+            this.loadingService.show(step.loading);
+          }
 
-      this.loadingService.show('TK_RESTORING_ACTIVITIES');
-      await this.activityService.bulkAdd(backup.activities);
-      await this.activityActionService.bulkAdd(backup.activityActions);
-      await this.activityTagService.bulkAdd(backup.activityTags);
-
-      this.loadingService.show('TK_RESTORING_ACHIEVEMENTS');
-      await this.achievementService.bulkAdd(backup.achievements);
-
-      this.loadingService.show('TK_RESTORING_LISTS');
-      await this.listService.bulkAdd(backup.lists);
-      await this.actionTagService.bulkAdd(backup.actionTags);
-      // listLinks superseded action-only actionLists in 1.0.0; map legacy backups forward.
-      const listLinks = backup.listLinks
-        ?? (backup.actionLists ?? []).map((al) => ({
-          listId: al.listId,
-          subjectType: 'action',
-          subjectId: al.actionId,
-        }));
-      await this.listLinkService.bulkAdd(listLinks);
-
-      this.loadingService.show('TK_RESTORING_METRICS');
-      await this.metricService.bulkAdd(backup.metrics);
-      await this.actionMetricService.bulkAdd(backup.actionMetrics);
-      await this.tagMetricService.bulkAdd(backup.tagMetrics ?? []);
-      await this.itemMetricService.bulkAdd(backup.itemMetrics ?? []);
-
-      this.loadingService.show('TK_RESTORING_ITEMS');
-      await this.itemService.bulkAdd(backup.items);
-      await this.activityItemService.bulkAdd(backup.activityItems);
-      await this.activityMetricService.bulkAdd(backup.activityMetrics);
-
-      await this.ruleService.bulkAdd(backup.rules ?? []);
-      await this.ruleCompletionService.bulkAdd(backup.ruleCompletions ?? []);
-
-      this.loadingService.show('TK_RESTORING_EXPERIMENTS');
-      await this.experimentService.bulkAdd(backup.experiments ?? []);
-      await this.experimentIndicatorService.bulkAdd(backup.experimentIndicators ?? []);
-      await this.experimentRuleService.bulkAdd(backup.experimentRules ?? []);
-
-      if (backup.dashboardWidgets?.length) {
-        await this.dashboardConfigService.save(backup.dashboardWidgets);
-      }
-
-      await this.appConfigService.bulkAdd(backup.appConfig ?? []);
+          if (step.restore) {
+            await step.restore(prepared);
+          } else {
+            await step.service.bulkAdd((prepared as any)[step.key] ?? []);
+          }
+        }
+      });
     } finally {
       this.loadingService.hide();
     }

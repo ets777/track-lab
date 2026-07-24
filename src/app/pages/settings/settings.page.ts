@@ -92,7 +92,12 @@ export class SettingsPage implements OnInit {
     reader.onload = async () => {
       const content = reader.result as string;
 
-      await this.backupService.restore(content);
+      try {
+        await this.backupService.restore(content);
+      } catch (e) {
+        this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+        await this.logService.error('SettingsPage.onTxtFileSelected', e);
+      }
     };
 
     reader.readAsText(file);

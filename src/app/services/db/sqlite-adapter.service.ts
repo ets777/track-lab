@@ -32,29 +32,36 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     const cols = Object.keys(rows[0] as object);
     const chunkSize = 200;
 
-    const escape = (value: any): string => {
-      if (value === null || value === undefined) return 'NULL';
-      if (typeof value === 'boolean') return value ? '1' : '0';
-      if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
-      return String(value);
+    // Normalize JS values for the parameter binder: booleans -> 0/1, undefined -> null.
+    const normalize = (value: any) => {
+      if (value === undefined) return null;
+      if (typeof value === 'boolean') return value ? 1 : 0;
+      return value;
     };
 
-    return this.sqlite.runExclusive(async () => {
-      try {
-        await this.sqlite.beginTransaction();
+    // When an explicit id is supplied (e.g. backup restore) conflicts are on the
+    // primary key, so upsert by id — never REPLACE, which would DELETE the row
+    // first and cascade-delete its children. Without an id, insert normally and
+    // let any genuine unique-constraint conflict surface as an error.
+    const hasId = cols.includes('id');
+    const conflictClause = hasId
+      ? ` ON CONFLICT(id) DO UPDATE SET ${cols
+          .filter(c => c !== 'id')
+          .map(c => `${c} = excluded.${c}`)
+          .join(', ')}`
+      : '';
 
-        for (let i = 0; i < rows.length; i += chunkSize) {
-          const chunk = (rows as any[]).slice(i, i + chunkSize);
-          const values = chunk
-            .map(row => `(${cols.map(col => escape(row[col])).join(',')})`)
-            .join(',');
-          await this.sqlite.execute(`INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES ${values}`);
-        }
+    const rowPlaceholder = `(${cols.map(() => '?').join(',')})`;
 
-        await this.sqlite.commitTransaction();
-      } catch (e) {
-        await this.sqlite.rollbackTransaction();
-        throw e;
+    return this.sqlite.transaction(async () => {
+      for (let i = 0; i < rows.length; i += chunkSize) {
+        const chunk = (rows as any[]).slice(i, i + chunkSize);
+        const placeholders = chunk.map(() => rowPlaceholder).join(',');
+        const values = chunk.flatMap(row => cols.map(col => normalize(row[col])));
+        await this.sqlite.run(
+          `INSERT INTO ${table} (${cols.join(',')}) VALUES ${placeholders}${conflictClause}`,
+          values,
+        );
       }
 
       return [];
@@ -245,5 +252,9 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
   async count<K extends TableName>(table: K): Promise<number> {
     const row = await this.sqlite.query(`SELECT COUNT(*) as cnt FROM ${table}`);
     return row.values?.[0]?.cnt ?? 0;
+  }
+
+  transaction<T>(work: () => Promise<T>): Promise<T> {
+    return this.sqlite.transaction(work);
   }
 }

@@ -23,4 +23,5 @@ export class DatabaseRouter implements IDatabaseAdapter {
   getLastBeforeDate = <K extends TableName>(table: K, columns: string[], date: string) => this.adapter.getLastBeforeDate(table, columns, date);
   clear = <K extends TableName>(table: K) => this.adapter.clear(table);
   count = <K extends TableName>(table: K) => this.adapter.count(table);
+  transaction = <T>(work: () => Promise<T>) => this.adapter.transaction(work);
 }
