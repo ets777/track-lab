@@ -2,10 +2,10 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 export function replacementValidator(currentValue: any) {
     return (control: AbstractControl): ValidationErrors | null => {
-        if (!control.value) {
+        if (!control.value || !currentValue) {
             return null;
         }
-    
+
         if (control.value.name == currentValue.name) {
             return {
                 replacement: {

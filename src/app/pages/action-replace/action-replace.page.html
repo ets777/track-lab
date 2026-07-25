@@ -15,29 +15,32 @@
 <ion-content class="ion-padding">
   @if (currentAction) {
     @if (hasRelation) {
-      <ion-item>
-        {{ getFormText() }}
-      </ion-item>
+      <p class="ar-lead">{{ getFormText() }}</p>
 
-      <form [formGroup]="replaceForm">
-        <app-select-search
-          appValidationError
-          formControlName="newAction"
-          label="TK_ACTION"
-          [suggestions]="suggestions"
-        ></app-select-search>
+      <form [formGroup]="replaceForm" class="ar-card">
+        <!-- REPLACEMENT ACTION -->
+        <div class="ar-field">
+          <app-select-search
+            appValidationError
+            formControlName="newAction"
+            label="TK_ACTION"
+            [suggestions]="suggestions"
+          ></app-select-search>
+        </div>
 
-        <ion-item>
+        <!-- DELETE THE OLD ACTION -->
+        <div class="ar-field ar-field--last ar-field--row">
           <ion-checkbox
             formControlName="deleteOldAction"
-            labelPlacement="end"
-          >{{ 'TK_DELETE_THE_ACTION_AFTER_THE_REPLACEMENT' | translate }}</ion-checkbox>
-        </ion-item>
+            labelPlacement="start"
+            justify="space-between"
+          >
+            <span class="ar-check-title">{{ 'TK_DELETE_THE_ACTION_AFTER_THE_REPLACEMENT' | translate }}</span>
+          </ion-checkbox>
+        </div>
       </form>
     } @else {
-      <div>{{ 'TK_THE_ACTION_WAS_NEVER_PERFORMED_THERE_IS_NOTHING_TO_REPLACE' | translate }}
-      </div>
+      <p class="ar-empty">{{ 'TK_THE_ACTION_WAS_NEVER_PERFORMED_THERE_IS_NOTHING_TO_REPLACE' | translate }}</p>
     }
-
   }
 </ion-content>

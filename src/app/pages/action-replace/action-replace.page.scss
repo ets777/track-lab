@@ -1,0 +1,57 @@
+.ar-lead {
+  margin: 0 0 var(--tl-gap);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tl-text-dim);
+}
+
+.ar-card {
+  display: block;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius);
+  padding: 4px var(--tl-pad);
+}
+
+.ar-field {
+  padding: 13px 0 12px;
+  border-bottom: 1px solid var(--tl-line);
+
+  &--last {
+    border-bottom: none;
+  }
+}
+
+// ── Strip native ion-item chrome from the projected select-search ──
+.ar-card ::ng-deep {
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --min-height: auto;
+    --border-width: 0;
+    --inner-border-width: 0;
+  }
+}
+
+// ── Delete-old-action checkbox row ──
+.ar-field--row {
+  ion-checkbox {
+    --size: 22px;
+    width: 100%;
+  }
+}
+
+.ar-check-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tl-text);
+}
+
+.ar-empty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tl-text-faint);
+}
