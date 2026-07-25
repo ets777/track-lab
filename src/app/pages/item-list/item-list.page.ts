@@ -81,7 +81,7 @@ export class ItemListPage {
 
   async deleteItem(itemId: number) {
     if (await this.confirm()) {
-      await this.itemService.delete({ id: itemId });
+      await this.itemService.deleteWithRelations(itemId);
       this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
       await this.fetchItems();
     }

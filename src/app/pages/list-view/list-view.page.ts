@@ -144,7 +144,7 @@ export class ListViewPage {
     const { role } = await alert.onDidDismiss();
 
     if (role === 'yes') {
-      await this.itemService.delete({ id: itemId });
+      await this.itemService.deleteWithRelations(itemId);
       this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
       this.items = this.items!.filter(t => t.id !== itemId);
     }

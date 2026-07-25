@@ -32,4 +32,6 @@ export interface IDatabaseAdapter {
     clear<K extends TableName>(table: K): Promise<void>;
     count<K extends TableName>(table: K): Promise<number>;
     transaction<T>(work: () => Promise<T>): Promise<T>;
+    /** True while a transaction opened through `transaction()` is uncommitted. */
+    readonly isInTransaction: boolean;
 }

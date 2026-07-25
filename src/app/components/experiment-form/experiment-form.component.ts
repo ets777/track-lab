@@ -23,7 +23,7 @@ import { AppConfigService } from 'src/app/services/app-config.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TooltipService } from 'src/app/services/tooltip.service';
 import { LogService } from 'src/app/services/log.service';
-import { ExperimentDirection } from 'src/app/db/models/experiment-metric';
+import { ExperimentDirection } from 'src/app/db/models/experiment-indicator';
 import { CommonItem } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { format, addMonths, subDays, parseISO } from 'date-fns';

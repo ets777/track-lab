@@ -1,5 +1,6 @@
 import { WithOptionalKeys } from "src/app/types/with-optional-keys";
-import { ExperimentDirection } from "./experiment-metric";
+
+export type ExperimentDirection = 'increasing' | 'decreasing' | 'any';
 
 export interface IExperimentIndicatorDb {
   id: number;

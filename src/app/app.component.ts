@@ -12,7 +12,7 @@ import { AchievementToastComponent } from "./components/achievement-toast/achiev
 import { TooltipComponent } from "./components/tooltip/tooltip.component";
 import { StatsMenuComponent } from "./components/stats-menu/stats-menu.component";
 import { autoBackupOption } from './pages/settings/settings.page';
-import { differenceInDays, differenceInMonths, format } from 'date-fns';
+import { addLocalMonths, diffLocalDays, todayLocal } from 'src/app/functions/date';
 import { ToastComponent } from './components/toast/toast.component';
 import { BackupService } from './services/backup.service';
 import { ActivityService } from './services/activity.service';
@@ -136,16 +136,17 @@ export class AppComponent implements OnInit {
     let needBackup = false;
 
     if (lastBackupDate) {
-      const currentDate = new Date();
-      const daysDiff = differenceInDays(currentDate, new Date(lastBackupDate));
-      const monthsDiff = differenceInMonths(currentDate, new Date(lastBackupDate));
+      const currentDateStr = todayLocal();
+      const daysDiff = diffLocalDays(lastBackupDate, currentDateStr);
+      // A full calendar month has passed once the backup predates "one month
+      // before today" — keeps month lengths honest instead of assuming 30 days.
+      const aMonthHasPassed = lastBackupDate <= addLocalMonths(currentDateStr, -1);
 
       needBackup = autobackupPeriod == autoBackupOption.daily && daysDiff > 0
         || autobackupPeriod == autoBackupOption.weekly && daysDiff > 6
-        || autobackupPeriod == autoBackupOption.monthly && monthsDiff > 0;
+        || autobackupPeriod == autoBackupOption.monthly && aMonthHasPassed;
 
       if (needBackup) {
-        const currentDateStr = format(new Date(), 'yyyy-MM-dd');
         const recentActivities = await this.activityService.getByDate(lastBackupDate, currentDateStr);
         if (recentActivities.length === 0) {
           needBackup = false;
@@ -173,9 +174,8 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    const monthsDiff = differenceInMonths(new Date(), new Date(lastActivity.date));
-
-    if (monthsDiff < 1) {
+    // "A long break" = the last activity predates one month ago.
+    if (lastActivity.date > addLocalMonths(todayLocal(), -1)) {
       return;
     }
 

@@ -4,11 +4,13 @@ import { ActivityTagService } from './activity-tag.service';
 import { getEntitiesFromString } from '../functions/string';
 import { ActionTagService } from './action-tag.service';
 import { DatabaseService } from './db/database.service';
+import { SubjectReferenceService } from './subject-reference.service';
 
 @Injectable({ providedIn: 'root' })
 export class TagService extends DatabaseService<'tags'> {
   private activityTagService = inject(ActivityTagService);
   private actionTagService = inject(ActionTagService);
+  private subjectReferenceService = inject(SubjectReferenceService);
 
   tableName: 'tags' = 'tags';
 
@@ -172,6 +174,7 @@ export class TagService extends DatabaseService<'tags'> {
   async deleteWithRelations(id: number) {
     await this.activityTagService.deleteByTagId(id);
     await this.actionTagService.deleteByTagId(id);
+    await this.subjectReferenceService.removeSubjectReferences('tag', id);
 
     return this.delete({ id });
   }

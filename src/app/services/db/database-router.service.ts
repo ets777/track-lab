@@ -24,4 +24,5 @@ export class DatabaseRouter implements IDatabaseAdapter {
   clear = <K extends TableName>(table: K) => this.adapter.clear(table);
   count = <K extends TableName>(table: K) => this.adapter.count(table);
   transaction = <T>(work: () => Promise<T>) => this.adapter.transaction(work);
+  get isInTransaction() { return this.adapter.isInTransaction; }
 }

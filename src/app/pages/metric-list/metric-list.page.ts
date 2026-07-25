@@ -105,7 +105,7 @@ export class MetricListPage {
       return;
     }
 
-    await this.metricService.delete({ id: metricId });
+    await this.metricService.deleteWithRelations(metricId);
 
     this.toastService.enqueue({
       title: 'TK_METRIC_DELETED_SUCCESSFULLY',

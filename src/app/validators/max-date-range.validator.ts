@@ -1,6 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { differenceInDays } from 'date-fns';
-import { isDateValid } from '../functions/date';
+import { diffLocalDays, isDateValid } from '../functions/date';
 
 export const MAX_DATE_RANGE_DAYS = 31;
 
@@ -23,7 +22,7 @@ export function maxDateRangeValidator(maxDaysRange: number): ValidatorFn {
       return null;
     }
 
-    const daysDiff = Math.abs(differenceInDays(new Date(start), new Date(end)));
+    const daysDiff = Math.abs(diffLocalDays(start, end));
 
     if (daysDiff > maxDaysRange) {
       const error = {

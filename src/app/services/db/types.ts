@@ -17,7 +17,6 @@ import { IItemMetricCreateDto, IItemMetricDb } from "src/app/db/models/item-metr
 import { IRuleCreateDto, IRuleDb } from "src/app/db/models/rule";
 import { IRuleCompletionCreateDto, IRuleCompletionDb } from "src/app/db/models/rule-completion";
 import { IExperimentCreateDto, IExperimentDb } from "src/app/db/models/experiment";
-import { IExperimentMetricCreateDto, IExperimentMetricDb } from "src/app/db/models/experiment-metric";
 import { IExperimentIndicatorCreateDto, IExperimentIndicatorDb } from "src/app/db/models/experiment-indicator";
 import { IExperimentRuleCreateDto, IExperimentRuleDb } from "src/app/db/models/experiment-rule";
 import { IAppConfigCreateDto, IAppConfigDb } from "src/app/db/models/app-config";
@@ -42,7 +41,6 @@ export interface ITable {
     rules: IRuleDb;
     ruleCompletions: IRuleCompletionDb;
     experiments: IExperimentDb;
-    experimentMetrics: IExperimentMetricDb;
     experimentIndicators: IExperimentIndicatorDb;
     experimentRules: IExperimentRuleDb;
     appConfig: IAppConfigDb;
@@ -68,7 +66,6 @@ export interface ICreateDto {
     rules: IRuleDb | IRuleCreateDto;
     ruleCompletions: IRuleCompletionDb | IRuleCompletionCreateDto;
     experiments: IExperimentDb | IExperimentCreateDto;
-    experimentMetrics: IExperimentMetricDb | IExperimentMetricCreateDto;
     experimentIndicators: IExperimentIndicatorDb | IExperimentIndicatorCreateDto;
     experimentRules: IExperimentRuleDb | IExperimentRuleCreateDto;
     appConfig: IAppConfigDb | IAppConfigCreateDto;

@@ -129,7 +129,7 @@ export class ExperimentListPage {
 
     if (role === 'yes') {
       try {
-        await this.experimentService.delete({ id: experimentId });
+        await this.experimentService.deleteWithRelations(experimentId);
         this.toastService.enqueue({ title: 'TK_EXPERIMENT_DELETED_SUCCESSFULLY', type: 'success' });
         this.experiments = this.experiments.filter((e) => e.id !== experimentId);
       } catch (e) {

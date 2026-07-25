@@ -1,6 +1,7 @@
 import { IActivity } from '../db/models/activity';
 import { IRule, RulePeriod } from '../db/models/rule';
 import { matchesRule, computeMetric, isMet } from './rule-streak';
+import { endOfLocalWeek, formatLocalDate, parseLocalDate, startOfLocalWeek } from './date';
 
 export type RuleColor = 'green' | 'red';
 export type DayStatus = RuleColor | null;
@@ -199,26 +200,16 @@ function getPeriodKey(date: string, period: RulePeriod): string {
   switch (period) {
     case 'day': return date;
     case 'month': return date.slice(0, 7);
-    case 'week': {
-      const d = new Date(date + 'T00:00:00');
-      const dayOfWeek = (d.getDay() + 6) % 7;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() - dayOfWeek);
-      return monday.toISOString().slice(0, 10);
-    }
+    case 'week': return startOfLocalWeek(date);
   }
 }
 
 function getPeriodEndDate(date: string, period: RulePeriod): string {
   if (period === 'day') return date;
-  const d = new Date(date + 'T00:00:00');
-  if (period === 'week') {
-    const dayOfWeek = (d.getDay() + 6) % 7;
-    const sunday = new Date(d);
-    sunday.setDate(d.getDate() + (6 - dayOfWeek));
-    return sunday.toISOString().slice(0, 10);
-  }
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
+  if (period === 'week') return endOfLocalWeek(date);
+  const d = parseLocalDate(date);
+  if (!d) return date;
+  return formatLocalDate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
 }
 
 function getDurationMinutes(activity: IActivity): number {

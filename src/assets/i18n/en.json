@@ -449,6 +449,7 @@
   "TK_WHERE_IS_A_COFFEE_MACHINE": "Where is a coffee machine?",
   "TK_WHERE_IS_A_SOCKET": "Where is a socket?",
   "TK_WORKED": "Worked",
+  "TK_INVALID_BACKUP_FILE": "The file is damaged or is not a TrackLab backup",
   "TK_WRONG_PASSWORD": "Wrong password",
   "TK_WROTE": "Wrote",
   "TK_YES": "Yes",

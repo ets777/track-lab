@@ -18,8 +18,8 @@ import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
 import { IActivity } from 'src/app/db/models/activity';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
-import { addDays, format } from 'date-fns';
-import { formatDisplayDate } from 'src/app/functions/date';
+import { formatDisplayDate, localDateRange } from 'src/app/functions/date';
+import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator';
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { filterUniqueElements } from 'src/app/functions/item';
@@ -227,13 +227,7 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
       localStorage.setItem('stats-item-item', JSON.stringify(item));
     }
 
-    const dates: string[] = [];
-    let i = 0;
-    while (!dates.includes(endDate)) {
-      dates.push(format(addDays(new Date(startDate), i), 'yyyy-MM-dd'));
-      i++;
-      if (i > 31) break;
-    }
+    const dates = localDateRange(startDate, endDate, MAX_DATE_RANGE_DAYS);
 
     const result = dates.map((date) => {
       const dayActivities = this.activities.filter(a => a.date === date);

@@ -87,7 +87,20 @@ export class SQLiteService {
   }
 
   private txChain: Promise<unknown> = Promise.resolve();
-  private txDepth = 0;
+
+  /**
+   * Identifies the transaction currently open on the connection. Nested calls
+   * carry this token so they can tell "I am inside *my* transaction" apart from
+   * "some unrelated transaction happens to be open right now".
+   */
+  private activeTx: symbol | null = null;
+
+  /**
+   * Set while `work` for the active transaction is on the call stack, so
+   * synchronous-to-the-caller nested calls join, and anything scheduled from a
+   * different async chain queues instead.
+   */
+  private txContext: symbol | null = null;
 
   /**
    * Serializes transactional work on the single shared connection. Concurrent
@@ -101,20 +114,33 @@ export class SQLiteService {
   }
 
   /**
-   * Runs `work` inside a single atomic transaction. Nesting-aware: a nested
-   * call reuses the outer transaction (no early commit, no re-locking), so
-   * composing many writes — e.g. a full backup restore — either all commit or
-   * all roll back together. On any throw the whole transaction is rolled back.
+   * Runs `work` inside a single atomic transaction. Nesting-aware: a call made
+   * from inside an open transaction reuses it (no early commit, no re-locking),
+   * so composing many writes — e.g. a full backup restore — either all commit
+   * or all roll back together. On any throw the whole transaction is rolled
+   * back.
+   *
+   * Nesting is tracked by token rather than a plain depth counter. A depth
+   * counter is global state, so unrelated work starting while a long restore
+   * was open would see depth > 0 and silently join that foreign transaction:
+   * its writes would commit or roll back with the restore, and its own failure
+   * would never roll itself back. Only work reached from within the active
+   * transaction's own call stack joins; everything else queues behind it.
    */
   async transaction<T>(work: () => Promise<T>): Promise<T> {
-    if (this.txDepth > 0) {
-      // Already inside an outer transaction: just join it.
+    if (this.activeTx && this.txContext === this.activeTx) {
+      // Genuinely nested inside our own transaction: join it.
       return work();
     }
 
     return this.runExclusive(async () => {
-      this.txDepth++;
+      const token = Symbol('tx');
+      this.activeTx = token;
       await this.connection.beginTransaction();
+
+      const previousContext = this.txContext;
+      this.txContext = token;
+
       try {
         const result = await work();
         await this.connection.commitTransaction();
@@ -126,9 +152,15 @@ export class SQLiteService {
         await this.connection.rollbackTransaction();
         throw e;
       } finally {
-        this.txDepth--;
+        this.txContext = previousContext;
+        this.activeTx = null;
       }
     });
+  }
+
+  /** True while a transaction opened through `transaction()` is uncommitted. */
+  get isInTransaction(): boolean {
+    return this.activeTx !== null;
   }
 
   async beginTransaction() {

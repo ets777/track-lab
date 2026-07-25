@@ -14,6 +14,27 @@ export abstract class DatabaseService<K extends TableName> {
     return `${this.tableName}|${method}|${JSON.stringify(args)}`;
   }
 
+  /**
+   * Cache a read, unless a transaction is open.
+   *
+   * Reads taken inside a transaction see uncommitted rows. If that transaction
+   * later rolls back — a failed restore, say — the database reverts but the
+   * cached copy would not, leaving phantom rows in memory until the next write
+   * to the table. Skipping the write keeps the cache consistent with committed
+   * state only.
+   */
+  private cacheRead<T>(key: string, value: T): T {
+    if (!this.adapter.isInTransaction) {
+      this.cacheService.set(key, value);
+    }
+    return value;
+  }
+
+  /** Cached reads are only trustworthy outside a transaction. */
+  private isCached(key: string): boolean {
+    return !this.adapter.isInTransaction && this.cacheService.has(key);
+  }
+
   async add(dto: CreateDtoFor<K>): Promise<number> {
     const result = await this.adapter.add(this.tableName, dto);
     this.cacheService.invalidate(this.tableName);
@@ -28,58 +49,51 @@ export abstract class DatabaseService<K extends TableName> {
 
   async getById(id: number): Promise<RowFor<K> | undefined> {
     const key = this.key('getById', id);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
     const result = await this.adapter.getById(this.tableName, id);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getAll(where?: Where): Promise<RowFor<K>[]> {
     const key = this.key('getAll', where);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K>[]>(key);
     const result = await this.adapter.getAll(this.tableName, where);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getFirstWhereEquals(columnName: string, value: string | number): Promise<RowFor<K> | undefined> {
     const key = this.key('getFirstWhereEquals', [columnName, value]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
     const result = await this.adapter.getFirstWhereEquals(this.tableName, columnName, value);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getFirstWhereEqualsIgnoringCase(columnName: string, value: string): Promise<RowFor<K> | undefined> {
     const key = this.key('getFirstWhereEqualsIgnoringCase', [columnName, value]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
     const result = await this.adapter.getFirstWhereEqualsIgnoringCase(this.tableName, columnName, value);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getAllWhereEquals(columnName: string, value: string | number | boolean): Promise<RowFor<K>[]> {
     const key = this.key('getAllWhereEquals', [columnName, value]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K>[]>(key);
     const result = await this.adapter.getAllWhereEquals(this.tableName, columnName, value);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getAnyOf(columnName: string, values: string[] | number[]): Promise<RowFor<K>[]> {
     const key = this.key('getAnyOf', [columnName, values]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K>[]>(key);
     const result = await this.adapter.getAnyOf(this.tableName, columnName, values);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getAllByRange(columnName: string, range: { 0: any; 1: any; }): Promise<RowFor<K>[]> {
     const key = this.key('getAllByRange', [columnName, range]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K>[]>(key);
     const result = await this.adapter.getAllByRange(this.tableName, columnName, range);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getAllBetweenOrderedBy(
@@ -89,7 +103,7 @@ export abstract class DatabaseService<K extends TableName> {
     endValue: string | number
   ): Promise<RowFor<K>[]> {
     const key = this.key('getAllBetweenOrderedBy', [columnName, orderByColumn, startValue, endValue]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K>[]>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K>[]>(key);
     const result = await this.adapter.getAllBetweenOrderedBy(
       this.tableName,
       columnName,
@@ -97,8 +111,7 @@ export abstract class DatabaseService<K extends TableName> {
       startValue,
       endValue
     );
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async update(id: number, changes: Partial<CreateDtoFor<K>>): Promise<number> {
@@ -114,18 +127,16 @@ export abstract class DatabaseService<K extends TableName> {
 
   async getLast(columns: string[]): Promise<RowFor<K> | undefined> {
     const key = this.key('getLast', columns);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
     const result = await this.adapter.getLast(this.tableName, columns);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async getLastBeforeDate(columns: string[], date: string): Promise<RowFor<K> | undefined> {
     const key = this.key('getLastBeforeDate', [columns, date]);
-    if (this.cacheService.has(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
+    if (this.isCached(key)) return this.cacheService.get<RowFor<K> | undefined>(key);
     const result = await this.adapter.getLastBeforeDate(this.tableName, columns, date);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 
   async clear(): Promise<void> {
@@ -135,9 +146,8 @@ export abstract class DatabaseService<K extends TableName> {
 
   async count(): Promise<number> {
     const key = this.key('count');
-    if (this.cacheService.has(key)) return this.cacheService.get<number>(key);
+    if (this.isCached(key)) return this.cacheService.get<number>(key);
     const result = await this.adapter.count(this.tableName);
-    this.cacheService.set(key, result);
-    return result;
+    return this.cacheRead(key, result);
   }
 }

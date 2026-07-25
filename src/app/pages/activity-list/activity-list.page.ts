@@ -5,7 +5,7 @@ import { ActivityService } from '../../services/activity.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonButtons, IonButton, IonIcon, IonFab, IonFabButton } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { addDays, format } from 'date-fns';
+import { addLocalDays, todayLocal } from 'src/app/functions/date';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { formatDisplayDate, formatWeekday } from 'src/app/functions/date';
 import { IActivity } from 'src/app/db/models/activity';
@@ -55,9 +55,9 @@ export class ActivityListPage {
     if (!date) {
       try {
         const lastActivity = await this.activityService.getLastEnriched();
-        date = lastActivity?.date ?? format(new Date(), 'yyyy-MM-dd');
+        date = lastActivity?.date ?? todayLocal();
       } catch {
-        date = format(new Date(), 'yyyy-MM-dd');
+        date = todayLocal();
       }
     }
 
@@ -67,15 +67,13 @@ export class ActivityListPage {
   }
 
   async goToPreviousDay() {
-    const previousDate = addDays(new Date(this.currentDate), -1);
-    this.currentDate = format(previousDate, 'yyyy-MM-dd');
+    this.currentDate = addLocalDays(this.currentDate, -1);
     this.setQueryParams(this.currentDate);
     await this.setActivities();
   }
 
   async goToNextDay() {
-    const nextDate = addDays(new Date(this.currentDate), 1);
-    this.currentDate = format(nextDate, 'yyyy-MM-dd');
+    this.currentDate = addLocalDays(this.currentDate, 1);
     this.setQueryParams(this.currentDate);
     await this.setActivities();
   }

@@ -6,6 +6,7 @@ import { TagMetricService } from './tag-metric.service';
 import { ItemMetricService } from './item-metric.service';
 import { HookService } from './hook.service';
 import { CommonItem } from '../types/selectable';
+import { SubjectReferenceService } from './subject-reference.service';
 
 @Injectable({ providedIn: 'root' })
 export class MetricService extends DatabaseService<'metrics'> {
@@ -14,6 +15,7 @@ export class MetricService extends DatabaseService<'metrics'> {
   private tagMetricService = inject(TagMetricService);
   private itemMetricService = inject(ItemMetricService);
   private hookService = inject(HookService);
+  private subjectReferenceService = inject(SubjectReferenceService);
 
   override async getAll() {
     const all = await super.getAll();
@@ -27,6 +29,17 @@ export class MetricService extends DatabaseService<'metrics'> {
         await this.delete({ id: metric.id });
       }
     }
+  }
+
+  /**
+   * Delete a metric along with references that do not cascade. Link tables
+   * (`actionMetrics`, `tagMetrics`, `itemMetrics`, `activityMetrics`) cascade
+   * via foreign keys; experiment indicators and dashboard widgets do not.
+   */
+  async deleteWithRelations(id: number) {
+    await this.subjectReferenceService.removeMetricReferences(id);
+
+    return this.delete({ id });
   }
 
   async getStandalone() {

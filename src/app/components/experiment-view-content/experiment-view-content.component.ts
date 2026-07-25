@@ -9,7 +9,7 @@ import { format, parseISO, differenceInDays, startOfMonth, subDays, addDays } fr
 import { IExperiment, ExperimentResultEntry, EXPERIMENT_FAIL_REASON_KEYS, ExperimentFailReason } from 'src/app/db/models/experiment';
 import { formatDisplayDate } from 'src/app/functions/date';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
-import { ExperimentDirection } from 'src/app/db/models/experiment-metric';
+import { ExperimentDirection } from 'src/app/db/models/experiment-indicator';
 import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
 import { IMetric } from 'src/app/db/models/metric';

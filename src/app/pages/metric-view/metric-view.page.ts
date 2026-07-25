@@ -150,7 +150,7 @@ export class MetricViewPage {
     await alert.present();
     const { role } = await alert.onDidDismiss();
     if (role === 'yes') {
-      await this.metricService.delete({ id: this.metricId });
+      await this.metricService.deleteWithRelations(this.metricId);
       this.toastService.enqueue({ title: 'TK_METRIC_DELETED_SUCCESSFULLY', type: 'success' });
       await this.router.navigate(['/metric']);
     }

@@ -34,7 +34,6 @@ export class InitializeAppService {
 
       this.isAppInit = true;
     } catch (error) {
-      console.log(`initializeAppError: ${error}`);
       await this.logService.error('InitializeAppService.initializeApp', error);
     }
   }

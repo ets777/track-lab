@@ -310,4 +310,24 @@ export const databaseUpgrades = [
       `ALTER TABLE rules ADD COLUMN endDate TEXT;`,
     ],
   },
+  {
+    toVersion: 15,
+    // Every link table is indexed on its first UNIQUE column, so lookups by
+    // that column are covered — but lookups by the *second* one fell back to a
+    // full scan. Stats read activityMetrics by metricId, and the polymorphic
+    // subject cleanup reads rules / listLinks / experimentIndicators by
+    // (subjectType, subjectId); both grow with history.
+    statements: [
+      `CREATE INDEX IF NOT EXISTS idxActivityMetricsMetricId ON activityMetrics(metricId);`,
+      `CREATE INDEX IF NOT EXISTS idxActivityActionsActionId ON activityActions(actionId);`,
+      `CREATE INDEX IF NOT EXISTS idxActivityTagsTagId ON activityTags(tagId);`,
+      `CREATE INDEX IF NOT EXISTS idxActivityItemsItemId ON activityItems(itemId);`,
+      `CREATE INDEX IF NOT EXISTS idxRulesSubject ON rules(subjectType, subjectId);`,
+      `CREATE INDEX IF NOT EXISTS idxListLinksSubject ON listLinks(subjectType, subjectId);`,
+      `CREATE INDEX IF NOT EXISTS idxExperimentIndicatorsSubject ON experimentIndicators(subjectType, subjectId);`,
+      // experimentMetrics was superseded by experimentIndicators in v9 and was
+      // never read or written since; it was also absent from backups.
+      `DROP TABLE IF EXISTS experimentMetrics;`,
+    ],
+  },
 ];

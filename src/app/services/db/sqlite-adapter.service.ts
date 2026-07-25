@@ -11,15 +11,74 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     return this.sqlite.query(sql, params);
   }
 
-  private toColsAndPlaceholders(obj: Record<string, any>) {
-    const cols = Object.keys(obj);
-    const vals = cols.map((key) => obj[key] === undefined ? null : obj[key]);
-    const placeholders = vals.map(() => '?').join(',');
-    return { cols, vals, placeholders };
+  /** Real column names per table, read from the DB and cached for the session. */
+  private columnCache = new Map<string, Set<string>>();
+
+  /**
+   * The set of columns a table actually has, straight from SQLite.
+   *
+   * Row *values* are always bound as parameters, but column *names* have to be
+   * interpolated into the SQL text — so they can never be taken from data.
+   * Restored backup rows are attacker-influenced JSON, and their keys would
+   * otherwise land verbatim inside the INSERT. Sourcing the whitelist from
+   * `PRAGMA table_info` (rather than a hand-kept list) means it cannot drift
+   * away from the migrations.
+   */
+  private async allowedColumns(table: TableName): Promise<Set<string>> {
+    const cached = this.columnCache.get(table);
+    if (cached) return cached;
+
+    const result = await this.sqlite.query(`PRAGMA table_info(${table})`);
+    const columns = new Set<string>(
+      (result.values ?? []).map((row: any) => row.name),
+    );
+
+    if (!columns.size) {
+      throw new Error(`Unknown table: ${table}`);
+    }
+
+    this.columnCache.set(table, columns);
+    return columns;
+  }
+
+  /**
+   * Keys of `rows` that are real columns of `table`, in stable order.
+   * Unknown keys are dropped rather than thrown on, so a backup written by a
+   * newer version still restores the fields this version understands.
+   */
+  private async resolveColumns(
+    table: TableName,
+    rows: Record<string, any>[],
+  ): Promise<string[]> {
+    const allowed = await this.allowedColumns(table);
+
+    // Union across all rows, not just the first: rows may legitimately omit
+    // optional fields, and taking row[0]'s keys silently nulled the rest.
+    const seen = new Set<string>();
+    for (const row of rows) {
+      for (const key of Object.keys(row)) {
+        if (allowed.has(key)) seen.add(key);
+      }
+    }
+
+    if (!seen.size) {
+      throw new Error(`No known columns for table ${table}`);
+    }
+
+    return [...seen];
+  }
+
+  /** Booleans -> 0/1, undefined/missing -> null, for the parameter binder. */
+  private normalize(value: any) {
+    if (value === undefined) return null;
+    if (typeof value === 'boolean') return value ? 1 : 0;
+    return value;
   }
 
   async add<K extends TableName>(table: K, row: CreateDtoFor<K>): Promise<number> {
-    const { cols, vals, placeholders } = this.toColsAndPlaceholders(row as any);
+    const cols = await this.resolveColumns(table, [row as any]);
+    const vals = cols.map((key) => this.normalize((row as any)[key]));
+    const placeholders = vals.map(() => '?').join(',');
     const sql = `INSERT INTO ${table} (${cols.join(',')}) VALUES (${placeholders})`;
     const res = await this.sqlite.run(sql, vals);
 
@@ -27,17 +86,18 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
   }
 
   async bulkAdd<K extends TableName>(table: K, rows: CreateDtoFor<K>[]): Promise<number[]> {
-    if (!rows.length) return [];
+    if (!Array.isArray(rows) || !rows.length) return [];
 
-    const cols = Object.keys(rows[0] as object);
+    // Guard against non-object entries (a malformed backup can supply strings
+    // or nulls here); Object.keys on those yields junk column names.
+    const objectRows = rows.filter(
+      (row): row is CreateDtoFor<K> => !!row && typeof row === 'object' && !Array.isArray(row),
+    );
+    if (!objectRows.length) return [];
+
+    const cols = await this.resolveColumns(table, objectRows as any[]);
     const chunkSize = 200;
-
-    // Normalize JS values for the parameter binder: booleans -> 0/1, undefined -> null.
-    const normalize = (value: any) => {
-      if (value === undefined) return null;
-      if (typeof value === 'boolean') return value ? 1 : 0;
-      return value;
-    };
+    const normalize = (value: any) => this.normalize(value);
 
     // When an explicit id is supplied (e.g. backup restore) conflicts are on the
     // primary key, so upsert by id — never REPLACE, which would DELETE the row
@@ -54,8 +114,8 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     const rowPlaceholder = `(${cols.map(() => '?').join(',')})`;
 
     return this.sqlite.transaction(async () => {
-      for (let i = 0; i < rows.length; i += chunkSize) {
-        const chunk = (rows as any[]).slice(i, i + chunkSize);
+      for (let i = 0; i < objectRows.length; i += chunkSize) {
+        const chunk = (objectRows as any[]).slice(i, i + chunkSize);
         const placeholders = chunk.map(() => rowPlaceholder).join(',');
         const values = chunk.flatMap(row => cols.map(col => normalize(row[col])));
         await this.sqlite.run(
@@ -152,14 +212,24 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
   ): Promise<RowFor<K>[]> {
     if (!values.length) return [];
 
-    const placeholders = values.map(() => '?').join(',');
+    // SQLite caps bound parameters per statement (999 on older builds), so a
+    // long id list has to be split rather than sent as one giant IN (...).
+    const chunkSize = 500;
+    const rows: RowFor<K>[] = [];
 
-    const result = await this.sqlite.query(
-      `SELECT * FROM ${table} WHERE ${columnName} IN (${placeholders})`,
-      values,
-    );
+    for (let i = 0; i < values.length; i += chunkSize) {
+      const chunk = values.slice(i, i + chunkSize);
+      const placeholders = chunk.map(() => '?').join(',');
 
-    return result.values ?? [];
+      const result = await this.sqlite.query(
+        `SELECT * FROM ${table} WHERE ${columnName} IN (${placeholders})`,
+        chunk,
+      );
+
+      if (result.values?.length) rows.push(...result.values);
+    }
+
+    return rows;
   }
 
   async getAllByRange<K extends TableName>(
@@ -193,9 +263,13 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
   }
 
   async update<K extends TableName>(table: K, id: number, changes: Partial<RowFor<K>>) {
-    const cols = Object.keys(changes).map(k => `${k} = ?`).join(', ');
-    const vals = Object.values(changes);
-    const res = await this.sqlite.run(`UPDATE ${table} SET ${cols} WHERE id = ?`, [...vals, id]);
+    const columns = await this.resolveColumns(table, [changes as any]);
+    const assignments = columns.map(c => `${c} = ?`).join(', ');
+    const vals = columns.map(c => this.normalize((changes as any)[c]));
+    const res = await this.sqlite.run(
+      `UPDATE ${table} SET ${assignments} WHERE id = ?`,
+      [...vals, id],
+    );
 
     return res.changes?.changes ?? 0;
   }
@@ -204,8 +278,9 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     table: K,
     where: Where,
   ) {
-    const whereClause = Object.keys(where).map((key) => `${key} = ?`).join(' AND ');
-    const values = Object.values(where);
+    const columns = await this.resolveColumns(table, [where as any]);
+    const whereClause = columns.map((key) => `${key} = ?`).join(' AND ');
+    const values = columns.map((key) => this.normalize(where[key]));
     await this.sqlite.run(`DELETE FROM ${table} WHERE ${whereClause}`, [...values]);
   }
 
@@ -256,5 +331,9 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
 
   transaction<T>(work: () => Promise<T>): Promise<T> {
     return this.sqlite.transaction(work);
+  }
+
+  get isInTransaction(): boolean {
+    return this.sqlite.isInTransaction;
   }
 }

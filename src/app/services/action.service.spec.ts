@@ -4,6 +4,7 @@ import { ActivityActionService } from './activity-action.service';
 import { TagService } from './tag.service';
 import { ActionTagService } from './action-tag.service';
 import { DatabaseRouter } from './db/database-router.service';
+import { SubjectReferenceService } from './subject-reference.service';
 import { IActionDb } from '../db/models/action';
 import { IActivityActionDb } from '../db/models/activity-action';
 
@@ -31,6 +32,11 @@ describe('ActionService.updateFromString', () => {
     );
     const tagSpy = jasmine.createSpyObj<TagService>('TagService', ['getByActionId']);
     const actionTagSpy = jasmine.createSpyObj<ActionTagService>('ActionTagService', ['deleteByActionId']);
+    const subjectRefSpy = jasmine.createSpyObj<SubjectReferenceService>(
+      'SubjectReferenceService',
+      ['removeSubjectReferences'],
+    );
+    subjectRefSpy.removeSubjectReferences.and.returnValue(Promise.resolve());
     const dbRouterSpy = jasmine.createSpyObj<DatabaseRouter>('DatabaseRouter', [
       'add', 'getById', 'getAll', 'getAllWhereEquals', 'getFirstWhereEquals',
       'getFirstWhereEqualsIgnoringCase', 'update', 'delete', 'getAnyOf',
@@ -53,6 +59,7 @@ describe('ActionService.updateFromString', () => {
         { provide: TagService, useValue: tagSpy },
         { provide: ActionTagService, useValue: actionTagSpy },
         { provide: DatabaseRouter, useValue: dbRouterSpy },
+        { provide: SubjectReferenceService, useValue: subjectRefSpy },
       ],
     });
 

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { addDays, format } from 'date-fns';
+import { addDays } from 'date-fns';
+import { formatLocalDate, parseLocalDateOrThrow } from '../functions/date';
 import { IActivity, IActivityCreateDto, IActivityDb } from '../db/models/activity';
 import { ActivityForm } from '../components/activity-form/activity-form.component';
 import { ActionService } from './action.service';
@@ -85,15 +86,18 @@ export class ActivityService extends DatabaseService<'activities'> {
       ? this.getAllByRange('date', { 0: fromDate, 1: toDate })
       : this.getAll();
 
-    const [activitiesDb, activityActions, activityTags, activityItems] = await Promise.all([
-      activitiesPromise,
-      this.activityActionService.getAll(),
-      this.activityTagService.getAll(),
-      this.activityItemService.getAll(),
-    ]);
+    const activitiesDb = await activitiesPromise;
 
     const activities = (fromDate && !toDate) ? activitiesDb.filter(a => a.date >= fromDate) : activitiesDb;
-    const activityIds = new Set(activities.map(a => a.id));
+    const ids = activities.map(a => a.id);
+    const activityIds = new Set(ids);
+
+    // Scoped to the activities in range, not the whole link tables.
+    const [activityActions, activityTags, activityItems] = await Promise.all([
+      this.activityActionService.getAnyOf('activityId', ids),
+      this.activityTagService.getAnyOf('activityId', ids),
+      this.activityItemService.getAnyOf('activityId', ids),
+    ]);
 
     const actionsByActivity = new Map<number, { id: number }[]>();
     for (const aa of activityActions) {
@@ -145,31 +149,16 @@ export class ActivityService extends DatabaseService<'activities'> {
   }
 
   async getByDate(startDate: string, endDate?: string) {
-    if (!endDate) {
-      endDate = format(addDays(new Date(startDate), 1), 'yyyy-MM-dd');
-    } else {
-      endDate = format(addDays(new Date(endDate), 1), 'yyyy-MM-dd');
-    }
+    // The range is half-open ([start, end)), so the exclusive bound is the day
+    // after the requested last day.
+    const lastDay = parseLocalDateOrThrow(endDate ?? startDate);
+    endDate = formatLocalDate(addDays(lastDay, 1));
     const activities = await this.getAllBetweenOrderedBy(
       'date',
       'startTime',
       startDate,
       endDate,
     );
-
-    return this.enrichAll(activities);
-  }
-
-  async getByNewYear() {
-    const activities = await this.getAll({
-      OR: [
-        { date: '2026-01-01' },
-        { date: '2027-01-01' },
-        { date: '2028-01-01' },
-        { date: '2029-01-01' },
-        { date: '2030-01-01' },
-      ]
-    });
 
     return this.enrichAll(activities);
   }
@@ -260,15 +249,18 @@ export class ActivityService extends DatabaseService<'activities'> {
       return [];
     }
 
-    const activityIds = new Set(activitiesDb.map(a => a.id));
+    const ids = activitiesDb.map(a => a.id);
+    const activityIds = new Set(ids);
 
-    // Load the four link tables once instead of per-activity (was O(N) round
-    // trips via enrichOne). Grouping happens in memory below.
+    // One query per link table instead of one per activity (was O(N) round
+    // trips via enrichOne), scoped to the activities actually being enriched
+    // rather than reading whole tables — otherwise rendering a single day cost
+    // a full scan of every link table, growing with lifetime history.
     const [activityActions, activityTags, activityItems, activityMetrics] = await Promise.all([
-      this.activityActionService.getAll(),
-      this.activityTagService.getAll(),
-      this.activityItemService.getAll(),
-      this.activityMetricService.getAll(),
+      this.activityActionService.getAnyOf('activityId', ids),
+      this.activityTagService.getAnyOf('activityId', ids),
+      this.activityItemService.getAnyOf('activityId', ids),
+      this.activityMetricService.getAnyOf('activityId', ids),
     ]);
 
     const push = <T>(map: Map<number, T[]>, id: number, value: T) => {

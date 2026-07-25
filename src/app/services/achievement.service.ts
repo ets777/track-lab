@@ -14,6 +14,7 @@ import { ItemService } from './item.service';
 import { RuleService } from './rule.service';
 import { RuleCompletionService } from './rule-completion.service';
 import { computeRuleStreakWithCompletions } from '../functions/rule-streak';
+import { LogService } from './log.service';
 
 @Injectable({ providedIn: 'root' })
 export class AchievementService extends DatabaseService<'achievements'> {
@@ -26,6 +27,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
   private itemService = inject(ItemService);
   private ruleService = inject(RuleService);
   private ruleCompletionService = inject(RuleCompletionService);
+  private logService = inject(LogService);
 
   protected tableName: 'achievements' = 'achievements';
 
@@ -61,12 +63,22 @@ export class AchievementService extends DatabaseService<'achievements'> {
 
   async init() {
     this.hookService.onEvent().subscribe(
-      async (event) => {
-        if (event.type === 'achievement.init') {
-          await this.checkAllInit(event);
-        } else {
-          await this.checkAll(event);
-        }
+      (event) => {
+        // The handler is fire-and-forget from RxJS's point of view, so an
+        // async throw here would surface as an unhandled rejection: no toast,
+        // no log, and achievement processing silently dead for the session.
+        // Catch it at the boundary instead.
+        void (async () => {
+          try {
+            if (event.type === 'achievement.init') {
+              await this.checkAllInit(event);
+            } else {
+              await this.checkAll(event);
+            }
+          } catch (e) {
+            await this.logService.error('AchievementService.init', e);
+          }
+        })();
       }
     );
 
@@ -108,9 +120,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
   }
 
   private async checkAll(event: any) {
-    const t = () => `[${Date.now() % 100000}ms]`;
     if (event.type === 'activity.added') {
-      console.log(t(), 'achievements: checkAll activity.added start');
       await Promise.all([
         this.checkAchievement('first_activity'),
         this.checkAchievement('10_activities'),
@@ -127,7 +137,6 @@ export class AchievementService extends DatabaseService<'achievements'> {
         this.checkAchievement('max_energy', event.payload),
         this.checkAchievement('min_energy', event.payload),
       ]);
-      console.log(t(), 'achievements: checkAll activity.added parallel done');
     }
 
     if (event.type === 'activity.updated') {
@@ -192,9 +201,7 @@ export class AchievementService extends DatabaseService<'achievements'> {
     }
 
     if (['activity.added', 'activity.updated'].includes(event.type)) {
-      console.log(t(), 'achievements: checkRuleStreakAchievements start');
       await this.checkRuleStreakAchievements();
-      console.log(t(), 'achievements: checkRuleStreakAchievements done');
     }
   }
 

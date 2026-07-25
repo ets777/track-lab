@@ -8,7 +8,6 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { RuleService } from 'src/app/services/rule.service';
-import { RuleCompletionService } from 'src/app/services/rule-completion.service';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { ActionService } from 'src/app/services/action.service';
 import { TagService } from 'src/app/services/tag.service';
@@ -36,7 +35,6 @@ export class RuleViewPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private ruleService = inject(RuleService);
-  private ruleCompletionService = inject(RuleCompletionService);
   private actionService = inject(ActionService);
   private tagService = inject(TagService);
   private itemService = inject(ItemService);
@@ -120,8 +118,7 @@ export class RuleViewPage {
     await alert.present();
     const { role } = await alert.onDidDismiss();
     if (role === 'yes') {
-      await this.ruleCompletionService.deleteByRuleId(this.ruleId);
-      await this.ruleService.delete({ id: this.ruleId });
+      await this.ruleService.deleteWithRelations(this.ruleId);
       this.toastService.enqueue({ title: 'TK_RULE_DELETED_SUCCESSFULLY', type: 'success' });
       await this.router.navigate(['/rule']);
     }

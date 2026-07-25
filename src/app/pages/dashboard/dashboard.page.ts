@@ -4,7 +4,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, Ion
 import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
-import { format } from 'date-fns';
+import { startOfLocalWeek, todayLocal } from 'src/app/functions/date';
 import { MainActionWidgetComponent } from 'src/app/components/main-action-widget/main-action-widget.component';
 import { RulesChecklistWidgetComponent, ChecklistItem } from 'src/app/components/rules-checklist-widget/rules-checklist-widget.component';
 import { NavigationGridWidgetComponent } from 'src/app/components/navigation-grid-widget/navigation-grid-widget.component';
@@ -94,6 +94,22 @@ export class DashboardPage {
     localStorage.setItem(this.EXP_LINES_KEY_PREFIX + widgetId, String(lineCount));
   }
 
+  /**
+   * Drop stored line counts for widgets that no longer exist. These keys are
+   * written per widget id and were never cleaned up on delete, so they
+   * accumulated in localStorage for the life of the install.
+   */
+  private pruneStoredLineCounts(widgets: DashboardWidget[]): void {
+    const liveIds = new Set(widgets.map(w => w.id));
+
+    const staleKeys = Object.keys(localStorage).filter(
+      key => key.startsWith(this.EXP_LINES_KEY_PREFIX)
+        && !liveIds.has(key.slice(this.EXP_LINES_KEY_PREFIX.length)),
+    );
+
+    for (const key of staleKeys) localStorage.removeItem(key);
+  }
+
   private widgetsReady = false;
   private viewReady = false;
 
@@ -137,6 +153,7 @@ export class DashboardPage {
           if (stored) this.experimentLineCounts.set(w.id, parseInt(stored, 10));
         }
       }
+      this.pruneStoredLineCounts(widgets);
       this.widgetsReady = true;
       if (this.viewReady) this.startRulesLoad();
     });
@@ -159,7 +176,7 @@ export class DashboardPage {
     this.checklistLoading = true;
     await new Promise(resolve => setTimeout(resolve));
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = todayLocal();
       const rules = await this.ruleService.getAll();
       const minDate = this.getMinDateForRules(rules as IRule[], today);
       const [activities, actions, tags, items] = await Promise.all([
@@ -219,13 +236,7 @@ export class DashboardPage {
 
   private getMinDateForRules(rules: IRule[], today: string): string {
     if (rules.some(r => r.period === 'month')) return `${today.slice(0, 7)}-01`;
-    if (rules.some(r => r.period === 'week')) {
-      const d = new Date(today + 'T00:00:00');
-      const dayOfWeek = (d.getDay() + 6) % 7;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() - dayOfWeek);
-      return monday.toISOString().slice(0, 10);
-    }
+    if (rules.some(r => r.period === 'week')) return startOfLocalWeek(today);
     return today;
   }
 

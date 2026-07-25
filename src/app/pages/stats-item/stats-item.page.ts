@@ -14,7 +14,7 @@ import { IActivity } from 'src/app/db/models/activity';
 import { DatePeriod } from 'src/app/types/date-period';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
-import { addDays, addMonths, format } from 'date-fns';
+import { addLocalDays, addLocalMonths, todayLocal } from 'src/app/functions/date';
 
 @Component({
   selector: 'app-stats-item',
@@ -73,14 +73,11 @@ export class StatsItemPage {
 
     const periodType = (periodTypeStr ?? 'week') as 'week' | 'month';
     const savedPeriod = savedPeriodJson ? JSON.parse(savedPeriodJson) as DatePeriod : null;
-    const endDate = savedPeriod?.endDate ?? format(new Date(), 'yyyy-MM-dd');
+    const endDate = savedPeriod?.endDate ?? todayLocal();
 
-    let startDate: string;
-    if (periodType === 'month') {
-      startDate = format(addMonths(new Date(endDate), -1), 'yyyy-MM-dd');
-    } else {
-      startDate = format(addDays(new Date(endDate), -6), 'yyyy-MM-dd');
-    }
+    const startDate = periodType === 'month'
+      ? addLocalMonths(endDate, -1)
+      : addLocalDays(endDate, -6);
 
     return { startDate, endDate };
   }

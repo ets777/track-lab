@@ -8,7 +8,8 @@ import { AlertController } from '@ionic/angular';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartThemeDirective } from 'src/app/directives/chart-theme.directive';
-import { addDays, format, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { localDateRange } from 'src/app/functions/date';
 import { IActivity } from 'src/app/db/models/activity';
 import { ITag } from 'src/app/db/models/tag';
 import { ActionService } from 'src/app/services/action.service';
@@ -216,7 +217,7 @@ export class EntityViewPage {
         await this.router.navigate(['/tag-list']);
         break;
       case 'item':
-        await this.itemService.delete({ id: this.entityId });
+        await this.itemService.deleteWithRelations(this.entityId);
         this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
         await this.router.navigate(['/item-list']);
         break;
@@ -310,13 +311,7 @@ export class EntityViewPage {
   }
 
   private buildChartData(startDate: string, endDate: string, allActivities: IActivity[]) {
-    const dates: string[] = [];
-    let i = 0;
-    while (!dates.includes(endDate)) {
-      dates.push(format(addDays(new Date(startDate), i), 'yyyy-MM-dd'));
-      i++;
-      if (i > MAX_DATE_RANGE_DAYS) break;
-    }
+    const dates = localDateRange(startDate, endDate, MAX_DATE_RANGE_DAYS);
 
     const durationData = dates.map(date => {
       const dayActivities = allActivities.filter(a => a.date === date && this.activityMatchesEntity(a));

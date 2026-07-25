@@ -1,13 +1,18 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Injector } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { DatabaseService } from './db/database.service';
 import { RuleForm } from '../components/rule-form/rule-form.component';
 import { IRuleDb, IRuleCreateDto, RuleMetric } from '../db/models/rule';
+import { RuleCompletionService } from './rule-completion.service';
 
 @Injectable({ providedIn: 'root' })
 export class RuleService extends DatabaseService<'rules'> {
   protected tableName: 'rules' = 'rules';
   private translate = inject(TranslateService);
+  // Resolved lazily: RuleCompletionService pulls in ActivityService, which
+  // reaches back here through the entity services. Injecting it eagerly would
+  // close a DI cycle at construction time.
+  private injector = inject(Injector);
 
   buildName(rule: Omit<IRuleDb, 'id'>, subjectName: string): string {
     const timeSuffix = rule.startTime && rule.endTime
@@ -61,6 +66,19 @@ export class RuleService extends DatabaseService<'rules'> {
       endTime: formData.timeEnabled ? formData.endTime : null,
     };
     return this.add(dto);
+  }
+
+  /**
+   * Delete a rule together with its archived completions.
+   *
+   * `ruleCompletions.ruleId` has no foreign key, so the completions do not
+   * cascade — every deletion path must come through here or they leak.
+   */
+  async deleteWithRelations(id: number): Promise<void> {
+    const ruleCompletionService = this.injector.get(RuleCompletionService);
+
+    await ruleCompletionService.deleteByRuleId(id);
+    await this.delete({ id });
   }
 
   private resolveMetric(formData: RuleForm): RuleMetric {

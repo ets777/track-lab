@@ -9,6 +9,7 @@ import { ExperimentRuleService } from './experiment-rule.service';
 import { ActivityService } from './activity.service';
 import { RuleService } from './rule.service';
 import { RuleCompletionService } from './rule-completion.service';
+import { SubjectReferenceService } from './subject-reference.service';
 import { averageMetricValue, averageMinutesPerDay, computeExperimentUptime } from '../functions/experiment';
 import { Preferences } from '@capacitor/preferences';
 import { format, addDays, subDays, parseISO } from 'date-fns';
@@ -30,8 +31,20 @@ export class ExperimentService extends DatabaseService<'experiments'> {
   private activityService = inject(ActivityService);
   private ruleService = inject(RuleService);
   private ruleCompletionService = inject(RuleCompletionService);
+  private subjectReferenceService = inject(SubjectReferenceService);
 
   readonly finishedExperiments$ = new Subject<FinishedExperiment[]>();
+
+  /**
+   * Delete an experiment along with references that do not cascade.
+   * `experimentIndicators` / `experimentRules` cascade via foreign keys;
+   * dashboard widgets holding the experiment id do not.
+   */
+  async deleteWithRelations(id: number) {
+    await this.subjectReferenceService.removeExperimentReferences(id);
+
+    return this.delete({ id });
+  }
 
   async addFromForm(form: ExperimentForm, entries: ExperimentEntry[], ruleIds: number[]): Promise<number> {
     const dto: IExperimentCreateDto = {

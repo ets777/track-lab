@@ -449,6 +449,7 @@
   "TK_WHERE_IS_A_COFFEE_MACHINE": "Где здесь кофемашина?",
   "TK_WHERE_IS_A_SOCKET": "Где здесь розетка?",
   "TK_WORKED": "Работал",
+  "TK_INVALID_BACKUP_FILE": "Файл повреждён или не является резервной копией TrackLab",
   "TK_WRONG_PASSWORD": "Неверный пароль",
   "TK_WROTE": "Писал",
   "TK_YES": "Да",

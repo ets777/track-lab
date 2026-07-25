@@ -8,7 +8,7 @@ import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { DatePickerComponent } from 'src/app/form-elements/date-picker/date-picker.component';
-import { addDays, addMonths, format } from 'date-fns';
+import { addLocalDays, addLocalMonths, diffLocalDays, todayLocal } from 'src/app/functions/date';
 import { DatePeriod } from 'src/app/types/date-period';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { dateFormatValidator } from 'src/app/validators/date-format.validator';
@@ -125,39 +125,37 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
     let newEndDate: string;
 
     if (this.selectedPeriod === 'week') {
-      newStartDate = format(addDays(new Date(startDate), shift * 7), 'yyyy-MM-dd');
-      newEndDate = format(addDays(new Date(endDate), shift * 7), 'yyyy-MM-dd');
+      newStartDate = addLocalDays(startDate, shift * 7);
+      newEndDate = addLocalDays(endDate, shift * 7);
       if (this.minDate && newStartDate < this.minDate) {
         newStartDate = this.minDate;
-        newEndDate = format(addDays(new Date(this.minDate), 6), 'yyyy-MM-dd');
+        newEndDate = addLocalDays(this.minDate, 6);
       } else if (this.maxDate && newEndDate > this.maxDate) {
         newEndDate = this.maxDate;
-        newStartDate = format(addDays(new Date(this.maxDate), -6), 'yyyy-MM-dd');
+        newStartDate = addLocalDays(this.maxDate, -6);
         if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
       }
     } else if (this.selectedPeriod === 'month') {
-      newStartDate = format(addMonths(new Date(startDate), shift), 'yyyy-MM-dd');
-      newEndDate = format(addMonths(new Date(endDate), shift), 'yyyy-MM-dd');
+      newStartDate = addLocalMonths(startDate, shift);
+      newEndDate = addLocalMonths(endDate, shift);
       if (this.minDate && newStartDate < this.minDate) {
         newStartDate = this.minDate;
-        newEndDate = format(addMonths(new Date(this.minDate), 1), 'yyyy-MM-dd');
+        newEndDate = addLocalMonths(this.minDate, 1);
       } else if (this.maxDate && newEndDate > this.maxDate) {
         newEndDate = this.maxDate;
-        newStartDate = format(addMonths(new Date(this.maxDate), -1), 'yyyy-MM-dd');
+        newStartDate = addLocalMonths(this.maxDate, -1);
         if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
       }
     } else {
-      const diffDays = Math.round(
-        (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000
-      ) + 1;
-      newStartDate = format(addDays(new Date(startDate), shift * diffDays), 'yyyy-MM-dd');
-      newEndDate = format(addDays(new Date(endDate), shift * diffDays), 'yyyy-MM-dd');
+      const diffDays = diffLocalDays(startDate, endDate) + 1;
+      newStartDate = addLocalDays(startDate, shift * diffDays);
+      newEndDate = addLocalDays(endDate, shift * diffDays);
       if (this.minDate && newStartDate < this.minDate) {
         newStartDate = this.minDate;
-        newEndDate = format(addDays(new Date(this.minDate), diffDays - 1), 'yyyy-MM-dd');
+        newEndDate = addLocalDays(this.minDate, diffDays - 1);
       } else if (this.maxDate && newEndDate > this.maxDate) {
         newEndDate = this.maxDate;
-        newStartDate = format(addDays(new Date(this.maxDate), -(diffDays - 1)), 'yyyy-MM-dd');
+        newStartDate = addLocalDays(this.maxDate, -(diffDays - 1));
         if (this.minDate && newStartDate < this.minDate) newStartDate = this.minDate;
       }
     }
@@ -170,14 +168,10 @@ export class DatePeriodInputComponent implements ControlValueAccessor, Validator
       return;
     }
 
-    const endDate = this.form.value.endDate || format(new Date(), 'yyyy-MM-dd');
-    let startDate: string;
-
-    if (this.selectedPeriod === 'week') {
-      startDate = format(addDays(new Date(endDate), -6), 'yyyy-MM-dd');
-    } else {
-      startDate = format(addMonths(new Date(endDate), -1), 'yyyy-MM-dd');
-    }
+    const endDate = this.form.value.endDate || todayLocal();
+    const startDate = this.selectedPeriod === 'week'
+      ? addLocalDays(endDate, -6)
+      : addLocalMonths(endDate, -1);
 
     this.patchAndUpdate({ startDate, endDate });
   }

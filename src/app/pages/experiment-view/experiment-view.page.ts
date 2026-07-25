@@ -194,7 +194,7 @@ export class ExperimentViewPage {
     const { role } = await alert.onDidDismiss();
     if (role === 'yes') {
       try {
-        await this.experimentService.delete({ id: this.experimentId });
+        await this.experimentService.deleteWithRelations(this.experimentId);
         this.toastService.enqueue({ title: 'TK_EXPERIMENT_DELETED_SUCCESSFULLY', type: 'success' });
         await this.router.navigate(['/experiment']);
       } catch (e) {

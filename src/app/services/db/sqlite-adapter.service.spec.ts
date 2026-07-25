@@ -1,10 +1,13 @@
+import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SqliteAdapter } from './sqlite-adapter.service';
 import { SQLiteService } from './sqlite.service';
 import { IDatabaseAdapter } from './database-adapter.interface';
+import { createSqliteServiceSpy } from './testing/sqlite-service.mock';
 
 // SqliteAdapter is declared abstract but used as a concrete service.
 // We extend it here so Angular DI can instantiate it in tests.
+@Injectable()
 class TestSqliteAdapter extends SqliteAdapter {}
 
 describe('SqliteAdapter.getAll', () => {
@@ -190,8 +193,9 @@ describe('SqliteAdapter.delete', () => {
   let sqliteService: jasmine.SpyObj<SQLiteService>;
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj<SQLiteService>('SQLiteService', ['query', 'run']);
-    spy.run.and.returnValue(Promise.resolve({ changes: { changes: 1 } }));
+    // Writes ask SQLite for the table's real columns first, so the spy has to
+    // answer PRAGMA table_info.
+    const spy = createSqliteServiceSpy();
 
     TestBed.configureTestingModule({
       providers: [

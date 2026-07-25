@@ -55,7 +55,7 @@ import { IExperimentRuleDb } from '../db/models/experiment-rule';
 import { ExperimentService } from './experiment.service';
 import { ExperimentIndicatorService } from './experiment-indicator.service';
 import { ExperimentRuleService } from './experiment-rule.service';
-import { DashboardWidget } from '../types/dashboard-widget';
+import { DashboardWidget, DEFAULT_DASHBOARD_WIDGETS } from '../types/dashboard-widget';
 import { DashboardConfigService } from './dashboard-config.service';
 import { AppConfigService } from './app-config.service';
 import { IAppConfigDb } from '../db/models/app-config';
@@ -170,7 +170,7 @@ const helperRevision1 = {
 
     let itemId = 1;
 
-    for (const activity of backup.activities) {
+    for (const activity of backup.activities ?? []) {
       if (activity.mood && activity.mood > 0) {
         backup.activityMetrics.push({
           activityId: activity.id,
@@ -233,17 +233,17 @@ const helperRevision1 = {
     }
 
     backup.activityActions = uniqueByProperties(
-      backup.activityActions,
+      backup.activityActions ?? [],
       ['activityId', 'actionId'],
     );
 
-    backup.actions.forEach((obj: any) => {
+    (backup.actions ?? []).forEach((obj: any) => {
       Object.keys(obj).forEach(key => {
         if (key == 'tags' || key == 'doNotMeasure') delete obj[key];
       });
     });
 
-    backup.activities.forEach((obj: any) => {
+    (backup.activities ?? []).forEach((obj: any) => {
       Object.keys(obj).forEach(key => {
         if (['actions', 'doNotMeasure', 'tags'].includes(key)) delete obj[key];
       });
@@ -261,6 +261,12 @@ const helperRevision2 = {
     return backup;
   },
 };
+
+/** Lowest file version each helper handles, highest first. Static data. */
+const VERSION_MAP = [
+  { version: '0.5.0', helper: helperRevision2 },
+  { version: '0.0.0', helper: helperRevision1 },
+];
 
 @Injectable({ providedIn: 'root' })
 export class BackupService {
@@ -342,20 +348,21 @@ export class BackupService {
         key: 'dashboardWidgets',
         service: { getAll: () => this.dashboardConfigService.getWidgets(), bulkAdd: async () => {}, clear: async () => {} },
         collect: () => this.dashboardConfigService.getWidgets(),
+        // Restore unconditionally. Keeping the device's existing widgets when
+        // the file has none left them pointing at ids from the database that
+        // was just wiped; falling back to the defaults is the only coherent
+        // state for a backup that predates widgets or has none.
         restore: async (backup) => {
-          if (backup.dashboardWidgets?.length) {
-            await this.dashboardConfigService.save(backup.dashboardWidgets);
-          }
+          await this.dashboardConfigService.save(
+            backup.dashboardWidgets?.length
+              ? backup.dashboardWidgets
+              : [...DEFAULT_DASHBOARD_WIDGETS],
+          );
         },
       },
       { key: 'appConfig', service: this.appConfigService },
     ];
   }
-
-  versionMap = [
-    { version: '0.5.0', helper: helperRevision2 },
-    { version: '0.0.0', helper: helperRevision1 },
-  ];
 
   async backup() {
     this.toastService.enqueue({
@@ -412,14 +419,64 @@ export class BackupService {
     }
   }
 
+  /**
+   * Every table key the restore walks, plus the legacy aliases still accepted.
+   * Anything else in the file is ignored rather than fed to the DB layer.
+   */
+  private backupArrayKeys(): string[] {
+    return [...this.buildSteps().map((step) => step.key as string), 'actionLists'];
+  }
+
+  /**
+   * Reject anything that is not a plausible backup object before it reaches the
+   * database layer. A backup file is untrusted input: it may be truncated,
+   * hand-edited, or produced by another tool, and the default password is not a
+   * meaningful gate. Table values must be arrays of plain objects; scalars and
+   * arrays-of-scalars are dropped, since downstream they would be read as rows.
+   */
+  private validateBackupShape(candidate: any): Backup {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      throw new Error('Backup is not an object');
+    }
+
+    if ('version' in candidate && typeof candidate.version !== 'string') {
+      throw new Error('Backup version is not a string');
+    }
+
+    const sanitized: any = { version: candidate.version };
+
+    for (const key of this.backupArrayKeys()) {
+      const value = candidate[key];
+
+      if (value === undefined || value === null) continue;
+
+      if (!Array.isArray(value)) {
+        throw new Error(`Backup field "${key}" is not an array`);
+      }
+
+      sanitized[key] = value.filter(
+        (row: unknown) => !!row && typeof row === 'object' && !Array.isArray(row),
+      );
+    }
+
+    // A file with no recognizable table at all is not a backup.
+    const hasAnyTable = this.backupArrayKeys().some((key) => Array.isArray(sanitized[key]));
+    if (!hasAnyTable) {
+      throw new Error('Backup contains no known tables');
+    }
+
+    return sanitized as Backup;
+  }
+
   async restore(content: string) {
     let backup: Backup | undefined;
 
     // Backups made without a user password are encrypted with the default key.
     try {
-      backup = decode(content, this.defaultPassword);
+      backup = this.validateBackupShape(decode(content, this.defaultPassword));
     } catch {
-      // Not default-encrypted — fall through and ask for the user's password.
+      // Not default-encrypted, or not a backup at all — fall through and ask
+      // for the user's password.
     }
 
     if (!backup) {
@@ -429,8 +486,10 @@ export class BackupService {
         return;
       }
 
+      let decoded: unknown;
+
       try {
-        backup = decode(content, password);
+        decoded = decode(content, password);
       } catch (e) {
         // Wrong password is a soft, expected outcome; anything else is a real
         // failure and must propagate to the caller to be toasted and logged.
@@ -439,6 +498,16 @@ export class BackupService {
           return;
         }
         throw e;
+      }
+
+      // Decrypting cleanly but not being a backup is a damaged/foreign file,
+      // not a wrong password — tell the user that instead.
+      try {
+        backup = this.validateBackupShape(decoded);
+      } catch (e) {
+        await this.logService.error('BackupService.restore', e);
+        await this.showMessage('TK_INVALID_BACKUP_FILE');
+        return;
       }
     }
 
@@ -456,9 +525,15 @@ export class BackupService {
       return;
     }
 
-    const helper = this.getHelper(backup.version);
+    let prepared: Backup;
 
-    const prepared = helper.prepareBackup(backup);
+    try {
+      prepared = this.getHelper(backup.version).prepareBackup(backup);
+    } catch (e) {
+      await this.logService.error('BackupService.fillDatabase', e);
+      await this.showMessage('TK_INVALID_BACKUP_FILE');
+      return;
+    }
 
     try {
       this.loadingService.show('TK_CLEARING_DATABASE');
@@ -480,6 +555,12 @@ export class BackupService {
           }
         }
       });
+    } catch (e) {
+      // The transaction rolled back, so the previous database is intact — say
+      // so rather than leaving the user staring at a dismissed spinner.
+      await this.logService.error('BackupService.fillDatabase', e);
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      return;
     } finally {
       this.loadingService.hide();
     }
@@ -549,15 +630,36 @@ export class BackupService {
     await this.tagService.clear();
   }
 
+  /**
+   * Parse a strict `major.minor.patch` version. Returns null for anything else
+   * — a partial ("1.0"), empty or non-numeric version must never be guessed at,
+   * because guessing low selects the destructive legacy helper.
+   */
+  private parseVersion(version: string): [number, number, number] | null {
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version ?? '');
+    if (!match) return null;
+    return [+match[1], +match[2], +match[3]];
+  }
+
   getHelper(version: string) {
-    if (!version) {
+    const parsed = this.parseVersion(version);
+
+    // Missing version = a pre-0.5.0 file, which genuinely had no version field.
+    if (version === undefined || version === null || version === '') {
       return helperRevision1;
     }
 
-    const [fileMajor, fileMinor, filePatch] = version.split('.').map(Number);
+    // Present but malformed: refuse rather than fall back. helperRevision1
+    // rewrites metrics/lists and drops items, so applying it to a modern backup
+    // on a bad guess would silently destroy the user's data.
+    if (!parsed) {
+      throw new Error(`Unrecognized backup version: ${version}`);
+    }
 
-    const map = this.versionMap.find((map) => {
-      const [mapMajor, mapMinor, mapPatch] = map.version.split('.').map(Number);
+    const [fileMajor, fileMinor, filePatch] = parsed;
+
+    const map = VERSION_MAP.find((map) => {
+      const [mapMajor, mapMinor, mapPatch] = this.parseVersion(map.version)!;
 
       return mapMajor < fileMajor
         || mapMajor == fileMajor && mapMinor < fileMinor

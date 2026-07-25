@@ -7,12 +7,14 @@ import { TagService } from './tag.service';
 import { ActionForm } from '../components/action-form/action-form.component';
 import { ActionTagService } from './action-tag.service';
 import { DatabaseService } from './db/database.service';
+import { SubjectReferenceService } from './subject-reference.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActionService extends DatabaseService<'actions'> {
   private activityActionService = inject(ActivityActionService);
   private tagService = inject(TagService);
   private actionTagService = inject(ActionTagService);
+  private subjectReferenceService = inject(SubjectReferenceService);
 
   protected tableName: 'actions' = 'actions';
 
@@ -176,6 +178,7 @@ export class ActionService extends DatabaseService<'actions'> {
 
   async deleteWithRelations(id: number) {
     await this.actionTagService.deleteByActionId(id);
+    await this.subjectReferenceService.removeSubjectReferences('action', id);
 
     return this.delete({ id });
   }

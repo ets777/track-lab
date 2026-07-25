@@ -21,6 +21,7 @@ import { dateFormatValidator } from 'src/app/validators/date-format.validator';
 import { timeFormatValidator } from 'src/app/validators/time-format.validator';
 import { IRule, RuleMetric, RuleOperator, RulePeriod } from 'src/app/db/models/rule';
 import { CreateEntitySheetComponent, CreateEntityType, CreatedEntity } from '../create-entity-sheet/create-entity-sheet.component';
+import { todayLocal } from 'src/app/functions/date';
 
 export type RuleFormMetric = 'count' | 'duration';
 
@@ -81,7 +82,7 @@ export class RuleFormComponent implements OnInit {
   public ruleForm!: ModelFormGroup<RuleForm>;
 
   async ngOnInit() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocal();
     this.ruleForm = this.formBuilder.group({
       startDate: [today, [Validators.required, dateFormatValidator]],
       endDateEnabled: [false],
@@ -114,7 +115,7 @@ export class RuleFormComponent implements OnInit {
     this.ruleForm.patchValue({
       startDate: rule.startDate,
       endDateEnabled: !!rule.endDate,
-      endDate: rule.endDate ?? new Date().toISOString().slice(0, 10),
+      endDate: rule.endDate ?? todayLocal(),
       subject,
       metric,
       operator: rule.operator,
@@ -323,9 +324,9 @@ export class RuleFormComponent implements OnInit {
   setDefaultData() {
     this.submitted = false;
     this.ruleForm.patchValue({
-      startDate: new Date().toISOString().slice(0, 10),
+      startDate: todayLocal(),
       endDateEnabled: false,
-      endDate: new Date().toISOString().slice(0, 10),
+      endDate: todayLocal(),
       subject: null,
       metric: 'count' as RuleFormMetric,
       operator: '>=',

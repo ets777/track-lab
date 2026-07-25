@@ -56,7 +56,6 @@ export class ActivityAddPage implements OnInit {
       return;
     }
 
-    const t = () => `[${Date.now() % 100000}ms]`;
 
     const activityFormValue = this.getForm().value as ActivityForm;
     const activityId = await this.activityService.addFromForm(activityFormValue);
@@ -95,7 +94,6 @@ export class ActivityAddPage implements OnInit {
       title: 'TK_ACTIVITY_ADDED_SUCCESSFULLY',
       type: 'success',
     });
-    console.log(t(), 'addActivity: complete');
   }
 
   isFormValid() {
