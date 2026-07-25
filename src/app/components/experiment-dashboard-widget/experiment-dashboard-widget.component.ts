@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { format, parseISO, differenceInDays, subDays, addDays } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { ExperimentWidgetConfig } from 'src/app/types/dashboard-widget';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { ExperimentIndicatorService } from 'src/app/services/experiment-indicator.service';
@@ -19,19 +19,30 @@ import { LogService } from 'src/app/services/log.service';
 import { IExperiment } from 'src/app/db/models/experiment';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
 import { IRule } from 'src/app/db/models/rule';
-import { IActivity } from 'src/app/db/models/activity';
 import { IMetric } from 'src/app/db/models/metric';
 import { IActionDb } from 'src/app/db/models/action';
 import { ITag } from 'src/app/db/models/tag';
 import { IItem } from 'src/app/db/models/item';
-import { computeExperimentUptime } from 'src/app/functions/experiment';
+import {
+  ExperimentSubjectType,
+  compareIndicator,
+  computeExperimentProgress,
+  computeExperimentUptime,
+  computeIndicatorRawStats,
+  formatIndicatorValue,
+  getExperimentWindows,
+  storedIndicatorRawStats,
+} from 'src/app/functions/experiment';
 import { getPeriodRange, isRulePeriodMet } from 'src/app/functions/rule-streak';
 
 interface IndicatorRow {
   name: string;
-  baseline: string | null;
-  current: string | null;
-  trend: 'up' | 'down' | 'flat' | 'unknown';
+  baseline: string;
+  current: string;
+  /** null when the value did not change or cannot be compared. */
+  arrowUp: boolean | null;
+  outcome: 'good' | 'bad' | 'neutral';
+  hasCurrent: boolean;
 }
 
 @Component({
@@ -81,7 +92,7 @@ export class ExperimentDashboardWidgetComponent {
       const exp = await this.experimentService.getById(this._config.experimentId);
       if (!exp) { this.isLoading = false; return; }
       this.experiment = exp as IExperiment;
-      this.progressPercent = this.computeProgress(this.experiment);
+      this.progressPercent = computeExperimentProgress(this.experiment);
 
       const [dbIndicators, actions, tags, items, metrics, experimentRuleLinks, allRules] = await Promise.all([
         this.indicatorService.getByExperimentId(this.experiment.id),
@@ -96,41 +107,42 @@ export class ExperimentDashboardWidgetComponent {
       const ruleIdSet = new Set(experimentRuleLinks.map((r: any) => r.ruleId));
       const experimentRules = (allRules as IRule[]).filter(r => ruleIdSet.has(r.id));
 
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const startDate = this.experiment.startDate ?? today;
-      const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
-      const currentEnd = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
+      const windows = getExperimentWindows(this.experiment);
+      const today = windows?.today ?? format(new Date(), 'yyyy-MM-dd');
+      const currentEnd = windows?.currentEnd ?? today;
+      const visibleIndicators = (dbIndicators as IExperimentIndicator[]).slice(0, 3);
 
-      // Baseline: week before experiment start, falling back to first week of experiment
-      const preExpStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
-      const firstWeekEnd = format(addDays(parseISO(startDate), 6), 'yyyy-MM-dd');
-      const currentStart = format(subDays(parseISO(currentEnd), 6), 'yyyy-MM-dd');
+      if (windows && visibleIndicators.length) {
+        const [baseline, firstWeek, current] = await Promise.all([
+          this.activityService.getByDate(windows.baselineStart, windows.startDate),
+          this.activityService.getByDate(windows.startDate, windows.firstWeekEnd),
+          this.activityService.getByDate(windows.currentStart, windows.currentEnd),
+        ]);
+        const buckets = { baseline, firstWeek, current };
 
-      const [preExpActs, firstWeekActs, currentActs] = await Promise.all([
-        this.activityService.getByDate(preExpStart, startDate),
-        this.activityService.getByDate(startDate, firstWeekEnd),
-        this.activityService.getByDate(currentStart, currentEnd),
-      ]);
+        this.indicators = visibleIndicators.map(ind => {
+          const subjectType = ind.subjectType as ExperimentSubjectType;
+          // Finished experiments read their stored result so the widget and the
+          // view page never disagree after later activity edits.
+          const raw = storedIndicatorRawStats(this.experiment!.resultData, subjectType, ind.subjectId)
+            ?? computeIndicatorRawStats(subjectType, ind.subjectId, buckets);
+          const unit = subjectType === 'metric'
+            ? (metrics.find(m => m.id === ind.subjectId)?.unit ? ' ' + metrics.find(m => m.id === ind.subjectId)!.unit : '')
+            : ' min/day';
+          const { arrowUp, outcome } = compareIndicator(ind.direction, raw.initialRaw, raw.currentRaw);
 
-      this.indicators = (dbIndicators as IExperimentIndicator[]).slice(0, 3).map(ind => {
-        const name = this.resolveIndicatorName(ind, actions, tags, items, metrics);
-        const { baselineRaw, currentRaw, fmtFn } = this.resolveValues(ind, preExpActs, firstWeekActs, currentActs, metrics);
-        const baseline = baselineRaw !== null ? fmtFn(baselineRaw) : null;
-        const current = currentRaw !== null ? fmtFn(currentRaw) : null;
-        const baselineDisp = baseline !== null ? parseFloat(baseline) : null;
-        const currentDisp = current !== null ? parseFloat(current) : null;
-        let trend: IndicatorRow['trend'] = 'unknown';
-        if (currentDisp !== null) {
-          if (baselineDisp === null || currentDisp === baselineDisp) {
-            trend = 'flat';
-          } else {
-            const valueWentUp = currentDisp > baselineDisp;
-            const isGood = ind.direction === 'increasing' ? valueWentUp : !valueWentUp;
-            trend = isGood ? 'up' : 'down';
-          }
-        }
-        return { name, baseline, current, trend };
-      });
+          return {
+            name: this.resolveIndicatorName(ind, actions, tags, items, metrics),
+            baseline: formatIndicatorValue(raw.initialRaw, unit),
+            current: formatIndicatorValue(raw.currentRaw, unit),
+            arrowUp,
+            outcome,
+            hasCurrent: raw.currentRaw !== null,
+          };
+        });
+      } else {
+        this.indicators = [];
+      }
 
       if (experimentRules.length && this.experiment.startDate) {
         const completionsMap = new Map<number, Map<string, boolean>>();
@@ -177,17 +189,6 @@ export class ExperimentDashboardWidgetComponent {
     }
   }
 
-  private computeProgress(exp: IExperiment): number {
-    if (!exp.startDate || !exp.endDate) return 0;
-    const today = new Date();
-    const start = parseISO(exp.startDate);
-    const end = parseISO(exp.endDate);
-    const total = differenceInDays(end, start);
-    if (total <= 0) return 100;
-    const elapsed = Math.min(differenceInDays(today, start), total);
-    return Math.round((elapsed / total) * 100);
-  }
-
   private resolveIndicatorName(
     ind: IExperimentIndicator,
     actions: IActionDb[], tags: ITag[], items: IItem[], metrics: IMetric[],
@@ -199,41 +200,6 @@ export class ExperimentDashboardWidgetComponent {
     if (ind.subjectType === 'action') return actions.find(a => a.id === ind.subjectId)?.name ?? String(ind.subjectId);
     if (ind.subjectType === 'tag') return tags.find(t => t.id === ind.subjectId)?.name ?? String(ind.subjectId);
     return items.find(i => i.id === ind.subjectId)?.name ?? String(ind.subjectId);
-  }
-
-  private resolveValues(
-    ind: IExperimentIndicator,
-    preExpActs: IActivity[],
-    firstWeekActs: IActivity[],
-    currentActs: IActivity[],
-    metrics: IMetric[],
-  ): { baselineRaw: number | null; currentRaw: number | null; fmtFn: (v: number) => string } {
-    if (ind.subjectType === 'metric') {
-      const metric = metrics.find(m => m.id === ind.subjectId);
-      const unit = metric?.unit ? ' ' + metric.unit : '';
-      const avg = (acts: IActivity[]) => {
-        const vals = acts.flatMap(a => a.metricRecords.filter(r => r.metricId === ind.subjectId)).map(r => r.value);
-        return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-      };
-      const baselineRaw = avg(preExpActs) ?? avg(firstWeekActs);
-      return { baselineRaw, currentRaw: avg(currentActs), fmtFn: v => `${Math.round(v * 10) / 10}${unit}` };
-    }
-    const minPerDay = (acts: IActivity[]) => {
-      const matching = acts.filter(a => {
-        if (ind.subjectType === 'action') return a.actions.some(ac => ac.id === ind.subjectId);
-        if (ind.subjectType === 'tag') return a.tags.some(t => t.id === ind.subjectId) || a.actions.some(ac => ac.tags.some(t => t.id === ind.subjectId));
-        return a.items.some(i => i.id === ind.subjectId);
-      });
-      const total = matching.reduce((sum, a) => {
-        if (!a.endTime) return sum;
-        const [sh, sm] = a.startTime.split(':').map(Number);
-        const [eh, em] = a.endTime.split(':').map(Number);
-        return sum + Math.max(0, eh * 60 + em - sh * 60 - sm);
-      }, 0);
-      return total > 0 ? Math.round((total / 7) * 10) / 10 : null;
-    };
-    const baselineRaw = minPerDay(preExpActs) ?? minPerDay(firstWeekActs);
-    return { baselineRaw, currentRaw: minPerDay(currentActs), fmtFn: v => `${v} min/day` };
   }
 
   navigate(): void {

@@ -30,25 +30,19 @@
       @for (ind of indicators; track ind.name) {
         <div class="xw-row">
           <span class="xw-label">{{ ind.name }}</span>
-          <span class="xw-val" [attr.data-trend]="ind.trend">
-            @if (ind.trend === 'unknown') {
+          <span class="xw-val" [attr.data-outcome]="ind.outcome">
+            @if (!ind.hasCurrent) {
               <span class="xv-dim">??</span>
-            } @else if (ind.trend === 'flat') {
+            } @else if (ind.arrowUp === null) {
               <span class="xv-dim">{{ ind.current }}</span>
-            } @else if (ind.trend === 'up') {
-              @if (ind.baseline) {
-                <span class="xv-dim">{{ ind.baseline }}</span>
-              }
-              <span class="xv-arrow">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
-              </span>
-              <span class="xv-strong">{{ ind.current }}</span>
             } @else {
-              @if (ind.baseline) {
-                <span class="xv-dim">{{ ind.baseline }}</span>
-              }
+              <span class="xv-dim">{{ ind.baseline }}</span>
               <span class="xv-arrow">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+                @if (ind.arrowUp) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+                }
               </span>
               <span class="xv-strong">{{ ind.current }}</span>
             }

@@ -151,12 +151,12 @@
   color: var(--tl-text-faint);
 }
 
-.xw-val[data-trend="up"] {
+.xw-val[data-outcome="good"] {
   .xv-arrow,
   .xv-strong { color: var(--tl-good); }
 }
 
-.xw-val[data-trend="down"] {
+.xw-val[data-outcome="bad"] {
   .xv-arrow,
   .xv-strong { color: var(--tl-bad); }
 }

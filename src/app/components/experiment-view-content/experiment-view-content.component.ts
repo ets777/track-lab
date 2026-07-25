@@ -5,8 +5,8 @@ import { IonIcon, IonSegment, IonSegmentButton, IonLabel } from '@ionic/angular/
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { trendingUpOutline, trendingDownOutline, arrowUpOutline, arrowDownOutline, arrowForwardOutline, chevronForwardOutline } from 'ionicons/icons';
-import { format, parseISO, differenceInDays, startOfMonth, subDays, addDays } from 'date-fns';
-import { IExperiment, ExperimentResultEntry, EXPERIMENT_FAIL_REASON_KEYS, ExperimentFailReason } from 'src/app/db/models/experiment';
+import { format, parseISO, startOfMonth } from 'date-fns';
+import { IExperiment, EXPERIMENT_FAIL_REASON_KEYS, ExperimentFailReason } from 'src/app/db/models/experiment';
 import { formatDisplayDate } from 'src/app/functions/date';
 import { IExperimentIndicator } from 'src/app/db/models/experiment-indicator';
 import { ExperimentDirection } from 'src/app/db/models/experiment-indicator';
@@ -20,7 +20,16 @@ import { IItem } from 'src/app/db/models/item';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { DatePeriod } from 'src/app/types/date-period';
 import { RuleDayStatus, computeRuleStatusesForDay } from 'src/app/functions/rule-color';
-import { averageMetricValue, averageMinutesPerDay, computeExperimentUptime } from 'src/app/functions/experiment';
+import {
+  ExperimentSubjectType,
+  compareIndicator,
+  computeExperimentProgress,
+  computeExperimentUptime,
+  computeIndicatorRawStats,
+  formatIndicatorValue,
+  getExperimentWindows,
+  storedIndicatorRawStats,
+} from 'src/app/functions/experiment';
 import { Router } from '@angular/router';
 import { RuleService } from 'src/app/services/rule.service';
 import { ActivityService } from 'src/app/services/activity.service';
@@ -216,15 +225,7 @@ export class ExperimentViewContentComponent implements OnInit {
   }
 
   private computeProgress() {
-    if (this.experiment.factEndDate) { this.progressPercent = 100; return; }
-    const start = this.experiment.startDate;
-    const end = this.experiment.endDate;
-    if (!start) { this.progressPercent = 0; return; }
-    if (!end) { this.progressPercent = 100; return; }
-    const total = differenceInDays(parseISO(end), parseISO(start));
-    if (total <= 0) { this.progressPercent = 100; return; }
-    const elapsed = differenceInDays(new Date(), parseISO(start));
-    this.progressPercent = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+    this.progressPercent = computeExperimentProgress(this.experiment);
   }
 
   private updateRuleStatuses() {
@@ -238,93 +239,56 @@ export class ExperimentViewContentComponent implements OnInit {
     return result;
   }
 
-  /** Formats stats; null = "not logged" → "??" for metrics, 0 for items/actions/tags. */
   private buildStats(ind: IndicatorView, initialRaw: number | null, currentRaw: number | null): IndicatorStats {
-    const isMetric = ind.type === 'metric';
-    if (!isMetric) {
-      initialRaw = initialRaw ?? 0;
-      currentRaw = currentRaw ?? 0;
-    }
+    const unit = ind.type === 'metric' ? (ind.metric?.unit ? ' ' + ind.metric.unit : '') : ' min/day';
+    const { arrowUp, outcome } = compareIndicator(ind.direction, initialRaw, currentRaw);
+    const color: IndicatorStats['color'] = outcome === 'good' ? 'success' : outcome === 'bad' ? 'danger' : 'medium';
 
-    const unit = isMetric ? (ind.metric?.unit ? ' ' + ind.metric.unit : '') : ' min/day';
-    const fmt = (v: number | null) => v === null ? '??' : `${Math.round(v * 10) / 10}${unit}`;
-
-    let arrowUp: boolean | null = null;
-    let color: IndicatorStats['color'] = 'medium';
-    if (initialRaw !== null && currentRaw !== null && currentRaw !== initialRaw) {
-      arrowUp = currentRaw > initialRaw;
-      if (ind.direction === 'increasing') color = arrowUp ? 'success' : 'danger';
-      else if (ind.direction === 'decreasing') color = arrowUp ? 'danger' : 'success';
-    }
-
-    return { baseline: fmt(initialRaw), current: fmt(currentRaw), arrowUp, color };
+    return {
+      baseline: formatIndicatorValue(initialRaw, unit),
+      current: formatIndicatorValue(currentRaw, unit),
+      arrowUp,
+      color,
+    };
   }
 
   private async computeIndicatorStats() {
-    const startDate = this.experiment.startDate;
-    if (!startDate) return;
+    const windows = getExperimentWindows(this.experiment);
+    if (!windows) return;
 
     // Finished experiments: use stored resultData to avoid data-drift
-    if (this.experiment.resultData) {
-      const stored: ExperimentResultEntry[] = JSON.parse(this.experiment.resultData);
-      this.indicatorViews = this.indicatorViews.map(ind => {
-        const entry = stored.find(e => e.indicatorType === ind.type && e.indicatorId === ind.subjectId);
-        if (!entry) return ind;
-        return { ...ind, stats: this.buildStats(ind, entry.initialValue ?? null, entry.resultValue ?? null) };
-      });
+    this.indicatorViews = this.indicatorViews.map(ind => {
+      const stored = storedIndicatorRawStats(this.experiment.resultData, ind.type, ind.subjectId);
+      return stored ? { ...ind, stats: this.buildStats(ind, stored.initialRaw, stored.currentRaw) } : ind;
+    });
 
-      if (this.indicatorViews.every(ind => ind.stats)) return;
-    }
+    if (this.indicatorViews.every(ind => ind.stats)) return;
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const baselineStart = format(subDays(parseISO(startDate), 6), 'yyyy-MM-dd');
-    const firstWeekEnd = format(addDays(parseISO(startDate), 6), 'yyyy-MM-dd');
-    const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
-    const currentEnd = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
-    const currentStart = format(subDays(parseISO(currentEnd), 6), 'yyyy-MM-dd');
-
-    const [baselineActs, firstWeekActs, currentActs] = await Promise.all([
-      this.activityService.getByDate(baselineStart, startDate),
-      this.activityService.getByDate(startDate, firstWeekEnd),
-      this.activityService.getByDate(currentStart, currentEnd),
+    const [baseline, firstWeek, current] = await Promise.all([
+      this.activityService.getByDate(windows.baselineStart, windows.startDate),
+      this.activityService.getByDate(windows.startDate, windows.firstWeekEnd),
+      this.activityService.getByDate(windows.currentStart, windows.currentEnd),
     ]);
+    const buckets = { baseline, firstWeek, current };
 
     this.indicatorViews = this.indicatorViews.map(ind => {
       if (ind.stats) return ind; // already set from stored resultData
-
-      if (ind.type === 'metric' && ind.metric) {
-        // Initial value: week before the experiment, falling back to its first week
-        const initial = averageMetricValue(baselineActs, ind.metric.id!)
-          ?? averageMetricValue(firstWeekActs, ind.metric.id!);
-        const current = averageMetricValue(currentActs, ind.metric.id!);
-        return { ...ind, stats: this.buildStats(ind, initial, current) };
-      }
-
-      if (ind.type !== 'metric') {
-        const initial = averageMinutesPerDay(baselineActs, ind.type, ind.subjectId)
-          ?? averageMinutesPerDay(firstWeekActs, ind.type, ind.subjectId);
-        const current = averageMinutesPerDay(currentActs, ind.type, ind.subjectId);
-        return { ...ind, stats: this.buildStats(ind, initial, current) };
-      }
-
-      return ind;
+      const raw = computeIndicatorRawStats(ind.type as ExperimentSubjectType, ind.subjectId, buckets);
+      return { ...ind, stats: this.buildStats(ind, raw.initialRaw, raw.currentRaw) };
     });
   }
 
   private computeExperimentRuleStats() {
-    if (!this.rules.length || !this.experiment.startDate) return;
-
-    const effectiveEnd = this.experiment.factEndDate ?? this.experiment.endDate;
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const end = effectiveEnd && effectiveEnd < today ? effectiveEnd : today;
+    const windows = getExperimentWindows(this.experiment);
+    if (!this.rules.length || !windows) return;
 
     this.combinedUptime = computeExperimentUptime(
       this.rules,
       this.allActivities,
       this.completionsMap,
-      this.experiment.startDate,
-      end,
-      today,
+      windows.startDate,
+      windows.currentEnd,
+      windows.today,
     );
   }
 }
