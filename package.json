@@ -2,7 +2,7 @@
   "name": "track-lab",
   "version": "1.0.0",
   "author": "Dmitry Klishev",
-  "homepage": "https://etsbox.ru/tracklab",
+  "homepage": "https://etsbox.com/tracklab",
   "scripts": {
     "ng": "ng",
     "docs:gen": "node tools/docs-gen/index.js",
