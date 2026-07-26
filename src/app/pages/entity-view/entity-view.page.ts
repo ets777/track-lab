@@ -26,6 +26,7 @@ import { TagsComponent } from 'src/app/components/tags/tags.component';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
 import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { getTimeString } from 'src/app/functions/string';
+import { presentItemInUseAlert } from 'src/app/functions/subject-usage';
 import { styledBarChartOptions, BAR_DATASET_STYLE, barDatasetColor, accentColor } from 'src/app/functions/chart';
 import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
@@ -216,11 +217,19 @@ export class EntityViewPage {
         this.toastService.enqueue({ title: 'TK_TAG_DELETED_SUCCESSFULLY', type: 'success' });
         await this.router.navigate(['/tag-list']);
         break;
-      case 'item':
-        await this.itemService.deleteWithRelations(this.entityId);
+      case 'item': {
+        // Refused while a rule, experiment or widget still points at the item.
+        const blocking = await this.itemService.deleteIfUnused(this.entityId);
+
+        if (blocking) {
+          await presentItemInUseAlert(this.alertController, this.translate, blocking);
+          return;
+        }
+
         this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
         await this.router.navigate(['/item-list']);
         break;
+      }
     }
   }
 

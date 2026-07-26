@@ -14,6 +14,9 @@ import { IItem } from 'src/app/db/models/item';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { LogService } from 'src/app/services/log.service';
+import { SubjectReferenceService } from 'src/app/services/subject-reference.service';
+import { presentItemInUseAlert, presentListInUseAlert } from 'src/app/functions/subject-usage';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
@@ -29,6 +32,8 @@ export class ListViewPage {
   private itemService = inject(ItemService);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
+  private logService = inject(LogService);
+  private subjectReferenceService = inject(SubjectReferenceService);
   private translate = inject(TranslateService);
   private actionSheetCtrl = inject(ActionSheetController);
 
@@ -88,10 +93,27 @@ export class ListViewPage {
     });
     await alert.present();
     const { role } = await alert.onDidDismiss();
-    if (role === 'yes') {
+    if (role !== 'yes') {
+      return;
+    }
+
+    try {
+      // Items go with the list through SQLite's cascade, but rules, experiment
+      // indicators and widgets point at them by an id nothing cascades. Refuse
+      // rather than silently turning those into ghost rows.
+      const blocking = await this.subjectReferenceService.findListItemUsage(this.listId);
+
+      if (blocking) {
+        await presentListInUseAlert(this.alertController, this.translate, this.list?.name ?? '', blocking);
+        return;
+      }
+
       await this.listService.delete({ id: this.listId });
       this.toastService.enqueue({ title: 'TK_LIST_DELETED_SUCCESSFULLY', type: 'success' });
       await this.router.navigate(['/library']);
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('ListViewPage.deleteList', e);
     }
   }
 
@@ -143,10 +165,24 @@ export class ListViewPage {
     await alert.present();
     const { role } = await alert.onDidDismiss();
 
-    if (role === 'yes') {
-      await this.itemService.deleteWithRelations(itemId);
+    if (role !== 'yes') {
+      return;
+    }
+
+    try {
+      // Refused while a rule, experiment or widget still points at the item.
+      const blocking = await this.itemService.deleteIfUnused(itemId);
+
+      if (blocking) {
+        await presentItemInUseAlert(this.alertController, this.translate, blocking);
+        return;
+      }
+
       this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
       this.items = this.items!.filter(t => t.id !== itemId);
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('ListViewPage.deleteItem', e);
     }
   }
 

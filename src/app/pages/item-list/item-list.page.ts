@@ -12,6 +12,8 @@ import { IItem } from 'src/app/db/models/item';
 import { IList } from 'src/app/db/models/list';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { LogService } from 'src/app/services/log.service';
+import { presentItemInUseAlert } from 'src/app/functions/subject-usage';
 import { addIcons } from 'ionicons';
 import { eyeOutline, createOutline, trashOutline } from 'ionicons/icons';
 
@@ -32,6 +34,7 @@ export class ItemListPage {
   router = inject(Router);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
+  private logService = inject(LogService);
 
   items: IItemWithList[] = [];
 
@@ -80,10 +83,24 @@ export class ItemListPage {
   }
 
   async deleteItem(itemId: number) {
-    if (await this.confirm()) {
-      await this.itemService.deleteWithRelations(itemId);
+    if (!await this.confirm()) {
+      return;
+    }
+
+    try {
+      // Refused while a rule, experiment or widget still points at the item.
+      const blocking = await this.itemService.deleteIfUnused(itemId);
+
+      if (blocking) {
+        await presentItemInUseAlert(this.alertController, this.translate, blocking);
+        return;
+      }
+
       this.toastService.enqueue({ title: 'TK_ITEM_DELETED_SUCCESSFULLY', type: 'success' });
       await this.fetchItems();
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('ItemListPage.deleteItem', e);
     }
   }
 

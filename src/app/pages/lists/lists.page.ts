@@ -14,6 +14,9 @@ import { Router } from '@angular/router';
 import { OverlayEventDetail } from '@ionic/core';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
+import { LogService } from 'src/app/services/log.service';
+import { SubjectReferenceService } from 'src/app/services/subject-reference.service';
+import { presentListInUseAlert } from 'src/app/functions/subject-usage';
 import { DefaultSkeletonComponent } from 'src/app/skeletons/default/default-skeleton.component';
 
 @Component({
@@ -29,6 +32,8 @@ export class ListsPage {
   private translate = inject(TranslateService);
   private alertController = inject(AlertController);
   private toastService = inject(ToastService);
+  private logService = inject(LogService);
+  private subjectReferenceService = inject(SubjectReferenceService);
 
   constructor() { addIcons({ searchOutline, eyeOutline, createOutline, trashOutline }); }
 
@@ -125,10 +130,28 @@ export class ListsPage {
     await alert.present();
     const { role } = await alert.onDidDismiss();
 
-    if (role === 'yes') {
+    if (role !== 'yes') {
+      return;
+    }
+
+    try {
+      // Items go with the list through SQLite's cascade, but rules, experiment
+      // indicators and widgets point at them by an id nothing cascades. Refuse
+      // rather than silently turning those into ghost rows.
+      const blocking = await this.subjectReferenceService.findListItemUsage(listId);
+
+      if (blocking) {
+        const list = this.lists?.find(l => l.id === listId);
+        await presentListInUseAlert(this.alertController, this.translate, list?.name ?? '', blocking);
+        return;
+      }
+
       await this.listService.delete({ id: listId });
       this.toastService.enqueue({ title: 'TK_LIST_DELETED_SUCCESSFULLY', type: 'success' });
       await this.fetchLists();
+    } catch (e) {
+      this.toastService.enqueue({ title: 'TK_AN_ERROR_OCCURRED', type: 'error' });
+      await this.logService.error('ListsPage.deleteList', e);
     }
   }
 }
