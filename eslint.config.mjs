@@ -54,5 +54,12 @@ export default defineConfig([globalIgnores(["projects/**/*"]), {
 }, {
   files: ["**/*.html"],
   extends: compat.extends("plugin:@angular-eslint/template/recommended"),
-  rules: {},
+
+  rules: {
+    // `value != null` is the intended "neither null nor undefined" check in
+    // templates; only the loose comparisons between values stay an error.
+    "@angular-eslint/template/eqeqeq": ["error", {
+      allowNullOrUndefined: true,
+    }],
+  },
 }]);

@@ -395,8 +395,8 @@ export class DashboardSettingsPage {
   get pickerResults(): Selectable<IMetric | CommonItem | IExperiment>[] {
     const list: Selectable<IMetric | CommonItem | IExperiment>[] =
       this.pickerType === 'metric' ? this.metricSuggestions
-      : this.pickerType === 'item' ? this.itemSuggestions
-      : this.experimentSuggestions;
+        : this.pickerType === 'item' ? this.itemSuggestions
+          : this.experimentSuggestions;
     const q = this.pickerQuery.trim().toLowerCase();
     if (!q) return list;
     return list.filter(s =>

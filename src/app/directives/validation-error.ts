@@ -1,4 +1,4 @@
-import { Directive, ElementRef, OnInit, Renderer2, inject } from "@angular/core";
+import { Directive, ElementRef, OnInit, Renderer2, inject, OnDestroy } from "@angular/core";
 import { AbstractControl, NgControl } from "@angular/forms";
 import { TooltipService } from "../services/tooltip.service";
 import { TranslateService } from "@ngx-translate/core";
@@ -7,7 +7,7 @@ import { Subscription } from "rxjs";
 @Directive({
   selector: '[appValidationError]',
 })
-export class ValidationErrorDirective implements OnInit {
+export class ValidationErrorDirective implements OnInit, OnDestroy {
   private el = inject(ElementRef);
   private renderer = inject(Renderer2);
   private controlDir = inject(NgControl);

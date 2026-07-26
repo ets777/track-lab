@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonChip } from '@ionic/angular/standalone';
 import { ITag } from 'src/app/db/models/tag';
@@ -9,11 +9,6 @@ import { ITag } from 'src/app/db/models/tag';
   styleUrls: ['./tags.component.scss'],
   imports: [RouterLink, IonChip],
 })
-export class TagsComponent  implements OnInit {
+export class TagsComponent {
   @Input() tags: ITag[] = [];
-
-  constructor() { }
-
-  ngOnInit() {}
-
 }

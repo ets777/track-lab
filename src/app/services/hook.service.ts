@@ -15,13 +15,13 @@ export type HookEvent =
 
 @Injectable({ providedIn: 'root' })
 export class HookService {
-    private event$ = new Subject<HookEvent>();
+  private event$ = new Subject<HookEvent>();
 
-    emit(event: HookEvent) {
-        this.event$.next(event);
-    }
+  emit(event: HookEvent) {
+    this.event$.next(event);
+  }
 
-    onEvent() {
-        return this.event$.asObservable();
-    }
+  onEvent() {
+    return this.event$.asObservable();
+  }
 }

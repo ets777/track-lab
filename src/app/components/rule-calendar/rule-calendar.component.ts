@@ -252,7 +252,7 @@ export class RuleCalendarComponent implements OnInit {
     return 'transparent';
   }
 
-private getDayStatus(date: string): DayStatus {
+  private getDayStatus(date: string): DayStatus {
     if (date < this.rule.startDate || date > this.today) return 'none';
 
     const [periodStart, periodEnd] = this.getPeriodRange(date);

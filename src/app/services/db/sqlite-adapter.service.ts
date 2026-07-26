@@ -106,9 +106,9 @@ export abstract class SqliteAdapter implements IDatabaseAdapter {
     const hasId = cols.includes('id');
     const conflictClause = hasId
       ? ` ON CONFLICT(id) DO UPDATE SET ${cols
-          .filter(c => c !== 'id')
-          .map(c => `${c} = excluded.${c}`)
-          .join(', ')}`
+        .filter(c => c !== 'id')
+        .map(c => `${c} = excluded.${c}`)
+        .join(', ')}`
       : '';
 
     const rowPlaceholder = `(${cols.map(() => '?').join(',')})`;

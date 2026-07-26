@@ -14,10 +14,10 @@ import { SelectSearchComponent } from 'src/app/form-elements/select-search/selec
 import { CommonItem } from 'src/app/types/selectable';
 
 @Component({ selector: 'app-date-period-input', template: '', standalone: true })
-class DatePeriodInputStub {}
+class DatePeriodInputStubComponent {}
 
 @Component({ selector: 'app-select-search', template: '', standalone: true })
-class SelectSearchStub {}
+class SelectSearchStubComponent {}
 
 const validPeriod = { startDate: '2024-01-01', endDate: '2024-01-07' };
 const anotherPeriod = { startDate: '2024-02-01', endDate: '2024-02-07' };
@@ -42,7 +42,7 @@ describe('StatsItemContentComponent - localStorage save logic', () => {
     })
       .overrideComponent(StatsItemContentComponent, {
         remove: { imports: [DatePeriodInputComponent, SelectSearchComponent] },
-        add: { imports: [DatePeriodInputStub, SelectSearchStub] },
+        add: { imports: [DatePeriodInputStubComponent, SelectSearchStubComponent] },
       })
       .compileComponents();
 

@@ -11,7 +11,7 @@ import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-inpu
 import { Component } from '@angular/core';
 
 @Component({ selector: 'app-date-period-input', template: '', standalone: true })
-class DatePeriodInputStub {}
+class DatePeriodInputStubComponent {}
 
 const validPeriod = { startDate: '2024-01-01', endDate: '2024-01-07' };
 const anotherPeriod = { startDate: '2024-02-01', endDate: '2024-02-07' };
@@ -43,7 +43,7 @@ describe('StatsContentComponent - localStorage save logic', () => {
     })
       .overrideComponent(StatsContentComponent, {
         remove: { imports: [DatePeriodInputComponent] },
-        add: { imports: [DatePeriodInputStub] },
+        add: { imports: [DatePeriodInputStubComponent] },
       })
       .compileComponents();
 

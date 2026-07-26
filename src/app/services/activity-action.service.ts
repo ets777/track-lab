@@ -3,35 +3,35 @@ import { DatabaseService } from './db/database.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityActionService extends DatabaseService<'activityActions'> {
-    protected tableName: 'activityActions' = 'activityActions';
+  protected tableName: 'activityActions' = 'activityActions';
 
-    async getByActivityId(activityId: number) {
-        return this.getAllWhereEquals('activityId', activityId);
+  async getByActivityId(activityId: number) {
+    return this.getAllWhereEquals('activityId', activityId);
+  }
+
+  async getByActionId(actionId: number) {
+    return this.getAllWhereEquals('actionId', actionId);
+  }
+
+  async deleteByActivityIdAndActionId(activityId: number, actionId: number) {
+    return this.delete({ activityId, actionId });
+  }
+
+  async deleteByActivityId(activityId: number) {
+    return this.delete({ activityId });
+  }
+
+  async replaceAction(oldActionId: number, newActionId: number) {
+    const relations = await this.getByActionId(oldActionId);
+
+    for (const relation of relations) {
+      const conflict = await this.getAll({ activityId: relation.activityId, actionId: newActionId });
+
+      if (conflict.length) {
+        await this.delete({ id: relation.id });
+      } else {
+        await this.update(relation.id, { actionId: newActionId });
+      }
     }
-
-    async getByActionId(actionId: number) {
-        return this.getAllWhereEquals('actionId', actionId);
-    }
-
-    async deleteByActivityIdAndActionId(activityId: number, actionId: number) {
-        return this.delete({ activityId, actionId });
-    }
-
-    async deleteByActivityId(activityId: number) {
-        return this.delete({ activityId });
-    }
-
-    async replaceAction(oldActionId: number, newActionId: number) {
-        const relations = await this.getByActionId(oldActionId);
-
-        for (const relation of relations) {
-            const conflict = await this.getAll({ activityId: relation.activityId, actionId: newActionId });
-
-            if (conflict.length) {
-                await this.delete({ id: relation.id });
-            } else {
-                await this.update(relation.id, { actionId: newActionId });
-            }
-        }
-    }
+  }
 }

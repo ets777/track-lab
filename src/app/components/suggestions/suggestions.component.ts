@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, AfterViewInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, AfterViewInit, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
@@ -28,7 +28,7 @@ export class SuggestionsComponent implements OnChanges, OnInit, AfterViewInit, O
 
   _suggestions: SuggestionItem[] = [];
 
-  constructor(private el: ElementRef) {}
+  private el = inject(ElementRef);
 
   ngOnInit() {
     const ionApp = document.querySelector('ion-app');

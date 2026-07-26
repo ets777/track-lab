@@ -9,6 +9,9 @@ import { applyChartThemeColors } from 'src/app/functions/chart';
  * until re-applied. Applied automatically to any `canvas[baseChart]`.
  */
 @Directive({
+  // Deliberately not `app`-prefixed: it attaches to ng2-charts' own
+  // `canvas[baseChart]` so every chart is themed without opting in per usage.
+  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'canvas[baseChart]',
   standalone: true,
 })
