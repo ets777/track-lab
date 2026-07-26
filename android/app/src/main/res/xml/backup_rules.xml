@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules for API 23-30.
+  Only the SQLite database is backed up. Declaring any <include> makes the
+  backup opt-in, so everything not listed here (shared prefs, caches, files,
+  secure storage) is excluded.
+-->
+<full-backup-content>
+    <include domain="database" path="." />
+</full-backup-content>

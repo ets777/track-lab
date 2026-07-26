@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup and device-transfer rules for API 31+.
+  Only the SQLite database is copied. Declaring any <include> makes the
+  transfer opt-in, so everything not listed here (shared prefs, caches, files,
+  secure storage) is excluded.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="." />
+    </device-transfer>
+</data-extraction-rules>
