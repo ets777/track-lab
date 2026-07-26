@@ -12,6 +12,7 @@ import { ChartConfiguration } from 'chart.js';
 import { Time } from 'src/app/Time';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { formatGraphDate } from 'src/app/functions/date';
+import { parseStoredJson } from 'src/app/functions/storage';
 import { styledLineChartOptions, LINE_DATASET_STYLE, lineDatasetColor } from 'src/app/functions/chart';
 import { Router } from '@angular/router';
 import { DatePeriodInputComponent } from 'src/app/form-elements/date-period-input/date-period-input.component';
@@ -126,14 +127,14 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     } else {
       defaultMetrics = this.savedMetrics
         ? this.savedMetrics.split(',').map(s => {
-            const k = s.trim();
-            return k.startsWith('TK_') ? this.translate.instant(k) : k;
-          }).join(', ')
+          const k = s.trim();
+          return k.startsWith('TK_') ? this.translate.instant(k) : k;
+        }).join(', ')
         : visibleMetrics
-            .filter(m => m.isBase)
-            .slice(0, MAX_METRICS)
-            .map(m => this.translate.instant(m.name))
-            .join(', ');
+          .filter(m => m.isBase)
+          .slice(0, MAX_METRICS)
+          .map(m => this.translate.instant(m.name))
+          .join(', ');
     }
 
     this.metricInputText = defaultMetrics;
@@ -147,7 +148,10 @@ export class StatsContentComponent implements OnInit, AfterViewInit, OnChanges {
     });
 
     if (!this.hidePeriodSelector && this.savedPeriod) {
-      this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
+      const storedPeriod = parseStoredJson<DatePeriod>(this.savedPeriod);
+      if (storedPeriod) {
+        this.filterForm.patchValue({ datePeriod: storedPeriod }, { emitEvent: false });
+      }
     }
 
     if (this.initialPeriod) {

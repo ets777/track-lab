@@ -23,6 +23,7 @@ import { MAX_DATE_RANGE_DAYS } from 'src/app/validators/max-date-range.validator
 import { Selectable, CommonItem } from 'src/app/types/selectable';
 import { ModelFormGroup } from 'src/app/types/model-form-group';
 import { filterUniqueElements } from 'src/app/functions/item';
+import { parseStoredJson } from 'src/app/functions/storage';
 import { LoadingService } from 'src/app/services/loading.service';
 
 export type FilterForm = {
@@ -137,8 +138,9 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
     if (this.fixedItem) {
       this.filterForm.patchValue({ item: this.fixedItem }, { emitEvent: false });
     } else if (this.savedItem) {
-      const item = JSON.parse(this.savedItem) as CommonItem;
-      const found = this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
+      const item = parseStoredJson<CommonItem>(this.savedItem);
+      const found = item
+        && this.suggestions.find(s => s.item.itemId === item.itemId && s.item.type === item.type);
       if (found) {
         this.filterForm.patchValue({ item: found.item }, { emitEvent: false });
       }
@@ -152,7 +154,10 @@ export class StatsItemContentComponent implements OnInit, OnChanges {
         this.filterForm.patchValue({ datePeriod: this.initialPeriod }); // emitEvent: true — triggers subscription → loadSuggestions
       }
     } else if (!this.hidePeriodSelector && this.savedPeriod) {
-      this.filterForm.patchValue({ datePeriod: JSON.parse(this.savedPeriod) }, { emitEvent: false });
+      const storedPeriod = parseStoredJson<DatePeriod>(this.savedPeriod);
+      if (storedPeriod) {
+        this.filterForm.patchValue({ datePeriod: storedPeriod }, { emitEvent: false });
+      }
     }
 
     this.initialized = true;

@@ -15,6 +15,7 @@ import { DatePeriod } from 'src/app/types/date-period';
 import { CommonItem, Selectable } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
 import { addLocalDays, addLocalMonths, todayLocal } from 'src/app/functions/date';
+import { parseStoredJson } from 'src/app/functions/storage';
 
 @Component({
   selector: 'app-stats-item',
@@ -68,11 +69,11 @@ export class StatsItemPage {
     const periodTypeStr = localStorage.getItem(`${storageKey}-period-type`);
 
     if (periodTypeStr === 'null') {
-      return savedPeriodJson ? JSON.parse(savedPeriodJson) : null;
+      return parseStoredJson<DatePeriod>(savedPeriodJson);
     }
 
     const periodType = (periodTypeStr ?? 'week') as 'week' | 'month';
-    const savedPeriod = savedPeriodJson ? JSON.parse(savedPeriodJson) as DatePeriod : null;
+    const savedPeriod = parseStoredJson<DatePeriod>(savedPeriodJson);
     const endDate = savedPeriod?.endDate ?? todayLocal();
 
     const startDate = periodType === 'month'
