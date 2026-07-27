@@ -50,7 +50,7 @@
   <!-- END DATE -->
   <div class="rf-field rf-field--last rf-row rf-enddate-row">
     <div class="rf-col rf-enddate-check-col">
-      <ion-checkbox class="rf-enddate-check" formControlName="endDateEnabled" labelPlacement="end" justify="start">
+      <ion-checkbox class="rf-enddate-check" formControlName="endDateEnabled" labelPlacement="end">
         @if (!endDateEnabled) {
           <span class="rf-check-title">{{ 'TK_END_DATE' | translate }}</span>
         }
@@ -129,7 +129,7 @@
 
   <!-- TIME -->
   <div class="rf-field" [class.rf-field--last]="!timeEnabled">
-    <ion-checkbox formControlName="timeEnabled" labelPlacement="start" justify="space-between">
+    <ion-checkbox formControlName="timeEnabled" labelPlacement="end">
       <span class="rf-check-title">{{ 'TK_TIME' | translate }}</span>
     </ion-checkbox>
   </div>
