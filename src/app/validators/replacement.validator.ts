@@ -6,7 +6,9 @@ export function replacementValidator(currentValue: any) {
       return null;
     }
 
-    if (control.value.name == currentValue.name) {
+    const name = typeof control.value === 'string' ? control.value : control.value.name;
+
+    if (name == currentValue.name) {
       return {
         replacement: {
           message: 'TK_CAN_T_REPLACE_AN_ITEM_WITH_ITSELF',

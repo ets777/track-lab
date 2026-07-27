@@ -3,39 +3,33 @@
     <app-nav-button slot="start"></app-nav-button>
     <ion-title>{{ 'TK_REPLACE' | translate }}
       {{ 'TK_ACTION' | translate | lowercase }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="replaceAction()"
-        [disabled]="!isFormValid()"
-      >{{ 'TK_REPLACE' | translate }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   @if (currentAction) {
     @if (hasRelation) {
-      <p class="ar-lead">{{ getFormText() }}</p>
-
       <form [formGroup]="replaceForm" class="ar-card">
+        <p class="ar-lead">{{ getFormText() }}</p>
+
         <!-- REPLACEMENT ACTION -->
         <div class="ar-field">
-          <app-select-search
-            appValidationError
+          <div class="ar-label">{{ 'TK_ACTION' | translate }}</div>
+          <app-action-input
             formControlName="newAction"
-            label="TK_ACTION"
-            [suggestions]="suggestions"
-          ></app-select-search>
+            [single]="true"
+            [strict]="true"
+            [exclude]="excludedActions"
+          ></app-action-input>
         </div>
 
         <!-- DELETE THE OLD ACTION -->
         <div class="ar-field ar-field--last ar-field--row">
           <ion-checkbox
             formControlName="deleteOldAction"
-            labelPlacement="start"
-            justify="space-between"
+            labelPlacement="end"
           >
-            <span class="ar-check-title">{{ 'TK_DELETE_THE_ACTION_AFTER_THE_REPLACEMENT' | translate }}</span>
+            <span class="ar-check-title">{{ 'TK_DELETE_THE_OLD_ACTION' | translate }}</span>
           </ion-checkbox>
         </div>
       </form>
@@ -44,3 +38,18 @@
     }
   }
 </ion-content>
+
+@if (currentAction && hasRelation) {
+  <ion-footer>
+    <div class="nf-actionbar">
+      <button
+        type="button"
+        class="nf-submit"
+        [disabled]="!isFormValid()"
+        (click)="replaceAction()"
+      >
+        {{ 'TK_REPLACE' | translate }}
+      </button>
+    </div>
+  </ion-footer>
+}

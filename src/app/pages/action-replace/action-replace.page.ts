@@ -1,19 +1,17 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonCheckbox } from '@ionic/angular/standalone';
+import { IonContent, IonFooter, IonHeader, IonTitle, IonToolbar, IonCheckbox } from '@ionic/angular/standalone';
 import { NavButtonComponent } from 'src/app/components/nav-button/nav-button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IAction } from 'src/app/db/models/action';
-import { SelectSearchComponent } from 'src/app/form-elements/select-search/select-search.component';
+import { ActionInputComponent } from 'src/app/form-elements/action-input/action-input.component';
 import { ActionService } from 'src/app/services/action.service';
-import { ValidationErrorDirective } from 'src/app/directives/validation-error';
 import { replacementValidator } from 'src/app/validators/replacement.validator';
 import { ActivityActionService } from 'src/app/services/activity-action.service';
 import { AlertController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast.service';
-import { Selectable } from 'src/app/types/selectable';
 import { LoadingService } from 'src/app/services/loading.service';
 import { LogService } from 'src/app/services/log.service';
 
@@ -21,7 +19,7 @@ import { LogService } from 'src/app/services/log.service';
   selector: 'app-action-replace',
   templateUrl: './action-replace.page.html',
   styleUrls: ['./action-replace.page.scss'],
-  imports: [IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, ReactiveFormsModule, SelectSearchComponent, ValidationErrorDirective, IonCheckbox],
+  imports: [IonContent, IonFooter, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, NavButtonComponent, TranslateModule, ReactiveFormsModule, ActionInputComponent, IonCheckbox],
 })
 export class ActionReplacePage implements OnInit {
   private route = inject(ActivatedRoute);
@@ -36,11 +34,13 @@ export class ActionReplacePage implements OnInit {
   private logService = inject(LogService);
 
   public replaceForm!: FormGroup;
-  public suggestions: Selectable<IAction>[] = [];
+  public excludedActions: string[] = [];
 
   hasRelation: boolean = false;
   currentActionId: number;
   currentAction?: IAction;
+
+  private actions: IAction[] = [];
 
   constructor() {
     this.currentActionId = Number(this.route.snapshot.paramMap.get('id'));
@@ -57,7 +57,7 @@ export class ActionReplacePage implements OnInit {
 
     this.replaceForm = this.formBuilder.group({
       newAction: [
-        null,
+        '',
         [
           Validators.required,
           replacementValidator(this.currentAction),
@@ -70,9 +70,9 @@ export class ActionReplacePage implements OnInit {
   }
 
   async replaceAction() {
-    const newActionId = this.replaceForm.value.newAction.id;
+    const newActionId = this.findActionByName(this.replaceForm.value.newAction)?.id;
 
-    if (!this.replaceForm.value.newAction.id || !this.currentActionId) {
+    if (!newActionId || !this.currentActionId) {
       return;
     }
 
@@ -131,15 +131,18 @@ export class ActionReplacePage implements OnInit {
   }
 
   async loadSuggestions() {
-    const actions = await this.actionService.getAllEnriched();
+    this.actions = await this.actionService.getAllEnriched();
+    this.excludedActions = this.currentAction ? [this.currentAction.name] : [];
+  }
 
-    this.suggestions = actions
-      .filter(item => item.id !== this.currentActionId)
-      .map((item, index) => ({
-        num: index,
-        title: item.name,
-        item,
-      }));
+  private findActionByName(name?: string): IAction | undefined {
+    const trimmed = name?.trim().toLowerCase();
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    return this.actions.find(action => action.name.toLowerCase() === trimmed);
   }
 
   getFormText() {

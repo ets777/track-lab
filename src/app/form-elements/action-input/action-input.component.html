@@ -6,23 +6,25 @@
         <i (click)="removeChip(i)" aria-label="Remove">✕</i>
       </span>
     }
-    <input
-      #inputEl
-      class="nf-ti-input"
-      [value]="inputText"
-      [placeholder]="chips.length === 0 ? ('TK_ADD_AN_ACTION' | translate) : ('TK_ADD_MORE' | translate)"
-      (input)="onTextInput($event)"
-      (keydown)="onKeydown($event)"
-      (focus)="onFocus()"
-      (blur)="onBlur()"
-    />
-    @if (canConfirm) {
-      <button type="button" class="nf-ti-confirm" aria-label="Add"
-              (mousedown)="$event.preventDefault()" (click)="confirmInput()">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-          <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+    @if (showInput) {
+      <input
+        #inputEl
+        class="nf-ti-input"
+        [value]="inputText"
+        [placeholder]="chips.length === 0 ? ('TK_ADD_AN_ACTION' | translate) : ('TK_ADD_MORE' | translate)"
+        (input)="onTextInput($event)"
+        (keydown)="onKeydown($event)"
+        (focus)="onFocus()"
+        (blur)="onBlur()"
+      />
+      @if (canConfirm) {
+        <button type="button" class="nf-ti-confirm" aria-label="Add"
+                (mousedown)="$event.preventDefault()" (click)="confirmInput()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M2.5 7.8l3.5 3.5 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      }
     }
   </div>
   @if (showDropdown) {

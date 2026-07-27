@@ -1,8 +1,12 @@
-.ar-lead {
-  margin: 0 0 var(--tl-gap);
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--tl-text-dim);
+// The action-input dropdown must overlay the footer action bar.
+ion-content {
+  position: relative;
+  z-index: 999;
+}
+
+ion-footer {
+  position: relative;
+  z-index: 1;
 }
 
 .ar-card {
@@ -11,6 +15,16 @@
   border: 1px solid var(--tl-line);
   border-radius: var(--tl-radius);
   padding: 4px var(--tl-pad);
+}
+
+// ── Lead text, first block inside the card ──
+.ar-lead {
+  margin: 0;
+  padding: 14px 0 13px;
+  border-bottom: 1px solid var(--tl-line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tl-text-dim);
 }
 
 .ar-field {
@@ -22,17 +36,16 @@
   }
 }
 
-// ── Strip native ion-item chrome from the projected select-search ──
-.ar-card ::ng-deep {
-  ion-item {
-    --background: transparent;
-    --padding-start: 0;
-    --padding-end: 0;
-    --inner-padding-end: 0;
-    --min-height: auto;
-    --border-width: 0;
-    --inner-border-width: 0;
-  }
+.ar-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tl-text-dim);
+  margin-bottom: 6px;
 }
 
 // ── Delete-old-action checkbox row ──

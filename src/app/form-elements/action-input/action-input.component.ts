@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, forwardRef, OnInit, inject, OnDestroy } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, forwardRef, OnInit, inject, OnDestroy } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20,6 +20,15 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
   private actionService = inject(ActionService);
 
   @ViewChild('inputEl') private inputEl?: ElementRef<HTMLInputElement>;
+
+  /** Only one action may be picked — adding a second one replaces the first. */
+  @Input() single = false;
+
+  /** Free text is refused; only names present in the suggestion list are accepted. */
+  @Input() strict = false;
+
+  /** Action names never offered as suggestions (e.g. the action being replaced). */
+  @Input() exclude: string[] = [];
 
   innerControl = new FormControl('');
   inputText = '';
@@ -56,8 +65,19 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
     return this.isFocused && this.suggestions.length > 0;
   }
 
+  /** In single mode the text field disappears once an action has been picked. */
+  get showInput(): boolean {
+    return !this.single || this.chips.length === 0;
+  }
+
   get canConfirm(): boolean {
-    return this.inputText.trim().length > 0;
+    const trimmed = this.inputText.trim();
+
+    if (!trimmed) {
+      return false;
+    }
+
+    return !this.strict || !!this.matchSuggestion(trimmed);
   }
 
   writeValue(value: string): void {
@@ -71,11 +91,20 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
   addChip(name: string, closeDropdown = false) {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const current = this.chips;
-    if (!current.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
-      current.push(trimmed);
-      this.innerControl.setValue(current.join(', '));
+
+    const resolved = this.strict ? this.matchSuggestion(trimmed) : trimmed;
+    if (!resolved) return;
+
+    if (this.single) {
+      this.innerControl.setValue(resolved);
+    } else {
+      const current = this.chips;
+      if (!current.some(c => c.toLowerCase() === resolved.toLowerCase())) {
+        current.push(resolved);
+        this.innerControl.setValue(current.join(', '));
+      }
     }
+
     this.inputText = '';
     if (closeDropdown) {
       this.inputEl?.nativeElement.blur();
@@ -103,7 +132,7 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
   onKeydown(event: KeyboardEvent) {
     if ((event.key === 'Enter' || event.key === ',') && this.inputText.trim()) {
       event.preventDefault();
-      this.addChip(this.inputText.trim());
+      this.addChip(this.inputText.trim(), this.single);
     } else if (event.key === 'Backspace' && !this.inputText && this.chips.length) {
       this.removeChip(this.chips.length - 1);
     }
@@ -115,16 +144,29 @@ export class ActionInputComponent implements ControlValueAccessor, OnInit, OnDes
   }
 
   confirmInput() {
-    if (this.inputText.trim()) {
+    if (this.canConfirm) {
       this.addChip(this.inputText.trim(), true);
     }
   }
 
   updateSuggestions() {
     const query = this.inputText.toLowerCase().trim();
-    const currentChips = new Set(this.chips.map(c => c.toLowerCase()));
+    const taken = new Set([
+      ...this.chips.map(c => c.toLowerCase()),
+      ...this.exclude.map(e => e.toLowerCase()),
+    ]);
     this.suggestions = this.allActionSuggestions
-      .filter(s => !currentChips.has(s.toLowerCase()) && (!query || s.toLowerCase().includes(query)))
+      .filter(s => !taken.has(s.toLowerCase()) && (!query || s.toLowerCase().includes(query)))
       .slice(0, 6);
+  }
+
+  /** Resolves free text to the canonically-cased suggestion it matches, if any. */
+  private matchSuggestion(text: string): string | undefined {
+    const lower = text.toLowerCase();
+    const excluded = new Set(this.exclude.map(e => e.toLowerCase()));
+
+    return this.allActionSuggestions.find(
+      s => s.toLowerCase() === lower && !excluded.has(lower)
+    );
   }
 }
