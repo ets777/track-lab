@@ -8,7 +8,9 @@ export function getActivityDurationMinutes(activity: IActivity) {
 
   let timeDiffSeconds;
 
-  if (activity.startTime < activity.endTime) {
+  // An end time at or after the start stays on the same day; an earlier one
+  // means the activity ran past midnight, so it wraps to the next day.
+  if (activity.startTime <= activity.endTime) {
     timeDiffSeconds = new Time(activity.endTime).valueOf() - new Time(activity.startTime).valueOf();
   } else {
     timeDiffSeconds = 24 * 60 * 60 - new Time(activity.startTime).valueOf() + new Time(activity.endTime).valueOf();

@@ -5,6 +5,7 @@ import { OverlayEventDetail } from '@ionic/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IActivity } from 'src/app/db/models/activity';
 import { entitiesToString } from 'src/app/functions/string';
+import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { ActivityService } from 'src/app/services/activity.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { IMetric } from 'src/app/db/models/metric';
@@ -170,9 +171,7 @@ export class ActivityListComponent implements OnChanges {
   }
 
   getDuration(activity: IActivity): string {
-    if (!activity.endTime) return '';
-    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-    const mins = toMin(activity.endTime) - toMin(activity.startTime);
+    const mins = getActivityDurationMinutes(activity);
     if (mins <= 0) return '';
     const minShort = this.translate.instant('TK_MIN_SHORT');
     if (mins < 60) return `${mins} ${minShort}`;

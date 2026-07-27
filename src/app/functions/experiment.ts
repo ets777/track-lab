@@ -4,6 +4,7 @@ import { IExperiment, ExperimentResultEntry } from '../db/models/experiment';
 import { ExperimentDirection } from '../db/models/experiment-indicator';
 import { IRule } from '../db/models/rule';
 import { getPeriodRange, isRulePeriodMet } from './rule-streak';
+import { getActivityDurationMinutes } from './activity';
 
 export type ExperimentSubjectType = 'metric' | 'action' | 'tag' | 'item';
 
@@ -30,12 +31,7 @@ export function averageMinutesPerDay(
     }
     return a.items.some(i => i.id === subjectId);
   });
-  const totalMin = matching.reduce((sum, a) => {
-    if (!a.endTime) return sum;
-    const [sh, sm] = a.startTime.split(':').map(Number);
-    const [eh, em] = a.endTime.split(':').map(Number);
-    return sum + Math.max(0, eh * 60 + em - sh * 60 - sm);
-  }, 0);
+  const totalMin = matching.reduce((sum, a) => sum + getActivityDurationMinutes(a), 0);
   return totalMin > 0 ? Math.round((totalMin / 7) * 10) / 10 : null;
 }
 

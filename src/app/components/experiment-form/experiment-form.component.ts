@@ -26,6 +26,7 @@ import { LogService } from 'src/app/services/log.service';
 import { ExperimentDirection } from 'src/app/db/models/experiment-indicator';
 import { CommonItem } from 'src/app/types/selectable';
 import { filterUniqueElements } from 'src/app/functions/item';
+import { getActivityDurationMinutes } from 'src/app/functions/activity';
 import { format, addMonths, subDays, parseISO } from 'date-fns';
 
 export type ExperimentForm = {
@@ -447,12 +448,7 @@ export class ExperimentFormComponent implements OnInit {
           if (entry.type === 'tag') return a.tags.some(t => t.id === entry.subjectId);
           return a.items.some(i => i.id === entry.subjectId);
         });
-        const totalMin = matching.reduce((sum, a) => {
-          if (!a.endTime) return sum;
-          const [sh, sm] = a.startTime.split(':').map(Number);
-          const [eh, em] = a.endTime.split(':').map(Number);
-          return sum + Math.max(0, eh * 60 + em - sh * 60 - sm);
-        }, 0);
+        const totalMin = matching.reduce((sum, a) => sum + getActivityDurationMinutes(a), 0);
         newMap[key] = totalMin > 0 ? `${Math.round(totalMin)} min` : '';
       }
     }

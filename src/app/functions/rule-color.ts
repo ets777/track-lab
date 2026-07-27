@@ -1,6 +1,7 @@
 import { IActivity } from '../db/models/activity';
 import { IRule, RulePeriod } from '../db/models/rule';
 import { matchesRule, computeMetric, isMet } from './rule-streak';
+import { getActivityDurationMinutes } from './activity';
 import { endOfLocalWeek, formatLocalDate, parseLocalDate, startOfLocalWeek } from './date';
 
 export type RuleColor = 'green' | 'red';
@@ -103,7 +104,7 @@ export function computeRuleResultsForActivity(
     if (rule.metric === 'totalDuration') {
       let total = 0;
       for (const a of sorted) {
-        total += getDurationMinutes(a);
+        total += getActivityDurationMinutes(a);
         if (a.id === target.id) { isRed = total > rule.value; break; }
       }
     } else if (rule.metric === 'countDays') {
@@ -161,7 +162,7 @@ export function computeActivityRuleResults(
       if (rule.metric === 'totalDuration') {
         let total = 0;
         for (const a of sorted) {
-          total += getDurationMinutes(a);
+          total += getActivityDurationMinutes(a);
           if (total > rule.value) set(a.id, 'red', rule);
         }
       } else if (rule.metric === 'countDays') {
@@ -210,11 +211,4 @@ function getPeriodEndDate(date: string, period: RulePeriod): string {
   const d = parseLocalDate(date);
   if (!d) return date;
   return formatLocalDate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
-}
-
-function getDurationMinutes(activity: IActivity): number {
-  if (!activity.endTime) return 0;
-  const [sh, sm] = activity.startTime.split(':').map(Number);
-  const [eh, em] = activity.endTime.split(':').map(Number);
-  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
 }
