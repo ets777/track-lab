@@ -19,6 +19,9 @@
     "prepare": "husky",
     "build:prod": "APP_ENV=prod ng build --configuration=production",
     "build:dev": "APP_ENV=dev ng build --configuration=development",
+    "prebuild:web": "node tools/version-updater/index.js && node tools/docs-gen/index.js",
+    "build:web": "APP_ENV=prod ng build --configuration=production-web",
+    "postbuild:web": "cp deploy/web/.htaccess www-web/.htaccess",
     "android:prod": "APP_ENV=prod ionic capacitor run android --configuration=production",
     "android:dev": "APP_ENV=dev ionic capacitor run android --configuration=development -l --external",
     "apk": "npm install && npm run build:prod && npx cap sync android && npx cap copy && npx cap open android"
