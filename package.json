@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "author": "Dmitry Klishev",
   "homepage": "https://etsbox.com/tracklab",
+  "license": "GPL-3.0-only",
   "scripts": {
     "ng": "ng",
     "docs:gen": "node tools/docs-gen/index.js",
