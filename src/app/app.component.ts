@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
+import { Keyboard } from '@capacitor/keyboard';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { TabsComponent } from './components/tabs/tabs.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit {
       shieldCheckmarkOutline, checkmarkOutline, closeOutline,
     });
     this.setAdaptiveStatusBarColor();
+    this.trackKeyboardHeight();
   }
 
   async ngOnInit() {
@@ -75,6 +77,26 @@ export class AppComponent implements OnInit {
     this.platform.backButton.subscribeWithPriority(5, async () => {
       await this.navigationService.goBack();
     });
+  }
+
+  /**
+   * Publishes the keyboard height as `--tl-keyboard-height`.
+   *
+   * The Android 15 WebView is edge-to-edge, so the keyboard is drawn on top of
+   * the page instead of resizing it. Bottom-anchored UI (sheet footers, pinned
+   * action bars) reads this variable to lift itself clear.
+   */
+  trackKeyboardHeight() {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const setHeight = (px: number) => {
+      document.documentElement.style.setProperty('--tl-keyboard-height', `${px}px`);
+    };
+
+    Keyboard.addListener('keyboardWillShow', info => setHeight(info.keyboardHeight));
+    Keyboard.addListener('keyboardWillHide', () => setHeight(0));
   }
 
   setAdaptiveStatusBarColor() {

@@ -7,7 +7,7 @@ import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, format, addMonths, subMonths, addWeeks, parseISO, isAfter,
+  eachDayOfInterval, format, addMonths, subMonths, addWeeks, subDays, parseISO, isAfter,
 } from 'date-fns';
 import { IRule } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
@@ -47,6 +47,16 @@ export class RuleCalendarComponent implements OnInit {
   private allActivities: IActivity[] = [];
   private readonly today = format(new Date(), 'yyyy-MM-dd');
 
+  /** The rule stopped applying before today — no period is in progress. */
+  private get isClosed(): boolean {
+    return !!this.rule.endDate && this.rule.endDate < this.today;
+  }
+
+  /** Last day the rule can still be judged on. */
+  private get lastDay(): string {
+    return this.isClosed ? this.rule.endDate! : this.today;
+  }
+
   currentDate = new Date();
   weeks: CalendarDay[][] = [];
   weekStatuses: DayStatus[] = [];
@@ -76,7 +86,7 @@ export class RuleCalendarComponent implements OnInit {
   async ngOnInit() {
     this.loadingService.show('TK_LOADING');
     try {
-      this.allActivities = await this.activityService.getByDate(this.rule.startDate, this.today);
+      this.allActivities = await this.activityService.getByDate(this.rule.startDate, this.lastDay);
       this.computeStats();
       this.buildCalendar();
     } catch (e) {
@@ -253,7 +263,7 @@ export class RuleCalendarComponent implements OnInit {
   }
 
   private getDayStatus(date: string): DayStatus {
-    if (date < this.rule.startDate || date > this.today) return 'none';
+    if (date < this.rule.startDate || date > this.lastDay) return 'none';
 
     const [periodStart, periodEnd] = this.getPeriodRange(date);
     const periodActivities = this.allActivities.filter(
@@ -276,7 +286,9 @@ export class RuleCalendarComponent implements OnInit {
     const curActivities = this.allActivities.filter(
       a => a.date >= curStart && a.date <= curEnd && this.activityMatchesRule(a),
     );
-    const currentMet = this.isMet(this.computeMetric(curActivities));
+    // A closed rule has no period in progress — every one of its periods is
+    // already in completedStatuses, so counting "today" would double it.
+    const currentMet = !this.isClosed && this.isMet(this.computeMetric(curActivities));
 
     const uptimeStatuses = currentMet ? [...completedStatuses, true] : completedStatuses;
     const metCount = uptimeStatuses.filter(Boolean).length;
@@ -301,11 +313,15 @@ export class RuleCalendarComponent implements OnInit {
 
   private getCompletedPeriods(): [string, string][] {
     const periods: [string, string][] = [];
+    // A closed rule has no period in progress: the period holding its end date
+    // is finished too, so it counts. An open rule stops one period short.
+    const inRange = (start: Date, boundStart: Date) =>
+      this.isClosed ? !isAfter(start, boundStart) : isAfter(boundStart, start);
 
     if (this.rule.period === 'day') {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const endStr = format(yesterday, 'yyyy-MM-dd');
+      const endStr = this.isClosed
+        ? this.lastDay
+        : format(subDays(parseISO(this.today), 1), 'yyyy-MM-dd');
       if (endStr < this.rule.startDate) return periods;
       for (const d of eachDayOfInterval({ start: parseISO(this.rule.startDate), end: parseISO(endStr) })) {
         const s = format(d, 'yyyy-MM-dd');
@@ -313,8 +329,8 @@ export class RuleCalendarComponent implements OnInit {
       }
     } else if (this.rule.period === 'week') {
       let wStart = startOfWeek(parseISO(this.rule.startDate), { weekStartsOn: 1 });
-      const todayWStart = startOfWeek(parseISO(this.today), { weekStartsOn: 1 });
-      while (isAfter(todayWStart, wStart)) {
+      const boundWStart = startOfWeek(parseISO(this.lastDay), { weekStartsOn: 1 });
+      while (inRange(wStart, boundWStart)) {
         periods.push([
           format(wStart, 'yyyy-MM-dd'),
           format(endOfWeek(wStart, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
@@ -323,8 +339,8 @@ export class RuleCalendarComponent implements OnInit {
       }
     } else {
       let mStart = startOfMonth(parseISO(this.rule.startDate));
-      const todayMStart = startOfMonth(parseISO(this.today));
-      while (isAfter(todayMStart, mStart)) {
+      const boundMStart = startOfMonth(parseISO(this.lastDay));
+      while (inRange(mStart, boundMStart)) {
         periods.push([
           format(mStart, 'yyyy-MM-dd'),
           format(endOfMonth(mStart), 'yyyy-MM-dd'),
@@ -352,6 +368,8 @@ export class RuleCalendarComponent implements OnInit {
   }
 
   private activityMatchesRule(activity: IActivity): boolean {
+    if (activity.date < this.rule.startDate) return false;
+    if (this.rule.endDate && activity.date > this.rule.endDate) return false;
     let subjectMatch = false;
     if (this.rule.subjectType === 'action') {
       subjectMatch = activity.actions.some(a => a.id === this.rule.subjectId);

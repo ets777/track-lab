@@ -68,12 +68,16 @@
 
 // ── Card ──
 
+// min-height keeps the start and end nodes (and the times beside them) apart on
+// a row that carries nothing but an action name — otherwise the two dots merge
+// into one blob and the two timestamps collide.
 .tl-eg-card {
   position: relative;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--tl-radius-sm);
   padding: 12px 14px 12px 20px;
+  min-height: 62px;
   min-width: 0;
 }
 

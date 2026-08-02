@@ -55,8 +55,10 @@ ion-modal.ces-modal {
   color: var(--tl-text-dim);
 }
 
+// Sheet reaches the bottom of an edge-to-edge screen: the bottom pad has to
+// clear the Android navigation bar or it covers the Save button.
 .ces-actionbar {
-  padding: 11px var(--tl-screen-pad) 12px;
+  padding: 11px var(--tl-screen-pad) calc(12px + var(--tl-safe-bottom));
   border-top: 1px solid var(--tl-line);
   background: var(--tl-bg);
 }

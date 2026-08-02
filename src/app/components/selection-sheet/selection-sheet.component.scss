@@ -4,12 +4,17 @@ ion-modal.selection-modal ion-content {
 }
 
 // Create shortcuts pin below the results and read as actions, not as data.
+// The sheet reaches the bottom of an edge-to-edge screen, so the bottom pad
+// carries the safe-area inset — without it the Android navigation bar sits on
+// top of the buttons and swallows the taps. Dropped while the keyboard is up:
+// the sheet is already lifted clear of the system bars then.
 .ss-create-bar {
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 10px var(--tl-screen-pad);
+  padding-bottom: calc(10px + var(--tl-safe-bottom));
   border-top: 1px solid var(--tl-line);
   background: var(--tl-bg);
 }

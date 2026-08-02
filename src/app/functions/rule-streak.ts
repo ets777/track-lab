@@ -16,8 +16,23 @@ export function getPeriodRange(date: string, period: IRule['period']): [string, 
   return [format(startOfMonth(d), 'yyyy-MM-dd'), format(endOfMonth(d), 'yyyy-MM-dd')];
 }
 
+/**
+ * A rule only exists between its start and end date. `endDate === null` means
+ * open-ended. Every place that shows or evaluates a rule for a given day must
+ * go through here, or a closed rule keeps living on in the UI.
+ */
+export function isRuleActiveOn(rule: IRule, date: string): boolean {
+  if (date < rule.startDate) return false;
+  return !rule.endDate || date <= rule.endDate;
+}
+
+/** The rule stopped applying before `today` — nothing can be added to it anymore. */
+export function isRuleClosed(rule: IRule, today: string): boolean {
+  return !!rule.endDate && rule.endDate < today;
+}
+
 export function matchesRule(activity: IActivity, rule: IRule): boolean {
-  if (activity.date < rule.startDate) return false;
+  if (!isRuleActiveOn(rule, activity.date)) return false;
   let subjectMatch = false;
   if (rule.subjectType === 'action') {
     subjectMatch = activity.actions.some(a => a.id === rule.subjectId);
@@ -53,11 +68,15 @@ export function isRulePeriodMet(rule: IRule, activities: IActivity[]): boolean {
 
 export function getCompletedPeriods(rule: IRule, today: string): [string, string][] {
   const periods: [string, string][] = [];
+  // A closed rule has no period in progress: the period holding its end date is
+  // finished too, so it counts. An open rule stops one period short of today.
+  const closed = isRuleClosed(rule, today);
+  const bound = closed ? rule.endDate! : today;
+  const inRange = (start: Date, boundStart: Date) =>
+    closed ? !isAfter(start, boundStart) : isAfter(boundStart, start);
 
   if (rule.period === 'day') {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const endStr = format(yesterday, 'yyyy-MM-dd');
+    const endStr = closed ? bound : format(subDays(parseISO(today), 1), 'yyyy-MM-dd');
     if (endStr < rule.startDate) return periods;
     for (const d of eachDayOfInterval({ start: parseISO(rule.startDate), end: parseISO(endStr) })) {
       const s = format(d, 'yyyy-MM-dd');
@@ -65,8 +84,8 @@ export function getCompletedPeriods(rule: IRule, today: string): [string, string
     }
   } else if (rule.period === 'week') {
     let wStart = startOfWeek(parseISO(rule.startDate), { weekStartsOn: 1 });
-    const todayWStart = startOfWeek(parseISO(today), { weekStartsOn: 1 });
-    while (isAfter(todayWStart, wStart)) {
+    const boundWStart = startOfWeek(parseISO(bound), { weekStartsOn: 1 });
+    while (inRange(wStart, boundWStart)) {
       periods.push([
         format(wStart, 'yyyy-MM-dd'),
         format(endOfWeek(wStart, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
@@ -75,8 +94,8 @@ export function getCompletedPeriods(rule: IRule, today: string): [string, string
     }
   } else {
     let mStart = startOfMonth(parseISO(rule.startDate));
-    const todayMStart = startOfMonth(parseISO(today));
-    while (isAfter(todayMStart, mStart)) {
+    const boundMStart = startOfMonth(parseISO(bound));
+    while (inRange(mStart, boundMStart)) {
       periods.push([
         format(mStart, 'yyyy-MM-dd'),
         format(endOfMonth(mStart), 'yyyy-MM-dd'),
@@ -118,7 +137,8 @@ export function computeRuleStreakWithCompletions(
   let i = allStatuses.length - 1;
   while (i >= 0 && allStatuses[i]) { streak++; i--; }
 
-  const canExtend = allStatuses.length === 0 || allStatuses[allStatuses.length - 1];
+  const canExtend = (allStatuses.length === 0 || allStatuses[allStatuses.length - 1])
+    && !isRuleClosed(rule, today);
   if (canExtend) {
     const [curStart, curEnd] = getPeriodRange(today, rule.period);
     const curActivities = recentActivities.filter(a => a.date >= curStart && a.date <= curEnd && matchesRule(a, rule));
@@ -141,7 +161,8 @@ export function computeRuleStreak(rule: IRule, activities: IActivity[]): number 
   let i = completedStatuses.length - 1;
   while (i >= 0 && completedStatuses[i]) { streak++; i--; }
 
-  const canExtend = completedStatuses.length === 0 || completedStatuses[completedStatuses.length - 1];
+  const canExtend = (completedStatuses.length === 0 || completedStatuses[completedStatuses.length - 1])
+    && !isRuleClosed(rule, today);
   if (canExtend) {
     const [curStart, curEnd] = getPeriodRange(today, rule.period);
     const curActivities = activities.filter(a => a.date >= curStart && a.date <= curEnd && matchesRule(a, rule));

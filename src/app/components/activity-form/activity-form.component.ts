@@ -131,6 +131,12 @@ export class ActivityFormComponent implements OnInit {
 
   private currentTime: string = '00:00';
 
+  // A hand-picked date and start time outlive the component: leaving the page
+  // and coming back must not throw them away. The draft is stamped with the day
+  // it was made and ignored after that — a leftover from yesterday would
+  // silently misdate the entry.
+  private static readonly DRAFT_KEY = 'activity-form:draft';
+
   constructor() {
     addIcons({ add, close, closeOutline, searchOutline });
     this.activityForm = this.formBuilder.group({
@@ -352,6 +358,17 @@ export class ActivityFormComponent implements OnInit {
       this.updateVisibleMetrics();
       this.updateVisibleLists();
     });
+
+    if (!this.activity) {
+      for (const field of ['startTime', 'date'] as const) {
+        const control = this.activityForm.get(field)!;
+        control.valueChanges.subscribe((value: string | null) => {
+          // Only a real edit is worth keeping — patchValue leaves it pristine.
+          if (!control.dirty || !value) return;
+          this.writeDraft({ [field]: value });
+        });
+      }
+    }
 
     if (this.activity) {
       this.setActivityData(this.activity);
@@ -682,12 +699,62 @@ export class ActivityFormComponent implements OnInit {
     });
   }
 
+  /** The date and start time the user picked by hand, kept for today only. */
+  private readDraft(): { date?: string; startTime?: string } | null {
+    const raw = localStorage.getItem(ActivityFormComponent.DRAFT_KEY);
+    if (!raw) return null;
+    try {
+      const draft = JSON.parse(raw) as { savedOn: string; date?: string; startTime?: string };
+      if (draft.savedOn !== format(new Date(), 'yyyy-MM-dd')) return null;
+      return { date: draft.date, startTime: draft.startTime };
+    } catch {
+      return null;
+    }
+  }
+
+  private writeDraft(patch: { date?: string; startTime?: string }) {
+    localStorage.setItem(
+      ActivityFormComponent.DRAFT_KEY,
+      JSON.stringify({
+        ...this.readDraft(),
+        ...patch,
+        savedOn: format(new Date(), 'yyyy-MM-dd'),
+      }),
+    );
+  }
+
+  /** Called once an activity is saved: the next entry chains off its end time. */
+  clearDraft() {
+    localStorage.removeItem(ActivityFormComponent.DRAFT_KEY);
+    this.activityForm.get('startTime')?.markAsPristine();
+    this.activityForm.get('date')?.markAsPristine();
+  }
+
+  /**
+   * Keeps the date the form is left showing after a save, so backfilling a run
+   * of entries onto one past day survives leaving and re-entering the page.
+   */
+  rememberDate(date: string) {
+    this.writeDraft({ date });
+  }
+
   async getLastActivityData() {
     const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+    // Hand-picked values win over both the clock and the previous activity —
+    // re-entering the form must not silently undo the choice.
+    const draft = this.readDraft() ?? {};
+    const picked: { date?: string; startTime?: string } = {};
+    if (draft.date) picked.date = draft.date;
+    if (draft.startTime) picked.startTime = draft.startTime;
+    if (picked.date && picked.startTime) {
+      return picked;
+    }
+
     const lastActivity = await this.activityService.getLastEnriched();
 
     if (!lastActivity) {
-      return {};
+      return picked;
     }
 
     let startTime = this.currentTime;
@@ -699,6 +766,7 @@ export class ActivityFormComponent implements OnInit {
     return {
       startTime,
       date: currentDate,
+      ...picked,
     };
   }
 

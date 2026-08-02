@@ -105,6 +105,7 @@ export class ActivityAddPage implements OnInit {
     const date = form?.get('date')?.value;
     const startTime = form?.get('startTime')?.value;
     const endTime = form?.get('endTime')?.value;
+    this.addFormRef?.clearDraft();
     const crossedMidnight = date && startTime && endTime && endTime < startTime;
     const nextDate = crossedMidnight ? format(addDays(parseISO(date), 1), 'yyyy-MM-dd') : date;
     form?.get('endTime')?.markAsUntouched();
@@ -113,6 +114,11 @@ export class ActivityAddPage implements OnInit {
       ...(nextDate ? { date: nextDate } : {}),
       ...(endTime ? { startTime: endTime, endTime } : {}),
     });
+    // The form keeps showing the date just used, so leaving and coming back
+    // must show it too — otherwise backfilling a past day resets every visit.
+    if (nextDate) {
+      this.addFormRef?.rememberDate(nextDate);
+    }
     await this.addFormRef?.fetchAllSuggestions();
   }
 

@@ -337,12 +337,13 @@ ion-checkbox {
 }
 
 // Create shortcuts pin below the results and read as actions, not as subjects.
+// Same edge-to-edge story as the selection sheet: clear the navigation bar.
 .cwt-create-bar {
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 20px calc(10px + var(--tl-safe-bottom));
   border-top: 1px solid var(--tl-line);
   background: var(--tl-bg);
 }

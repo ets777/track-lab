@@ -1,6 +1,6 @@
 import { IActivity } from '../db/models/activity';
 import { IRule, RulePeriod } from '../db/models/rule';
-import { matchesRule, computeMetric, isMet } from './rule-streak';
+import { matchesRule, computeMetric, isMet, isRuleActiveOn } from './rule-streak';
 import { getActivityDurationMinutes } from './activity';
 import { endOfLocalWeek, formatLocalDate, parseLocalDate, startOfLocalWeek } from './date';
 
@@ -24,7 +24,8 @@ export function computeRuleStatusesForDay(
   rules: IRule[],
 ): RuleDayStatus[] {
   return rules
-    .filter(r => r.startDate <= getPeriodEndDate(date, r.period))
+    .filter(r => r.startDate <= getPeriodEndDate(date, r.period)
+      && (!r.endDate || r.endDate >= getPeriodStartDate(date, r.period)))
     .map(rule => ({
       rule,
       color: ruleColorForDay(date, allActivities, rule),
@@ -52,7 +53,7 @@ export function computeDayStatusMap(
 ): Map<string, DayStatus> {
   const map = new Map<string, DayStatus>();
   for (const date of dates) {
-    const active = rules.filter(r => r.startDate <= date);
+    const active = rules.filter(r => isRuleActiveOn(r, date));
     if (!active.length) { map.set(date, null); continue; }
     const hasRed = active.some(r => ruleColorForDay(date, allActivities, r) === 'red');
     map.set(date, hasRed ? 'red' : 'green');
@@ -203,6 +204,12 @@ function getPeriodKey(date: string, period: RulePeriod): string {
     case 'month': return date.slice(0, 7);
     case 'week': return startOfLocalWeek(date);
   }
+}
+
+function getPeriodStartDate(date: string, period: RulePeriod): string {
+  if (period === 'day') return date;
+  if (period === 'week') return startOfLocalWeek(date);
+  return `${date.slice(0, 7)}-01`;
 }
 
 function getPeriodEndDate(date: string, period: RulePeriod): string {

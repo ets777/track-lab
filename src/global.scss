@@ -126,6 +126,26 @@ ion-modal {
     --border-radius: 22px;
 }
 
+// Height of the on-screen keyboard, kept up to date by AppComponent on native.
+// The WebView is edge-to-edge on Android 15 (targetSdk 35), so the keyboard
+// overlays the page instead of resizing it — anything anchored to the bottom
+// has to move itself out of the way.
+:root {
+    --tl-keyboard-height: 0px;
+    // Bottom padding a screen-edge element needs to clear the system navigation
+    // bar. Collapses to 0 while the keyboard is up, because whatever sits above
+    // the keyboard is already clear of the navigation bar.
+    --tl-safe-bottom: max(0px, calc(env(safe-area-inset-bottom) - var(--tl-keyboard-height)));
+}
+
+// Bottom sheets keep their full height when the keyboard opens; the content
+// area shrinks instead, so the pinned footer stays above the keyboard and the
+// list scrolls rather than losing rows off the bottom.
+ion-modal.selection-modal .ion-page,
+ion-modal.cwt-modal .ion-page {
+    padding-bottom: var(--tl-keyboard-height);
+}
+
 // ── Bottom sheets that fit their content (auto-height) ──
 ion-modal.menu-sheet,
 ion-modal.cwt-modal {
@@ -307,10 +327,11 @@ ion-content:has(ion-fab[vertical="bottom"]) {
 }
 
 // ── New-form footer action bar (shared across all add/edit pages) ──
-// Bottom pad includes safe-area inset so the submit button clears the
-// Android system navigation bar.
+// No safe-area inset here: the tab bar sits below this bar on every page and
+// already reserves the system navigation area. Adding it again left a visible
+// dead strip under the submit button.
 .nf-actionbar {
-    padding: 11px var(--tl-screen-pad) calc(12px + env(safe-area-inset-bottom));
+    padding: 11px var(--tl-screen-pad) 12px;
     border-top: 1px solid var(--tl-line);
     background: var(--tl-bg);
 }

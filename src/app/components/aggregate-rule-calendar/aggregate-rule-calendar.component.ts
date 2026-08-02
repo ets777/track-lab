@@ -7,7 +7,7 @@ import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, addMonths, subMonths, addWeeks, parseISO } from 'date-fns';
 import { IRule, RulePeriod } from 'src/app/db/models/rule';
 import { IActivity } from 'src/app/db/models/activity';
-import { matchesRule, computeMetric, isMet, getPeriodRange } from 'src/app/functions/rule-streak';
+import { matchesRule, computeMetric, isMet, getPeriodRange, isRuleActiveOn } from 'src/app/functions/rule-streak';
 
 type DayStatus = 'none' | 'met' | 'broken';
 
@@ -253,7 +253,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
   private getPeriodStatus(date: string): DayStatus {
     if (date > this.today) return 'none';
     if (this.isOutOfRange(date)) return 'none';
-    const active = this.rules.filter(r => r.startDate <= date);
+    const active = this.rules.filter(r => isRuleActiveOn(r, date));
     if (!active.length) return 'none';
     for (const rule of active) {
       const [start, end] = getPeriodRange(date, rule.period);
@@ -276,7 +276,7 @@ export class AggregateRuleCalendarComponent implements OnChanges {
     if (this.isOutOfRange(date)) return 'none';
     let hasMet = false;
     for (const rule of this.rules) {
-      if (rule.startDate > date) continue;
+      if (!isRuleActiveOn(rule, date)) continue;
       if (!this.allActivities.some(a => a.date === date && matchesRule(a, rule))) continue;
       if (rule.value === 0 || rule.operator === '<=') return 'broken';
       hasMet = true;

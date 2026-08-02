@@ -5,6 +5,8 @@ import {
   getCompletedPeriods,
   getPeriodRange,
   isMet,
+  isRuleActiveOn,
+  isRuleClosed,
   isRulePeriodMet,
   matchesRule,
 } from './rule-streak';
@@ -55,7 +57,45 @@ describe('getPeriodRange', () => {
   });
 });
 
+describe('isRuleActiveOn', () => {
+  it('is open-ended when no end date is set', () => {
+    expect(isRuleActiveOn(rule(), '2099-01-01')).toBe(true);
+  });
+
+  it('covers the end date itself', () => {
+    expect(isRuleActiveOn(rule({ endDate: '2026-07-31' }), '2026-07-31')).toBe(true);
+  });
+
+  it('stops the day after the end date', () => {
+    expect(isRuleActiveOn(rule({ endDate: '2026-07-31' }), '2026-08-01')).toBe(false);
+  });
+});
+
+describe('isRuleClosed', () => {
+  it('is not closed on its last day', () => {
+    expect(isRuleClosed(rule({ endDate: '2026-07-31' }), '2026-07-31')).toBe(false);
+  });
+
+  it('is closed once the end date has passed', () => {
+    expect(isRuleClosed(rule({ endDate: '2026-07-31' }), '2026-08-01')).toBe(true);
+  });
+
+  it('is never closed without an end date', () => {
+    expect(isRuleClosed(rule(), '2099-01-01')).toBe(false);
+  });
+});
+
 describe('matchesRule', () => {
+  it('ignores activities logged after the rule ended', () => {
+    const act = activity({ date: '2026-08-01', actions: [{ id: 1, tags: [] }] as never });
+    expect(matchesRule(act, rule({ endDate: '2026-07-31' }))).toBe(false);
+  });
+
+  it('still counts an activity logged on the end date', () => {
+    const act = activity({ date: '2026-07-31', actions: [{ id: 1, tags: [] }] as never });
+    expect(matchesRule(act, rule({ endDate: '2026-07-31' }))).toBe(true);
+  });
+
   it('ignores activities logged before the rule existed', () => {
     const act = activity({ date: '2025-12-31', actions: [{ id: 1, tags: [] }] as never });
     expect(matchesRule(act, rule())).toBe(false);
@@ -172,6 +212,47 @@ describe('getCompletedPeriods', () => {
 
   it('lists whole months before the current one', () => {
     const periods = getCompletedPeriods(rule({ period: 'month', startDate: '2025-11-10' }), '2026-01-05');
+    expect(periods).toEqual([
+      ['2025-11-01', '2025-11-30'],
+      ['2025-12-01', '2025-12-31'],
+    ]);
+  });
+
+  it('lists days up to yesterday while the rule is open', () => {
+    const periods = getCompletedPeriods(rule({ startDate: '2026-01-12' }), '2026-01-14');
+    expect(periods).toEqual([
+      ['2026-01-12', '2026-01-12'],
+      ['2026-01-13', '2026-01-13'],
+    ]);
+  });
+
+  it('stops at the end date of a closed daily rule', () => {
+    const periods = getCompletedPeriods(
+      rule({ startDate: '2026-01-12', endDate: '2026-01-13' }),
+      '2026-01-20',
+    );
+    expect(periods).toEqual([
+      ['2026-01-12', '2026-01-12'],
+      ['2026-01-13', '2026-01-13'],
+    ]);
+  });
+
+  it('counts the week holding the end date — a closed rule has no week in progress', () => {
+    const periods = getCompletedPeriods(
+      rule({ period: 'week', startDate: '2026-01-05', endDate: '2026-01-14' }),
+      '2026-01-20',
+    );
+    expect(periods).toEqual([
+      ['2026-01-05', '2026-01-11'],
+      ['2026-01-12', '2026-01-18'],
+    ]);
+  });
+
+  it('counts the month holding the end date', () => {
+    const periods = getCompletedPeriods(
+      rule({ period: 'month', startDate: '2025-11-10', endDate: '2025-12-20' }),
+      '2026-03-05',
+    );
     expect(periods).toEqual([
       ['2025-11-01', '2025-11-30'],
       ['2025-12-01', '2025-12-31'],
