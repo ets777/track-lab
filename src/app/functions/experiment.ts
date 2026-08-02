@@ -71,18 +71,26 @@ export function getExperimentWindows(experiment: IExperiment, now: Date = new Da
   };
 }
 
-/** Elapsed share of the experiment period, 0–100. Finished experiments are always 100. */
+/**
+ * Elapsed share of the experiment period, 0–100. Finished experiments are
+ * always 100.
+ *
+ * Counts days *finished*, not days touched: `daysDone / totalDays`. A day only
+ * counts once it is over, so the experiment opens at 0% on its first day and
+ * reaches 100% on the day after the end date, never on the last day itself.
+ * Two-day experiment: 0% · 50% · 100%.
+ */
 export function computeExperimentProgress(experiment: IExperiment, now: Date = new Date()): number {
   if (experiment.factEndDate) return 100;
   if (!experiment.startDate) return 0;
   if (!experiment.endDate) return 100;
 
   const start = parseISO(experiment.startDate);
-  const total = differenceInDays(parseISO(experiment.endDate), start);
-  if (total <= 0) return 100;
+  const totalDays = differenceInDays(parseISO(experiment.endDate), start) + 1;
+  if (totalDays <= 0) return 100;
 
-  const elapsed = differenceInDays(now, start);
-  return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+  const daysDone = differenceInDays(now, start);
+  return Math.min(100, Math.max(0, Math.round((daysDone / totalDays) * 100)));
 }
 
 /** Activities grouped by the windows they were fetched for. */

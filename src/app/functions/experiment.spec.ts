@@ -136,9 +136,27 @@ describe('getExperimentWindows', () => {
 });
 
 describe('computeExperimentProgress', () => {
-  it('reports elapsed share of the planned period', () => {
-    // 7 of 14 days elapsed
-    expect(computeExperimentProgress(experiment(), new Date('2026-01-17T12:00:00'))).toBe(50);
+  it('reports the share of finished days', () => {
+    // Jan 10–24 is a 15-day experiment; by Jan 17, 7 days are behind → 7/15
+    expect(computeExperimentProgress(experiment(), new Date('2026-01-17T12:00:00'))).toBe(47);
+  });
+
+  it('opens at 0 on the first day and does not reach 100 on the last', () => {
+    // Two-day experiment: day 1 → 0/2, day 2 (the last) → 1/2
+    const exp = experiment({ startDate: '2026-01-10', endDate: '2026-01-11' });
+    expect(computeExperimentProgress(exp, new Date('2026-01-10T12:00:00'))).toBe(0);
+    expect(computeExperimentProgress(exp, new Date('2026-01-11T23:00:00'))).toBe(50);
+  });
+
+  it('reaches 100 the day after the end date', () => {
+    const exp = experiment({ startDate: '2026-01-10', endDate: '2026-01-11' });
+    expect(computeExperimentProgress(exp, new Date('2026-01-12T00:30:00'))).toBe(100);
+  });
+
+  it('gives a one-day experiment 0 on its only day and 100 the next', () => {
+    const exp = experiment({ startDate: '2026-01-10', endDate: '2026-01-10' });
+    expect(computeExperimentProgress(exp, new Date('2026-01-10T12:00:00'))).toBe(0);
+    expect(computeExperimentProgress(exp, new Date('2026-01-11T12:00:00'))).toBe(100);
   });
 
   it('reports 100 for a finished experiment regardless of the planned end', () => {
