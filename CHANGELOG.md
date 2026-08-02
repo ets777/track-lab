@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1] - 2026-08-02
+
+### Fixed
+
+- Rules with an end date no longer appear in the rules widget and calendars once that date has passed
+- Buttons at the bottom of the picker sheets are no longer covered by the Android navigation bar
+- Search results in the picker sheets no longer disappear behind the on-screen keyboard
+- The date and start time in the activity form are kept when leaving and re-opening the form
+- Removed the empty gap under the "Add activity" button
+- Activities that carry only an action no longer squash their start and end times together
+- Experiment progress no longer shows 100% on the experiment's last day — it does so the day after it ends
+
 ## [1.0.0] - 2026-07-30
 
 ### Added
